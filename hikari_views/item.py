@@ -1,10 +1,15 @@
 import abc
 from abc import abstractmethod
+from typing import TYPE_CHECKING
 from typing import Optional
+from typing import TypeVar
 
 import hikari
 
-from .view import View
+if TYPE_CHECKING:
+    from .view import View
+
+V = TypeVar("V", bound="View")
 
 
 class Item(abc.ABC):
@@ -13,7 +18,7 @@ class Item(abc.ABC):
     """
 
     def __init__(self) -> None:
-        self._view: Optional[View] = None
+        self._view: Optional[V] = None
         self._row: Optional[int] = None
         self._width: int = 1
         self._rendered_row: Optional[int] = None  # Where it actually ends up when rendered by Discord
@@ -38,7 +43,7 @@ class Item(abc.ABC):
         return self._width
 
     @property
-    def view(self) -> Optional[View]:
+    def view(self) -> Optional[V]:
         return self._view
 
     @property

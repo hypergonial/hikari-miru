@@ -1,10 +1,16 @@
+import inspect
 import os
+from optparse import Option
+from typing import Any
+from typing import Callable
+from typing import Coroutine
 from typing import Optional
 from typing import Union
 
 import hikari
 
 from .item import Item
+from .item import ItemCallbackType
 
 
 class Button(Item):
@@ -71,3 +77,35 @@ class Button(Item):
             button.set_emoji(self.emoji)
         button.set_is_disabled(self.disabled)
         button.add_to_container()
+
+
+def button(
+    *,
+    label: Optional[str] = None,
+    custom_id: Optional[str] = None,
+    style: hikari.ButtonStyle = hikari.ButtonStyle.PRIMARY,
+    emoji: Optional[Union[str, hikari.Emoji]] = None,
+    row: Optional[int] = None,
+    disabled: Optional[bool] = False,
+) -> Callable[[Callable], Callable]:
+    """
+    A decorator to transform a function into a Discord UI Button's callback. This must be inside a subclass of View.
+    """
+
+    def decorator(func: Callable) -> Callable:
+        if not inspect.iscoroutinefunction(func):
+            raise TypeError("button must decorate coroutine function.")
+
+        func._view_item_type = Button
+        func._view_item_data = {
+            "label": label,
+            "custom_id": custom_id,
+            "style": style,
+            "emoji": emoji,
+            "row": row,
+            "disabled": disabled,
+            "url": None,
+        }
+        return func
+
+    return decorator

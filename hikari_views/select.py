@@ -1,4 +1,7 @@
+import inspect
 import os
+from typing import Callable
+from typing import Coroutine
 from typing import Optional
 from typing import Sequence
 from typing import Union
@@ -6,6 +9,7 @@ from typing import Union
 import hikari
 
 from .item import Item
+from .item import ItemCallbackType
 
 
 class SelectOption:
@@ -103,3 +107,36 @@ class Select(Item):
 
     async def _refresh(self, interaction: hikari.ComponentInteraction) -> None:
         self._values = interaction.values
+
+
+def select(
+    *,
+    options: Sequence[Union[hikari.SelectMenuOption, SelectOption]],
+    custom_id: Optional[str] = None,
+    placeholder: Optional[str] = None,
+    min_values: int = 1,
+    max_values: int = 1,
+    disabled: bool = False,
+    row: Optional[int] = None,
+) -> Callable[[Callable], Callable]:
+    """
+    A decorator to transform a function into a Discord UI SelectMenu's callback. This must be inside a subclass of View.
+    """
+
+    def decorator(func: Callable) -> Callable:
+        if not inspect.iscoroutinefunction(func):
+            raise TypeError("select must decorate coroutine function.")
+
+        func._view_item_type = Select
+        func._view_item_data = {
+            "options": options,
+            "custom_id": custom_id,
+            "placeholder": placeholder,
+            "min_values": min_values,
+            "max_values": max_values,
+            "disabled": disabled,
+            "row": row,
+        }
+        return func
+
+    return decorator
