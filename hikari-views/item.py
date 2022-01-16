@@ -56,7 +56,7 @@ class Item:
 
     async def callback(self, interaction: hikari.ComponentInteraction) -> None:
         """
-        The component's callback, get's called when the component receives an interaction.
+        The component's callback, gets called when the component receives an interaction.
         """
         pass
 
