@@ -47,7 +47,7 @@ class _Weights:
 
 class View:
     """
-    An attempt at replicating discord.py's UI views.
+    Represents a set of Discord UI components.
     """
 
     def __init__(self, app: hikari.RESTAware, *, timeout: Optional[float] = 120.0):
