@@ -125,7 +125,7 @@ class View:
         except ValueError:
             pass
         else:
-            self._weights.clear()
+            self._weights.remove_item(item)
 
     def clear_items(self) -> None:
         """Removes all items from this view."""
