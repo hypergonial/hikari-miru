@@ -1,3 +1,4 @@
+import abc
 from abc import abstractmethod
 from typing import Optional
 
@@ -6,24 +7,25 @@ import hikari
 from .view import View
 
 
-class Item:
+class Item(abc.ABC):
     """
     A base class for view components.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._view: Optional[View] = None
         self._row: Optional[int] = None
         self._width: int = 1
         self._rendered_row: Optional[int] = None  # Where it actually ends up when rendered by Discord
         self.custom_id: Optional[str] = None
+        self._persistent: bool = False
 
     @property
-    def row(self) -> int:
+    def row(self) -> Optional[int]:
         return self._row
 
     @row.setter
-    def row(self, value: int):
+    def row(self, value: Optional[int]) -> None:
         if value is None:
             self._row = None
         elif 5 > value >= 0:
@@ -36,7 +38,7 @@ class Item:
         return self._width
 
     @property
-    def view(self) -> View:
+    def view(self) -> Optional[View]:
         return self._view
 
     @property
@@ -48,7 +50,7 @@ class Item:
         ...
 
     @abstractmethod
-    async def _build(self, action_row: hikari.api.ActionRowBuilder) -> None:
+    def _build(self, action_row: hikari.api.ActionRowBuilder) -> None:
         """
         Called internally to build and append the item to an action row
         """
@@ -62,6 +64,6 @@ class Item:
 
     async def _refresh(self, interaction: hikari.ComponentInteraction) -> None:
         """
-        Called on an item to refresh it's internal data.
+        Called on an item to refresh its internal data.
         """
         pass

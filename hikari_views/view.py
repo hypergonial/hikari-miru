@@ -3,7 +3,8 @@ import inspect
 import itertools
 import sys
 import traceback
-from typing import List, Optional
+from typing import List
+from typing import Optional
 
 import hikari
 
@@ -50,22 +51,21 @@ class View:
     Represents a set of Discord UI components.
     """
 
-    def __init__(self, app: hikari.RESTAware, *, timeout: Optional[float] = 120.0):
+    views: List["View"] = []
+
+    def __init__(self, app: hikari.GatewayBot, *, timeout: Optional[float] = 120.0):
         self.timeout: Optional[float] = float(timeout) if timeout else None
         self.children: List[Item] = []
-        self.app: hikari.RESTAware = app
+        self.app: hikari.GatewayBot = app
         self.message: Optional[hikari.Message] = None
 
         self._weights = _Weights(self.children)
         self._stopped: asyncio.Event = asyncio.Event()
-        self._listener_task: Optional[asyncio.Task] = None
-        self._timeout_task: Optional[asyncio.Task] = None
+        self._listener_task: Optional[asyncio.Task[None]] = None
+        self._timeout_task: Optional[asyncio.Task[None]] = None
 
-        if not hasattr(self.app, "views"):
-            self.app.views = []  # Stores all active views, useful for handling persistent views
-
-        if not isinstance(self.app, hikari.RESTAware):
-            raise TypeError("Expected instance of hikari.RESTAware.")
+        if not isinstance(self.app, hikari.GatewayBot):
+            raise TypeError("Expected instance of hikari.GatewayBot.")
 
     @property
     def is_persistent(self) -> bool:
@@ -73,7 +73,7 @@ class View:
         Determines if this view is persistent or not.
         """
 
-        return self.timeout is None and all(item.is_persistent() for item in self.children)
+        return self.timeout is None and all(item._persistent for item in self.children)
 
     def add_item(self, item: Item) -> None:
         """Add a new item to the view."""
@@ -103,12 +103,12 @@ class View:
         self.children.clear()
         self._weights.clear()
 
-    def build(self):
+    def build(self) -> List[hikari.api.ActionRowBuilder]:
         """Converts the view into action rows, must be called before sending."""
         if len(self.children) == 0:
             raise ValueError("Empty views cannot be built.")
 
-        self.children.sort(key=lambda i: i._rendered_row)
+        self.children.sort(key=lambda i: i._rendered_row or float("inf"))
 
         action_rows = []
 
@@ -119,20 +119,20 @@ class View:
             action_rows.append(action_row)
         return action_rows
 
-    async def on_timeout(self):
+    async def on_timeout(self) -> None:
         """
         Called when the view times out.
         """
         pass
 
-    async def view_check(self, interaction: hikari.ComponentInteraction):
+    async def view_check(self, interaction: hikari.ComponentInteraction) -> bool:
         """
         Called before any callback in the view is called. Must evaluate to a truthy value to pass.
         """
         return True
 
     async def on_error(
-        self, error: Exception, item: Item = None, interaction: hikari.ComponentInteraction = None
+        self, error: Exception, item: Optional[Item] = None, interaction: Optional[hikari.ComponentInteraction] = None
     ) -> None:
         """
         Called when an error occurs in a callback function or the built-in timeout function.
@@ -148,10 +148,12 @@ class View:
         """
         Stop listening for interactions.
         """
-        self._listener_task.cancel()
-        self._timeout_task.cancel()
+        if self._listener_task is not None:
+            self._listener_task.cancel()
+        if self._timeout_task is not None:
+            self._timeout_task.cancel()
         self._stopped.set()
-        self.app.views.remove(self)
+        View.views.remove(self)
 
     async def _process_interactions(self, event: hikari.InteractionCreateEvent) -> None:
 
@@ -168,10 +170,10 @@ class View:
 
                 for item in items:
                     try:
-                        item._refresh(interaction)
+                        await item._refresh(interaction)
 
                         if len(inspect.signature(item.callback).parameters) > 1:
-                            await item.callback(item, interaction)
+                            await item.callback(interaction)
 
                         else:
                             await item.callback(interaction)
@@ -179,7 +181,7 @@ class View:
                     except Exception as error:
                         await self.on_error(error, item, interaction)
 
-    async def _listen_for_events(self, message_id: int):
+    async def _listen_for_events(self, message_id: int) -> None:
         while True:
             event = await self.app.wait_for(
                 hikari.InteractionCreateEvent,
@@ -190,44 +192,48 @@ class View:
 
             await self._process_interactions(event)
 
-    async def _calculate_timeout(self):
-        await asyncio.sleep(self.timeout)
-        self._listener_task.cancel()
+    async def _calculate_timeout(self) -> None:
+        await asyncio.sleep(self.timeout or 0)
+
+        if self._listener_task is not None:
+            self._listener_task.cancel()
         self._listener_task = None
         self._stopped.set()
+
         try:
             await self.on_timeout()
         except Exception as error:
             await self.on_error(error)
-        self._timeout_task = None
-        self.app.views.remove(self)
 
-    async def wait(self):
+        self._timeout_task = None
+        View.views.remove(self)
+
+    async def wait(self) -> None:
         """
         Wait until the view times out or stopped manually.
         """
         await asyncio.wait_for(self._stopped.wait(), timeout=None)
 
-    async def start_listener(self, message_id: int):
+    async def start_listener(self, message_id: int) -> None:
         """
         Re-registers a persistent view for listening after an application restart.
         """
-        if self.is_persistent:
-            self._listener_task = asyncio.create_task(self._listen_for_events(message_id))
-            self.app.views.append(self)
-        else:
+        if not self.is_persistent:
             raise ValueError("This can only be used on persistent views.")
 
-    async def start(self, message: hikari.Message):
+        self._listener_task = asyncio.create_task(self._listen_for_events(message_id))
+        View.views.append(self)
+
+    async def start(self, message: hikari.Message) -> None:
         """
         Start up the view and begin listening for interactions.
         """
-        if isinstance(message, hikari.Message):
-            self.message = message
-            self._listener_task = asyncio.create_task(self._listen_for_events(message.id))
-
-            if self.timeout:
-                self._timeout_task = asyncio.create_task(self._calculate_timeout())
-            self.app.views.append(self)
-        else:
+        if not isinstance(message, hikari.Message):
             raise TypeError("Expected instance of hikari.Message.")
+
+        self.message = message
+        self._listener_task = asyncio.create_task(self._listen_for_events(message.id))
+
+        if self.timeout:
+            self._timeout_task = asyncio.create_task(self._calculate_timeout())
+        View.views.append(self)
