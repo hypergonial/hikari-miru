@@ -1,4 +1,9 @@
+from abc import abstractmethod
+from typing import Optional
+
 import hikari
+
+from .view import View
 
 
 class Item:
@@ -7,11 +12,11 @@ class Item:
     """
 
     def __init__(self):
-        self._view = None
-        self._row = None
-        self._width = 1
-        self._rendered_row = None  # Where it actually ends up when rendered by Discord
-        self.custom_id = None
+        self._view: Optional[View] = None
+        self._row: Optional[int] = None
+        self._width: int = 1
+        self._rendered_row: Optional[int] = None  # Where it actually ends up when rendered by Discord
+        self.custom_id: Optional[str] = None
 
     @property
     def row(self) -> int:
@@ -31,21 +36,29 @@ class Item:
         return self._width
 
     @property
-    def view(self) -> int:
+    def view(self) -> View:
         return self._view
 
     @property
+    @abstractmethod
     def type(self) -> hikari.ComponentType:
-        raise NotImplementedError
+        """
+        Return the component's underlying component type.
+        """
+        ...
 
-    async def callback(self, interaction: hikari.ComponentInteraction) -> None:
-        pass
-
+    @abstractmethod
     async def _build(self, action_row: hikari.api.ActionRowBuilder) -> None:
         """
         Called internally to build and append the item to an action row
         """
-        raise NotImplementedError
+        ...
+
+    async def callback(self, interaction: hikari.ComponentInteraction) -> None:
+        """
+        The component's callback, get's called when the component receives an interaction.
+        """
+        pass
 
     async def _refresh(self, interaction: hikari.ComponentInteraction) -> None:
         """

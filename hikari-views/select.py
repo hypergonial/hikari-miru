@@ -19,11 +19,11 @@ class SelectOption:
         emoji: Optional[Union[str, hikari.Emoji]] = None,
         is_default: bool = False,
     ) -> None:
-        self.label = label
-        self.value = value if value else label
-        self.description = description
-        self.emoji = emoji
-        self.is_default = is_default
+        self.label: str = label
+        self.value: str = value if value else label
+        self.description: Optional[str] = description
+        self.emoji: Optional[Union[str, hikari.Emoji]] = emoji
+        self.is_default: Optional[bool] = is_default
 
     def _convert(self) -> hikari.SelectMenuOption:
         return hikari.SelectMenuOption(
@@ -44,8 +44,8 @@ class Select(Item):
         self,
         *,
         options: Union[List[SelectOption], List[hikari.SelectMenuOption]],
-        custom_id: str = None,
-        placeholder: str = None,
+        custom_id: Optional[str] = None,
+        placeholder: Optional[str] = None,
         min_values: int = 1,
         max_values: int = 1,
         disabled: bool = False,
@@ -59,7 +59,7 @@ class Select(Item):
         self.options: List[hikari.SelectMenuOption] = options
         self.min_values: int = min_values
         self.max_values: int = max_values
-        self.placeholder: str = placeholder
+        self.placeholder: Optional[str] = placeholder
         self.row: Optional[int] = row if row else None
 
     @property

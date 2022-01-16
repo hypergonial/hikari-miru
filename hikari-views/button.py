@@ -1,6 +1,7 @@
-import hikari
 import os
-from typing import Union, Optional
+from typing import Optional, Union
+
+import hikari
 
 from .item import Item
 

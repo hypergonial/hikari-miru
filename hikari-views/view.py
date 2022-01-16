@@ -58,8 +58,8 @@ class View:
 
         self._weights = _Weights(self.children)
         self._stopped: asyncio.Event = asyncio.Event()
-        self._listener_task = None
-        self._timeout_task = None
+        self._listener_task: Optional[asyncio.Task] = None
+        self._timeout_task: Optional[asyncio.Task] = None
 
         if not hasattr(self.app, "views"):
             self.app.views = []  # Stores all active views, useful for handling persistent views
