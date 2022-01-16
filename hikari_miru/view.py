@@ -221,7 +221,7 @@ class View:
                 )
             except asyncio.TimeoutError:
                 # Handle timeouts, stop listening
-                self._handle_timeout()
+                await self._handle_timeout()
 
             else:
                 await self._process_interactions(event)
