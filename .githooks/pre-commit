@@ -1,0 +1,5 @@
+#!/bin/sh
+
+REPO_PATH=$(/usr/bin/git rev-parse --show-toplevel)
+/usr/bin/python3 -m black $REPO_PATH --line-length 120
+/usr/bin/git update-index --again :/:
