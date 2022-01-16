@@ -1,5 +1,7 @@
 import os
-from typing import List, Optional, Union
+from typing import Optional
+from typing import Sequence
+from typing import Union
 
 import hikari
 
@@ -22,8 +24,10 @@ class SelectOption:
         self.label: str = label
         self.value: str = value if value else label
         self.description: Optional[str] = description
-        self.emoji: Optional[Union[str, hikari.Emoji]] = emoji
-        self.is_default: Optional[bool] = is_default
+        if isinstance(emoji, str):
+            emoji = hikari.Emoji.parse(emoji)
+        self.emoji: Optional[hikari.Emoji] = emoji
+        self.is_default: bool = is_default
 
     def _convert(self) -> hikari.SelectMenuOption:
         return hikari.SelectMenuOption(
@@ -43,20 +47,20 @@ class Select(Item):
     def __init__(
         self,
         *,
-        options: Union[List[SelectOption], List[hikari.SelectMenuOption]],
+        options: Sequence[Union[hikari.SelectMenuOption, SelectOption]],
         custom_id: Optional[str] = None,
         placeholder: Optional[str] = None,
         min_values: int = 1,
         max_values: int = 1,
         disabled: bool = False,
-        row: Optional[int] = None
+        row: Optional[int] = None,
     ) -> None:
         super().__init__()
-        self._values: List[str] = []
+        self._values: Sequence[str] = []
         self._persistent: bool = True if custom_id else False
         self.custom_id: str = os.urandom(16).hex() if not custom_id else custom_id
         self.disabled: bool = disabled
-        self.options: List[hikari.SelectMenuOption] = options
+        self.options: Sequence[Union[hikari.SelectMenuOption, SelectOption]] = options
         self.min_values: int = min_values
         self.max_values: int = max_values
         self.placeholder: Optional[str] = placeholder
@@ -71,7 +75,8 @@ class Select(Item):
         Called internally to build and append to an action row
         """
         select = action_row.add_select_menu(self.custom_id)
-        select.set_placeholder(self.placeholder)
+        if self.placeholder:
+            select.set_placeholder(self.placeholder)
         select.set_min_values(self.min_values)
         select.set_max_values(self.max_values)
         select.set_is_disabled(self.disabled)
@@ -80,7 +85,8 @@ class Select(Item):
             if isinstance(option, SelectOption):
                 option = option._convert()
             _option = select.add_option(option.label, option.value)
-            _option.set_description(option.description)
+            if option.description:
+                _option.set_description(option.description)
             if option.emoji:
                 _option.set_emoji(option.emoji)
             _option.add_to_menu()
@@ -88,12 +94,12 @@ class Select(Item):
         select.add_to_container()
 
     @property
-    def values(self) -> List[str]:
+    def values(self) -> Sequence[str]:
         return self._values
 
     @property
     def width(self) -> int:
         return 5
 
-    def _refresh(self, interaction: hikari.ComponentInteraction) -> None:
+    async def _refresh(self, interaction: hikari.ComponentInteraction) -> None:
         self._values = interaction.values
