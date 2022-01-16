@@ -27,7 +27,7 @@ class MyView(miru.View):
 
     @miru.button(emoji="⏹️", style=hikari.ButtonStyle.DANGER, row=2)
     async def stop_button(self, button: miru.Button, interaction: hikari.ComponentInteraction):
-        await interaction.create_initial_response(response_type=hikari.ResponseType.DEFERRED_MESSAGE_UPDATE)
+        await interaction.create_initial_response(hikari.ResponseType.DEFERRED_MESSAGE_UPDATE)
         self.stop() # Stop listening for interactions
 
 
