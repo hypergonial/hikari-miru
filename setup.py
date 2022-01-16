@@ -7,7 +7,7 @@ from setuptools import find_namespace_packages
 from setuptools import setup
 from setuptools.command import install
 
-name = "lightbulb"
+name = "hikari_views"
 
 
 def parse_meta():
