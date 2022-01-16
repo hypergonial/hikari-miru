@@ -173,7 +173,7 @@ class View:
 
         traceback.print_exception(error.__class__, error, error.__traceback__, file=sys.stderr)
 
-    async def stop(self) -> None:
+    def stop(self) -> None:
         """
         Stop listening for interactions.
         """
@@ -241,7 +241,7 @@ class View:
 
     async def wait(self) -> None:
         """
-        Wait until the view times out or stopped manually.
+        Wait until the view times out or gets stopped manually.
         """
         await asyncio.wait_for(self._stopped.wait(), timeout=None)
 
@@ -255,7 +255,7 @@ class View:
         self._listener_task = asyncio.create_task(self._listen_for_events(message_id))
         View.persistent_views.append(self)
 
-    async def start(self, message: hikari.Message) -> None:
+    def start(self, message: hikari.Message) -> None:
         """
         Start up the view and begin listening for interactions.
         """
