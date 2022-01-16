@@ -7,7 +7,7 @@ from typing import List, Optional
 
 import hikari
 
-from ui.item import Item
+from .item import Item
 
 
 class _Weights:
@@ -237,17 +237,3 @@ class View:
             self.app.views.append(self)
         else:
             raise TypeError("Expected instance of hikari.Message.")
-
-
-
-
-                    
-
-
-
-
-
-
-
-
-                

@@ -1,7 +1,10 @@
-from .item import Item
-from typing import Optional, List, Union
-import hikari
 import os
+from typing import List, Optional, Union
+
+import hikari
+
+from .item import Item
+
 
 class SelectOption:
     '''
@@ -69,4 +72,3 @@ class Select(Item):
 
     def _refresh(self, interaction: hikari.ComponentInteraction) -> None:
         self._values = interaction.values
-

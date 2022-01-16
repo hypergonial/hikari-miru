@@ -1,7 +1,8 @@
-from ui.item import Item
 import hikari
 import os
 from typing import Union, Optional
+
+from .item import Item
 
 class Button(Item):
     '''
@@ -43,5 +44,3 @@ class Button(Item):
             button.set_emoji(self.emoji)
         button.set_is_disabled(self.disabled)
         button.add_to_container()
-
-        
