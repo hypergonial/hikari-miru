@@ -4,4 +4,5 @@ setup(
     packages=[
         "hikari-views",
     ],
+    requires="hikari",
 )
