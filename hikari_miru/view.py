@@ -144,7 +144,6 @@ class View:
         for row, items in itertools.groupby(self.children, lambda i: i._rendered_row):
             action_row = self.app.rest.build_action_row()
             for item in items:
-                print(item, item.__dict__)
                 item._build(action_row)
             action_rows.append(action_row)
         return action_rows
