@@ -10,7 +10,6 @@ from typing import Union
 import hikari
 
 from .item import Item
-from .item import ItemCallbackType
 
 
 class Button(Item):
