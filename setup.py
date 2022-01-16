@@ -7,7 +7,7 @@ from setuptools import find_namespace_packages
 from setuptools import setup
 from setuptools.command import install
 
-name = "hikari_views"
+name = "hikari_miru"
 
 
 def parse_meta():
@@ -39,7 +39,7 @@ def parse_requirements_file(path):
 meta = parse_meta()
 
 setup(
-    name="hikari_views",
+    name="hikari_miru",
     version=meta.version,
     description="An alternative component handler for hikari, inspired by discord.py's views.",
     long_description=long_description(),
