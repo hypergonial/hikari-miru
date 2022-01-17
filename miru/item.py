@@ -92,7 +92,7 @@ class Item(abc.ABC):
     def custom_id(self, value: Optional[str]) -> None:
         if value and not isinstance(value, str):
             raise TypeError("Expected type str for property custom_id.")
-        self._custom_id = value if value else os.urandom(16).hex()
+        self._custom_id = value
 
     @property
     @abstractmethod
