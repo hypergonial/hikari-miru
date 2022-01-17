@@ -22,8 +22,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from __future__ import annotations
+
 import asyncio
-import inspect
 import itertools
 import sys
 import traceback
@@ -36,6 +37,8 @@ from typing import Optional
 import hikari
 
 from .item import Item
+
+from .interaction import Interaction
 
 
 class _Weights:
@@ -97,11 +100,16 @@ class View:
         cls._view_children = children
 
     def __init__(
-        self, app: hikari.GatewayBotAware | hikari.EventManagerAware, *, timeout: Optional[float] = 120.0
+        self,
+        app: hikari.GatewayBotAware | hikari.EventManagerAware,
+        *,
+        timeout: Optional[float] = 120.0,
+        autodefer: Optional[bool] = True,
     ) -> None:
         self.timeout: Optional[float] = float(timeout) if timeout else None
         self.children: List[Item] = []
         self.app: hikari.GatewayBotAware | hikari.EventManagerAware = app
+        self.autodefer: Optional[bool] = autodefer
         self.message: Optional[hikari.Message] = None
 
         self._weights = _Weights(self.children)
@@ -178,14 +186,14 @@ class View:
         """
         pass
 
-    async def view_check(self, interaction: hikari.ComponentInteraction) -> bool:
+    async def view_check(self, interaction: Interaction) -> bool:
         """
         Called before any callback in the view is called. Must evaluate to a truthy value to pass.
         """
         return True
 
     async def on_error(
-        self, error: Exception, item: Optional[Item] = None, interaction: Optional[hikari.ComponentInteraction] = None
+        self, error: Exception, item: Optional[Item] = None, interaction: Optional[Interaction] = None
     ) -> None:
         """
         Called when an error occurs in a callback function or the built-in timeout function.
@@ -207,41 +215,59 @@ class View:
         if self.is_persistent:
             View.persistent_views.remove(self)
 
+    async def _handle_callback(self, item: Item, interaction: Interaction) -> None:
+        """
+        Handle the callback of a view item. Seperate task in case the view is stopped in the callback.
+        """
+        try:
+            await item._refresh(interaction)
+            await item.callback(interaction)
+
+            if not interaction._issued_response and self.autodefer:
+                await interaction.defer()
+
+        except Exception as error:
+            await self.on_error(error, item, interaction)
+
     async def _process_interactions(self, event: hikari.InteractionCreateEvent) -> None:
+        """
+        Process incoming interactions and convert interaction to miru.Interaction
+        """
 
         if isinstance(event.interaction, hikari.ComponentInteraction):
 
-            interaction = event.interaction
-
-            passed = await self.view_check(interaction)
-            if not passed:
-                return
+            interaction: Interaction = Interaction.from_hikari(event.interaction)
 
             items = [item for item in self.children if item.custom_id == interaction.custom_id]
             if len(items) > 0:
 
+                passed = await self.view_check(interaction)
+                if not passed:
+                    return
+
                 for item in items:
-                    try:
-                        await item._refresh(interaction)
+                    # Create task here to ensure autodefer works even if callback stops view
+                    asyncio.create_task(self._handle_callback(item, interaction))
 
-                        if len(inspect.signature(item.callback).parameters) > 1:
-                            await item.callback(interaction)
+    async def _listen_for_events(self, message_id: Optional[int] = None) -> None:
+        """
+        Listen for incoming interaction events through the gateway.
+        """
 
-                        else:
-                            await item.callback(interaction)
-
-                    except Exception as error:
-                        await self.on_error(error, item, interaction)
-
-    async def _listen_for_events(self, message_id: int) -> None:
+        if message_id:
+            predicate = (
+                lambda e: isinstance(e.interaction, hikari.ComponentInteraction)
+                and e.interaction.message.id == message_id
+            )
+        else:
+            predicate = lambda e: isinstance(e.interaction, hikari.ComponentInteraction)
 
         while True:
             try:
                 event = await self.app.wait_for(
                     hikari.InteractionCreateEvent,
                     timeout=self.timeout,
-                    predicate=lambda e: isinstance(e.interaction, hikari.ComponentInteraction)
-                    and e.interaction.message.id == message_id,
+                    predicate=predicate,
                 )
             except asyncio.TimeoutError:
                 # Handle timeouts, stop listening
@@ -251,6 +277,9 @@ class View:
                 await self._process_interactions(event)
 
     async def _handle_timeout(self) -> None:
+        """
+        Handle the timing out of the view.
+        """
 
         if self._listener_task is not None:
             self._listener_task.cancel()
@@ -269,7 +298,7 @@ class View:
         """
         await asyncio.wait_for(self._stopped.wait(), timeout=None)
 
-    async def start_listener(self, message_id: int) -> None:
+    def start_listener(self, message_id: Optional[int] = None) -> None:
         """
         Re-registers a persistent view for listening after an application restart.
         """
