@@ -27,31 +27,33 @@ import abc
 from abc import abstractmethod
 from typing import TYPE_CHECKING
 from typing import Optional
-from typing import TypeVar
 
 import hikari
+
+from .interaction import Interaction
 
 if TYPE_CHECKING:
     from .view import View
 
-V = TypeVar("V", bound="View")
-
 
 class Item(abc.ABC):
     """
-    A base class for view components.
+    An abstract base class for view components. Cannot be directly instantiated.
     """
 
     def __init__(self) -> None:
-        self._view: Optional[V] = None
+        self._view: Optional[View] = None
         self._row: Optional[int] = None
         self._width: int = 1
         self._rendered_row: Optional[int] = None  # Where it actually ends up when rendered by Discord
-        self.custom_id: Optional[str] = None
+        self._custom_id: Optional[str] = None
         self._persistent: bool = False
 
     @property
     def row(self) -> Optional[int]:
+        """
+        The row the item should occupy. Leave as None for automatic placement.
+        """
         return self._row
 
     @row.setter
@@ -65,17 +67,37 @@ class Item(abc.ABC):
 
     @property
     def width(self) -> int:
+        """
+        The item's width taken up in a Discord UI action row.
+        """
         return self._width
 
     @property
-    def view(self) -> Optional[V]:
+    def view(self) -> Optional[View]:
+        """
+        The view this item is attached to, if any.
+        """
         return self._view
+
+    @property
+    def custom_id(self) -> Optional[str]:
+        """
+        The item's custom identifier. This will be used to track the item through interactions and
+        is required for persistent views.
+        """
+        return self._custom_id
+
+    @custom_id.setter
+    def custom_id(self, value: Optional[str]):
+        if value and not isinstance(value, str):
+            raise TypeError("Expected type str for property custom_id.")
+        self._custom_id = value
 
     @property
     @abstractmethod
     def type(self) -> hikari.ComponentType:
         """
-        Return the component's underlying component type.
+        The component's underlying component type.
         """
         ...
 
@@ -86,13 +108,13 @@ class Item(abc.ABC):
         """
         ...
 
-    async def callback(self, interaction: hikari.ComponentInteraction) -> None:
+    async def callback(self, interaction: Interaction) -> None:
         """
         The component's callback, gets called when the component receives an interaction.
         """
         pass
 
-    async def _refresh(self, interaction: hikari.ComponentInteraction) -> None:
+    async def _refresh(self, interaction: Interaction) -> None:
         """
         Called on an item to refresh its internal data.
         """

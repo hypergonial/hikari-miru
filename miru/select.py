@@ -85,17 +85,68 @@ class Select(Item):
         super().__init__()
         self._values: Sequence[str] = []
         self._persistent: bool = True if custom_id else False
-        self.custom_id: str = os.urandom(16).hex() if not custom_id else custom_id
-        self.disabled: bool = disabled
-        self.options: Sequence[Union[hikari.SelectMenuOption, SelectOption]] = options
-        self.min_values: int = min_values
-        self.max_values: int = max_values
-        self.placeholder: Optional[str] = placeholder
-        self.row: Optional[int] = row if row else None
+        self._custom_id: str = os.urandom(16).hex() if not custom_id else custom_id
+        self._disabled: bool = disabled
+        self._options: Sequence[Union[hikari.SelectMenuOption, SelectOption]] = options
+        self._min_values: int = min_values
+        self._max_values: int = max_values
+        self._placeholder: Optional[str] = placeholder
+        self._row: Optional[int] = row if row else None
 
     @property
     def type(self) -> hikari.ComponentType:
         return hikari.ComponentType.SELECT_MENU
+
+    @property
+    def placeholder(self) -> Optional[str]:
+        """
+        The placeholder text that appears before the select menu is clicked.
+        """
+        return self._placeholder
+
+    @placeholder.setter
+    def placeholder(self, value: Optional[str]) -> None:
+        if value and not isinstance(value, str):
+            raise TypeError("Expected type str for property placeholder.")
+
+    @property
+    def min_values(self) -> int:
+        """
+        The minimum amount of options a user has to select.
+        """
+        return self._min_values
+
+    @min_values.setter
+    def min_values(self, value: int) -> None:
+        if not isinstance(value, int):
+            raise TypeError("Expected type int for property min_values.")
+        self._min_values = value
+
+    @property
+    def max_values(self) -> int:
+        """
+        The maximum amount of options a user is allowed to select.
+        """
+        return self._max_values
+
+    @max_values.setter
+    def max_values(self, value: int) -> None:
+        if not isinstance(value, int):
+            raise TypeError("Expected type int for property max_values.")
+        self._max_values = value
+
+    @property
+    def disabled(self) -> bool:
+        """
+        Boolean indicating if the select menu should be disabled or not.
+        """
+        return self._disabled
+
+    @disabled.setter
+    def disabled(self, value: bool) -> None:
+        if not isinstance(value, bool):
+            raise TypeError("Expected type bool for property disabled.")
+        self._disabled = value
 
     def _build(self, action_row: hikari.api.ActionRowBuilder) -> None:
         """

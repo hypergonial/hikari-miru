@@ -54,29 +54,96 @@ class Button(Item):
         super().__init__()
 
         if emoji is None and label is None:
-            raise TypeError("Must provide at least one of emoji and label")
+            raise TypeError("Must provide at least one of emoji or label")
 
         if custom_id and url:
             raise TypeError("Cannot provide both url and custom_id")
 
-        if url is None and custom_id is None:
-            custom_id = os.urandom(16).hex()
-
-        if url is not None:
-            style = hikari.ButtonStyle.LINK
-
-        self.style: hikari.ButtonStyle = style
-        self.label: Optional[str] = label
-        self.disabled: bool = disabled
-        self.emoji: Union[str, hikari.Emoji, None] = emoji
-        self._persistent: bool = True if custom_id else False
-        self.custom_id: Optional[str] = custom_id
+        self._style: hikari.ButtonStyle = style
+        self._label: Optional[str] = label
+        self._disabled: bool = disabled
+        self._emoji: Union[str, hikari.Emoji, None] = emoji
+        self._custom_id: Optional[str] = custom_id
         self._row: Optional[int] = int(row) if row else None
-        self.url: Optional[str] = url
+        self._url: Optional[str] = url
+
+        self._persistent: bool = True if custom_id else False
+
+        if self.url is None and self.custom_id is None:
+            self.custom_id = os.urandom(16).hex()
+
+        if self.url is not None:
+            self.style = hikari.ButtonStyle.LINK
 
     @property
     def type(self) -> hikari.ComponentType:
         return hikari.ComponentType.BUTTON
+
+    @property
+    def style(self) -> hikari.ButtonStyle:
+        """
+        The button's style.
+        """
+        return self._style
+
+    @style.setter
+    def style(self, value: hikari.ButtonStyle) -> None:
+        if not isinstance(value, hikari.ButtonStyle):
+            raise TypeError("Expected type hikari.ButtonStyle for property style.")
+        self._style = value
+
+    @property
+    def disabled(self) -> bool:
+        """
+        Boolean indicating if the button should be disabled or not.
+        """
+        return self._disabled
+
+    @disabled.setter
+    def disabled(self, value: bool) -> None:
+        if not isinstance(value, bool):
+            raise TypeError("Expected type bool for property disabled.")
+        self._disabled = value
+
+    @property
+    def label(self) -> Optional[str]:
+        """
+        The button's label. This is the text visible on the button.
+        """
+        return self._label
+
+    @label.setter
+    def label(self, value: Optional[str]) -> None:
+        self._label = str(value) if value else None
+
+    @property
+    def emoji(self) -> Union[str, hikari.Emoji, None]:
+        """
+        The emoji that should be visible on the button, if any.
+        """
+        return self._emoji
+
+    @emoji.setter
+    def emoji(self, value: Union[str, hikari.Emoji, None]):
+        if value and isinstance(value, str):
+            value = hikari.Emoji.parse(value)
+
+        if value and not isinstance(value, hikari.Emoji):
+            raise TypeError("Expected types str or hikari.Emoji for property emoji.")
+        self._emoji = value
+
+    @property
+    def url(self) -> Optional[str]:
+        """
+        The button's URL. If specified, the button will turn into a link button, and the style kwarg will be ignored.
+        """
+        return self._url
+
+    @url.setter
+    def url(self, value: str):
+        if not isinstance(value, str):
+            raise TypeError("Expected type str for property url.")
+        self._url = value
 
     def _build(self, action_row: hikari.api.ActionRowBuilder) -> None:
         """

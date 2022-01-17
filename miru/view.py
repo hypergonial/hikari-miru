@@ -106,11 +106,11 @@ class View:
         timeout: Optional[float] = 120.0,
         autodefer: Optional[bool] = True,
     ) -> None:
-        self.timeout: Optional[float] = float(timeout) if timeout else None
-        self.children: List[Item] = []
-        self.app: hikari.GatewayBotAware | hikari.EventManagerAware = app
-        self.autodefer: Optional[bool] = autodefer
-        self.message: Optional[hikari.Message] = None
+        self._timeout: Optional[float] = float(timeout) if timeout else None
+        self._children: List[Item] = []
+        self._app: hikari.GatewayBotAware | hikari.EventManagerAware = app
+        self._autodefer: Optional[bool] = autodefer
+        self._message: Optional[hikari.Message] = None
 
         self._weights = _Weights(self.children)
         self._stopped: asyncio.Event = asyncio.Event()
@@ -136,8 +136,43 @@ class View:
 
         return self.timeout is None and all(item._persistent for item in self.children)
 
+    @property
+    def timeout(self) -> Optional[float]:
+        """
+        The amount of time the view is allowed to idle for, in seconds. Must be None for persistent views.
+        """
+        return self._timeout
+
+    @property
+    def children(self) -> List[Item]:
+        """
+        A list of all items attached to the view.
+        """
+        return self._children
+
+    @property
+    def app(self) -> hikari.GatewayBotAware | hikari.EventManagerAware:
+        """
+        The application that instantiated the view.
+        """
+        return self._app
+
+    @property
+    def autodefer(self) -> Optional[bool]:
+        """
+        A boolean indicating if received interactions should automatically be deferred if not responded to or not.
+        """
+        return self._autodefer
+
+    @property
+    def message(self) -> Optional[hikari.Message]:
+        """
+        The message this view is attached to. This is None if the view was started with start_listener().
+        """
+        return self._message
+
     def add_item(self, item: Item) -> None:
-        """Add a new item to the view."""
+        """Adds a new item to the view."""
 
         if len(self.children) > 25:
             raise ValueError("View cannot have more than 25 components attached.")
@@ -151,7 +186,7 @@ class View:
         self.children.append(item)
 
     def remove_item(self, item: Item) -> None:
-        """Remove the specified item from the view."""
+        """Removes the specified item from the view."""
         try:
             self.children.remove(item)
         except ValueError:
@@ -300,7 +335,7 @@ class View:
 
     def start_listener(self, message_id: Optional[int] = None) -> None:
         """
-        Re-registers a persistent view for listening after an application restart.
+        Re-registers a persistent view for listening after an application restart. Specify message_id for improved listener accuracy.
         """
         if not self.is_persistent:
             raise ValueError("This can only be used on persistent views.")
@@ -315,7 +350,7 @@ class View:
         if not isinstance(message, hikari.Message):
             raise TypeError("Expected instance of hikari.Message.")
 
-        self.message = message
+        self._message = message
         self._listener_task = asyncio.create_task(self._listen_for_events(message.id))
 
         if self.is_persistent:

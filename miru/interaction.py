@@ -4,15 +4,9 @@ import functools
 import typing
 
 import hikari
-from hikari import undefined
 
 if typing.TYPE_CHECKING:
-    from hikari import embeds as embeds_
-    from hikari import guilds
     from hikari import messages
-    from hikari import snowflakes
-    from hikari import users
-    from hikari.api import special_endpoints
 
 
 class Interaction(hikari.ComponentInteraction):
