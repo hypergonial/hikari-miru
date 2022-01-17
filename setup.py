@@ -29,7 +29,7 @@ import types
 from setuptools import find_namespace_packages
 from setuptools import setup
 
-name = "hikari_miru"
+name = "miru"
 
 
 def parse_meta():
@@ -61,14 +61,14 @@ def parse_requirements_file(path):
 meta = parse_meta()
 
 setup(
-    name="hikari_miru",
+    name="hikari-miru",
     version=meta.version,
     description="An alternative component handler for hikari, inspired by discord.py's views.",
     long_description=long_description(),
     long_description_content_type="text/markdown",
     author="HyperGH",
     author_email="46067571+HyperGH@users.noreply.github.com",
-    url="https://github.com/HyperGH/hikari-views",
+    url="https://github.com/HyperGH/hikari-miru",
     packages=find_namespace_packages(include=[name + "*"]),
     license="MIT",
     include_package_data=True,
