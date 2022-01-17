@@ -8,7 +8,7 @@ pip install git+https://github.com/HyperGH/hikari-miru.git
 ## Usage
 ```py
 import hikari
-import hikari_miru as miru
+import miru
 
 
 class MyView(miru.View):

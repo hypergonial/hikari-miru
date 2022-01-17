@@ -27,7 +27,7 @@ import os
 import nox
 from nox import options
 
-PATH_TO_PROJECT = os.path.join(".", "hikari_miru")
+PATH_TO_PROJECT = os.path.join(".", "miru")
 SCRIPT_PATHS = [
     PATH_TO_PROJECT,
     "noxfile.py",
