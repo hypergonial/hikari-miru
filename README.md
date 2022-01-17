@@ -13,19 +13,19 @@ import miru
 
 class MyView(miru.View):
 
-    @miru.button(label="Rock", emoji="🪨", style=hikari.ButtonStyle.PRIMARY)
+    @miru.button(label="Rock", emoji=chr(129704), style=hikari.ButtonStyle.PRIMARY)
     async def rock_button(self, button: miru.Button, interaction: hikari.ComponentInteraction):
         await interaction.create_initial_response(hikari.ResponseType.MESSAGE_CREATE, content=f"Paper!")
 
-    @miru.button(label="Paper", emoji="📜", style=hikari.ButtonStyle.PRIMARY)
+    @miru.button(label="Paper", emoji=chr(128220), style=hikari.ButtonStyle.PRIMARY)
     async def paper_button(self, button: miru.Button, interaction: hikari.ComponentInteraction):
         await interaction.create_initial_response(hikari.ResponseType.MESSAGE_CREATE, content=f"Scissors!")
 
-    @miru.button(label="Scissors", emoji="✂️", style=hikari.ButtonStyle.PRIMARY)
+    @miru.button(label="Scissors", emoji=chr(9986), style=hikari.ButtonStyle.PRIMARY)
     async def scissors_button(self, button: miru.Button, interaction: hikari.ComponentInteraction):
         await interaction.create_initial_response(hikari.ResponseType.MESSAGE_CREATE, content=f"Rock!")
 
-    @miru.button(emoji="⏹️", style=hikari.ButtonStyle.DANGER, row=2)
+    @miru.button(emoji=chr(9209), style=hikari.ButtonStyle.DANGER, row=2)
     async def stop_button(self, button: miru.Button, interaction: hikari.ComponentInteraction):
         await interaction.create_initial_response(hikari.ResponseType.DEFERRED_MESSAGE_UPDATE)
         self.stop() # Stop listening for interactions
