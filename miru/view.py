@@ -36,9 +36,8 @@ from typing import Optional
 
 import hikari
 
-from .item import Item
-
 from .interaction import Interaction
+from .item import Item
 
 
 class _Weights:
@@ -82,7 +81,7 @@ class View:
     """
 
     persistent_views: List["View"] = []  # List of all currently active persistent views
-    _view_children: ClassVar[List["Item"]] = []
+    _view_children: ClassVar[List["Callable"]] = []  # Decorated callbacks that need to be turned into items
 
     def __init_subclass__(cls) -> None:
         """
@@ -101,14 +100,14 @@ class View:
 
     def __init__(
         self,
-        app: hikari.GatewayBotAware | hikari.EventManagerAware,
+        app: hikari.GatewayBot,
         *,
         timeout: Optional[float] = 120.0,
         autodefer: Optional[bool] = True,
     ) -> None:
         self._timeout: Optional[float] = float(timeout) if timeout else None
         self._children: List[Item] = []
-        self._app: hikari.GatewayBotAware | hikari.EventManagerAware = app
+        self._app: hikari.GatewayBot = app
         self._autodefer: Optional[bool] = autodefer
         self._message: Optional[hikari.Message] = None
 
@@ -125,8 +124,8 @@ class View:
         if len(self.children) > 25:
             raise ValueError("View cannot have more than 25 components attached.")
 
-        if not isinstance(self.app, hikari.GatewayBotAware | hikari.EventManagerAware):
-            raise TypeError("Expected instance of hikari.GatewayBotAware | hikari.EventManagerAware.")
+        if not isinstance(self.app, hikari.GatewayBot):
+            raise TypeError("Expected instance of hikari.GatewayBot.")
 
     @property
     def is_persistent(self) -> bool:
@@ -151,7 +150,7 @@ class View:
         return self._children
 
     @property
-    def app(self) -> hikari.GatewayBotAware | hikari.EventManagerAware:
+    def app(self) -> hikari.GatewayBot:
         """
         The application that instantiated the view.
         """

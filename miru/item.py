@@ -24,6 +24,7 @@ SOFTWARE.
 from __future__ import annotations
 
 import abc
+import os
 from abc import abstractmethod
 from typing import TYPE_CHECKING
 from typing import Optional
@@ -88,10 +89,10 @@ class Item(abc.ABC):
         return self._custom_id
 
     @custom_id.setter
-    def custom_id(self, value: Optional[str]):
+    def custom_id(self, value: Optional[str]) -> None:
         if value and not isinstance(value, str):
             raise TypeError("Expected type str for property custom_id.")
-        self._custom_id = value
+        self._custom_id = value if value else os.urandom(16).hex()
 
     @property
     @abstractmethod

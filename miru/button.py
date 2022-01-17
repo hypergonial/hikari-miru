@@ -124,7 +124,7 @@ class Button(Item):
         return self._emoji
 
     @emoji.setter
-    def emoji(self, value: Union[str, hikari.Emoji, None]):
+    def emoji(self, value: Union[str, hikari.Emoji, None]) -> None:
         if value and isinstance(value, str):
             value = hikari.Emoji.parse(value)
 
@@ -140,7 +140,7 @@ class Button(Item):
         return self._url
 
     @url.setter
-    def url(self, value: str):
+    def url(self, value: str) -> None:
         if not isinstance(value, str):
             raise TypeError("Expected type str for property url.")
         self._url = value

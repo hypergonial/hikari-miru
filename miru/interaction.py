@@ -46,7 +46,7 @@ class Interaction(hikari.ComponentInteraction):
         self._issued_response = True
 
     @functools.wraps(hikari.ComponentInteraction.execute)
-    async def send_message(self, *args, **kwargs):
+    async def send_message(self, *args, **kwargs) -> None:
         """
         Short-hand method to send a message response to the interaction
         """
@@ -55,7 +55,7 @@ class Interaction(hikari.ComponentInteraction):
         else:
             await self.create_initial_response(hikari.ResponseType.MESSAGE_CREATE, *args, **kwargs)
 
-    async def defer(self, flags: typing.Union[int, messages.MessageFlag] = None):
+    async def defer(self, flags: typing.Union[int, messages.MessageFlag, None] = None) -> None:
         """
         Short-hand method to defer an interaction response. Raises RuntimeError if the interaction was already responded to.
         """

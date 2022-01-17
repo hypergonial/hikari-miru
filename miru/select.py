@@ -93,6 +93,9 @@ class Select(Item):
         self._placeholder: Optional[str] = placeholder
         self._row: Optional[int] = row if row else None
 
+        if len(self._options) > 25:
+            raise ValueError("A select can have a maximum of 25 options.")
+
     @property
     def type(self) -> hikari.ComponentType:
         return hikari.ComponentType.SELECT_MENU
@@ -108,6 +111,25 @@ class Select(Item):
     def placeholder(self, value: Optional[str]) -> None:
         if value and not isinstance(value, str):
             raise TypeError("Expected type str for property placeholder.")
+
+    @property
+    def options(self) -> Sequence[Union[hikari.SelectMenuOption, SelectOption]]:
+        """
+        The select menu's options.
+        """
+        return self._options
+
+    @options.setter
+    def options(self, value: Sequence[Union[hikari.SelectMenuOption, SelectOption]]) -> None:
+        if not isinstance(value, Sequence[Union[hikari.SelectMenuOption, SelectOption]]):
+            raise TypeError(
+                "Expected type Sequence[Union[hikari.SelectMenuOption, SelectOption]] for property options."
+            )
+
+        if len(value) > 25:
+            raise ValueError("A select can have a maximum of 25 options.")
+
+        self._options = value
 
     @property
     def min_values(self) -> int:
