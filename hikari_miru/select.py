@@ -25,7 +25,6 @@ SOFTWARE.
 import inspect
 import os
 from typing import Callable
-from typing import Coroutine
 from typing import Optional
 from typing import Sequence
 from typing import Union
