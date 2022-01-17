@@ -24,10 +24,7 @@ SOFTWARE.
 
 import inspect
 import os
-from optparse import Option
-from typing import Any
 from typing import Callable
-from typing import Coroutine
 from typing import Optional
 from typing import Union
 
