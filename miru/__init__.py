@@ -27,4 +27,4 @@ from .item import *
 from .select import *
 from .view import *
 
-__version__ = "0.4.2"
+__version__ = "0.4.3"

@@ -45,12 +45,9 @@ class _Weights:
     Calculate the position of an item based on it's width, and keep track of item positions
     """
 
-    def __init__(self, children: List[Item]):
+    def __init__(self):
 
         self._weights = [0, 0, 0, 0, 0]
-
-        for item in children:
-            self.add_item(item)
 
     def add_item(self, item: Item) -> None:
         if item.row is not None:
@@ -111,7 +108,7 @@ class View:
         self._autodefer: Optional[bool] = autodefer
         self._message: Optional[hikari.Message] = None
 
-        self._weights = _Weights(self.children)
+        self._weights = _Weights()
         self._stopped: asyncio.Event = asyncio.Event()
         self._listener_task: Optional[asyncio.Task[None]] = None
 
