@@ -324,7 +324,7 @@ class View:
         try:
             await self.on_timeout()
         except Exception as error:
-            await self.on_timeout(error)
+            await self.on_error(error)
 
     async def wait(self) -> None:
         """
