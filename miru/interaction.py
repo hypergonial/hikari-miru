@@ -55,6 +55,16 @@ class Interaction(hikari.ComponentInteraction):
         else:
             await self.create_initial_response(hikari.ResponseType.MESSAGE_CREATE, *args, **kwargs)
 
+    @functools.wraps(hikari.ComponentInteraction.execute)
+    async def edit_message(self, *args, **kwargs) -> None:
+        """
+        Short-hand method for editing the message the component is attached to.
+        """
+        if self._issued_response:
+            raise RuntimeError("Interaction was already responded to.")
+
+        await self.create_initial_response(hikari.ResponseType.MESSAGE_UPDATE, *args, **kwargs)
+
     async def defer(self, flags: typing.Union[int, messages.MessageFlag, None] = None) -> None:
         """
         Short-hand method to defer an interaction response. Raises RuntimeError if the interaction was already responded to.
