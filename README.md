@@ -3,7 +3,7 @@ An optional component handler for [hikari](https://github.com/hikari-py/hikari),
 
 ## Installation
 ```sh
-pip install git+https://github.com/HyperGH/hikari-miru.git
+pip install -U hikari-miru
 ```
 ## Usage
 ```py
