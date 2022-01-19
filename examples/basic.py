@@ -1,6 +1,10 @@
 import hikari
 import miru
 
+# This is a basic example demonstrating how to create a simple component-based menu.
+# This example uses decorators to create the components, if you want to use variables
+# instead of static values for the component properties, check out the subclassed example.
+
 
 class BasicView(miru.View):
 

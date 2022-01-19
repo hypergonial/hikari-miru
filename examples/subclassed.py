@@ -1,6 +1,10 @@
 import hikari
 import miru
 
+# This example demonstrates an alternative syntax to creating and adding new components.
+# The benefits of this approach are more flexibility, reusability, and the ability to use
+# variables in your component properties. (E.g. set a select menu's options based on user input)
+
 
 class YesButton(miru.Button):
     def __init__(self) -> None:
@@ -18,8 +22,9 @@ class YesButton(miru.Button):
 
 
 class NoButton(miru.Button):
-    def __init__(self) -> None:
-        super().__init__(style=hikari.ButtonStyle.DANGER, label="No")
+    # Let's leave our arguments dynamic this time, instead of hard-coding them
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
 
     async def callback(self, interaction: miru.Interaction) -> None:
         await interaction.send_message("This is the only correct answer.", flags=hikari.MessageFlag.EPHEMERAL)
@@ -40,7 +45,7 @@ async def buttons(event: hikari.GuildMessageCreateEvent) -> None:
     if event.content.startswith("miru"):
         view = miru.View(bot)  # Create a new view
         view.add_item(YesButton())  # Add our custom buttons to it
-        view.add_item(NoButton())
+        view.add_item(NoButton(style=hikari.ButtonStyle.DANGER, label="No"))  # Pass arguments to NoButton
         message = await event.message.respond("Do you put pineapple on your pizza?", components=view.build())
 
         view.start(message)  # Start listening for interactions
