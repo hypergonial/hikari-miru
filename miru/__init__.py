@@ -23,6 +23,7 @@ SOFTWARE.
 """
 
 from .button import *
+from .interaction import *
 from .item import *
 from .select import *
 from .view import *
