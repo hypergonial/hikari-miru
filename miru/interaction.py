@@ -9,21 +9,22 @@ if typing.TYPE_CHECKING:
     from hikari import messages
 
 
+__all__ = ["Interaction"]
+
+
 class Interaction(hikari.ComponentInteraction):
     """
     Represents a component interaction on Discord. Has additional short-hand methods for ease-of-use.
     """
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._issued_response: bool = False
+    _issued_response: bool = False
 
     @classmethod
-    def from_hikari(self, interaction: hikari.ComponentInteraction) -> Interaction:
+    def from_hikari(cls, interaction: hikari.ComponentInteraction) -> Interaction:
         """
         Create a new Interaction object from a hikari.ComponentInteraction. This should be rarely used.
         """
-        return Interaction(
+        return cls(
             channel_id=interaction.channel_id,
             component_type=interaction.component_type,
             custom_id=interaction.custom_id,
@@ -41,12 +42,12 @@ class Interaction(hikari.ComponentInteraction):
         )
 
     @functools.wraps(hikari.ComponentInteraction.create_initial_response)
-    async def create_initial_response(self, *args, **kwargs) -> None:
+    async def create_initial_response(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         await super().create_initial_response(*args, **kwargs)
         self._issued_response = True
 
     @functools.wraps(hikari.ComponentInteraction.execute)
-    async def send_message(self, *args, **kwargs) -> None:
+    async def send_message(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """
         Short-hand method to send a message response to the interaction
         """
@@ -56,7 +57,7 @@ class Interaction(hikari.ComponentInteraction):
             await self.create_initial_response(hikari.ResponseType.MESSAGE_CREATE, *args, **kwargs)
 
     @functools.wraps(hikari.ComponentInteraction.execute)
-    async def edit_message(self, *args, **kwargs) -> None:
+    async def edit_message(self, *args: typing.Any, **kwargs: typing.Any) -> None:  # type: ignore
         """
         Short-hand method for editing the message the component is attached to.
         """

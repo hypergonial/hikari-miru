@@ -21,13 +21,18 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
 from __future__ import annotations
 
 import abc
-import os
 from abc import abstractmethod
+from functools import partial
 from typing import TYPE_CHECKING
+from typing import Any
+from typing import Callable
+from typing import Generic
 from typing import Optional
+from typing import TypeVar
 
 import hikari
 
@@ -36,14 +41,18 @@ from .interaction import Interaction
 if TYPE_CHECKING:
     from .view import View
 
+ViewT = TypeVar("ViewT", bound="View")
 
-class Item(abc.ABC):
+__all__ = ["Item", "DecoratedItem"]
+
+
+class Item(abc.ABC, Generic[ViewT]):
     """
     An abstract base class for view components. Cannot be directly instantiated.
     """
 
     def __init__(self) -> None:
-        self._view: Optional[View] = None
+        self._view: Optional[ViewT] = None
         self._row: Optional[int] = None
         self._width: int = 1
         self._rendered_row: Optional[int] = None  # Where it actually ends up when rendered by Discord
@@ -74,10 +83,13 @@ class Item(abc.ABC):
         return self._width
 
     @property
-    def view(self) -> Optional[View]:
+    def view(self) -> ViewT:
         """
-        The view this item is attached to, if any.
+        The view this item is attached to. Raises AttributeError if the item is not attached to a view.
         """
+        if not self._view:
+            raise AttributeError(f"{self.__class__.__name__} hasn't been attached to a view yet")
+
         return self._view
 
     @property
@@ -120,3 +132,23 @@ class Item(abc.ABC):
         Called on an item to refresh its internal data.
         """
         pass
+
+
+class DecoratedItem:
+    """A partial item made using a decorator"""
+
+    def __init__(self, item: Item[Any], callback: Callable[..., Any]) -> None:
+        self.item = item
+        self.callback = callback
+
+    def build(self, view: ViewT) -> Item[ViewT]:
+        self.item.callback = partial(self.callback, view, self.item)  # type: ignore[assignment]
+
+        return self.item
+
+    @property
+    def name(self) -> str:
+        return self.callback.__name__
+
+    def __call__(self, *args: Any, **kwargs: Any) -> Any:
+        return self.callback(*args, **kwargs)

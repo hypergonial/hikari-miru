@@ -26,16 +26,28 @@ from __future__ import annotations
 
 import inspect
 import os
+from typing import TYPE_CHECKING
+from typing import Any
 from typing import Callable
 from typing import Optional
+from typing import TypeVar
 from typing import Union
 
 import hikari
 
+from .item import DecoratedItem
 from .item import Item
 
+if TYPE_CHECKING:
+    from .view import View
 
-class Button(Item):
+ViewT = TypeVar("ViewT", bound="View")
+CallableT = TypeVar("CallableT", bound=Callable[..., Any])
+
+__all__ = ["Button", "button"]
+
+
+class Button(Item[ViewT]):
     """
     A view component representing a button.
     """
@@ -175,26 +187,26 @@ def button(
     style: hikari.ButtonStyle = hikari.ButtonStyle.PRIMARY,
     emoji: Optional[Union[str, hikari.Emoji]] = None,
     row: Optional[int] = None,
-    disabled: Optional[bool] = False,
-) -> Callable[[Callable], Callable]:
+    disabled: bool = False,
+) -> Callable[[CallableT], CallableT]:
     """
     A decorator to transform a function into a Discord UI Button's callback. This must be inside a subclass of View.
     """
 
-    def decorator(func: Callable) -> Callable:
+    def decorator(func: Callable[..., Any]) -> Any:
         if not inspect.iscoroutinefunction(func):
             raise TypeError("button must decorate coroutine function.")
 
-        func._view_item_type = Button
-        func._view_item_data = {
-            "label": label,
-            "custom_id": custom_id,
-            "style": style,
-            "emoji": emoji,
-            "row": row,
-            "disabled": disabled,
-            "url": None,
-        }
-        return func
+        item: Button[Any] = Button(
+            label=label,
+            custom_id=custom_id,
+            style=style,
+            emoji=emoji,
+            row=row,
+            disabled=disabled,
+            url=None,
+        )
+
+        return DecoratedItem(item, func)
 
     return decorator

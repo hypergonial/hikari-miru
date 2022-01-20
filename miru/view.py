@@ -21,35 +21,40 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-
 from __future__ import annotations
 
 import asyncio
 import itertools
 import sys
 import traceback
-from functools import partial
-from typing import Callable
+from typing import Any
 from typing import ClassVar
+from typing import Generic
 from typing import List
 from typing import Optional
+from typing import TypeVar
 
 import hikari
 
 from .interaction import Interaction
+from .item import DecoratedItem
 from .item import Item
 
+ViewT = TypeVar("ViewT", bound="View")
 
-class _Weights:
+__all__ = ["View"]
+
+
+class _Weights(Generic[ViewT]):
     """
     Calculate the position of an item based on it's width, and keep track of item positions
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
 
         self._weights = [0, 0, 0, 0, 0]
 
-    def add_item(self, item: Item) -> None:
+    def add_item(self, item: Item[ViewT]) -> None:
         if item.row is not None:
             if item.width + self._weights[item.row] > 5:
                 raise ValueError(f"Item does not fit on row {item.row}!")
@@ -63,7 +68,7 @@ class _Weights:
                     item._rendered_row = row + 1
                     break
 
-    def remove_item(self, item: Item) -> None:
+    def remove_item(self, item: Item[ViewT]) -> None:
         if item._row:
             self._weights[item._row] -= item.width
             item._rendered_row = None
@@ -77,18 +82,18 @@ class View:
     Represents a set of Discord UI components.
     """
 
-    persistent_views: List["View"] = []  # List of all currently active persistent views
-    _view_children: ClassVar[List["Callable"]] = []  # Decorated callbacks that need to be turned into items
+    persistent_views: List[View] = []  # List of all currently active persistent views
+    _view_children: ClassVar[List[DecoratedItem]] = []  # Decorated callbacks that need to be turned into items
 
     def __init_subclass__(cls) -> None:
         """
         Get decorated callbacks
         """
-        children: List[Callable] = []
+        children: List[DecoratedItem] = []
         for base_cls in reversed(cls.mro()):
-            for func in base_cls.__dict__.values():
-                if hasattr(func, "_view_item_type"):
-                    children.append(func)
+            for value in base_cls.__dict__.values():
+                if isinstance(value, DecoratedItem):
+                    children.append(value)
 
         if len(children) > 25:
             raise ValueError("View cannot have more than 25 components attached.")
@@ -100,23 +105,22 @@ class View:
         app: hikari.GatewayBot,
         *,
         timeout: Optional[float] = 120.0,
-        autodefer: Optional[bool] = True,
+        autodefer: bool = True,
     ) -> None:
         self._timeout: Optional[float] = float(timeout) if timeout else None
-        self._children: List[Item] = []
+        self._children: List[Item[Any]] = []
         self._app: hikari.GatewayBot = app
-        self._autodefer: Optional[bool] = autodefer
+        self._autodefer: bool = autodefer
         self._message: Optional[hikari.Message] = None
 
-        self._weights = _Weights()
+        self._weights: _Weights[View] = _Weights()
         self._stopped: asyncio.Event = asyncio.Event()
         self._listener_task: Optional[asyncio.Task[None]] = None
 
-        for callable in self._view_children:  # Sort and instantiate decorated callbacks
-            item = callable._view_item_type(**callable._view_item_data)
-            item.callback = partial(callable, self, item)
+        for decorated_item in self._view_children:  # Sort and instantiate decorated callbacks
+            item = decorated_item.build(self)
             self.add_item(item)
-            setattr(self, callable.__name__, item)
+            setattr(self, decorated_item.name, item)
 
         if len(self.children) > 25:
             raise ValueError("View cannot have more than 25 components attached.")
@@ -140,7 +144,7 @@ class View:
         return self._timeout
 
     @property
-    def children(self) -> List[Item]:
+    def children(self: ViewT) -> List[Item[ViewT]]:
         """
         A list of all items attached to the view.
         """
@@ -167,7 +171,7 @@ class View:
         """
         return self._message
 
-    def add_item(self, item: Item) -> None:
+    def add_item(self, item: Item[Any]) -> None:
         """Adds a new item to the view."""
 
         if len(self.children) > 25:
@@ -181,7 +185,7 @@ class View:
         item._view = self
         self.children.append(item)
 
-    def remove_item(self, item: Item) -> None:
+    def remove_item(self, item: Item[Any]) -> None:
         """Removes the specified item from the view."""
         try:
             self.children.remove(item)
@@ -224,7 +228,10 @@ class View:
         return True
 
     async def on_error(
-        self, error: Exception, item: Optional[Item] = None, interaction: Optional[Interaction] = None
+        self: ViewT,
+        error: Exception,
+        item: Optional[Item[ViewT]] = None,
+        interaction: Optional[Interaction] = None,
     ) -> None:
         """
         Called when an error occurs in a callback function or the built-in timeout function.
@@ -246,7 +253,7 @@ class View:
         if self.is_persistent:
             View.persistent_views.remove(self)
 
-    async def _handle_callback(self, item: Item, interaction: Interaction) -> None:
+    async def _handle_callback(self: ViewT, item: Item[ViewT], interaction: Interaction) -> None:
         """
         Handle the callback of a view item. Seperate task in case the view is stopped in the callback.
         """

@@ -25,14 +25,26 @@ from __future__ import annotations
 
 import inspect
 import os
+from typing import TYPE_CHECKING
+from typing import Any
 from typing import Callable
 from typing import Optional
 from typing import Sequence
+from typing import TypeVar
 from typing import Union
 
 import hikari
 
+from .item import DecoratedItem
 from .item import Item
+
+if TYPE_CHECKING:
+    from .view import View
+
+ViewT = TypeVar("ViewT", bound="View")
+CallableT = TypeVar("CallableT", bound=Callable[..., Any])
+
+__all__ = ["SelectOption", "Select", "select"]
 
 
 class SelectOption:
@@ -66,7 +78,7 @@ class SelectOption:
         )
 
 
-class Select(Item):
+class Select(Item[ViewT]):
     """
     A view component representing a select menu.
     """
@@ -121,7 +133,7 @@ class Select(Item):
 
     @options.setter
     def options(self, value: Sequence[Union[hikari.SelectMenuOption, SelectOption]]) -> None:
-        if not isinstance(value, Sequence[Union[hikari.SelectMenuOption, SelectOption]]):
+        if not isinstance(value, Sequence) or not isinstance(value[0], (hikari.SelectMenuOption, SelectOption)):
             raise TypeError(
                 "Expected type Sequence[Union[hikari.SelectMenuOption, SelectOption]] for property options."
             )
@@ -174,6 +186,7 @@ class Select(Item):
         """
         Called internally to build and append to an action row
         """
+        assert self.custom_id is not None
         select = action_row.add_select_menu(self.custom_id)
         if self.placeholder:
             select.set_placeholder(self.placeholder)
@@ -214,25 +227,24 @@ def select(
     max_values: int = 1,
     disabled: bool = False,
     row: Optional[int] = None,
-) -> Callable[[Callable], Callable]:
+) -> Callable[[CallableT], CallableT]:
     """
     A decorator to transform a function into a Discord UI SelectMenu's callback. This must be inside a subclass of View.
     """
 
-    def decorator(func: Callable) -> Callable:
+    def decorator(func: Callable[..., Any]) -> Any:
         if not inspect.iscoroutinefunction(func):
             raise TypeError("select must decorate coroutine function.")
 
-        func._view_item_type = Select
-        func._view_item_data = {
-            "options": options,
-            "custom_id": custom_id,
-            "placeholder": placeholder,
-            "min_values": min_values,
-            "max_values": max_values,
-            "disabled": disabled,
-            "row": row,
-        }
-        return func
+        item: Select[Any] = Select(
+            options=options,
+            custom_id=custom_id,
+            placeholder=placeholder,
+            min_values=min_values,
+            max_values=max_values,
+            disabled=disabled,
+            row=row,
+        )
+        return DecoratedItem(item, func)
 
     return decorator
