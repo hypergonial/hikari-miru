@@ -29,6 +29,7 @@ import sys
 import traceback
 from typing import Any
 from typing import ClassVar
+from typing import Generic
 from typing import List
 from typing import Optional
 from typing import TypeVar
@@ -44,7 +45,7 @@ ViewT = TypeVar("ViewT", bound="View")
 __all__ = ["View"]
 
 
-class _Weights:
+class _Weights(Generic[ViewT]):
     """
     Calculate the position of an item based on it's width, and keep track of item positions
     """
@@ -53,7 +54,7 @@ class _Weights:
 
         self._weights = [0, 0, 0, 0, 0]
 
-    def add_item(self, item: Item[Any]) -> None:
+    def add_item(self, item: Item[ViewT]) -> None:
         if item.row is not None:
             if item.width + self._weights[item.row] > 5:
                 raise ValueError(f"Item does not fit on row {item.row}!")
@@ -67,7 +68,7 @@ class _Weights:
                     item._rendered_row = row + 1
                     break
 
-    def remove_item(self, item: Item[Any]) -> None:
+    def remove_item(self, item: Item[ViewT]) -> None:
         if item._row:
             self._weights[item._row] -= item.width
             item._rendered_row = None
@@ -81,7 +82,7 @@ class View:
     Represents a set of Discord UI components.
     """
 
-    persistent_views: List["View"] = []  # List of all currently active persistent views
+    persistent_views: List[View] = []  # List of all currently active persistent views
     _view_children: ClassVar[List[DecoratedItem]] = []  # Decorated callbacks that need to be turned into items
 
     def __init_subclass__(cls) -> None:
@@ -104,15 +105,15 @@ class View:
         app: hikari.GatewayBot,
         *,
         timeout: Optional[float] = 120.0,
-        autodefer: Optional[bool] = True,
+        autodefer: bool = True,
     ) -> None:
         self._timeout: Optional[float] = float(timeout) if timeout else None
         self._children: List[Item[Any]] = []
         self._app: hikari.GatewayBot = app
-        self._autodefer: Optional[bool] = autodefer
+        self._autodefer: bool = autodefer
         self._message: Optional[hikari.Message] = None
 
-        self._weights = _Weights()
+        self._weights: _Weights[View] = _Weights()
         self._stopped: asyncio.Event = asyncio.Event()
         self._listener_task: Optional[asyncio.Task[None]] = None
 
