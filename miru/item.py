@@ -85,7 +85,7 @@ class Item(abc.ABC, Generic[ViewT]):
     @property
     def view(self) -> ViewT:
         """
-        The view this item is attached to, if any.
+        The view this item is attached to. Raises AttributeError if the item is not attached to a view.
         """
         if not self._view:
             raise AttributeError(f"{self.__class__.__name__} hasn't been attached to a view yet")
