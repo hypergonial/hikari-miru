@@ -120,7 +120,7 @@ class View:
         for decorated_item in self._view_children:  # Sort and instantiate decorated callbacks
             item = decorated_item.build(self)
             self.add_item(item)
-            setattr(self, callable.__name__, item)
+            setattr(self, decorated_item.name, item)
 
         if len(self.children) > 25:
             raise ValueError("View cannot have more than 25 components attached.")

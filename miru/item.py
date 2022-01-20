@@ -146,5 +146,9 @@ class DecoratedItem:
 
         return self.item
 
+    @property
+    def name(self) -> str:
+        return self.callback.__name__
+
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
         return self.callback(*args, **kwargs)
