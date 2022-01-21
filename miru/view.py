@@ -24,6 +24,7 @@ SOFTWARE.
 from __future__ import annotations
 
 import asyncio
+import copy
 import itertools
 import sys
 import traceback
@@ -118,9 +119,12 @@ class View:
         self._listener_task: Optional[asyncio.Task[None]] = None
 
         for decorated_item in self._view_children:  # Sort and instantiate decorated callbacks
+            # Must deepcopy, otherwise multiple views will have the same item reference
+            decorated_item = copy.deepcopy(decorated_item)
             item = decorated_item.build(self)
             self.add_item(item)
             setattr(self, decorated_item.name, item)
+        self._view_children = []
 
         if len(self.children) > 25:
             raise ValueError("View cannot have more than 25 components attached.")
