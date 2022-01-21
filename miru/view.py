@@ -124,7 +124,6 @@ class View:
             item = decorated_item.build(self)
             self.add_item(item)
             setattr(self, decorated_item.name, item)
-        self._view_children = []
 
         if len(self.children) > 25:
             raise ValueError("View cannot have more than 25 components attached.")
