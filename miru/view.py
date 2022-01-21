@@ -319,16 +319,15 @@ class View:
         """
         Handle the timing out of the view.
         """
-
-        if self._listener_task is not None:
-            self._listener_task.cancel()
-
         self._stopped.set()
 
         try:
             await self.on_timeout()
         except Exception as error:
             await self.on_error(error)
+
+        if self._listener_task is not None:
+            self._listener_task.cancel()
 
         self._listener_task = None
 
