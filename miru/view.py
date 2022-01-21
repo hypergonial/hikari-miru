@@ -252,6 +252,7 @@ class View:
         self._stopped.set()
         if self.is_persistent:
             View.persistent_views.remove(self)
+        self._listener_task = None
 
     async def _handle_callback(self: ViewT, item: Item[ViewT], interaction: Interaction) -> None:
         """
@@ -322,13 +323,14 @@ class View:
         if self._listener_task is not None:
             self._listener_task.cancel()
 
-        self._listener_task = None
         self._stopped.set()
 
         try:
             await self.on_timeout()
         except Exception as error:
             await self.on_error(error)
+
+        self._listener_task = None
 
     async def wait(self) -> None:
         """
