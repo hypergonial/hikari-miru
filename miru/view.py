@@ -70,8 +70,8 @@ class _Weights(Generic[ViewT]):
                     break
 
     def remove_item(self, item: Item[ViewT]) -> None:
-        if item._row:
-            self._weights[item._row] -= item.width
+        if item._rendered_row:
+            self._weights[item._rendered_row] -= item.width
             item._rendered_row = None
 
     def clear(self) -> None:
