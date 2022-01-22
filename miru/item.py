@@ -69,7 +69,6 @@ class Item(abc.ABC, Generic[ViewT]):
 
     @row.setter
     def row(self, value: Optional[int]) -> None:
-        print(self._rendered_row)
         if self._rendered_row is not None:
             raise RuntimeError("Item is already attached to a view, row cannot be changed.")
 
