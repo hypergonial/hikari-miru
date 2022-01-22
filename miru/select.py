@@ -169,19 +169,6 @@ class Select(Item[ViewT]):
             raise TypeError("Expected type int for property max_values.")
         self._max_values = value
 
-    @property
-    def disabled(self) -> bool:
-        """
-        Boolean indicating if the select menu should be disabled or not.
-        """
-        return self._disabled
-
-    @disabled.setter
-    def disabled(self, value: bool) -> None:
-        if not isinstance(value, bool):
-            raise TypeError("Expected type bool for property disabled.")
-        self._disabled = value
-
     def _build(self, action_row: hikari.api.ActionRowBuilder) -> None:
         """
         Called internally to build and append to an action row

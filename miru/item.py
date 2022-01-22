@@ -58,6 +58,7 @@ class Item(abc.ABC, Generic[ViewT]):
         self._rendered_row: Optional[int] = None  # Where it actually ends up when rendered by Discord
         self._custom_id: Optional[str] = None
         self._persistent: bool = False
+        self._disabled: bool = False
 
     @property
     def row(self) -> Optional[int]:
@@ -105,6 +106,19 @@ class Item(abc.ABC, Generic[ViewT]):
         if value and not isinstance(value, str):
             raise TypeError("Expected type str for property custom_id.")
         self._custom_id = value
+
+    @property
+    def disabled(self) -> bool:
+        """
+        Indicates whether the item is disabled or not.
+        """
+        return self._disabled
+
+    @disabled.setter
+    def disabled(self, value: bool) -> None:
+        if not isinstance(value, bool):
+            raise TypeError("Expected type bool for property disabled.")
+        self._disabled = value
 
     @property
     @abstractmethod

@@ -105,19 +105,6 @@ class Button(Item[ViewT]):
         self._style = value
 
     @property
-    def disabled(self) -> bool:
-        """
-        Boolean indicating if the button should be disabled or not.
-        """
-        return self._disabled
-
-    @disabled.setter
-    def disabled(self, value: bool) -> None:
-        if not isinstance(value, bool):
-            raise TypeError("Expected type bool for property disabled.")
-        self._disabled = value
-
-    @property
     def label(self) -> Optional[str]:
         """
         The button's label. This is the text visible on the button.
