@@ -53,6 +53,6 @@ def format(session):
 
 @nox.session()
 def mypy(session):
-    session.install("-Ur", "requirements.txt")
+    session.install("hikari")
     session.install("-U", "mypy")
     session.run("python", "-m", "mypy", PATH_TO_PROJECT)
