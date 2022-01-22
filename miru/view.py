@@ -70,7 +70,7 @@ class _Weights(Generic[ViewT]):
                     break
 
     def remove_item(self, item: Item[ViewT]) -> None:
-        if item._rendered_row:
+        if item._rendered_row is not None:
             self._weights[item._rendered_row] -= item.width
             item._rendered_row = None
 
@@ -182,6 +182,12 @@ class View:
 
         if not isinstance(item, Item):
             raise TypeError("Expected Item.")
+        
+        if item in self.children:
+            raise RuntimeError("Item is already attached to this view.")
+        
+        if item._view is not None:
+            raise RuntimeError("Item is already attached to a view.")
 
         self._weights.add_item(item)
 
@@ -196,9 +202,14 @@ class View:
             pass
         else:
             self._weights.remove_item(item)
+            item._view = None
 
     def clear_items(self) -> None:
         """Removes all items from this view."""
+        for item in self.children:
+            item._view = None
+            item._rendered_row = None
+        
         self.children.clear()
         self._weights.clear()
 
