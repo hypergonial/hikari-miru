@@ -182,10 +182,10 @@ class View:
 
         if not isinstance(item, Item):
             raise TypeError("Expected Item.")
-        
+
         if item in self.children:
             raise RuntimeError("Item is already attached to this view.")
-        
+
         if item._view is not None:
             raise RuntimeError("Item is already attached to a view.")
 
@@ -209,7 +209,7 @@ class View:
         for item in self.children:
             item._view = None
             item._rendered_row = None
-        
+
         self.children.clear()
         self._weights.clear()
 
