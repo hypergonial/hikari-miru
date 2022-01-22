@@ -101,7 +101,7 @@ class Button(Item[ViewT]):
     @style.setter
     def style(self, value: Union[hikari.ButtonStyle, int]) -> None:
         if not isinstance(value, (hikari.ButtonStyle, int)):
-            raise TypeError("Expected type hikari.ButtonStyle for property style.")
+            raise TypeError("Expected type hikari.ButtonStyle or int for property style.")
         self._style = value
 
     @property
