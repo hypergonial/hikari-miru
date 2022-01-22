@@ -76,7 +76,7 @@ class Button(Item[ViewT]):
         self._disabled: bool = disabled
         self._emoji: Union[str, hikari.Emoji, None] = emoji
         self._custom_id: Optional[str] = custom_id
-        self._row: Optional[int] = int(row) if row else None
+        self._row: Optional[int] = int(row) if row is not None else None
         self._url: Optional[str] = url
 
         self._persistent: bool = True if custom_id else False
@@ -196,7 +196,6 @@ def button(
     def decorator(func: Callable[..., Any]) -> Any:
         if not inspect.iscoroutinefunction(func):
             raise TypeError("button must decorate coroutine function.")
-
         item: Button[Any] = Button(
             label=label,
             custom_id=custom_id,

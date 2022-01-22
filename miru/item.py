@@ -73,7 +73,7 @@ class Item(abc.ABC, Generic[ViewT]):
         elif 5 > value >= 0:
             self._row = value
         else:
-            raise ValueError("Row must be between 0 and 5.")
+            raise ValueError("Row must be between 0 and 4.")
 
     @property
     def width(self) -> int:

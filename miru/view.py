@@ -66,7 +66,7 @@ class _Weights(Generic[ViewT]):
             for row, weight in enumerate(self._weights):
                 if weight + item.width <= 5:
                     self._weights[row] += item.width
-                    item._rendered_row = row + 1
+                    item._rendered_row = row
                     break
 
     def remove_item(self, item: Item[ViewT]) -> None:
@@ -207,7 +207,7 @@ class View:
         if len(self.children) == 0:
             raise ValueError("Empty views cannot be built.")
 
-        self.children.sort(key=lambda i: i._rendered_row or sys.maxsize)
+        self.children.sort(key=lambda i: i._rendered_row if i._rendered_row is not None else sys.maxsize)
 
         action_rows = []
 

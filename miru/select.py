@@ -103,7 +103,7 @@ class Select(Item[ViewT]):
         self._min_values: int = min_values
         self._max_values: int = max_values
         self._placeholder: Optional[str] = placeholder
-        self._row: Optional[int] = row if row else None
+        self._row: Optional[int] = row if row is not None else None
 
         if len(self._options) > 25:
             raise ValueError("A select can have a maximum of 25 options.")
