@@ -55,7 +55,7 @@ class Button(Item[ViewT]):
     def __init__(
         self,
         *,
-        style: hikari.ButtonStyle = hikari.ButtonStyle.PRIMARY,
+        style: Union[hikari.ButtonStyle, int] = hikari.ButtonStyle.PRIMARY,
         label: Optional[str] = None,
         disabled: bool = False,
         custom_id: Optional[str] = None,
@@ -71,7 +71,7 @@ class Button(Item[ViewT]):
         if custom_id and url:
             raise TypeError("Cannot provide both url and custom_id")
 
-        self._style: hikari.ButtonStyle = style
+        self._style: Union[hikari.ButtonStyle, int] = style
         self._label: Optional[str] = label
         self._disabled: bool = disabled
         self._emoji: Union[str, hikari.Emoji, None] = emoji
@@ -92,15 +92,15 @@ class Button(Item[ViewT]):
         return hikari.ComponentType.BUTTON
 
     @property
-    def style(self) -> hikari.ButtonStyle:
+    def style(self) -> Union[hikari.ButtonStyle, int]:
         """
         The button's style.
         """
         return self._style
 
     @style.setter
-    def style(self, value: hikari.ButtonStyle) -> None:
-        if not isinstance(value, hikari.ButtonStyle):
+    def style(self, value: Union[hikari.ButtonStyle, int]) -> None:
+        if not isinstance(value, (hikari.ButtonStyle, int)):
             raise TypeError("Expected type hikari.ButtonStyle for property style.")
         self._style = value
 
@@ -170,7 +170,7 @@ class Button(Item[ViewT]):
             button = action_row.add_button(hikari.ButtonStyle.LINK, self.url)
         else:
             assert self.custom_id is not None
-            button = action_row.add_button(self.style, self.custom_id)
+            button = action_row.add_button(self.style, self.custom_id)  # type: ignore
 
         if self.label:
             button.set_label(self.label)
