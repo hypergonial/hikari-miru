@@ -93,17 +93,20 @@ class NavigatorView(View):
         else:
             raise TypeError("Expected type int for property current_page.")
 
+
     async def on_timeout(self) -> None:
         if self.message is not None:
             for button in self.children:
                 button.disabled = True
             await self.message.edit(components=self.build())
 
+
     def get_default_buttons(self) -> List[NavButton[NavigatorViewT]]:
         """
         Returns the default set of buttons.
         """
         return [FirstButton(), PrevButton(), IndicatorButton(), NextButton(), LastButton()]
+
 
     def add_item(self, item: Item[NavigatorViewT]) -> None:
         """
@@ -113,6 +116,7 @@ class NavigatorView(View):
             raise TypeError("Expected type NavButton for parameter item.")
 
         return super().add_item(item)
+
 
     async def send_page(self, page_index: int, interaction: Interaction) -> None:
         """
@@ -131,12 +135,14 @@ class NavigatorView(View):
         else:
             raise TypeError("Expected type str or hikari.Embed to send as page.")
 
+
     def start(self, message: hikari.Message) -> None:
         """
         Start up the navigator listener. This should not be called directly, use send() instead.
         """
 
         super().start(message)
+
 
     async def send(
         self,
