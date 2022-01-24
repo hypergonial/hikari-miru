@@ -193,7 +193,8 @@ class IndicatorButton(NavButton[NavigatorViewT]):
         emoji: Union[hikari.Emoji, str, None] = None,
         row: Optional[int] = None,
     ):
-        super().__init__(style=style, label=None, custom_id=custom_id, emoji=emoji, row=row, disabled=True)
+        # Either label or emoji is required, so we pass a placeholder
+        super().__init__(style=style, label="0/0", custom_id=custom_id, emoji=emoji, row=row, disabled=True)
 
     async def before_page_change(self) -> None:
         self.label = f"{self.view.current_page+1}/{len(self.view.pages)}"

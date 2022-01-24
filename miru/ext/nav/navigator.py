@@ -28,6 +28,7 @@ from typing import TypeVar
 from typing import Union
 
 import hikari
+from hikari.undefined import UNDEFINED
 
 from ... import Interaction
 from ... import Item
@@ -83,13 +84,15 @@ class NavigatorView(View):
 
     @current_page.setter
     def current_page(self, value: int) -> None:
+        print(value)
         if isinstance(value, int):
-            if value > 0 and value < len(self.pages) - 1:
-                self._current_page = value
-            elif value > len(self.pages):
-                self._current_page = len(self.pages) - 1
-            else:
-                self._current_page = 0
+            self._current_page = value
+            #if value >= 0 and value < len(self.pages) - 1:
+            #    self._current_page = value
+            #elif value > len(self.pages) - 1:
+            #    self._current_page = len(self.pages) - 1
+            #else:
+            #    self._current_page = 0
         else:
             raise TypeError("Expected type int for property current_page.")
 
@@ -129,9 +132,9 @@ class NavigatorView(View):
                 await button.before_page_change()
 
         if isinstance(page, str):
-            await interaction.edit_message(page, components=self.build())
+            await interaction.edit_message(page, embeds=[], components=self.build())
         elif isinstance(page, hikari.Embed):
-            await interaction.edit_message(embed=page, components=self.build())
+            await interaction.edit_message(content="", embed=page, components=self.build())
         else:
             raise TypeError("Expected type str or hikari.Embed to send as page.")
 

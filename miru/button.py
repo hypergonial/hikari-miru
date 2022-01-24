@@ -65,12 +65,6 @@ class Button(Item[ViewT]):
     ) -> None:
         super().__init__()
 
-        if emoji is None and label is None:
-            raise TypeError("Must provide at least one of emoji or label")
-
-        if custom_id and url:
-            raise TypeError("Cannot provide both url and custom_id")
-
         self._style: Union[hikari.ButtonStyle, int] = style
         self._label: Optional[str] = label
         self._disabled: bool = disabled
@@ -80,6 +74,12 @@ class Button(Item[ViewT]):
         self._url: Optional[str] = url
 
         self._persistent: bool = True if custom_id else False
+
+        if self._emoji is None and self._label is None:
+            raise TypeError("Must provide at least one of emoji or label")
+
+        if self._custom_id and self._url:
+            raise TypeError("Cannot provide both url and custom_id")
 
         if self.url is None and self.custom_id is None:
             self.custom_id = os.urandom(16).hex()
