@@ -36,10 +36,9 @@ from .buttons import FirstButton
 from .buttons import IndicatorButton
 from .buttons import LastButton
 from .buttons import NavButton
+from .buttons import NavigatorViewT
 from .buttons import NextButton
 from .buttons import PrevButton
-
-NavigatorViewT = TypeVar("NavigatorViewT", bound="NavigatorView")
 
 
 class NavigatorView(View):
@@ -48,9 +47,9 @@ class NavigatorView(View):
         app: hikari.GatewayBot,
         *,
         pages: List[Union[str, hikari.Embed]],
-        buttons: Optional[List[NavButton]] = None,
+        buttons: Optional[List[NavButton[NavigatorViewT]]] = None,
         timeout: Optional[float] = 120.0,
-        autodefer: bool = False,
+        autodefer: bool = True,
     ) -> None:
         self._pages: List[Union[str, hikari.Embed]] = pages
         self._current_page: int = 0
@@ -60,7 +59,8 @@ class NavigatorView(View):
             for button in buttons:
                 self.add_item(button)
         else:
-            for button in self.get_default_buttons():
+            default_buttons: List[NavButton[NavigatorViewT]] = self.get_default_buttons()
+            for button in default_buttons:
                 self.add_item(button)
 
         for page in pages:
@@ -99,7 +99,7 @@ class NavigatorView(View):
                 button.disabled = True
             await self.message.edit(components=self.build())
 
-    def get_default_buttons(self) -> List[NavButton]:
+    def get_default_buttons(self) -> List[NavButton[NavigatorViewT]]:
         """
         Returns the default set of buttons.
         """

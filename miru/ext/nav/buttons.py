@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from typing import TYPE_CHECKING
 from typing import Optional
 from typing import TypeVar
 from typing import Union
@@ -30,15 +31,16 @@ import hikari
 
 from ... import Button
 from ... import Interaction
-from ... import View
-from .navigator import NavigatorView
 
-ViewT = TypeVar("ViewT", bound="View")
+if TYPE_CHECKING:
+    from .navigator import NavigatorView
+
+NavigatorViewT = TypeVar("NavigatorViewT", bound="NavigatorView")
 
 
-class NavButton(Button[NavigatorView]):
+class NavButton(Button[NavigatorViewT]):
     """
-    A baseclass for all navigation buttons. NavigatorView requires instances of this class as it's items.
+    A baseclass for all navigation buttons. NavigatorViewT requires instances of this class as it's items.
     """
 
     def __init__(
@@ -70,7 +72,7 @@ class NavButton(Button[NavigatorView]):
         pass
 
 
-class NextButton(NavButton):
+class NextButton(NavButton[NavigatorViewT]):
     """
     A built-in NavButton to jump to the next page.
     """
@@ -87,23 +89,17 @@ class NextButton(NavButton):
         super().__init__(style=style, label=label, custom_id=custom_id, emoji=emoji, row=row)
 
     async def callback(self, interaction: Interaction) -> None:
-        if not isinstance(self.view, NavigatorView):
-            raise TypeError(f"Expected to be attached to instance of NavigatorView, not {self.view.__class__.__name__}")
-
         self.view.current_page += 1
         await self.view.send_page(self.view.current_page, interaction)
 
     async def before_page_change(self) -> None:
-        if not isinstance(self.view, NavigatorView):
-            raise TypeError(f"Expected to be attached to instance of NavigatorView, not {self.view.__class__.__name__}")
-
         if self.view.current_page == len(self.view.pages) - 1:
             self.disabled = True
         else:
             self.disabled = False
 
 
-class PrevButton(NavButton):
+class PrevButton(NavButton[NavigatorViewT]):
     """
     A built-in NavButton to jump to previous page.
     """
@@ -120,23 +116,17 @@ class PrevButton(NavButton):
         super().__init__(style=style, label=label, custom_id=custom_id, emoji=emoji, row=row)
 
     async def callback(self, interaction: Interaction) -> None:
-        if not isinstance(self.view, NavigatorView):
-            raise TypeError(f"Expected to be attached to instance of NavigatorView, not {self.view.__class__.__name__}")
-
         self.view.current_page -= 1
         await self.view.send_page(self.view.current_page, interaction)
 
     async def before_page_change(self) -> None:
-        if not isinstance(self.view, NavigatorView):
-            raise TypeError(f"Expected to be attached to instance of NavigatorView, not {self.view.__class__.__name__}")
-
         if self.view.current_page == 0:
             self.disabled = True
         else:
             self.disabled = False
 
 
-class FirstButton(NavButton):
+class FirstButton(NavButton[NavigatorViewT]):
     """
     A built-in NavButton to jump to first page.
     """
@@ -153,23 +143,17 @@ class FirstButton(NavButton):
         super().__init__(style=style, label=label, custom_id=custom_id, emoji=emoji, row=row)
 
     async def callback(self, interaction: Interaction) -> None:
-        if not isinstance(self.view, NavigatorView):
-            raise TypeError(f"Expected to be attached to instance of NavigatorView, not {self.view.__class__.__name__}")
-
         self.view.current_page = 0
         await self.view.send_page(self.view.current_page, interaction)
 
     async def before_page_change(self) -> None:
-        if not isinstance(self.view, NavigatorView):
-            raise TypeError(f"Expected to be attached to instance of NavigatorView, not {self.view.__class__.__name__}")
-
         if self.view.current_page == 0:
             self.disabled = True
         else:
             self.disabled = False
 
 
-class LastButton(NavButton):
+class LastButton(NavButton[NavigatorViewT]):
     """
     A built-in NavButton to jump to the last page.
     """
@@ -186,23 +170,17 @@ class LastButton(NavButton):
         super().__init__(style=style, label=label, custom_id=custom_id, emoji=emoji, row=row)
 
     async def callback(self, interaction: Interaction) -> None:
-        if not isinstance(self.view, NavigatorView):
-            raise TypeError(f"Expected to be attached to instance of NavigatorView, not {self.view.__class__.__name__}")
-
         self.view.current_page = len(self.view.pages) - 1
         await self.view.send_page(self.view.current_page, interaction)
 
     async def before_page_change(self) -> None:
-        if not isinstance(self.view, NavigatorView):
-            raise TypeError(f"Expected to be attached to instance of NavigatorView, not {self.view.__class__.__name__}")
-
         if self.view.current_page == len(self.view.pages) - 1:
             self.disabled = True
         else:
             self.disabled = False
 
 
-class IndicatorButton(NavButton):
+class IndicatorButton(NavButton[NavigatorViewT]):
     """
     A built-in NavButton to show the current page's number.
     """
@@ -218,12 +196,10 @@ class IndicatorButton(NavButton):
         super().__init__(style=style, label=None, custom_id=custom_id, emoji=emoji, row=row, disabled=True)
 
     async def before_page_change(self) -> None:
-        if not isinstance(self.view, NavigatorView):
-            raise TypeError(f"Expected to be attached to instance of NavigatorView, not {self.view.__class__.__name__}")
         self.label = f"{self.view.current_page+1}/{len(self.view.pages)}"
 
 
-class StopButton(NavButton):
+class StopButton(NavButton[NavigatorViewT]):
     """
     A built-in NavButton to stop the navigator and disable all buttons.
     """
