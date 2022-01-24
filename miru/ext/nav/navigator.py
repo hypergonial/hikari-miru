@@ -84,15 +84,14 @@ class NavigatorView(View):
 
     @current_page.setter
     def current_page(self, value: int) -> None:
-        print(value)
         if isinstance(value, int):
-            self._current_page = value
-            #if value >= 0 and value < len(self.pages) - 1:
-            #    self._current_page = value
-            #elif value > len(self.pages) - 1:
-            #    self._current_page = len(self.pages) - 1
-            #else:
-            #    self._current_page = 0
+            # Ensure this value is always correct
+            if value >= 0 and value <= len(self.pages) - 1:
+                self._current_page = value
+            elif value > len(self.pages) - 1:
+                self._current_page = len(self.pages) - 1
+            else:
+                self._current_page = 0
         else:
             raise TypeError("Expected type int for property current_page.")
 
