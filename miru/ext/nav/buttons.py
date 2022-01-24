@@ -91,9 +91,7 @@ class NextButton(NavButton):
             raise TypeError(f"Expected to be attached to instance of NavigatorView, not {self.view.__class__.__name__}")
 
         self.view.current_page += 1
-        page = self.view.pages[self.view.current_page]
-
-        await self.view.send_page(page, interaction)
+        await self.view.send_page(self.view.current_page, interaction)
 
     async def before_page_change(self) -> None:
         if not isinstance(self.view, NavigatorView):
@@ -126,9 +124,7 @@ class PrevButton(NavButton):
             raise TypeError(f"Expected to be attached to instance of NavigatorView, not {self.view.__class__.__name__}")
 
         self.view.current_page -= 1
-        page = self.view.pages[self.view.current_page]
-
-        await self.view.send_page(page, interaction)
+        await self.view.send_page(self.view.current_page, interaction)
 
     async def before_page_change(self) -> None:
         if not isinstance(self.view, NavigatorView):
@@ -161,9 +157,7 @@ class FirstButton(NavButton):
             raise TypeError(f"Expected to be attached to instance of NavigatorView, not {self.view.__class__.__name__}")
 
         self.view.current_page = 0
-        page = self.view.pages[self.view.current_page]
-
-        await self.view.send_page(page, interaction)
+        await self.view.send_page(self.view.current_page, interaction)
 
     async def before_page_change(self) -> None:
         if not isinstance(self.view, NavigatorView):
@@ -196,9 +190,7 @@ class LastButton(NavButton):
             raise TypeError(f"Expected to be attached to instance of NavigatorView, not {self.view.__class__.__name__}")
 
         self.view.current_page = len(self.view.pages) - 1
-        page = self.view.pages[self.view.current_page]
-
-        await self.view.send_page(page, interaction)
+        await self.view.send_page(self.view.current_page, interaction)
 
     async def before_page_change(self) -> None:
         if not isinstance(self.view, NavigatorView):

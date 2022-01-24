@@ -114,10 +114,12 @@ class NavigatorView(View):
 
         return super().add_item(item)
 
-    async def send_page(self, page: Union[str, hikari.Embed], interaction: Interaction) -> None:
+    async def send_page(self, page_index: int, interaction: Interaction) -> None:
         """
         Send a page, editing the original message.
         """
+        page = self.pages[self.current_page]
+
         for button in self.children:
             if isinstance(button, NavButton):
                 await button.before_page_change()
