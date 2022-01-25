@@ -22,17 +22,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from typing import Any
 from typing import List
+from typing import Literal
+from typing import Mapping
 from typing import Optional
-from typing import TypeVar
 from typing import Union
 
 import hikari
-from hikari.undefined import UNDEFINED
 
-from ... import Interaction
-from ... import Item
-from ... import View
+from miru.interaction import Interaction
+from miru.item import Item
+from miru.view import View
+
 from .buttons import FirstButton
 from .buttons import IndicatorButton
 from .buttons import LastButton
@@ -40,6 +42,8 @@ from .buttons import NavButton
 from .buttons import NavigatorViewT
 from .buttons import NextButton
 from .buttons import PrevButton
+
+__all__ = ["NavigatorView"]
 
 
 class NavigatorView(View):
@@ -60,9 +64,9 @@ class NavigatorView(View):
             for button in buttons:
                 self.add_item(button)
         else:
-            default_buttons: List[NavButton[NavigatorViewT]] = self.get_default_buttons()
-            for button in default_buttons:
-                self.add_item(button)
+            default_buttons = self.get_default_buttons()
+            for default_button in default_buttons:
+                self.add_item(default_button)
 
         for page in pages:
             if not isinstance(page, (str, hikari.Embed)):
@@ -84,31 +88,26 @@ class NavigatorView(View):
 
     @current_page.setter
     def current_page(self, value: int) -> None:
-        if isinstance(value, int):
-            # Ensure this value is always correct
-            if value >= 0 and value <= len(self.pages) - 1:
-                self._current_page = value
-            elif value > len(self.pages) - 1:
-                self._current_page = len(self.pages) - 1
-            else:
-                self._current_page = 0
-        else:
+        if not isinstance(value, int):
             raise TypeError("Expected type int for property current_page.")
 
+        # Ensure this value is always correct
+        self._current_page = max(0, min(value, len(self.pages)))
 
     async def on_timeout(self) -> None:
-        if self.message is not None:
-            for button in self.children:
-                button.disabled = True
-            await self.message.edit(components=self.build())
+        if self.message is None:
+            return
 
+        for button in self.children:
+            button.disabled = True
 
-    def get_default_buttons(self) -> List[NavButton[NavigatorViewT]]:
+        await self.message.edit(components=self.build())
+
+    def get_default_buttons(self: NavigatorViewT) -> List[NavButton[NavigatorViewT]]:
         """
         Returns the default set of buttons.
         """
         return [FirstButton(), PrevButton(), IndicatorButton(), NextButton(), LastButton()]
-
 
     def add_item(self, item: Item[NavigatorViewT]) -> None:
         """
@@ -119,71 +118,59 @@ class NavigatorView(View):
 
         return super().add_item(item)
 
+    def _get_page_payload(self, page: Union[str, hikari.Embed]) -> Mapping[str, Any]:
+        if isinstance(page, str):
+            return dict(content=page, embeds=[], components=self.build())
+        elif isinstance(page, hikari.Embed):
+            return dict(content="", embed=page, components=self.build())
+        else:
+            raise TypeError("Expected type str or hikari.Embed to send as page.")
 
-    async def send_page(self, page_index: int, interaction: Interaction) -> None:
+    async def send_page(self, interaction: Interaction, page_index: Optional[int] = None) -> None:
         """
         Send a page, editing the original message.
         """
+        if page_index:
+            self.current_page = page_index
+
         page = self.pages[self.current_page]
 
         for button in self.children:
             if isinstance(button, NavButton):
                 await button.before_page_change()
 
-        if isinstance(page, str):
-            await interaction.edit_message(page, embeds=[], components=self.build())
-        elif isinstance(page, hikari.Embed):
-            await interaction.edit_message(content="", embed=page, components=self.build())
-        else:
-            raise TypeError("Expected type str or hikari.Embed to send as page.")
-
+        payload = self._get_page_payload(page)
+        await interaction.edit_message(**payload)
 
     def start(self, message: hikari.Message) -> None:
         """
         Start up the navigator listener. This should not be called directly, use send() instead.
         """
-
         super().start(message)
-
 
     async def send(
         self,
-        *,
-        channel_id: Optional[int] = None,
-        interaction: Optional[Union[hikari.ComponentInteraction, hikari.CommandInteraction]] = None,
+        channel_or_interaction: Union[hikari.SnowflakeishOr[hikari.PartialChannel], hikari.MessageResponseMixin[Any]],
     ) -> None:
         """
         Start up the navigator, send the first page, and start listening for interactions.
         """
-        if channel_id and interaction:
-            raise ValueError("Cannot provide both channel_id and interaction.")
-        elif channel_id is None and interaction is None:
-            raise ValueError("Must provide either channel_id or interaction.")
-
-        if channel_id and not isinstance(channel_id, int):
-            raise TypeError("Expected type int for parameter channel_id.")
-        if interaction and not isinstance(interaction, (hikari.CommandInteraction, hikari.ComponentInteraction)):
-            raise TypeError(
-                "Expected types hikari.CommandInteraction or hikari.ComponentInteraction for parameter interaction."
-            )
-
-        content: hikari.UndefinedOr[str] = self.pages[0] if isinstance(self.pages[0], str) else hikari.UNDEFINED
-        embed: hikari.UndefinedOr[hikari.Embed] = (
-            self.pages[0] if isinstance(self.pages[0], hikari.Embed) else hikari.UNDEFINED
-        )
+        self.current_page = 0
 
         for button in self.children:
             if isinstance(button, NavButton):
                 await button.before_page_change()
 
-        if channel_id:
-            message: hikari.Message = await self.app.rest.create_message(
-                channel_id, content, embed=embed, components=self.build()
+        payload = self._get_page_payload(self.pages[0])
+
+        if isinstance(channel_or_interaction, (int, hikari.PartialChannel)):
+            channel = hikari.Snowflake(channel_or_interaction)
+            message = await self.app.rest.create_message(channel, **payload)
+        else:
+            await channel_or_interaction.create_initial_response(
+                hikari.ResponseType.MESSAGE_CREATE,
+                **payload,
             )
-        elif interaction:
-            await interaction.create_initial_response(
-                hikari.ResponseType.MESSAGE_CREATE, content, embed=embed, components=self.build()
-            )
-            message = await interaction.fetch_initial_response()
+            message = await channel_or_interaction.fetch_initial_response()
 
         self.start(message)
