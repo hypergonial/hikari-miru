@@ -22,8 +22,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import Any, Literal
+from typing import Any
 from typing import List
+from typing import Literal
 from typing import Mapping
 from typing import Optional
 from typing import Union
