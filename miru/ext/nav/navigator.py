@@ -121,7 +121,7 @@ class NavigatorView(View):
         if isinstance(page, str):
             return dict(content=page, embeds=[], components=self.build())
         elif isinstance(page, hikari.Embed):
-            return dict(content=None, embed=page, components=self.build())
+            return dict(content="", embed=page, components=self.build())
         else:
             raise TypeError("Expected type str or hikari.Embed to send as page.")
 
