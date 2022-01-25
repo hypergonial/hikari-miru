@@ -37,7 +37,7 @@ options.sessions = ["format_fix", "mypy"]
 
 
 @nox.session()
-def format_fix(session):
+def format_fix(session: nox.Session):
     session.install("black")
     session.install("isort")
     session.run("python", "-m", "black", *SCRIPT_PATHS)
@@ -46,13 +46,13 @@ def format_fix(session):
 
 # noinspection PyShadowingBuiltins
 @nox.session()
-def format(session):
+def format(session: nox.Session):
     session.install("-U", "black")
     session.run("python", "-m", "black", *SCRIPT_PATHS, "--check")
 
 
 @nox.session()
-def mypy(session):
+def mypy(session: nox.Session):
     session.install("hikari")
     session.install("-U", "mypy")
     session.run("python", "-m", "mypy", PATH_TO_PROJECT)

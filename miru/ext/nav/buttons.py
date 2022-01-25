@@ -29,13 +29,15 @@ from typing import Union
 
 import hikari
 
-from ... import Button
-from ... import Interaction
+from miru.button import Button
+from miru.interaction import Interaction
 
 if TYPE_CHECKING:
     from .navigator import NavigatorView
 
 NavigatorViewT = TypeVar("NavigatorViewT", bound="NavigatorView")
+
+__all__ = ["NavButton", "NextButton", "PrevButton", "FirstButton", "LastButton", "IndicatorButton", "StopButton"]
 
 
 class NavButton(Button[NavigatorViewT]):
@@ -54,7 +56,13 @@ class NavButton(Button[NavigatorViewT]):
         row: Optional[int] = None,
     ):
         super().__init__(
-            style=style, label=label, disabled=disabled, custom_id=custom_id, url=None, emoji=emoji, row=row
+            style=style,
+            label=label,
+            disabled=disabled,
+            custom_id=custom_id,
+            url=None,
+            emoji=emoji,
+            row=row,
         )
 
     @property
@@ -90,7 +98,7 @@ class NextButton(NavButton[NavigatorViewT]):
 
     async def callback(self, interaction: Interaction) -> None:
         self.view.current_page += 1
-        await self.view.send_page(self.view.current_page, interaction)
+        await self.view.send_page(interaction)
 
     async def before_page_change(self) -> None:
         if self.view.current_page == len(self.view.pages) - 1:
@@ -117,7 +125,7 @@ class PrevButton(NavButton[NavigatorViewT]):
 
     async def callback(self, interaction: Interaction) -> None:
         self.view.current_page -= 1
-        await self.view.send_page(self.view.current_page, interaction)
+        await self.view.send_page(interaction)
 
     async def before_page_change(self) -> None:
         if self.view.current_page == 0:
@@ -144,7 +152,7 @@ class FirstButton(NavButton[NavigatorViewT]):
 
     async def callback(self, interaction: Interaction) -> None:
         self.view.current_page = 0
-        await self.view.send_page(self.view.current_page, interaction)
+        await self.view.send_page(interaction)
 
     async def before_page_change(self) -> None:
         if self.view.current_page == 0:
@@ -171,7 +179,7 @@ class LastButton(NavButton[NavigatorViewT]):
 
     async def callback(self, interaction: Interaction) -> None:
         self.view.current_page = len(self.view.pages) - 1
-        await self.view.send_page(self.view.current_page, interaction)
+        await self.view.send_page(interaction)
 
     async def before_page_change(self) -> None:
         if self.view.current_page == len(self.view.pages) - 1:
@@ -217,9 +225,11 @@ class StopButton(NavButton[NavigatorViewT]):
         super().__init__(style=style, label=label, custom_id=custom_id, emoji=emoji, row=row)
 
     async def callback(self, interaction: Interaction) -> None:
-        if self.view.message:
-            for button in self.view.children:
-                button.disabled = True
+        if not self.view.message:
+            return
 
-            await self.view.message.edit(components=self.view.build())
-            self.view.stop()
+        for button in self.view.children:
+            button.disabled = True
+
+        await self.view.message.edit(components=self.view.build())
+        self.view.stop()

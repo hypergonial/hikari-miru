@@ -2,6 +2,7 @@ import hikari
 import miru
 from miru.ext import nav
 
+
 class MyNavButton(nav.NavButton):
     # This is how you can create your own navigator button
     # The extension also comes with the following nav buttons built-in:
@@ -21,7 +22,9 @@ class MyNavButton(nav.NavButton):
         # NavigatorView.send_page()
         self.label = f"Page: {self.view.current_page+1}"
 
+
 bot = hikari.GatewayBot("...")
+
 
 @bot.listen()
 async def navigator(event: hikari.GuildMessageCreateEvent) -> None:
@@ -36,8 +39,8 @@ async def navigator(event: hikari.GuildMessageCreateEvent) -> None:
         # Define our navigator and pass in our list of pages
         navigator = nav.NavigatorView(event.app, pages=pages)
         # You may also pass an interaction object to this function
-        await navigator.send(channel_id=event.channel_id)
-    
+        await navigator.send(event.channel_id)
+
     elif event.content.startswith("mirucustom"):
         embed = hikari.Embed(title="I'm the second page!", description="Also an embed!")
         pages = ["I'm a customized navigator!", embed, "I'm the last page!"]
@@ -47,7 +50,7 @@ async def navigator(event: hikari.GuildMessageCreateEvent) -> None:
         # Pass our list of NavButton to the navigator
         navigator = nav.NavigatorView(event.app, pages=pages, buttons=buttons)
 
-        await navigator.send(channel_id=event.channel_id)
+        await navigator.send(event.channel_id)
 
 
 bot.run()
