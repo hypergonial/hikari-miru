@@ -3,8 +3,14 @@ An optional component handler for [hikari](https://github.com/hikari-py/hikari),
 
 ## Installation
 ```sh
-pip install -U hikari-miru
+python3 -m pip install -U hikari-miru
 ```
+To check if miru has successfully installed or not, run the following:
+```sh
+python3 -m miru
+```
+This should print version and system information to your console.
+
 ## Usage
 ```py
 import hikari
@@ -52,4 +58,4 @@ bot.run()
 For general usage help or questions, see the `#hikari-miru` channel in the [hikari discord](https://discord.gg/Jx4cNGG), if you have found a bug or have a feature request, feel free to [open an issue](https://github.com/HyperGH/hikari-miru/issues/new)!
 
 ## Contributing
-If you wish to contribute, be sure to first enable the formatting pre-commit hook via `git config core.hooksPath .githooks`, then make your changes.
+If you wish to contribute, be sure to first enable the formatting pre-commit hook via `git config core.hooksPath .githooks`, then make your changes. Also make sure to run [nox](https://nox.thea.codes/en/stable/) before pushing your changes, and ensure all pipelines pass.
