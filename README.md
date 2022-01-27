@@ -2,6 +2,7 @@
 An optional component handler for [hikari](https://github.com/hikari-py/hikari), inspired by discord.py's views.
 
 ## Installation
+To install miru, run the following command:
 ```sh
 python3 -m pip install -U hikari-miru
 ```
@@ -9,7 +10,6 @@ To check if miru has successfully installed or not, run the following:
 ```sh
 python3 -m miru
 ```
-This should print version and system information to your console.
 
 ## Usage
 ```py
