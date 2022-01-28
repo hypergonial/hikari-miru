@@ -70,6 +70,7 @@ setup(
     author_email="46067571+HyperGH@users.noreply.github.com",
     url="https://github.com/HyperGH/hikari-miru",
     packages=find_namespace_packages(include=[name + "*"]),
+    package_data={"miru": ["py.typed"], "miru.ext.nav": ["py.typed"]},
     license="MIT",
     include_package_data=True,
     zip_safe=False,
