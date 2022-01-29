@@ -48,6 +48,7 @@ class NavigatorView(View):
     """
     A specialized view built for paginated button-menus, navigators.
     """
+
     def __init__(
         self,
         *,

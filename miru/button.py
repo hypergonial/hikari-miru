@@ -126,7 +126,7 @@ class Button(Item[ViewT]):
     def style(self, value: Union[hikari.ButtonStyle, int]) -> None:
         if not isinstance(value, (hikari.ButtonStyle, int)):
             raise TypeError("Expected type hikari.ButtonStyle or int for property style.")
-        
+
         if self.url is not None:
             raise ValueError("A link button cannot have it's style changed. Remove the url first.")
 
@@ -162,7 +162,7 @@ class Button(Item[ViewT]):
     @property
     def url(self) -> Optional[str]:
         """
-        The button's URL. If specified, the button will turn into a link button, 
+        The button's URL. If specified, the button will turn into a link button,
         and the style parameter will be ignored.
         """
         return self._url
@@ -173,7 +173,7 @@ class Button(Item[ViewT]):
             raise TypeError("Expected type str for property url.")
 
         if value:
-            self.style = hikari.ButtonStyle.URL
+            self.style = hikari.ButtonStyle.LINK
 
         self._url = value
 
@@ -206,7 +206,7 @@ def button(
     row: Optional[int] = None,
     disabled: bool = False,
 ) -> Callable[[CallableT], CallableT]:
-    """A decorator to transform a coroutine function into a Discord UI Button's callback. 
+    """A decorator to transform a coroutine function into a Discord UI Button's callback.
     This must be inside a subclass of View.
 
     Parameters

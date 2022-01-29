@@ -438,7 +438,7 @@ class View:
         await asyncio.wait_for(self._stopped.wait(), timeout=None)
 
     def start_listener(self, message_id: Optional[int] = None) -> None:
-        """Re-registers a persistent view for listening after an application restart. 
+        """Re-registers a persistent view for listening after an application restart.
         Specify message_id to create a bound persistent view that can be edited afterwards.
 
         Parameters

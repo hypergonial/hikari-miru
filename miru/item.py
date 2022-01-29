@@ -106,7 +106,7 @@ class Item(abc.ABC, Generic[ViewT]):
     def custom_id(self, value: Optional[str]) -> None:
         if value and not isinstance(value, str):
             raise TypeError("Expected type str for property custom_id.")
-        if len(value) > 100:
+        if value and len(value) > 100:
             raise ValueError("custom_id has a max length of 100.")
 
         self._custom_id = value

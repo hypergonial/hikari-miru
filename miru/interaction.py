@@ -143,7 +143,7 @@ class Interaction(hikari.ComponentInteraction):
             The set of allowed role mentions in this message. Set to True to allow all.
         flags : typing.Union[undefined.UndefinedType, int, messages_.MessageFlag], optional
             Message flags that should be included with this edit.
-        
+
         Raises
         ------
         RuntimeError
