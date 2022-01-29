@@ -81,7 +81,7 @@ class _Weights(Generic[ViewT]):
 
 class View:
     """
-    Represents a set of Discord UI components.
+    Represents a set of Discord UI components attached to a message.
     """
 
     _app: ClassVar[Optional[RESTAndEventManagerAware]] = None
@@ -110,6 +110,22 @@ class View:
         timeout: Optional[float] = 120.0,
         autodefer: bool = True,
     ) -> None:
+        """Represents a set of Discord UI components attached to a message.
+
+        Parameters
+        ----------
+        timeout : Optional[float], optional
+            The duration after which the view times out, in seconds, by default 120.0
+        autodefer : bool, optional
+            If unhandled interactions should be automatically deferred or not, by default True
+
+        Raises
+        ------
+        ValueError
+            Raised if a view has more than 25 components attached.
+        RuntimeError
+            Raised if miru.load() was never called before instantiation.
+        """
         self._timeout: Optional[float] = float(timeout) if timeout else None
         self._children: List[Item[Any]] = []
         self._autodefer: bool = autodefer
@@ -187,7 +203,24 @@ class View:
         return True if self._message_id is not None else False
 
     def add_item(self, item: Item[Any]) -> None:
-        """Adds a new item to the view."""
+        """Adds a new item to the view.
+
+        Parameters
+        ----------
+        item : Item[Any]
+            The item to be added.
+
+        Raises
+        ------
+        ValueError
+            A view already has 25 components attached.
+        TypeError
+            Parameter item is not an instance of Item.
+        RuntimeError
+            The item is already attached to this view.
+        RuntimeError
+            The item is already attached to another view.
+        """
 
         if len(self.children) > 25:
             raise ValueError("View cannot have more than 25 components attached.")
@@ -207,7 +240,13 @@ class View:
         self.children.append(item)
 
     def remove_item(self, item: Item[Any]) -> None:
-        """Removes the specified item from the view."""
+        """Removes the specified item from the view.
+
+        Parameters
+        ----------
+        item : Item[Any]
+            The item to be removed.
+        """
         try:
             self.children.remove(item)
         except ValueError:
@@ -226,7 +265,19 @@ class View:
         self._weights.clear()
 
     def build(self) -> List[hikari.impl.ActionRowBuilder]:
-        """Converts the view into action rows, must be called before sending."""
+        """Converts the view into action rows, must be called before sending.
+
+        Returns
+        -------
+        List[hikari.impl.ActionRowBuilder]
+            A list of action rows containing all items attached to this view,
+            converted to hikari component objects.
+
+        Raises
+        ------
+        ValueError
+            The view has no items attached to it.
+        """
         if len(self.children) == 0:
             raise ValueError("Empty views cannot be built.")
 
@@ -248,8 +299,17 @@ class View:
         pass
 
     async def view_check(self, interaction: Interaction) -> bool:
-        """
-        Called before any callback in the view is called. Must evaluate to a truthy value to pass.
+        """Called before any callback in the view is called. Must evaluate to a truthy value to pass.
+
+        Parameters
+        ----------
+        interaction : Interaction
+            The interaction object received through the gateway.
+
+        Returns
+        -------
+        bool
+            A boolean indicating if the check passed or not.
         """
         return True
 
@@ -259,8 +319,16 @@ class View:
         item: Optional[Item[ViewT]] = None,
         interaction: Optional[Interaction] = None,
     ) -> None:
-        """
-        Called when an error occurs in a callback function or the built-in timeout function.
+        """Called when an error occurs in a callback function or the built-in timeout function.
+
+        Parameters
+        ----------
+        error : Exception
+            The exception encountered.
+        item : Optional[Item[ViewT]], optional
+            The item this exception originates from, if any.
+        interaction : Optional[Interaction], optional
+            The interaction associated with this exception, if any.
         """
         if item:
             print(f"Ignoring exception in view {self} for item {item}:", file=sys.stderr)
@@ -287,6 +355,7 @@ class View:
         """
         Handle the callback of a view item. Seperate task in case the view is stopped in the callback.
         """
+
         try:
             await item._refresh(interaction)
             await item.callback(interaction)
@@ -369,8 +438,20 @@ class View:
         await asyncio.wait_for(self._stopped.wait(), timeout=None)
 
     def start_listener(self, message_id: Optional[int] = None) -> None:
-        """
-        Re-registers a persistent view for listening after an application restart. Specify message_id for improved listener accuracy.
+        """Re-registers a persistent view for listening after an application restart. 
+        Specify message_id to create a bound persistent view that can be edited afterwards.
+
+        Parameters
+        ----------
+        message_id : Optional[int], optional
+            If provided, the persistent view will be bound to this message, and if the
+            message is edited with a new view, that will be taken into account.
+            Unbound views do not support message editing with additional views.
+
+        Raises
+        ------
+        ValueError
+            The view is not persistent.
         """
         if not self.is_persistent:
             raise ValueError("This can only be used on persistent views.")
@@ -386,8 +467,17 @@ class View:
         self._listener_task = asyncio.create_task(self._listen_for_events(message_id))
 
     def start(self, message: hikari.Message) -> None:
-        """
-        Start up the view and begin listening for interactions.
+        """Start up the view and begin listening for interactions.
+
+        Parameters
+        ----------
+        message : hikari.Message
+            The message the view was built for.
+
+        Raises
+        ------
+        TypeError
+            Parameter message is not an instance of hikari.Message
         """
         if not isinstance(message, hikari.Message):
             raise TypeError("Expected instance of hikari.Message.")
@@ -403,8 +493,20 @@ class View:
 
 
 def load(bot: RESTAndEventManagerAware) -> None:
-    """
-    Load miru and pass the current running application to it.
+    """Load miru and pass the current running application to it.
+
+    Parameters
+    ----------
+    bot : RESTAndEventManagerAware
+        The currently running application. Must implement traits
+        RESTAware and EventManagerAware.
+
+    Raises
+    ------
+    RuntimeError
+        miru is already loaded
+    TypeError
+        Parameter bot does not have traits RESTAware or EventManagerAware.
     """
     if View._app is not None:
         raise RuntimeError("miru is already loaded!")

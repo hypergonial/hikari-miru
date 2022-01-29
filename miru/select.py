@@ -59,6 +59,21 @@ class SelectOption:
         emoji: Optional[Union[str, hikari.Emoji]] = None,
         is_default: bool = False,
     ) -> None:
+        """A more lenient way to instantiate select options.
+
+        Parameters
+        ----------
+        label : str
+            The option's label.
+        value : Optional[str], optional
+            The internal value of the option, if None, uses label.
+        description : Optional[str], optional
+            The description of the option, by default None
+        emoji : Optional[Union[str, hikari.Emoji]], optional
+            The emoji of the option, by default None
+        is_default : bool, optional
+            A boolean determining of the option is default or not, by default False
+        """
         self.label: str = label
         self.value: str = value if value else label
         self.description: Optional[str] = description
@@ -93,6 +108,30 @@ class Select(Item[ViewT]):
         disabled: bool = False,
         row: Optional[int] = None,
     ) -> None:
+        """A view component representing a select menu.
+
+        Parameters
+        ----------
+        options : Sequence[Union[hikari.SelectMenuOption, SelectOption]]
+            A sequence of select menu options that this select menu should use.
+        custom_id : Optional[str], optional
+            The custom identifier of the select menu, by default None
+        placeholder : Optional[str], optional
+            Placeholder text displayed on the select menu, by default None
+        min_values : int, optional
+            The minimum values a user has to select before it can be sent, by default 1
+        max_values : int, optional
+            The maximum values a user can select, by default 1
+        disabled : bool, optional
+            [description], by default False
+        row : Optional[int], optional
+            [description], by default None
+
+        Raises
+        ------
+        ValueError
+            [description]
+        """
         super().__init__()
         self._values: Sequence[str] = []
         self._persistent: bool = True if custom_id else False

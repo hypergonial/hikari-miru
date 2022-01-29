@@ -87,7 +87,7 @@ class Item(abc.ABC, Generic[ViewT]):
     @property
     def view(self) -> ViewT:
         """
-        The view this item is attached to. Raises AttributeError if the item is not attached to a view.
+        The view this item is attached to.
         """
         if not self._view:
             raise AttributeError(f"{self.__class__.__name__} hasn't been attached to a view yet")
@@ -106,6 +106,9 @@ class Item(abc.ABC, Generic[ViewT]):
     def custom_id(self, value: Optional[str]) -> None:
         if value and not isinstance(value, str):
             raise TypeError("Expected type str for property custom_id.")
+        if len(value) > 100:
+            raise ValueError("custom_id has a max length of 100.")
+
         self._custom_id = value
 
     @property
@@ -157,12 +160,31 @@ class DecoratedItem:
         self.callback = callback
 
     def build(self, view: ViewT) -> Item[ViewT]:
+        """Convert a DecoratedItem into an Item.
+
+        Parameters
+        ----------
+        view : ViewT
+            The view this decorated item is attached to.
+
+        Returns
+        -------
+        Item[ViewT]
+            The converted item.
+        """
         self.item.callback = partial(self.callback, view, self.item)  # type: ignore[assignment]
 
         return self.item
 
     @property
     def name(self) -> str:
+        """The name of callback this item decorates.
+
+        Returns
+        -------
+        str
+            The name of the callback.
+        """
         return self.callback.__name__
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any:

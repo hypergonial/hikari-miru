@@ -53,6 +53,23 @@ class NavButton(Button[NavigatorViewT]):
         emoji: Union[hikari.Emoji, str, None] = None,
         row: Optional[int] = None,
     ):
+        """[summary]
+
+        Parameters
+        ----------
+        style : Union[hikari.ButtonStyle, int], optional
+            The style of the navigation button, by default hikari.ButtonStyle.PRIMARY
+        label : Optional[str], optional
+            The label of the navigation button, by default None
+        disabled : bool, optional
+            Boolean indicating if the navigation button is disabled, by default False
+        custom_id : Optional[str], optional
+            The custom identifier of the navigation button, by default None
+        emoji : Union[hikari.Emoji, str, None], optional
+            The emoji of the navigation button, by default None
+        row : Optional[int], optional
+            The row this navigation button should occupy. Leave None for auto-placement.
+        """
         super().__init__(
             style=style,
             label=label,

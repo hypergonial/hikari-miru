@@ -61,6 +61,32 @@ class Button(Item[ViewT]):
         emoji: Union[hikari.Emoji, str, None] = None,
         row: Optional[int] = None,
     ) -> None:
+        """A view component representing a button.
+
+        Parameters
+        ----------
+        style : Union[hikari.ButtonStyle, int], optional
+            The button's style, by default hikari.ButtonStyle.PRIMARY
+        label : Optional[str], optional
+            The button's label, by default None
+        disabled : bool, optional
+            A boolean determining if the button should be disabled or not, by default False
+        custom_id : Optional[str], optional
+            The custom identifier of the button, by default None
+        url : Optional[str], optional
+            The URL of the button, by default None
+        emoji : Union[hikari.Emoji, str, None], optional
+            The emoji present on the button, by default None
+        row : Optional[int], optional
+            The row the button should be in, leave as None for auto-placement.
+
+        Raises
+        ------
+        TypeError
+            If both label and emoji are left empty.
+        TypeError
+            if both custom_id and url are provided.
+        """
         super().__init__()
 
         self._style: Union[hikari.ButtonStyle, int] = style
@@ -100,6 +126,10 @@ class Button(Item[ViewT]):
     def style(self, value: Union[hikari.ButtonStyle, int]) -> None:
         if not isinstance(value, (hikari.ButtonStyle, int)):
             raise TypeError("Expected type hikari.ButtonStyle or int for property style.")
+        
+        if self.url is not None:
+            raise ValueError("A link button cannot have it's style changed. Remove the url first.")
+
         self._style = value
 
     @property
@@ -116,7 +146,7 @@ class Button(Item[ViewT]):
     @property
     def emoji(self) -> Union[str, hikari.Emoji, None]:
         """
-        The emoji that should be visible on the button, if any.
+        The emoji that should be visible on the button.
         """
         return self._emoji
 
@@ -132,7 +162,8 @@ class Button(Item[ViewT]):
     @property
     def url(self) -> Optional[str]:
         """
-        The button's URL. If specified, the button will turn into a link button, and the style kwarg will be ignored.
+        The button's URL. If specified, the button will turn into a link button, 
+        and the style parameter will be ignored.
         """
         return self._url
 
@@ -140,12 +171,13 @@ class Button(Item[ViewT]):
     def url(self, value: str) -> None:
         if not isinstance(value, str):
             raise TypeError("Expected type str for property url.")
+
+        if value:
+            self.style = hikari.ButtonStyle.URL
+
         self._url = value
 
     def _build(self, action_row: hikari.api.ActionRowBuilder) -> None:
-        """
-        Called internally to build and append the button to an action row
-        """
         button: Union[
             hikari.api.InteractiveButtonBuilder[hikari.api.ActionRowBuilder],
             hikari.api.LinkButtonBuilder[hikari.api.ActionRowBuilder],
@@ -174,8 +206,28 @@ def button(
     row: Optional[int] = None,
     disabled: bool = False,
 ) -> Callable[[CallableT], CallableT]:
-    """
-    A decorator to transform a function into a Discord UI Button's callback. This must be inside a subclass of View.
+    """A decorator to transform a coroutine function into a Discord UI Button's callback. 
+    This must be inside a subclass of View.
+
+    Parameters
+    ----------
+    label : Optional[str], optional
+        The button's label, by default None
+    custom_id : Optional[str], optional
+        The button's custom identifier, by default None
+    style : hikari.ButtonStyle, optional
+        The style of the button, by default hikari.ButtonStyle.PRIMARY
+    emoji : Optional[Union[str, hikari.Emoji]], optional
+        The emoji shown on the button, by default None
+    row : Optional[int], optional
+        The row the button should be in, leave as None for auto-placement.
+    disabled : bool, optional
+        A boolean determining if the button should be disabled or not, by default False
+
+    Returns
+    -------
+    Callable[[CallableT], CallableT]
+        The decorated callback coroutine function.
     """
 
     def decorator(func: Callable[..., Any]) -> Any:
