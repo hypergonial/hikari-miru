@@ -20,14 +20,17 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import typing
+
 import hikari
 
-__all__ = ["RESTAndEventManagerAware"]
+__all__ = ["ViewsAware"]
 
 
-class RESTAndEventManagerAware(hikari.RESTAware, hikari.EventManagerAware):
+@typing.runtime_checkable
+class ViewsAware(hikari.RESTAware, hikari.EventManagerAware, hikari.CacheAware, typing.Protocol):
     """
-    A trait that implements both RESTAware and EventManagerAware.
+    A trait that implements RESTAware, EventManagerAware and CacheAware.
     """
 
     pass

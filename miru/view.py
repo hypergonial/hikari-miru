@@ -29,6 +29,7 @@ import sys
 import traceback
 from typing import Any
 from typing import ClassVar
+from typing import ContextManager
 from typing import Dict
 from typing import Generic
 from typing import List
@@ -37,10 +38,11 @@ from typing import TypeVar
 
 import hikari
 
+from .context import Context
 from .interaction import Interaction
 from .item import DecoratedItem
 from .item import Item
-from .traits import RESTAndEventManagerAware
+from .traits import ViewsAware
 
 ViewT = TypeVar("ViewT", bound="View")
 
@@ -84,7 +86,7 @@ class View:
     Represents a set of Discord UI components attached to a message.
     """
 
-    _app: ClassVar[Optional[RESTAndEventManagerAware]] = None
+    _app: ClassVar[Optional[ViewsAware]] = None
     _view_children: ClassVar[List[DecoratedItem]] = []  # Decorated callbacks that need to be turned into items
     # Mapping of message_id: View
     _views: Dict[int, View] = {}  # List of all currently active BOUND views, unbound persistent are not listed here
@@ -172,7 +174,7 @@ class View:
         return self._children
 
     @property
-    def app(self) -> RESTAndEventManagerAware:
+    def app(self) -> ViewsAware:
         """
         The application that loaded the miru extension.
         """
@@ -298,13 +300,13 @@ class View:
         """
         pass
 
-    async def view_check(self, interaction: Interaction) -> bool:
+    async def view_check(self, context: Context) -> bool:
         """Called before any callback in the view is called. Must evaluate to a truthy value to pass.
 
         Parameters
         ----------
-        interaction : Interaction
-            The interaction object received through the gateway.
+        context : Context
+            The context for this check.
 
         Returns
         -------
@@ -317,7 +319,7 @@ class View:
         self: ViewT,
         error: Exception,
         item: Optional[Item[ViewT]] = None,
-        interaction: Optional[Interaction] = None,
+        context: Optional[Context] = None,
     ) -> None:
         """Called when an error occurs in a callback function or the built-in timeout function.
 
@@ -327,8 +329,8 @@ class View:
             The exception encountered.
         item : Optional[Item[ViewT]], optional
             The item this exception originates from, if any.
-        interaction : Optional[Interaction], optional
-            The interaction associated with this exception, if any.
+        context : Optional[Context], optional
+            The context associated with this exception, if any.
         """
         if item:
             print(f"Ignoring exception in view {self} for item {item}:", file=sys.stderr)
@@ -351,20 +353,21 @@ class View:
 
         self._listener_task = None
 
-    async def _handle_callback(self: ViewT, item: Item[ViewT], interaction: Interaction) -> None:
+    async def _handle_callback(self: ViewT, item: Item[ViewT], context: Context) -> None:
         """
         Handle the callback of a view item. Seperate task in case the view is stopped in the callback.
         """
 
+        context = Context(self, context.interaction)
         try:
-            await item._refresh(interaction)
-            await item.callback(interaction)
+            await item._refresh(context.interaction)
+            await item.callback(context)
 
-            if not interaction._issued_response and self.autodefer:
-                await interaction.defer()
+            if not context.interaction._issued_response and self.autodefer:
+                await context.defer()
 
         except Exception as error:
-            await self.on_error(error, item, interaction)
+            await self.on_error(error, item, context)
 
     async def _process_interactions(self, event: hikari.InteractionCreateEvent) -> None:
         """
@@ -378,13 +381,15 @@ class View:
             items = [item for item in self.children if item.custom_id == interaction.custom_id]
             if len(items) > 0:
 
-                passed = await self.view_check(interaction)
+                context = Context(self, interaction)
+
+                passed = await self.view_check(context)
                 if not passed:
                     return
 
                 for item in items:
                     # Create task here to ensure autodefer works even if callback stops view
-                    asyncio.create_task(self._handle_callback(item, interaction))
+                    asyncio.create_task(self._handle_callback(item, context))
 
     async def _listen_for_events(self, message_id: Optional[int] = None) -> None:
         """
@@ -492,12 +497,12 @@ class View:
             View._views[message.id] = self
 
 
-def load(bot: RESTAndEventManagerAware) -> None:
+def load(bot: ViewsAware) -> None:
     """Load miru and pass the current running application to it.
 
     Parameters
     ----------
-    bot : RESTAndEventManagerAware
+    bot : ViewsAware
         The currently running application. Must implement traits
         RESTAware and EventManagerAware.
 
@@ -506,11 +511,11 @@ def load(bot: RESTAndEventManagerAware) -> None:
     RuntimeError
         miru is already loaded
     TypeError
-        Parameter bot does not have traits RESTAware or EventManagerAware.
+        Parameter bot does not have traits specified in ViewsAware
     """
     if View._app is not None:
         raise RuntimeError("miru is already loaded!")
-    if not isinstance(bot, RESTAndEventManagerAware):
-        raise TypeError(f"Expected type with traits RESTAndEventManagerAware for parameter bot, not {type(bot)}")
+    if not isinstance(bot, ViewsAware):
+        raise TypeError(f"Expected type with trait ViewsAware for parameter bot, not {type(bot)}")
 
     View._app = bot

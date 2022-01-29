@@ -34,6 +34,7 @@ from typing import TypeVar
 
 import hikari
 
+from .context import Context
 from .interaction import Interaction
 
 if TYPE_CHECKING:
@@ -139,7 +140,7 @@ class Item(abc.ABC, Generic[ViewT]):
         """
         ...
 
-    async def callback(self, interaction: Interaction) -> None:
+    async def callback(self, context: Context) -> None:
         """
         The component's callback, gets called when the component receives an interaction.
         """

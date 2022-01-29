@@ -29,7 +29,7 @@ from typing import Union
 
 import hikari
 
-from miru.interaction import Interaction
+from miru.context import Context
 from miru.item import Item
 from miru.view import View
 
@@ -158,13 +158,13 @@ class NavigatorView(View):
         else:
             raise TypeError("Expected type str or hikari.Embed to send as page.")
 
-    async def send_page(self, interaction: Interaction, page_index: Optional[int] = None) -> None:
+    async def send_page(self, context: Context, page_index: Optional[int] = None) -> None:
         """Send a page, editing the original message.
 
         Parameters
         ----------
-        interaction : Interaction
-            The interaction that should be used to send this page
+        context : Context
+            The context that should be used to send this page
         page_index : Optional[int], optional
             The index of the page to send, if not specifed sends the current page, by default None
         """
@@ -178,7 +178,7 @@ class NavigatorView(View):
                 await button.before_page_change()
 
         payload = self._get_page_payload(page)
-        await interaction.edit_message(**payload)
+        await context.edit_response(**payload)
 
     def start(self, message: hikari.Message) -> None:
         """Start up the navigator listener. This should not be called directly, use send() instead.
