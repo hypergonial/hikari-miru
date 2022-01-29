@@ -1,26 +1,25 @@
-"""
-MIT License
+# MIT License
+#
+# Copyright (c) 2022-present HyperGH
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
 
-Copyright (c) 2022-present HyperGH
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-"""
 from __future__ import annotations
 
 import asyncio
@@ -30,6 +29,7 @@ import sys
 import traceback
 from typing import Any
 from typing import ClassVar
+from typing import Dict
 from typing import Generic
 from typing import List
 from typing import Optional
@@ -40,10 +40,11 @@ import hikari
 from .interaction import Interaction
 from .item import DecoratedItem
 from .item import Item
+from .traits import RESTAndEventManagerAware
 
 ViewT = TypeVar("ViewT", bound="View")
 
-__all__ = ["View"]
+__all__ = ["View", "load"]
 
 
 class _Weights(Generic[ViewT]):
@@ -83,9 +84,10 @@ class View:
     Represents a set of Discord UI components.
     """
 
-    _app: ClassVar[Optional[hikari.GatewayBot]] = None
-    persistent_views: List[View] = []  # List of all currently active persistent views
+    _app: ClassVar[Optional[RESTAndEventManagerAware]] = None
     _view_children: ClassVar[List[DecoratedItem]] = []  # Decorated callbacks that need to be turned into items
+    # Mapping of message_id: View
+    _views: Dict[int, View] = {}  # List of all currently active BOUND views, unbound persistent are not listed here
 
     def __init_subclass__(cls) -> None:
         """
@@ -112,6 +114,7 @@ class View:
         self._children: List[Item[Any]] = []
         self._autodefer: bool = autodefer
         self._message: Optional[hikari.Message] = None
+        self._message_id: Optional[int] = None  # Only for bound persistent views
 
         self._weights: _Weights[View] = _Weights()
         self._stopped: asyncio.Event = asyncio.Event()
@@ -153,12 +156,12 @@ class View:
         return self._children
 
     @property
-    def app(self) -> hikari.GatewayBot:
+    def app(self) -> RESTAndEventManagerAware:
         """
         The application that loaded the miru extension.
         """
         if not self._app:
-            raise AttributeError("The extension was not yet loaded, View has no attribute app.")
+            raise AttributeError("miru was not loaded, View has no attribute app.")
 
         return self._app
 
@@ -176,6 +179,13 @@ class View:
         """
         return self._message
 
+    @property
+    def is_bound(self) -> bool:
+        """
+        Determines if the view is bound to a message or not. If this is False, message edits will not be supported.
+        """
+        return True if self._message_id is not None else False
+
     def add_item(self, item: Item[Any]) -> None:
         """Adds a new item to the view."""
 
@@ -183,7 +193,7 @@ class View:
             raise ValueError("View cannot have more than 25 components attached.")
 
         if not isinstance(item, Item):
-            raise TypeError("Expected Item.")
+            raise TypeError(f"Expected Item not {type(item)} for parameter item.")
 
         if item in self.children:
             raise RuntimeError("Item is already attached to this view.")
@@ -215,7 +225,7 @@ class View:
         self.children.clear()
         self._weights.clear()
 
-    def build(self) -> List[hikari.api.ActionRowBuilder]:
+    def build(self) -> List[hikari.impl.ActionRowBuilder]:
         """Converts the view into action rows, must be called before sending."""
         if len(self.children) == 0:
             raise ValueError("Empty views cannot be built.")
@@ -225,7 +235,7 @@ class View:
         action_rows = []
 
         for row, items in itertools.groupby(self.children, lambda i: i._rendered_row):
-            action_row = self.app.rest.build_action_row()
+            action_row = hikari.impl.ActionRowBuilder()
             for item in items:
                 item._build(action_row)
             action_rows.append(action_row)
@@ -263,11 +273,14 @@ class View:
         """
         Stop listening for interactions.
         """
+        if self._message_id:
+            View._views.pop(self._message_id)
+
         if self._listener_task is not None:
             self._listener_task.cancel()
+
         self._stopped.set()
-        if self.is_persistent:
-            View.persistent_views.remove(self)
+
         self._listener_task = None
 
     async def _handle_callback(self: ViewT, item: Item[ViewT], interaction: Interaction) -> None:
@@ -319,7 +332,7 @@ class View:
 
         while True:
             try:
-                event = await self.app.wait_for(
+                event = await self.app.event_manager.wait_for(
                     hikari.InteractionCreateEvent,
                     timeout=self.timeout,
                     predicate=predicate,
@@ -335,12 +348,14 @@ class View:
         """
         Handle the timing out of the view.
         """
-        self._stopped.set()
-
+        if self._message_id:
+            View._views.pop(self._message_id)
         try:
             await self.on_timeout()
         except Exception as error:
             await self.on_error(error)
+
+        self._stopped.set()
 
         if self._listener_task is not None:
             self._listener_task.cancel()
@@ -360,8 +375,15 @@ class View:
         if not self.is_persistent:
             raise ValueError("This can only be used on persistent views.")
 
+        if message_id:
+            self._message_id = message_id
+
+            # Handle replacement of bound views on message edit
+            if message_id in View._views.keys():
+                View._views[message_id].stop()
+                View._views[message_id] = self
+
         self._listener_task = asyncio.create_task(self._listen_for_events(message_id))
-        View.persistent_views.append(self)
 
     def start(self, message: hikari.Message) -> None:
         """
@@ -371,14 +393,22 @@ class View:
             raise TypeError("Expected instance of hikari.Message.")
 
         self._message = message
+        self._message_id = message.id
         self._listener_task = asyncio.create_task(self._listen_for_events(message.id))
 
-        if self.is_persistent:
-            View.persistent_views.append(self)
+        # Handle replacement of view on message edit
+        if message.id in View._views.keys():
+            View._views[message.id].stop()
+            View._views[message.id] = self
 
 
-def load(bot: hikari.GatewayBot) -> None:
+def load(bot: RESTAndEventManagerAware) -> None:
     """
     Load miru and pass the current running application to it.
     """
+    if View._app is not None:
+        raise RuntimeError("miru is already loaded!")
+    if not isinstance(bot, RESTAndEventManagerAware):
+        raise TypeError(f"Expected type with traits RESTAndEventManagerAware for parameter bot, not {type(bot)}")
+
     View._app = bot

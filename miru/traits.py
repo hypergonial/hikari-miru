@@ -20,30 +20,14 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import os
-import platform
-import sys
-
 import hikari
-from colorama import Fore  # type: ignore[import]
-from colorama import init
 
-import miru
+__all__ = ["RESTAndEventManagerAware"]
 
-# Support color on Windows
-init()
-system_details = (
-    f"{platform.uname().system} {platform.uname().machine} ({platform.uname().node}) - {platform.uname().release}"
-)
-python_details = f"{platform.python_implementation()} {platform.python_version()} ({platform.python_compiler()})"
 
-sys.stderr.write(
-    f"""{Fore.LIGHTCYAN_EX}hikari-miru - package information
-{Fore.WHITE}----------------------------------
-{Fore.CYAN}Miru version: {Fore.WHITE}{miru.__version__}
-{Fore.CYAN}Install path: {Fore.WHITE}{os.path.abspath(os.path.dirname(__file__))}
-{Fore.CYAN}Hikari version: {Fore.WHITE}{hikari.__version__}
-{Fore.CYAN}Install path: {Fore.WHITE}{os.path.abspath(os.path.dirname(hikari._about.__file__))}
-{Fore.CYAN}Python: {Fore.WHITE}{python_details}
-{Fore.CYAN}System: {Fore.WHITE}{system_details}\n\n"""
-)
+class RESTAndEventManagerAware(hikari.RESTAware, hikari.EventManagerAware):
+    """
+    A trait that implements both RESTAware and EventManagerAware.
+    """
+
+    pass
