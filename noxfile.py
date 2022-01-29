@@ -29,9 +29,10 @@ PATH_TO_PROJECT = os.path.join(".", "miru")
 SCRIPT_PATHS = [
     PATH_TO_PROJECT,
     "noxfile.py",
+    "docs/source/conf.py",
 ]
 
-options.sessions = ["format_fix", "mypy"]
+options.sessions = ["format_fix", "mypy", "sphinx"]
 
 
 @nox.session()
@@ -54,3 +55,10 @@ def mypy(session: nox.Session):
     session.install("hikari")
     session.install("-U", "mypy")
     session.run("python", "-m", "mypy", PATH_TO_PROJECT)
+
+
+@nox.session(reuse_venv=True)
+def sphinx(session):
+    session.install("-Ur", "doc_requirements.txt")
+    session.install("-Ur", "requirements.txt")
+    session.run("python", "-m", "sphinx.cmd.build", "docs/source", "docs/build", "-b", "html")
