@@ -83,6 +83,7 @@ class View:
     Represents a set of Discord UI components.
     """
 
+    _app: ClassVar[Optional[hikari.GatewayBot]] = None
     persistent_views: List[View] = []  # List of all currently active persistent views
     _view_children: ClassVar[List[DecoratedItem]] = []  # Decorated callbacks that need to be turned into items
 
@@ -103,14 +104,12 @@ class View:
 
     def __init__(
         self,
-        app: hikari.GatewayBot,
         *,
         timeout: Optional[float] = 120.0,
         autodefer: bool = True,
     ) -> None:
         self._timeout: Optional[float] = float(timeout) if timeout else None
         self._children: List[Item[Any]] = []
-        self._app: hikari.GatewayBot = app
         self._autodefer: bool = autodefer
         self._message: Optional[hikari.Message] = None
 
@@ -128,8 +127,8 @@ class View:
         if len(self.children) > 25:
             raise ValueError("View cannot have more than 25 components attached.")
 
-        if not isinstance(self.app, hikari.GatewayBot):
-            raise TypeError("Expected instance of hikari.GatewayBot.")
+        if self.app is None:
+            raise RuntimeError("miru.load() was never called before instantiation of View.")
 
     @property
     def is_persistent(self) -> bool:
@@ -156,8 +155,11 @@ class View:
     @property
     def app(self) -> hikari.GatewayBot:
         """
-        The application that instantiated the view.
+        The application that loaded the miru extension.
         """
+        if not self._app:
+            raise AttributeError("The extension was not yet loaded, View has no attribute app.")
+
         return self._app
 
     @property
@@ -373,3 +375,10 @@ class View:
 
         if self.is_persistent:
             View.persistent_views.append(self)
+
+
+def load(bot: hikari.GatewayBot) -> None:
+    """
+    Load miru and pass the current running application to it.
+    """
+    View._app = bot

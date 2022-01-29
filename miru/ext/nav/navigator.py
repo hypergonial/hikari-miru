@@ -49,7 +49,6 @@ __all__ = ["NavigatorView"]
 class NavigatorView(View):
     def __init__(
         self,
-        app: hikari.GatewayBot,
         *,
         pages: List[Union[str, hikari.Embed]],
         buttons: Optional[List[NavButton[NavigatorViewT]]] = None,
@@ -58,7 +57,7 @@ class NavigatorView(View):
     ) -> None:
         self._pages: List[Union[str, hikari.Embed]] = pages
         self._current_page: int = 0
-        super().__init__(app, timeout=timeout, autodefer=autodefer)
+        super().__init__(timeout=timeout, autodefer=autodefer)
 
         if buttons is not None:
             for button in buttons:
