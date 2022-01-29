@@ -55,6 +55,7 @@ class NoButton(miru.Button):
 
 
 bot = hikari.GatewayBot("...")
+miru.load()
 
 
 @bot.listen()
@@ -65,7 +66,7 @@ async def buttons(event: hikari.GuildMessageCreateEvent) -> None:
         return
 
     if event.content.startswith("miru"):
-        view = miru.View(bot)  # Create a new view
+        view = miru.View()  # Create a new view
         view.add_item(YesButton())  # Add our custom buttons to it
         view.add_item(NoButton(style=hikari.ButtonStyle.DANGER, label="No"))  # Pass arguments to NoButton
         message = await event.message.respond("Do you put pineapple on your pizza?", components=view.build())

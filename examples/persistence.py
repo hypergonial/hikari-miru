@@ -39,8 +39,8 @@ import miru
 
 
 class Persistence(miru.View):
-    def __init__(self, app: hikari.GatewayBot) -> None:
-        super().__init__(app, timeout=None)  # Setting timeout to None
+    def __init__(self) -> None:
+        super().__init__(timeout=None)  # Setting timeout to None
 
     @miru.button(label="Button 1", custom_id="my_unique_custom_id_1")
     async def button_one(self, button: miru.Button, interaction: miru.Interaction) -> None:
@@ -52,12 +52,13 @@ class Persistence(miru.View):
 
 
 bot = hikari.GatewayBot("...")
+miru.load(bot)
 
 
 @bot.listen()
 async def startup_views(event: hikari.StartedEvent) -> None:
     # You must reinstantiate the view in the same state it was before shutdown (e.g. same custom_ids)
-    view = Persistence(bot)
+    view = Persistence()
     # Restart the listener for the view, you may optionally pass in a message_id to further improve
     # accuracy and avoid conflicts from matching custom_ids.
     view.start_listener()
@@ -71,7 +72,7 @@ async def buttons(event: hikari.GuildMessageCreateEvent) -> None:
         return
 
     if event.content.startswith("miru"):
-        view = Persistence(bot)
+        view = Persistence()
         message = await event.message.respond(
             "This is a persistent component menu, and works after bot restarts!", components=view.build()
         )

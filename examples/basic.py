@@ -49,6 +49,7 @@ class BasicView(miru.View):
 
 
 bot = hikari.GatewayBot("...")
+miru.load(bot) # Start miru
 
 
 @bot.listen()
@@ -59,7 +60,7 @@ async def buttons(event: hikari.GuildMessageCreateEvent) -> None:
         return
 
     if event.content.startswith("miru"):
-        view = BasicView(bot)  # Create an instance of our newly created BasicView
+        view = BasicView()  # Create an instance of our newly created BasicView
         # Build the components defined in the view and attach them to our message
         # View.build() returns a list of the built action-rows, ready to be sent in a message
         message = await event.message.respond(

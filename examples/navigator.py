@@ -46,6 +46,7 @@ class MyNavButton(nav.NavButton):
 
 
 bot = hikari.GatewayBot("...")
+miru.load(bot)
 
 
 @bot.listen()
@@ -59,7 +60,7 @@ async def navigator(event: hikari.GuildMessageCreateEvent) -> None:
         embed = hikari.Embed(title="I'm the second page!", description="Also an embed!")
         pages = ["I'm the first page!", embed, "I'm the last page!"]
         # Define our navigator and pass in our list of pages
-        navigator = nav.NavigatorView(event.app, pages=pages)
+        navigator = nav.NavigatorView(pages=pages)
         # You may also pass an interaction object to this function
         await navigator.send(event.channel_id)
 
@@ -70,7 +71,7 @@ async def navigator(event: hikari.GuildMessageCreateEvent) -> None:
         # All navigator buttons MUST subclass NavButton
         buttons = [nav.PrevButton(), nav.StopButton(), nav.NextButton(), MyNavButton(label="Page: 1", row=1)]
         # Pass our list of NavButton to the navigator
-        navigator = nav.NavigatorView(event.app, pages=pages, buttons=buttons)
+        navigator = nav.NavigatorView(pages=pages, buttons=buttons)
 
         await navigator.send(event.channel_id)
 
