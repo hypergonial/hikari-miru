@@ -19,8 +19,8 @@ import re
 # -- Project information -----------------------------------------------------
 
 project = "hikari-miru"
-copyright = "2022, Hyper"
-author = "Hyper"
+copyright = "2022, HyperGH"
+author = "HyperGH"
 
 with open("../../miru/__init__.py") as fp:
     file = fp.read()
