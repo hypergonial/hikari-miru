@@ -53,7 +53,7 @@ class NavButton(Button[NavigatorViewT]):
         emoji: Union[hikari.Emoji, str, None] = None,
         row: Optional[int] = None,
     ):
-        """[summary]
+        """A baseclass for all navigation buttons. NavigatorViewT requires instances of this class as it's items.
 
         Parameters
         ----------
