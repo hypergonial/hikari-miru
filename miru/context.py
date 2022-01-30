@@ -79,11 +79,11 @@ class Context:
     def locale(self) -> str:
         """The locale of this context."""
         return self._interaction.locale
-    
+
     @property
     def guild_locale(self) -> typing.Optional[str]:
         """
-        The guild locale of this context, if in a guild. 
+        The guild locale of this context, if in a guild.
         This will default to `en-US` if not a community guild.
         """
         return self._interaction.guild_locale
