@@ -296,12 +296,13 @@ class View:
 
     async def on_timeout(self) -> None:
         """
-        Called when the view times out.
+        Called when the view times out. Override for custom timeout logic.
         """
         pass
 
     async def view_check(self, context: Context) -> bool:
         """Called before any callback in the view is called. Must evaluate to a truthy value to pass.
+        Override for custom check logic.
 
         Parameters
         ----------
@@ -322,6 +323,7 @@ class View:
         context: Optional[Context] = None,
     ) -> None:
         """Called when an error occurs in a callback function or the built-in timeout function.
+        Override for custom error-handling logic.
 
         Parameters
         ----------
