@@ -1,3 +1,5 @@
+[![Documentation Status](https://readthedocs.org/projects/hikari-miru/badge/?version=latest)](https://hikari-miru.readthedocs.io/en/latest/?badge=latest)
+
 # hikari-miru
 An optional component handler for [hikari](https://github.com/hikari-py/hikari), inspired by discord.py's views.
 
