@@ -154,7 +154,7 @@ class Item(abc.ABC, Generic[ViewT]):
 
 
 class DecoratedItem:
-    """A partial item made using a decorator"""
+    """A partial item made using a decorator."""
 
     def __init__(self, item: Item[Any], callback: Callable[..., Any]) -> None:
         self.item = item
@@ -179,7 +179,7 @@ class DecoratedItem:
 
     @property
     def name(self) -> str:
-        """The name of callback this item decorates.
+        """The name of the callback this item decorates.
 
         Returns
         -------
