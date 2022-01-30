@@ -76,6 +76,19 @@ class Context:
         return self._interaction.member
 
     @property
+    def locale(self) -> str:
+        """The locale of this context."""
+        return self._interaction.locale
+    
+    @property
+    def guild_locale(self) -> typing.Optional[str]:
+        """
+        The guild locale of this context, if in a guild. 
+        This will default to `en-US` if not a community guild.
+        """
+        return self._interaction.guild_locale
+
+    @property
     def channel_id(self) -> typing.Optional[Snowflake]:
         """The ID of the channel the context represents."""
         return self._interaction.channel_id
