@@ -13,7 +13,7 @@ Two conditions need to be met in order for a view to be considered persistent:
 There are two variants of them, bound and unbound. Let's explore the differences between the two.
 
 .. warning::
-    ::obj::`miru.views.View.message` will in all cases be ``None`` for persistent views.
+    :obj:`miru.views.View.message` will in all cases be ``None`` for persistent views.
 
 Unbound
 -------

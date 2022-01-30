@@ -2,7 +2,7 @@
 Error Handling
 ==============
 
-Error handling within views is provided via the :obj:`miru.views.View.on_error()` coroutine function.
+Error handling within views is provided via the :obj:`miru.views.View.on_error` coroutine method.
 When an error occurs in any item's callback or the timeout function, this function is called.
 
 The first parameter is always the exception that occured, and if the the exception occured in an

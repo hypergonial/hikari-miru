@@ -7,7 +7,7 @@ Checks
 Checks are functions that are called when the callback of an item is about to be called.
 They must evaluate to a truthy value to allow execution of the callback code.
 
-Views provide a way to implement this via the :obj:`miru.views.View.view_check` coroutine function.
+Views provide a way to implement this via the :obj:`miru.views.View.view_check` coroutine method.
 This object receives :obj:`miru.context.Context` as it's only argument, and if it does not evaluate
 to a truthy value, the interaction will be ignored.
 
@@ -37,7 +37,7 @@ Timeout
 
 By default, views time out after 120 seconds of inactivity. This can be controlled via the ``timeout``
 keyword argument passed to views. To execute code when the view times out, you can override the
-::obj::`miru.views.View.on_timeout` coroutine function. This function receives no arguments.
+:obj:`miru.views.View.on_timeout` coroutine method. This function receives no arguments.
 
 ::
 
