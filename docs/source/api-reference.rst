@@ -3,7 +3,7 @@ API Reference
 =============
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 4
 
    api_references/button
    api_references/interaction
