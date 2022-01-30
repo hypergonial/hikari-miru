@@ -358,7 +358,6 @@ class View:
         Handle the callback of a view item. Seperate task in case the view is stopped in the callback.
         """
 
-        context = Context(self, context.interaction)
         try:
             await item._refresh(context.interaction)
             await item.callback(context)
@@ -409,7 +408,7 @@ class View:
                 event = await self.app.event_manager.wait_for(
                     hikari.InteractionCreateEvent,
                     timeout=self.timeout,
-                    predicate=predicate,
+                    #predicate=predicate,
                 )
             except asyncio.TimeoutError:
                 # Handle timeouts, stop listening
@@ -467,7 +466,7 @@ class View:
             # Handle replacement of bound views on message edit
             if message_id in View._views.keys():
                 View._views[message_id].stop()
-                View._views[message_id] = self
+            View._views[message_id] = self
 
         self._listener_task = asyncio.create_task(self._listen_for_events(message_id))
 
@@ -494,7 +493,7 @@ class View:
         # Handle replacement of view on message edit
         if message.id in View._views.keys():
             View._views[message.id].stop()
-            View._views[message.id] = self
+        View._views[message.id] = self
 
 
 def load(bot: ViewsAware) -> None:

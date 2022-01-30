@@ -48,7 +48,7 @@ class BasicView(miru.View):
         self.stop()  # Called to stop the view
 
 
-bot = hikari.GatewayBot("...")
+bot = hikari.GatewayBot("ODE5MzE0NzM5NjQxMTg4Mzgy.YEk0UA.xUgJHNJ5wzKp9RygSPfQLF9Too4")
 miru.load(bot) # Start miru
 
 
