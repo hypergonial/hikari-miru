@@ -1,6 +1,6 @@
-=======================
-Navigator API Reference
-=======================
+===========================
+NavigatorView API Reference
+===========================
 
 .. automodule:: miru.ext.nav.navigator
    :members:
