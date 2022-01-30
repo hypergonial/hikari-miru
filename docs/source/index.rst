@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 hikari-miru
-=======================================
+===========
 
 miru is a component handler library for use with `Hikari <https://github.com/hikari-py/hikari>`_
 
@@ -37,6 +37,7 @@ Index:
 .. toctree::
    :maxdepth: 2
 
+   getting-started
    api-reference
    changelog
 
