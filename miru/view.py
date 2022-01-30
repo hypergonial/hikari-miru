@@ -408,7 +408,7 @@ class View:
                 event = await self.app.event_manager.wait_for(
                     hikari.InteractionCreateEvent,
                     timeout=self.timeout,
-                    #predicate=predicate,
+                    predicate=predicate,
                 )
             except asyncio.TimeoutError:
                 # Handle timeouts, stop listening
