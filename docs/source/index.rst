@@ -38,6 +38,7 @@ Index:
    :maxdepth: 2
 
    getting-started
+   guide
    api-reference
    changelog
 
