@@ -38,5 +38,6 @@ Index:
    :maxdepth: 2
 
    api-reference
+   changelog
 
 * :ref:`genindex`
