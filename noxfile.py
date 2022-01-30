@@ -52,7 +52,7 @@ def format(session: nox.Session):
 
 @nox.session()
 def mypy(session: nox.Session):
-    session.install("hikari")
+    session.install("-Ur", "requirements.txt")
     session.install("-U", "mypy")
     session.run("python", "-m", "mypy", PATH_TO_PROJECT)
 

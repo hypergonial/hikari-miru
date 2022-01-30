@@ -72,7 +72,10 @@ setup(
     license="MIT",
     include_package_data=True,
     zip_safe=False,
-    install_requires=["hikari~=2.0.0.dev106"],
+    install_requires=parse_requirements_file("requirements.txt"),
+    extras_require={
+        "docs": parse_requirements_file("doc_requirements.txt"),
+    },
     python_requires=">=3.8.0,<3.11",
     classifiers=[
         "Development Status :: 5 - Production/Stable",
