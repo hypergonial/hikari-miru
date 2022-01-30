@@ -36,8 +36,8 @@ class MyNavButton(nav.NavButton):
     # NextButton - Goes to next page
     # LastButton - Goes to the last page
 
-    async def callback(self, interaction: miru.Interaction) -> None:
-        await interaction.send_message("You clicked me!", flags=hikari.MessageFlag.EPHEMERAL)
+    async def callback(self, ctx: miru.Context) -> None:
+        await ctx.respond("You clicked me!", flags=hikari.MessageFlag.EPHEMERAL)
 
     async def before_page_change(self) -> None:
         # This function is called before the new page is sent by

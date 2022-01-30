@@ -43,12 +43,12 @@ class Persistence(miru.View):
         super().__init__(timeout=None)  # Setting timeout to None
 
     @miru.button(label="Button 1", custom_id="my_unique_custom_id_1")
-    async def button_one(self, button: miru.Button, interaction: miru.Interaction) -> None:
-        await interaction.send_message("You pressed button 1.")
+    async def button_one(self, button: miru.Button, ctx: miru.Context) -> None:
+        await ctx.respond("You pressed button 1.")
 
     @miru.button(label="Button 2", custom_id="my_unique_custom_id_2")
-    async def button_two(self, button: miru.Button, interaction: miru.Interaction) -> None:
-        await interaction.send_message("You pressed button 2.")
+    async def button_two(self, button: miru.Button, ctx: miru.Context) -> None:
+        await ctx.respond("You pressed button 2.")
 
 
 bot = hikari.GatewayBot("...")
@@ -60,7 +60,7 @@ async def startup_views(event: hikari.StartedEvent) -> None:
     # You must reinstantiate the view in the same state it was before shutdown (e.g. same custom_ids)
     view = Persistence()
     # Restart the listener for the view, you may optionally pass in a message_id to further improve
-    # accuracy and avoid conflicts from matching custom_ids.
+    # accuracy and allow for after-the-fact view message edits
     view.start_listener()
 
 
