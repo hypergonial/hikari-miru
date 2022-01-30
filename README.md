@@ -56,6 +56,8 @@ async def buttons(event: hikari.GuildMessageCreateEvent) -> None:
 
 bot.run()
 ```
+For more examples see [examples](https://github.com/HyperGH/hikari-miru/tree/main/examples), or refer to the [documentation](https://hikari-miru.readthedocs.io/en/latest/).
+
 ## Issues and support
 For general usage help or questions, see the `#hikari-miru` channel in the [hikari discord](https://discord.gg/Jx4cNGG), if you have found a bug or have a feature request, feel free to [open an issue](https://github.com/HyperGH/hikari-miru/issues/new)!
 
