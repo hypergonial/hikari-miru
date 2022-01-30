@@ -2,7 +2,7 @@ Navigators
 ==========
 
 A common usecase for buttons is creating paginated button-menus. In miru, these are called
-navigators, and such functionality is provided by the extensions ``miru.ext.nav``.
+navigators, and such functionality is provided by the extension ``miru.ext.nav``.
 
 .. note::
     ``miru.ext.nav`` is included with your installation, but is not imported implicitly,
