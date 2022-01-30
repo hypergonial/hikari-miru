@@ -11,5 +11,4 @@ API Reference
    api_references/select
    api_references/traits
    api_references/view
-   api_references/ext_navigator/buttons
-   api_references/ext_navigator/navigator
+   api_references/ext_navigator
