@@ -61,6 +61,8 @@ class Interaction(hikari.ComponentInteraction):
             message=interaction.message,
             member=interaction.member,
             user=interaction.user,
+            locale=interaction.locale,
+            guild_locale=interaction.guild_locale,
             app=interaction.app,
             id=interaction.id,
             application_id=interaction.application_id,
