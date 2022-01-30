@@ -59,4 +59,4 @@ keyword argument passed to views. To execute code when the view times out, you c
     view = TimeoutView(timeout=10.0)
 
 .. note::
-    Please note that if you manually call ::obj::`miru.views.View.stop`, ::obj::`miru.views.View.on_timeout` will not be called.
+    Please note that if you manually call :obj:`miru.views.View.stop`, :obj:`miru.views.View.on_timeout` will not be called.
