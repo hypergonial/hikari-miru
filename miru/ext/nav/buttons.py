@@ -39,8 +39,22 @@ __all__ = ["NavButton", "NextButton", "PrevButton", "FirstButton", "LastButton",
 
 
 class NavButton(Button[NavigatorViewT]):
-    """
-    A baseclass for all navigation buttons. NavigatorViewT requires instances of this class as it's items.
+    """A baseclass for all navigation buttons. NavigatorView requires instances of this class as it's items.
+
+    Parameters
+    ----------
+    style : Union[hikari.ButtonStyle, int], optional
+        The style of the navigation button, by default hikari.ButtonStyle.PRIMARY
+    label : Optional[str], optional
+        The label of the navigation button, by default None
+    disabled : bool, optional
+        Boolean indicating if the navigation button is disabled, by default False
+    custom_id : Optional[str], optional
+        The custom identifier of the navigation button, by default None
+    emoji : Union[hikari.Emoji, str, None], optional
+        The emoji of the navigation button, by default None
+    row : Optional[int], optional
+        The row this navigation button should occupy. Leave None for auto-placement.
     """
 
     def __init__(
@@ -53,23 +67,6 @@ class NavButton(Button[NavigatorViewT]):
         emoji: Union[hikari.Emoji, str, None] = None,
         row: Optional[int] = None,
     ):
-        """A baseclass for all navigation buttons. NavigatorViewT requires instances of this class as it's items.
-
-        Parameters
-        ----------
-        style : Union[hikari.ButtonStyle, int], optional
-            The style of the navigation button, by default hikari.ButtonStyle.PRIMARY
-        label : Optional[str], optional
-            The label of the navigation button, by default None
-        disabled : bool, optional
-            Boolean indicating if the navigation button is disabled, by default False
-        custom_id : Optional[str], optional
-            The custom identifier of the navigation button, by default None
-        emoji : Union[hikari.Emoji, str, None], optional
-            The emoji of the navigation button, by default None
-        row : Optional[int], optional
-            The row this navigation button should occupy. Leave None for auto-placement.
-        """
         super().__init__(
             style=style,
             label=label,

@@ -93,8 +93,29 @@ class SelectOption:
 
 
 class Select(Item[ViewT]):
-    """
-    A view component representing a select menu.
+    """A view component representing a select menu.
+
+    Parameters
+    ----------
+    options : Sequence[Union[hikari.SelectMenuOption, SelectOption]]
+        A sequence of select menu options that this select menu should use.
+    custom_id : Optional[str], optional
+        The custom identifier of the select menu, by default None
+    placeholder : Optional[str], optional
+        Placeholder text displayed on the select menu, by default None
+    min_values : int, optional
+        The minimum values a user has to select before it can be sent, by default 1
+    max_values : int, optional
+        The maximum values a user can select, by default 1
+    disabled : bool, optional
+        A boolean determining if the select menu should be disabled or not, by default False
+    row : Optional[int], optional
+        The row the select menu should be in, leave as None for auto-placement.
+
+    Raises
+    ------
+    ValueError
+        Exceeded the maximum of 25 select menu options possible.
     """
 
     def __init__(
@@ -108,30 +129,6 @@ class Select(Item[ViewT]):
         disabled: bool = False,
         row: Optional[int] = None,
     ) -> None:
-        """A view component representing a select menu.
-
-        Parameters
-        ----------
-        options : Sequence[Union[hikari.SelectMenuOption, SelectOption]]
-            A sequence of select menu options that this select menu should use.
-        custom_id : Optional[str], optional
-            The custom identifier of the select menu, by default None
-        placeholder : Optional[str], optional
-            Placeholder text displayed on the select menu, by default None
-        min_values : int, optional
-            The minimum values a user has to select before it can be sent, by default 1
-        max_values : int, optional
-            The maximum values a user can select, by default 1
-        disabled : bool, optional
-            [description], by default False
-        row : Optional[int], optional
-            [description], by default None
-
-        Raises
-        ------
-        ValueError
-            [description]
-        """
         super().__init__()
         self._values: Sequence[str] = []
         self._persistent: bool = True if custom_id else False

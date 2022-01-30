@@ -82,8 +82,21 @@ class _Weights(Generic[ViewT]):
 
 
 class View:
-    """
-    Represents a set of Discord UI components attached to a message.
+    """Represents a set of Discord UI components attached to a message.
+
+    Parameters
+    ----------
+    timeout : Optional[float], optional
+        The duration after which the view times out, in seconds, by default 120.0
+    autodefer : bool, optional
+        If unhandled interactions should be automatically deferred or not, by default True
+
+    Raises
+    ------
+    ValueError
+        Raised if a view has more than 25 components attached.
+    RuntimeError
+        Raised if miru.load() was never called before instantiation.
     """
 
     _app: ClassVar[Optional[ViewsAware]] = None
@@ -112,22 +125,6 @@ class View:
         timeout: Optional[float] = 120.0,
         autodefer: bool = True,
     ) -> None:
-        """Represents a set of Discord UI components attached to a message.
-
-        Parameters
-        ----------
-        timeout : Optional[float], optional
-            The duration after which the view times out, in seconds, by default 120.0
-        autodefer : bool, optional
-            If unhandled interactions should be automatically deferred or not, by default True
-
-        Raises
-        ------
-        ValueError
-            Raised if a view has more than 25 components attached.
-        RuntimeError
-            Raised if miru.load() was never called before instantiation.
-        """
         self._timeout: Optional[float] = float(timeout) if timeout else None
         self._children: List[Item[Any]] = []
         self._autodefer: bool = autodefer

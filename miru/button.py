@@ -46,8 +46,31 @@ __all__ = ["Button", "button"]
 
 
 class Button(Item[ViewT]):
-    """
-    A view component representing a button.
+    """A view component representing a button.
+
+    Parameters
+    ----------
+    style : Union[hikari.ButtonStyle, int], optional
+        The button's style, by default hikari.ButtonStyle.PRIMARY
+    label : Optional[str], optional
+        The button's label, by default None
+    disabled : bool, optional
+        A boolean determining if the button should be disabled or not, by default False
+    custom_id : Optional[str], optional
+        The custom identifier of the button, by default None
+    url : Optional[str], optional
+        The URL of the button, by default None
+    emoji : Union[hikari.Emoji, str, None], optional
+        The emoji present on the button, by default None
+    row : Optional[int], optional
+        The row the button should be in, leave as None for auto-placement.
+
+    Raises
+    ------
+    TypeError
+        If both label and emoji are left empty.
+    TypeError
+        if both custom_id and url are provided.
     """
 
     def __init__(
@@ -61,32 +84,6 @@ class Button(Item[ViewT]):
         emoji: Union[hikari.Emoji, str, None] = None,
         row: Optional[int] = None,
     ) -> None:
-        """A view component representing a button.
-
-        Parameters
-        ----------
-        style : Union[hikari.ButtonStyle, int], optional
-            The button's style, by default hikari.ButtonStyle.PRIMARY
-        label : Optional[str], optional
-            The button's label, by default None
-        disabled : bool, optional
-            A boolean determining if the button should be disabled or not, by default False
-        custom_id : Optional[str], optional
-            The custom identifier of the button, by default None
-        url : Optional[str], optional
-            The URL of the button, by default None
-        emoji : Union[hikari.Emoji, str, None], optional
-            The emoji present on the button, by default None
-        row : Optional[int], optional
-            The row the button should be in, leave as None for auto-placement.
-
-        Raises
-        ------
-        TypeError
-            If both label and emoji are left empty.
-        TypeError
-            if both custom_id and url are provided.
-        """
         super().__init__()
 
         self._style: Union[hikari.ButtonStyle, int] = style

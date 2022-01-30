@@ -45,8 +45,23 @@ __all__ = ["NavigatorView"]
 
 
 class NavigatorView(View):
-    """
-    A specialized view built for paginated button-menus, navigators.
+    """A specialized view built for paginated button-menus, navigators.
+
+    Parameters
+    ----------
+    pages : List[Union[str, hikari.Embed]]
+        A list of strings or embeds that this navigator should paginate.
+    buttons : Optional[List[NavButton[NavigatorViewT]]], optional
+        A list of navigation buttons to override the default ones with, by default None
+    timeout : Optional[float], optional
+        [The duration after which the view times out, in seconds, by default 120.0
+    autodefer : bool, optional
+        If unhandled interactions should be automatically deferred or not, by default True
+
+    Raises
+    ------
+    TypeError
+        One or more pages are not an instance of str or hikari.Embed
     """
 
     def __init__(
@@ -57,24 +72,6 @@ class NavigatorView(View):
         timeout: Optional[float] = 120.0,
         autodefer: bool = True,
     ) -> None:
-        """A specialized view built for paginated button-menus, navigators.
-
-        Parameters
-        ----------
-        pages : List[Union[str, hikari.Embed]]
-            A list of strings or embeds that this navigator should paginate.
-        buttons : Optional[List[NavButton[NavigatorViewT]]], optional
-            A list of navigation buttons to override the default ones with, by default None
-        timeout : Optional[float], optional
-            [The duration after which the view times out, in seconds, by default 120.0
-        autodefer : bool, optional
-            If unhandled interactions should be automatically deferred or not, by default True
-
-        Raises
-        ------
-        TypeError
-            One or more pages are not an instance of str or hikari.Embed
-        """
         self._pages: List[Union[str, hikari.Embed]] = pages
         self._current_page: int = 0
         super().__init__(timeout=timeout, autodefer=autodefer)
