@@ -74,6 +74,7 @@ setup(
     zip_safe=False,
     install_requires=parse_requirements_file("requirements.txt"),
     extras_require={
+        ':sys_platform=="win32"': ["colorama"],
         "docs": parse_requirements_file("doc_requirements.txt"),
     },
     python_requires=">=3.8.0,<3.11",
