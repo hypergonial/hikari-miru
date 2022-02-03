@@ -110,25 +110,21 @@ class Context:
 
     async def respond(
         self,
-        content: hikari.undefined.UndefinedOr[typing.Any] = hikari.undefined.UNDEFINED,
+        content: hikari.UndefinedOr[typing.Any] = hikari.UNDEFINED,
         *,
-        flags: typing.Union[int, hikari.MessageFlag, hikari.undefined.UndefinedType] = hikari.undefined.UNDEFINED,
-        tts: hikari.undefined.UndefinedOr[bool] = hikari.undefined.UNDEFINED,
-        component: hikari.undefined.UndefinedOr[
-            hikari.api.special_endpoints.ComponentBuilder
-        ] = hikari.undefined.UNDEFINED,
-        components: hikari.undefined.UndefinedOr[
-            typing.Sequence[hikari.api.special_endpoints.ComponentBuilder]
-        ] = hikari.undefined.UNDEFINED,
-        embed: hikari.undefined.UndefinedOr[hikari.Embed] = hikari.undefined.UNDEFINED,
-        embeds: hikari.undefined.UndefinedOr[typing.Sequence[hikari.Embed]] = hikari.undefined.UNDEFINED,
-        mentions_everyone: hikari.undefined.UndefinedOr[bool] = hikari.undefined.UNDEFINED,
-        user_mentions: hikari.undefined.UndefinedOr[
-            typing.Union[hikari.snowflakes.SnowflakeishSequence[hikari.PartialUser], bool]
-        ] = hikari.undefined.UNDEFINED,
-        role_mentions: hikari.undefined.UndefinedOr[
-            typing.Union[hikari.snowflakes.SnowflakeishSequence[hikari.PartialRole], bool]
-        ] = hikari.undefined.UNDEFINED,
+        flags: typing.Union[int, hikari.MessageFlag, hikari.UndefinedType] = hikari.UNDEFINED,
+        tts: hikari.UndefinedOr[bool] = hikari.UNDEFINED,
+        component: hikari.UndefinedOr[hikari.api.ComponentBuilder] = hikari.UNDEFINED,
+        components: hikari.UndefinedOr[typing.Sequence[hikari.api.ComponentBuilder]] = hikari.UNDEFINED,
+        embed: hikari.UndefinedOr[hikari.Embed] = hikari.UNDEFINED,
+        embeds: hikari.UndefinedOr[typing.Sequence[hikari.Embed]] = hikari.UNDEFINED,
+        mentions_everyone: hikari.UndefinedOr[bool] = hikari.UNDEFINED,
+        user_mentions: hikari.UndefinedOr[
+            typing.Union[hikari.SnowflakeishSequence[hikari.PartialUser], bool]
+        ] = hikari.UNDEFINED,
+        role_mentions: hikari.UndefinedOr[
+            typing.Union[hikari.SnowflakeishSequence[hikari.PartialRole], bool]
+        ] = hikari.UNDEFINED,
     ) -> None:
         """Short-hand method to respond to the interaction this context represents.
 
@@ -152,9 +148,9 @@ class Context:
             A sequence of embeds to add to this message.
         mentions_everyone : undefined.UndefinedOr[bool], optional
             If True, mentioning @everyone will be allowed.
-        user_mentions : undefined.UndefinedOr[typing.Union[hikari.snowflakes.SnowflakeishSequence[hikari.PartialUser], bool]], optional
+        user_mentions : undefined.UndefinedOr[typing.Union[hikari.SnowflakeishSequence[hikari.PartialUser], bool]], optional
             The set of allowed user mentions in this message. Set to True to allow all.
-        role_mentions : undefined.UndefinedOr[typing.Union[hikari.snowflakes.SnowflakeishSequence[hikari.PartialRole], bool]], optional
+        role_mentions : undefined.UndefinedOr[typing.Union[hikari.SnowflakeishSequence[hikari.PartialRole], bool]], optional
             The set of allowed role mentions in this message. Set to True to allow all.
         flags : typing.Union[undefined.UndefinedType, int, hikari.MessageFlag], optional
             Message flags that should be included with this message.
@@ -189,25 +185,21 @@ class Context:
 
     async def edit_response(
         self,
-        content: hikari.undefined.UndefinedOr[typing.Any] = hikari.undefined.UNDEFINED,
+        content: hikari.UndefinedOr[typing.Any] = hikari.UNDEFINED,
         *,
-        flags: typing.Union[int, hikari.MessageFlag, hikari.undefined.UndefinedType] = hikari.undefined.UNDEFINED,
-        tts: hikari.undefined.UndefinedOr[bool] = hikari.undefined.UNDEFINED,
-        component: hikari.undefined.UndefinedOr[
-            hikari.api.special_endpoints.ComponentBuilder
-        ] = hikari.undefined.UNDEFINED,
-        components: hikari.undefined.UndefinedOr[
-            typing.Sequence[hikari.api.special_endpoints.ComponentBuilder]
-        ] = hikari.undefined.UNDEFINED,
-        embed: hikari.undefined.UndefinedOr[hikari.Embed] = hikari.undefined.UNDEFINED,
-        embeds: hikari.undefined.UndefinedOr[typing.Sequence[hikari.Embed]] = hikari.undefined.UNDEFINED,
-        mentions_everyone: hikari.undefined.UndefinedOr[bool] = hikari.undefined.UNDEFINED,
-        user_mentions: hikari.undefined.UndefinedOr[
-            typing.Union[hikari.snowflakes.SnowflakeishSequence[hikari.PartialUser], bool]
-        ] = hikari.undefined.UNDEFINED,
-        role_mentions: hikari.undefined.UndefinedOr[
-            typing.Union[hikari.snowflakes.SnowflakeishSequence[hikari.PartialRole], bool]
-        ] = hikari.undefined.UNDEFINED,
+        flags: typing.Union[int, hikari.MessageFlag, hikari.UndefinedType] = hikari.UNDEFINED,
+        tts: hikari.UndefinedOr[bool] = hikari.UNDEFINED,
+        component: hikari.UndefinedOr[hikari.api.ComponentBuilder] = hikari.UNDEFINED,
+        components: hikari.UndefinedOr[typing.Sequence[hikari.api.ComponentBuilder]] = hikari.UNDEFINED,
+        embed: hikari.UndefinedOr[hikari.Embed] = hikari.UNDEFINED,
+        embeds: hikari.UndefinedOr[typing.Sequence[hikari.Embed]] = hikari.UNDEFINED,
+        mentions_everyone: hikari.UndefinedOr[bool] = hikari.UNDEFINED,
+        user_mentions: hikari.UndefinedOr[
+            typing.Union[hikari.SnowflakeishSequence[hikari.PartialUser], bool]
+        ] = hikari.UNDEFINED,
+        role_mentions: hikari.UndefinedOr[
+            typing.Union[hikari.SnowflakeishSequence[hikari.PartialRole], bool]
+        ] = hikari.UNDEFINED,
     ) -> None:
         """A short-hand method to edit the message belonging to this interaction.
 
@@ -231,9 +223,9 @@ class Context:
             A sequence of embeds to add to this message.
         mentions_everyone : undefined.UndefinedOr[bool], optional
             If True, mentioning @everyone will be allowed.
-        user_mentions : undefined.UndefinedOr[typing.Union[hikari.snowflakes.SnowflakeishSequence[hikari.PartialUser], bool]], optional
+        user_mentions : undefined.UndefinedOr[typing.Union[hikari.SnowflakeishSequence[hikari.PartialUser], bool]], optional
             The set of allowed user mentions in this message. Set to True to allow all.
-        role_mentions : undefined.UndefinedOr[typing.Union[hikari.snowflakes.SnowflakeishSequence[hikari.PartialRole], bool]], optional
+        role_mentions : undefined.UndefinedOr[typing.Union[hikari.SnowflakeishSequence[hikari.PartialRole], bool]], optional
             The set of allowed role mentions in this message. Set to True to allow all.
         flags : typing.Union[undefined.UndefinedType, int, hikari.MessageFlag], optional
             Message flags that should be included with this message.
@@ -244,8 +236,7 @@ class Context:
             The interaction was already responded to.
         """
         if self.interaction._issued_response:
-            self.interaction.edit_message(
-                self.interaction.message,
+            await self.interaction.edit_initial_response(
                 content,
                 component=component,
                 components=components,
@@ -255,20 +246,20 @@ class Context:
                 user_mentions=user_mentions,
                 role_mentions=role_mentions,
             )
-
-        await self.interaction.create_initial_response(
-            hikari.ResponseType.MESSAGE_UPDATE,
-            content,
-            component=component,
-            components=components,
-            tts=tts,
-            embed=embed,
-            embeds=embeds,
-            mentions_everyone=mentions_everyone,
-            user_mentions=user_mentions,
-            role_mentions=role_mentions,
-            flags=flags,
-        )
+        else:
+            await self.interaction.create_initial_response(
+                hikari.ResponseType.MESSAGE_UPDATE,
+                content,
+                component=component,
+                components=components,
+                tts=tts,
+                embed=embed,
+                embeds=embeds,
+                mentions_everyone=mentions_everyone,
+                user_mentions=user_mentions,
+                role_mentions=role_mentions,
+                flags=flags,
+            )
 
     async def defer(self, flags: typing.Union[int, hikari.MessageFlag, None] = None) -> None:
         """Short-hand method to defer an interaction response. Raises RuntimeError if the interaction was already responded to.

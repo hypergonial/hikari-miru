@@ -25,7 +25,7 @@ import platform
 import sys
 
 import hikari
-from colorama import Fore  # type: ignore[import]
+from colorama import Fore
 from colorama import init
 
 import miru
@@ -43,7 +43,7 @@ sys.stderr.write(
 {Fore.CYAN}Miru version: {Fore.WHITE}{miru.__version__}
 {Fore.CYAN}Install path: {Fore.WHITE}{os.path.abspath(os.path.dirname(__file__))}
 {Fore.CYAN}Hikari version: {Fore.WHITE}{hikari.__version__}
-{Fore.CYAN}Install path: {Fore.WHITE}{os.path.abspath(os.path.dirname(hikari._about.__file__))}
+{Fore.CYAN}Install path: {Fore.WHITE}{os.path.abspath(os.path.dirname(hikari.__file__))}
 {Fore.CYAN}Python: {Fore.WHITE}{python_details}
 {Fore.CYAN}System: {Fore.WHITE}{system_details}\n\n"""
 )

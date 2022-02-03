@@ -32,5 +32,3 @@ class ViewsAware(hikari.RESTAware, hikari.EventManagerAware, hikari.CacheAware, 
     """
     A trait that implements RESTAware, EventManagerAware and CacheAware.
     """
-
-    pass

@@ -39,5 +39,10 @@ warn_unreachable = true
 warn_unused_configs = true
 warn_unused_ignores = true
 
+# dependency management (install stubs or fallback to Any)
+install_types = true
+non_interactive = true
+ignore_missing_imports = true
+
 [tool.pyright]
 exclude = ["examples"]
