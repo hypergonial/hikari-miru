@@ -19,6 +19,8 @@ Version 1.1.0
 
 - Make colorama an optional Windows-only dependency.
 
+- Allow entire message objects in ``miru.start_listener()``.
+
 Thanks to `sadru <https://github.com/thesadru>`_ for help with this release.
 
 Version 1.0.0
