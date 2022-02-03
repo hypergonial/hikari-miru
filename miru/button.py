@@ -184,7 +184,7 @@ class Button(Item[ViewT]):
             button = action_row.add_button(hikari.ButtonStyle.LINK, self.url)
         else:
             assert self.custom_id is not None
-            button = action_row.add_button(self.style, self.custom_id)  # type: ignore
+            button = action_row.add_button(self.style, self.custom_id)
 
         if self.label:
             button.set_label(self.label)
