@@ -1,0 +1,8 @@
+graft miru
+include LICENSE
+include requirements.txt
+include doc_requirements.txt
+include setup.py
+include README.md
+include pyproject.toml
+global-exclude *.py[cod]
