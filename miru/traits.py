@@ -30,5 +30,5 @@ __all__ = ["ViewsAware"]
 @typing.runtime_checkable
 class ViewsAware(hikari.RESTAware, hikari.EventManagerAware, typing.Protocol):
     """
-    A trait that implements RESTAware, EventManagerAware and CacheAware.
+    A trait that implements RESTAware and EventManagerAware.
     """
