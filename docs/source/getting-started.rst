@@ -27,7 +27,11 @@ This is what a basic component menu looks like with miru:
 
         # Define a new Select menu with two options
         @miru.select(
-            placeholder="Select me!", options=[miru.SelectOption(label="Option 1"), miru.SelectOption(label="Option 2")]
+            placeholder="Select me!",
+            options=[
+                miru.SelectOption(label="Option 1"),
+                miru.SelectOption(label="Option 2"),
+            ],
         )
         async def basic_select(self, select: miru.Select, ctx: miru.Context) -> None:
             await ctx.respond(f"You've chosen {select.values[0]}!")
