@@ -37,10 +37,10 @@ from .item import DecoratedItem
 from .item import Item
 
 if TYPE_CHECKING:
+    from .context import Context
     from .view import View
 
 ViewT = TypeVar("ViewT", bound="View")
-CallableT = TypeVar("CallableT", bound=Callable[..., Any])
 
 __all__ = ["Button", "button"]
 
@@ -202,7 +202,7 @@ def button(
     emoji: Optional[Union[str, hikari.Emoji]] = None,
     row: Optional[int] = None,
     disabled: bool = False,
-) -> Callable[[CallableT], CallableT]:
+) -> Callable[[Callable[[ViewT, Button[ViewT], Context], Any]], Button[ViewT]]:
     """A decorator to transform a coroutine function into a Discord UI Button's callback.
     This must be inside a subclass of View.
 
