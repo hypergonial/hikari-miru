@@ -15,11 +15,9 @@ Version 1.1.0
 
 - Fix a bug where ``miru.Context.edit_response()`` would not work correctly after initial response.
 
-- No longer use explicit submodules unless they are exported in context type signatures
+- No longer use explicit submodules unless they are exported in context type signatures.
 
-- Ignore 3rd party libraries with missing stubs
-
-- Make colorama dependency an optional Windows-only dependency
+- Make colorama an optional Windows-only dependency.
 
 Thanks to `sadru <https://github.com/thesadru>`_ for help with this release.
 
