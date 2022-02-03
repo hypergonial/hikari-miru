@@ -1,26 +1,25 @@
-"""
-MIT License
+# MIT License
+#
+# Copyright (c) 2022-present HyperGH
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
 
-Copyright (c) 2022-present HyperGH
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-"""
 from __future__ import annotations
 
 import inspect
@@ -60,6 +59,21 @@ class SelectOption:
         emoji: Optional[Union[str, hikari.Emoji]] = None,
         is_default: bool = False,
     ) -> None:
+        """A more lenient way to instantiate select options.
+
+        Parameters
+        ----------
+        label : str
+            The option's label.
+        value : Optional[str], optional
+            The internal value of the option, if None, uses label.
+        description : Optional[str], optional
+            The description of the option, by default None
+        emoji : Optional[Union[str, hikari.Emoji]], optional
+            The emoji of the option, by default None
+        is_default : bool, optional
+            A boolean determining of the option is default or not, by default False
+        """
         self.label: str = label
         self.value: str = value if value else label
         self.description: Optional[str] = description
@@ -79,8 +93,29 @@ class SelectOption:
 
 
 class Select(Item[ViewT]):
-    """
-    A view component representing a select menu.
+    """A view component representing a select menu.
+
+    Parameters
+    ----------
+    options : Sequence[Union[hikari.SelectMenuOption, SelectOption]]
+        A sequence of select menu options that this select menu should use.
+    custom_id : Optional[str], optional
+        The custom identifier of the select menu, by default None
+    placeholder : Optional[str], optional
+        Placeholder text displayed on the select menu, by default None
+    min_values : int, optional
+        The minimum values a user has to select before it can be sent, by default 1
+    max_values : int, optional
+        The maximum values a user can select, by default 1
+    disabled : bool, optional
+        A boolean determining if the select menu should be disabled or not, by default False
+    row : Optional[int], optional
+        The row the select menu should be in, leave as None for auto-placement.
+
+    Raises
+    ------
+    ValueError
+        Exceeded the maximum of 25 select menu options possible.
     """
 
     def __init__(

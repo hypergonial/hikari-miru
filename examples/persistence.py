@@ -1,3 +1,25 @@
+# MIT License
+#
+# Copyright (c) 2022-present HyperGH
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
 import hikari
 import miru
 
@@ -17,27 +39,28 @@ import miru
 
 
 class Persistence(miru.View):
-    def __init__(self, app: hikari.GatewayBot) -> None:
-        super().__init__(app, timeout=None)  # Setting timeout to None
+    def __init__(self) -> None:
+        super().__init__(timeout=None)  # Setting timeout to None
 
     @miru.button(label="Button 1", custom_id="my_unique_custom_id_1")
-    async def button_one(self, button: miru.Button, interaction: miru.Interaction) -> None:
-        await interaction.send_message("You pressed button 1.")
+    async def button_one(self, button: miru.Button, ctx: miru.Context) -> None:
+        await ctx.respond("You pressed button 1.")
 
     @miru.button(label="Button 2", custom_id="my_unique_custom_id_2")
-    async def button_two(self, button: miru.Button, interaction: miru.Interaction) -> None:
-        await interaction.send_message("You pressed button 2.")
+    async def button_two(self, button: miru.Button, ctx: miru.Context) -> None:
+        await ctx.respond("You pressed button 2.")
 
 
 bot = hikari.GatewayBot("...")
+miru.load(bot)
 
 
 @bot.listen()
 async def startup_views(event: hikari.StartedEvent) -> None:
     # You must reinstantiate the view in the same state it was before shutdown (e.g. same custom_ids)
-    view = Persistence(bot)
+    view = Persistence()
     # Restart the listener for the view, you may optionally pass in a message_id to further improve
-    # accuracy and avoid conflicts from matching custom_ids.
+    # accuracy and allow for after-the-fact view message edits
     view.start_listener()
 
 
@@ -49,7 +72,7 @@ async def buttons(event: hikari.GuildMessageCreateEvent) -> None:
         return
 
     if event.content.startswith("miru"):
-        view = Persistence(bot)
+        view = Persistence()
         message = await event.message.respond(
             "This is a persistent component menu, and works after bot restarts!", components=view.build()
         )

@@ -1,26 +1,24 @@
-"""
-MIT License
-
-Copyright (c) 2022-present HyperGH
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-"""
+# MIT License
+#
+# Copyright (c) 2022-present HyperGH
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
 
 from typing import Any
 from typing import List
@@ -31,7 +29,7 @@ from typing import Union
 
 import hikari
 
-from miru.interaction import Interaction
+from miru.context import Context
 from miru.item import Item
 from miru.view import View
 
@@ -47,9 +45,27 @@ __all__ = ["NavigatorView"]
 
 
 class NavigatorView(View):
+    """A specialized view built for paginated button-menus, navigators.
+
+    Parameters
+    ----------
+    pages : List[Union[str, hikari.Embed]]
+        A list of strings or embeds that this navigator should paginate.
+    buttons : Optional[List[NavButton[NavigatorViewT]]], optional
+        A list of navigation buttons to override the default ones with, by default None
+    timeout : Optional[float], optional
+        [The duration after which the view times out, in seconds, by default 120.0
+    autodefer : bool, optional
+        If unhandled interactions should be automatically deferred or not, by default True
+
+    Raises
+    ------
+    TypeError
+        One or more pages are not an instance of str or hikari.Embed
+    """
+
     def __init__(
         self,
-        app: hikari.GatewayBot,
         *,
         pages: List[Union[str, hikari.Embed]],
         buttons: Optional[List[NavButton[NavigatorViewT]]] = None,
@@ -58,7 +74,7 @@ class NavigatorView(View):
     ) -> None:
         self._pages: List[Union[str, hikari.Embed]] = pages
         self._current_page: int = 0
-        super().__init__(app, timeout=timeout, autodefer=autodefer)
+        super().__init__(timeout=timeout, autodefer=autodefer)
 
         if buttons is not None:
             for button in buttons:
@@ -104,14 +120,27 @@ class NavigatorView(View):
         await self.message.edit(components=self.build())
 
     def get_default_buttons(self: NavigatorViewT) -> List[NavButton[NavigatorViewT]]:
-        """
-        Returns the default set of buttons.
+        """Returns the default set of buttons.
+
+        Returns
+        -------
+        List[NavButton[NavigatorViewT]]
+            A list of the default navigation buttons.
         """
         return [FirstButton(), PrevButton(), IndicatorButton(), NextButton(), LastButton()]
 
     def add_item(self, item: Item[NavigatorViewT]) -> None:
-        """
-        Adds a new item to the view. Item must be of type NavButton.
+        """Adds a new item to the view. Item must be of type NavButton.
+
+        Parameters
+        ----------
+        item : Item[NavigatorViewT]
+            An instance of NavButton
+
+        Raises
+        ------
+        TypeError
+            Parameter item was not an instance of NavButton
         """
         if not isinstance(item, NavButton):
             raise TypeError("Expected type NavButton for parameter item.")
@@ -126,9 +155,15 @@ class NavigatorView(View):
         else:
             raise TypeError("Expected type str or hikari.Embed to send as page.")
 
-    async def send_page(self, interaction: Interaction, page_index: Optional[int] = None) -> None:
-        """
-        Send a page, editing the original message.
+    async def send_page(self, context: Context, page_index: Optional[int] = None) -> None:
+        """Send a page, editing the original message.
+
+        Parameters
+        ----------
+        context : Context
+            The context that should be used to send this page
+        page_index : Optional[int], optional
+            The index of the page to send, if not specifed sends the current page, by default None
         """
         if page_index:
             self.current_page = page_index
@@ -140,11 +175,15 @@ class NavigatorView(View):
                 await button.before_page_change()
 
         payload = self._get_page_payload(page)
-        await interaction.edit_message(**payload)
+        await context.edit_response(**payload)
 
     def start(self, message: hikari.Message) -> None:
-        """
-        Start up the navigator listener. This should not be called directly, use send() instead.
+        """Start up the navigator listener. This should not be called directly, use send() instead.
+
+        Parameters
+        ----------
+        message : hikari.Message
+            The message this view was built for.
         """
         super().start(message)
 
@@ -152,8 +191,12 @@ class NavigatorView(View):
         self,
         channel_or_interaction: Union[hikari.SnowflakeishOr[hikari.PartialChannel], hikari.MessageResponseMixin[Any]],
     ) -> None:
-        """
-        Start up the navigator, send the first page, and start listening for interactions.
+        """Start up the navigator, send the first page, and start listening for interactions.
+
+        Parameters
+        ----------
+        channel_or_interaction : Union[hikari.SnowflakeishOr[hikari.PartialChannel], hikari.MessageResponseMixin[Any]]
+            A channel or interaction to use to send the navigator.
         """
         self.current_page = 0
 

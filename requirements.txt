@@ -1,0 +1,2 @@
+hikari>=2.0.0.dev105
+colorama

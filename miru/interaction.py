@@ -1,3 +1,25 @@
+# MIT License
+#
+# Copyright (c) 2022-present HyperGH
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
 from __future__ import annotations
 
 import functools
@@ -5,24 +27,30 @@ import typing
 
 import hikari
 
-if typing.TYPE_CHECKING:
-    from hikari import messages
-
-
 __all__ = ["Interaction"]
 
 
 class Interaction(hikari.ComponentInteraction):
     """
-    Represents a component interaction on Discord. Has additional short-hand methods for ease-of-use.
+    Represents a component interaction on Discord. This object is practically identical to hikari.ComponentInteraction,
+    with the only exception being that response status is tracked for automatic deferring and short-hand methods.
     """
 
     _issued_response: bool = False
 
     @classmethod
     def from_hikari(cls, interaction: hikari.ComponentInteraction) -> Interaction:
-        """
-        Create a new Interaction object from a hikari.ComponentInteraction. This should be rarely used.
+        """Create a new Interaction object from a hikari.ComponentInteraction. This should be rarely used.
+
+        Parameters
+        ----------
+        interaction : hikari.ComponentInteraction
+            The ComponentInteraction this object should be created from.
+
+        Returns
+        -------
+        Interaction
+            The created interaction object.
         """
         return cls(
             channel_id=interaction.channel_id,
@@ -33,6 +61,8 @@ class Interaction(hikari.ComponentInteraction):
             message=interaction.message,
             member=interaction.member,
             user=interaction.user,
+            locale=interaction.locale,
+            guild_locale=interaction.guild_locale,
             app=interaction.app,
             id=interaction.id,
             application_id=interaction.application_id,
@@ -45,33 +75,3 @@ class Interaction(hikari.ComponentInteraction):
     async def create_initial_response(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         await super().create_initial_response(*args, **kwargs)
         self._issued_response = True
-
-    @functools.wraps(hikari.ComponentInteraction.execute)
-    async def send_message(self, *args: typing.Any, **kwargs: typing.Any) -> None:
-        """
-        Short-hand method to send a message response to the interaction
-        """
-        if self._issued_response:
-            await self.execute(*args, **kwargs)
-        else:
-            await self.create_initial_response(hikari.ResponseType.MESSAGE_CREATE, *args, **kwargs)
-
-    @functools.wraps(hikari.ComponentInteraction.execute)
-    async def edit_message(self, *args: typing.Any, **kwargs: typing.Any) -> None:  # type: ignore
-        """
-        Short-hand method for editing the message the component is attached to.
-        """
-        if self._issued_response:
-            raise RuntimeError("Interaction was already responded to.")
-
-        await self.create_initial_response(hikari.ResponseType.MESSAGE_UPDATE, *args, **kwargs)
-
-    async def defer(self, flags: typing.Union[int, messages.MessageFlag, None] = None) -> None:
-        """
-        Short-hand method to defer an interaction response. Raises RuntimeError if the interaction was already responded to.
-        """
-
-        if self._issued_response:
-            raise RuntimeError("Interaction was already responded to.")
-
-        await self.create_initial_response(hikari.ResponseType.DEFERRED_MESSAGE_UPDATE, flags=flags)

@@ -1,26 +1,24 @@
-"""
-MIT License
-
-Copyright (c) 2022-present HyperGH
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-"""
+# MIT License
+#
+# Copyright (c) 2022-present HyperGH
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
 
 from typing import TYPE_CHECKING
 from typing import Optional
@@ -30,7 +28,7 @@ from typing import Union
 import hikari
 
 from miru.button import Button
-from miru.interaction import Interaction
+from miru.context import Context
 
 if TYPE_CHECKING:
     from .navigator import NavigatorView
@@ -41,8 +39,22 @@ __all__ = ["NavButton", "NextButton", "PrevButton", "FirstButton", "LastButton",
 
 
 class NavButton(Button[NavigatorViewT]):
-    """
-    A baseclass for all navigation buttons. NavigatorViewT requires instances of this class as it's items.
+    """A baseclass for all navigation buttons. NavigatorView requires instances of this class as it's items.
+
+    Parameters
+    ----------
+    style : Union[hikari.ButtonStyle, int], optional
+        The style of the navigation button, by default hikari.ButtonStyle.PRIMARY
+    label : Optional[str], optional
+        The label of the navigation button, by default None
+    disabled : bool, optional
+        Boolean indicating if the navigation button is disabled, by default False
+    custom_id : Optional[str], optional
+        The custom identifier of the navigation button, by default None
+    emoji : Union[hikari.Emoji, str, None], optional
+        The emoji of the navigation button, by default None
+    row : Optional[int], optional
+        The row this navigation button should occupy. Leave None for auto-placement.
     """
 
     def __init__(
@@ -96,9 +108,9 @@ class NextButton(NavButton[NavigatorViewT]):
     ):
         super().__init__(style=style, label=label, custom_id=custom_id, emoji=emoji, row=row)
 
-    async def callback(self, interaction: Interaction) -> None:
+    async def callback(self, context: Context) -> None:
         self.view.current_page += 1
-        await self.view.send_page(interaction)
+        await self.view.send_page(context)
 
     async def before_page_change(self) -> None:
         if self.view.current_page == len(self.view.pages) - 1:
@@ -123,9 +135,9 @@ class PrevButton(NavButton[NavigatorViewT]):
     ):
         super().__init__(style=style, label=label, custom_id=custom_id, emoji=emoji, row=row)
 
-    async def callback(self, interaction: Interaction) -> None:
+    async def callback(self, context: Context) -> None:
         self.view.current_page -= 1
-        await self.view.send_page(interaction)
+        await self.view.send_page(context)
 
     async def before_page_change(self) -> None:
         if self.view.current_page == 0:
@@ -150,9 +162,9 @@ class FirstButton(NavButton[NavigatorViewT]):
     ):
         super().__init__(style=style, label=label, custom_id=custom_id, emoji=emoji, row=row)
 
-    async def callback(self, interaction: Interaction) -> None:
+    async def callback(self, context: Context) -> None:
         self.view.current_page = 0
-        await self.view.send_page(interaction)
+        await self.view.send_page(context)
 
     async def before_page_change(self) -> None:
         if self.view.current_page == 0:
@@ -177,9 +189,9 @@ class LastButton(NavButton[NavigatorViewT]):
     ):
         super().__init__(style=style, label=label, custom_id=custom_id, emoji=emoji, row=row)
 
-    async def callback(self, interaction: Interaction) -> None:
+    async def callback(self, context: Context) -> None:
         self.view.current_page = len(self.view.pages) - 1
-        await self.view.send_page(interaction)
+        await self.view.send_page(context)
 
     async def before_page_change(self) -> None:
         if self.view.current_page == len(self.view.pages) - 1:
@@ -224,7 +236,7 @@ class StopButton(NavButton[NavigatorViewT]):
     ):
         super().__init__(style=style, label=label, custom_id=custom_id, emoji=emoji, row=row)
 
-    async def callback(self, interaction: Interaction) -> None:
+    async def callback(self, context: Context) -> None:
         if not self.view.message:
             return
 

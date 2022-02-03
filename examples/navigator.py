@@ -1,3 +1,25 @@
+# MIT License
+#
+# Copyright (c) 2022-present HyperGH
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
 import hikari
 import miru
 from miru.ext import nav
@@ -14,8 +36,8 @@ class MyNavButton(nav.NavButton):
     # NextButton - Goes to next page
     # LastButton - Goes to the last page
 
-    async def callback(self, interaction: miru.Interaction) -> None:
-        await interaction.send_message("You clicked me!", flags=hikari.MessageFlag.EPHEMERAL)
+    async def callback(self, ctx: miru.Context) -> None:
+        await ctx.respond("You clicked me!", flags=hikari.MessageFlag.EPHEMERAL)
 
     async def before_page_change(self) -> None:
         # This function is called before the new page is sent by
@@ -24,6 +46,7 @@ class MyNavButton(nav.NavButton):
 
 
 bot = hikari.GatewayBot("...")
+miru.load(bot)
 
 
 @bot.listen()
@@ -37,7 +60,7 @@ async def navigator(event: hikari.GuildMessageCreateEvent) -> None:
         embed = hikari.Embed(title="I'm the second page!", description="Also an embed!")
         pages = ["I'm the first page!", embed, "I'm the last page!"]
         # Define our navigator and pass in our list of pages
-        navigator = nav.NavigatorView(event.app, pages=pages)
+        navigator = nav.NavigatorView(pages=pages)
         # You may also pass an interaction object to this function
         await navigator.send(event.channel_id)
 
@@ -48,7 +71,7 @@ async def navigator(event: hikari.GuildMessageCreateEvent) -> None:
         # All navigator buttons MUST subclass NavButton
         buttons = [nav.PrevButton(), nav.StopButton(), nav.NextButton(), MyNavButton(label="Page: 1", row=1)]
         # Pass our list of NavButton to the navigator
-        navigator = nav.NavigatorView(event.app, pages=pages, buttons=buttons)
+        navigator = nav.NavigatorView(pages=pages, buttons=buttons)
 
         await navigator.send(event.channel_id)
 

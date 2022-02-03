@@ -1,0 +1,24 @@
+=======================
+Versions 1.0+ Changelog
+=======================
+
+These are all the changelogs for stable releases of hikari-miru (version 1.0.0 to present).
+
+----
+
+Version 1.0.0
+=============
+
+- Remove ``app`` parameter from ``View``
+
+- Add ``miru.load()`` to load miru and pass ``app``. This replaces passing ``app`` to view, and should be called once on startup.
+
+- Add ``Context`` and switch all item methods to use it in favour of ``Interaction``.
+
+- Moved all short-hand methods from ``Interaction`` to ``Context``, renaming some of them. Please check the API reference for both.
+
+- ``Interaction`` is now practically identical to ``hikari.ComponentInteraction`` with no added methods.
+
+- Added documentation to the project
+
+- Views are now assigned to messages, and if a new view is assigned to a message that already has one, the old one will be automatically stopped. This does not apply to unbound persistent views.

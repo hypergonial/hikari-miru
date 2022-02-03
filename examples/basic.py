@@ -1,3 +1,25 @@
+# MIT License
+#
+# Copyright (c) 2022-present HyperGH
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
 import hikari
 import miru
 
@@ -12,21 +34,22 @@ class BasicView(miru.View):
     @miru.select(
         placeholder="Select me!", options=[miru.SelectOption(label="Option 1"), miru.SelectOption(label="Option 2")]
     )
-    async def basic_select(self, select: miru.Select, interaction: miru.Interaction) -> None:
-        await interaction.send_message(f"You've chosen {select.values[0]}!")
+    async def basic_select(self, select: miru.Select, ctx: miru.Context) -> None:
+        await ctx.respond(f"You've chosen {select.values[0]}!")
 
     # Define a new Button with the Style of success (Green)
     @miru.button(label="Click me!", style=hikari.ButtonStyle.SUCCESS)
-    async def basic_button(self, button: miru.Button, interaction: miru.Interaction) -> None:
-        await interaction.send_message(f"You clicked me!")
+    async def basic_button(self, button: miru.Button, ctx: miru.Context) -> None:
+        await ctx.respond("You clicked me!")
 
     # Define a new Button that when pressed will stop the view & invalidate all the buttons in this view
     @miru.button(label="Stop me!", style=hikari.ButtonStyle.DANGER)
-    async def stop_button(self, button: miru.Button, interaction: miru.Interaction) -> None:
+    async def stop_button(self, button: miru.Button, ctx: miru.Context) -> None:
         self.stop()  # Called to stop the view
 
 
 bot = hikari.GatewayBot("...")
+miru.load(bot) # Start miru
 
 
 @bot.listen()
@@ -37,7 +60,7 @@ async def buttons(event: hikari.GuildMessageCreateEvent) -> None:
         return
 
     if event.content.startswith("miru"):
-        view = BasicView(bot)  # Create an instance of our newly created BasicView
+        view = BasicView()  # Create an instance of our newly created BasicView
         # Build the components defined in the view and attach them to our message
         # View.build() returns a list of the built action-rows, ready to be sent in a message
         message = await event.message.respond(

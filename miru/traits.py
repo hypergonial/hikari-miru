@@ -20,12 +20,17 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from .button import *
-from .context import *
-from .interaction import *
-from .item import *
-from .select import *
-from .traits import *
-from .view import *
+import typing
 
-__version__ = "1.0.0"
+import hikari
+
+__all__ = ["ViewsAware"]
+
+
+@typing.runtime_checkable
+class ViewsAware(hikari.RESTAware, hikari.EventManagerAware, hikari.CacheAware, typing.Protocol):
+    """
+    A trait that implements RESTAware, EventManagerAware and CacheAware.
+    """
+
+    pass
