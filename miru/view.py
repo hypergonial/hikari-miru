@@ -526,7 +526,7 @@ def load(bot: ViewsAware) -> None:
 def unload() -> None:
     """Unload miru and remove the current running application from it.
 
-    !!! warning
+    .. warning::
         Unbound persistent views should be stopped manually.
     """
     for message, view in View._views.items():
