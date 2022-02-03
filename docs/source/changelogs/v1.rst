@@ -6,6 +6,23 @@ These are all the changelogs for stable releases of hikari-miru (version 1.0.0 t
 
 ----
 
+Version 1.1.0
+=============
+
+- Add ``miru.unload()`` to unload miru and remove the application reference.
+
+- Annotate ``miru.button()`` and ``miru.select()`` to return their respective objects.
+
+- Fix a bug where ``miru.Context.edit_response()`` would not work correctly after initial response.
+
+- No longer use explicit submodules unless they are exported in context type signatures.
+
+- Make colorama an optional Windows-only dependency.
+
+- Allow entire message objects in ``miru.start_listener()``.
+
+Thanks to `sadru <https://github.com/thesadru>`_ for help with this release.
+
 Version 1.0.0
 =============
 

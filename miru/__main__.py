@@ -25,25 +25,31 @@ import platform
 import sys
 
 import hikari
-from colorama import Fore  # type: ignore[import]
-from colorama import init
 
 import miru
 
 # Support color on Windows
-init()
-system_details = (
-    f"{platform.uname().system} {platform.uname().machine} ({platform.uname().node}) - {platform.uname().release}"
-)
+if sys.platform == "win32":
+    import colorama
+
+    colorama.init()
+
+
+CYAN = "\x1b[36m"
+WHITE = "\x1b[37m"
+LIGHTCYAN = "\x1b[96m"
+
+uname = platform.uname()
+system_details = f"{uname.system} {uname.machine} ({uname.node}) - {uname.release}"
 python_details = f"{platform.python_implementation()} {platform.python_version()} ({platform.python_compiler()})"
 
 sys.stderr.write(
-    f"""{Fore.LIGHTCYAN_EX}hikari-miru - package information
-{Fore.WHITE}----------------------------------
-{Fore.CYAN}Miru version: {Fore.WHITE}{miru.__version__}
-{Fore.CYAN}Install path: {Fore.WHITE}{os.path.abspath(os.path.dirname(__file__))}
-{Fore.CYAN}Hikari version: {Fore.WHITE}{hikari.__version__}
-{Fore.CYAN}Install path: {Fore.WHITE}{os.path.abspath(os.path.dirname(hikari._about.__file__))}
-{Fore.CYAN}Python: {Fore.WHITE}{python_details}
-{Fore.CYAN}System: {Fore.WHITE}{system_details}\n\n"""
+    f"""{LIGHTCYAN}hikari-miru - package information
+{WHITE}----------------------------------
+{CYAN}Miru version: {WHITE}{miru.__version__}
+{CYAN}Install path: {WHITE}{os.path.abspath(os.path.dirname(__file__))}
+{CYAN}Hikari version: {WHITE}{hikari.__version__}
+{CYAN}Install path: {WHITE}{os.path.abspath(os.path.dirname(hikari.__file__))}
+{CYAN}Python: {WHITE}{python_details}
+{CYAN}System: {WHITE}{system_details}\n\n"""
 )

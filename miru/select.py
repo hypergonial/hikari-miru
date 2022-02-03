@@ -38,10 +38,10 @@ from .item import DecoratedItem
 from .item import Item
 
 if TYPE_CHECKING:
+    from .context import Context
     from .view import View
 
 ViewT = TypeVar("ViewT", bound="View")
-CallableT = TypeVar("CallableT", bound=Callable[..., Any])
 
 __all__ = ["SelectOption", "Select", "select"]
 
@@ -249,7 +249,7 @@ def select(
     max_values: int = 1,
     disabled: bool = False,
     row: Optional[int] = None,
-) -> Callable[[CallableT], CallableT]:
+) -> Callable[[Callable[[ViewT, Select[ViewT], Context], Any]], Select[ViewT]]:
     """
     A decorator to transform a function into a Discord UI SelectMenu's callback. This must be inside a subclass of View.
     """

@@ -25,8 +25,12 @@ author = "HyperGH"
 
 with open("../../miru/__init__.py") as fp:
     file = fp.read()
-version = re.search(r"__version__ = \"([^\"]+)", file).group(1)
-release = version
+
+if _match := re.search(r"__version__ = \"([^\"]+)", file):
+    version = _match.group(1)
+    release = version
+else:
+    raise RuntimeError("Improperly formatted miru/__init__.py file")
 
 master_doc = "index"
 

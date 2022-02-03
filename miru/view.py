@@ -46,7 +46,7 @@ from .traits import ViewsAware
 
 ViewT = TypeVar("ViewT", bound="View")
 
-__all__ = ["View", "load"]
+__all__ = ["View", "load", "unload"]
 
 
 class _Weights(Generic[ViewT]):
@@ -440,13 +440,13 @@ class View:
         """
         await asyncio.wait_for(self._stopped.wait(), timeout=None)
 
-    def start_listener(self, message_id: Optional[int] = None) -> None:
+    def start_listener(self, message: Optional[hikari.SnowflakeishOr[hikari.PartialMessage]] = None) -> None:
         """Re-registers a persistent view for listening after an application restart.
         Specify message_id to create a bound persistent view that can be edited afterwards.
 
         Parameters
         ----------
-        message_id : Optional[int], optional
+        message: Optional[hikari.SnowflakeishOr[hikari.PartialMessage]], optional
             If provided, the persistent view will be bound to this message, and if the
             message is edited with a new view, that will be taken into account.
             Unbound views do not support message editing with additional views.
@@ -459,12 +459,15 @@ class View:
         if not self.is_persistent:
             raise ValueError("This can only be used on persistent views.")
 
+        message_id = hikari.Snowflake(message) if message else None
+
         if message_id:
             self._message_id = message_id
 
             # Handle replacement of bound views on message edit
             if message_id in View._views.keys():
                 View._views[message_id].stop()
+
             View._views[message_id] = self
 
         self._listener_task = asyncio.create_task(self._listen_for_events(message_id))
@@ -492,6 +495,7 @@ class View:
         # Handle replacement of view on message edit
         if message.id in View._views.keys():
             View._views[message.id].stop()
+
         View._views[message.id] = self
 
 
@@ -517,3 +521,15 @@ def load(bot: ViewsAware) -> None:
         raise TypeError(f"Expected type with trait ViewsAware for parameter bot, not {type(bot)}")
 
     View._app = bot
+
+
+def unload() -> None:
+    """Unload miru and remove the current running application from it.
+
+    !!! warning
+        Unbound persistent views should be stopped manually.
+    """
+    for message, view in View._views.items():
+        view.stop()
+
+    View._app = None

@@ -1,2 +1,1 @@
 hikari>=2.0.0.dev106
-colorama
