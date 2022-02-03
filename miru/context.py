@@ -89,7 +89,7 @@ class Context:
         return self._interaction.guild_locale
 
     @property
-    def channel_id(self) -> typing.Optional[Snowflake]:
+    def channel_id(self) -> Snowflake:
         """The ID of the channel the context represents."""
         return self._interaction.channel_id
 
@@ -98,15 +98,13 @@ class Context:
         """The ID of the guild the context represents. Will be None in DMs."""
         return self._interaction.guild_id
 
-    # Type ignore because cache getters can also take partials, not just snowflakes,
-    # and mypy has a mental breakdown because of this
     def get_guild(self) -> typing.Optional[hikari.GatewayGuild]:
         """Gets the guild this context represents, if any. Requires application cache."""
-        return self.app.cache.get_guild(self.guild_id)  # type: ignore[arg-type]
+        return self.interaction.get_guild()
 
-    def get_channel(self) -> typing.Optional[hikari.GuildChannel]:
+    def get_channel(self) -> typing.Union[hikari.GuildTextChannel, hikari.GuildNewsChannel, None]:
         """Gets the channel this context represents, None if in a DM. Requires application cache."""
-        return self.app.cache.get_guild_channel(self.channel_id)  # type: ignore[arg-type]
+        return self.interaction.get_channel()
 
     async def respond(
         self,
