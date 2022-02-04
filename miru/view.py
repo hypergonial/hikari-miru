@@ -536,8 +536,22 @@ def unload() -> None:
 
 
 def get_view(message: hikari.SnowflakeishOr[hikari.PartialMessage]) -> Optional[View]:
-    """
-    Get a currently running view that is attached to the provided message.
+    """Get a currently running view that is attached to the provided message.
+
+    Parameters
+    ----------
+    message : hikari.SnowflakeishOr[hikari.PartialMessage]
+        The message the view is attached to.
+
+    Returns
+    -------
+    Optional[View]
+        The view bound to this message, if any.
+
+    Raises
+    ------
+    RuntimeError
+        miru was not loaded before this call.
     """
 
     if View._app is None:
