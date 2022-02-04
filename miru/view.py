@@ -533,3 +533,19 @@ def unload() -> None:
         view.stop()
 
     View._app = None
+
+
+def get_view(message: hikari.SnowflakeishOr[hikari.PartialMessage]) -> Optional[View]:
+    """
+    Get a currently running view that is attached to the provided message.
+    """
+
+    if View._app is None:
+        raise RuntimeError("miru is not yet loaded! Please call miru.load() first.")
+
+    message_id = hikari.Snowflake(message)
+
+    if message_id in View._views.keys():
+        return View._views[message_id]
+
+    return None
