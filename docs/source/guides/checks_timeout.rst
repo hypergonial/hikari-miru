@@ -26,7 +26,7 @@ to a truthy value, the interaction will be ignored.
         async def view_check(self, ctx: miru.Context) -> bool:
             # This view will only handle interactions that belong to this user
             # For every other user the interaction will simply fail
-            return ctx.user.id == 0123456789
+            return ctx.user.id == 123456789
             # You can also respond to the interaction here if you wish to provide a custom
             # error message, but do not forget to return a falsy value afterwards.
 
