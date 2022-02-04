@@ -60,7 +60,7 @@ bot.run()
 For more examples see [examples](https://github.com/HyperGH/hikari-miru/tree/main/examples), or refer to the [documentation](https://hikari-miru.readthedocs.io/en/latest/).
 
 ## Issues and support
-For general usage help or questions, see the `#hikari-miru` channel in the [hikari discord](https://discord.gg/Jx4cNGG), if you have found a bug or have a feature request, feel free to [open an issue](https://github.com/HyperGH/hikari-miru/issues/new)!
+For general usage help or questions, see the `#miru` channel in the [hikari discord](https://discord.gg/Jx4cNGG), if you have found a bug or have a feature request, feel free to [open an issue](https://github.com/HyperGH/hikari-miru/issues/new)!
 
 ## Contributing
 If you wish to contribute, be sure to first enable the formatting pre-commit hook via `git config core.hooksPath .githooks`, then make your changes. Also make sure to run [nox](https://nox.thea.codes/en/stable/) before pushing your changes, and ensure all pipelines pass.
