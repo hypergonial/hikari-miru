@@ -19,6 +19,8 @@ Version 1.1.0
 
 - Make colorama an optional Windows-only dependency.
 
+- Fix a bug where URL buttons would fail to initialize. (`#17 <https://github.com/HyperGH/hikari-miru/issues/17>`_)
+
 - Allow entire message objects in ``miru.start_listener()``.
 
 Thanks to `sadru <https://github.com/thesadru>`_ for help with this release.
