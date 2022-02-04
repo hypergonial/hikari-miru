@@ -63,7 +63,8 @@ as unbound views have no concept of what message they are attached to.
         if event.content.startswith("miru"):
             view = Persistence()
             message = await event.message.respond(
-                "This is a persistent component menu, and works after bot restarts!", components=view.build()
+                "This is a persistent view, and works after bot restarts!",
+                components=view.build(),
             )
 
             view.start(message)
@@ -128,7 +129,8 @@ simply pass a message ID to ``start_listener()``. This also allows for the view 
         if event.content.startswith("miru"):
             view = Persistence()
             message = await event.message.respond(
-                "This is a persistent component menu, and works after bot restarts!", components=view.build()
+                "This is a persistent component menu, and works after bot restarts!",
+                components=view.build(),
             )
 
             view.start(message)
