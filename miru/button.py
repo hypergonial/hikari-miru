@@ -106,7 +106,8 @@ class Button(Item[ViewT]):
             self.custom_id = os.urandom(16).hex()
 
         if self.url is not None:
-            self.style = hikari.ButtonStyle.LINK
+            # Assign underlying style
+            self._style = hikari.ButtonStyle.LINK
 
     @property
     def type(self) -> hikari.ComponentType:
