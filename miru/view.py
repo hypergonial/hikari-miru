@@ -372,22 +372,24 @@ class View:
         Process incoming interactions and convert interaction to miru.Interaction
         """
 
-        if isinstance(event.interaction, hikari.ComponentInteraction):
+        if not isinstance(event.interaction, hikari.ComponentInteraction):
+            return
 
-            interaction: Interaction = Interaction.from_hikari(event.interaction)
+        interaction: Interaction = Interaction.from_hikari(event.interaction)
 
-            items = [item for item in self.children if item.custom_id == interaction.custom_id]
-            if len(items) > 0:
+        for item in self.children:
+            if item.custom_id == interaction.custom_id:
+                break
+        else:
+            return
 
-                context = Context(self, interaction)
+        context = item._context_cls(self, interaction)
 
-                passed = await self.view_check(context)
-                if not passed:
-                    return
+        passed = await self.view_check(context)
+        if not passed:
+            return
 
-                for item in items:
-                    # Create task here to ensure autodefer works even if callback stops view
-                    asyncio.create_task(self._handle_callback(item, context))
+        asyncio.create_task(self._handle_callback(item, context))
 
     async def _listen_for_events(self, message_id: Optional[int] = None) -> None:
         """

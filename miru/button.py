@@ -28,19 +28,25 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 from typing import Optional
+from typing import Type
 from typing import TypeVar
 from typing import Union
+from typing import cast
+from typing import overload
 
 import hikari
 
+from .context import Context
 from .item import DecoratedItem
 from .item import Item
+from .item import _parse_item_signature
 
 if TYPE_CHECKING:
-    from .context import Context
     from .view import View
 
 ViewT = TypeVar("ViewT", bound="View")
+ButtonT = TypeVar("ButtonT", bound="Button[Any]")
+ContextT = TypeVar("ContextT", bound="Context")
 
 __all__ = ["Button", "button"]
 
@@ -83,6 +89,7 @@ class Button(Item[ViewT]):
         url: Optional[str] = None,
         emoji: Union[hikari.Emoji, str, None] = None,
         row: Optional[int] = None,
+        context_cls: Type[Context] = Context,
     ) -> None:
         super().__init__()
 
@@ -95,6 +102,8 @@ class Button(Item[ViewT]):
         self._url: Optional[str] = url
 
         self._persistent: bool = True if custom_id else False
+
+        self._context_cls = context_cls
 
         if self._emoji is None and self._label is None:
             raise TypeError("Must provide at least one of emoji or label")
@@ -195,7 +204,38 @@ class Button(Item[ViewT]):
         button.add_to_container()
 
 
+@overload
 def button(
+    *,
+    context_cls: Type[Context] = ...,
+    label: Optional[str] = ...,
+    custom_id: Optional[str] = ...,
+    style: hikari.ButtonStyle = ...,
+    emoji: Optional[Union[str, hikari.Emoji]] = ...,
+    row: Optional[int] = ...,
+    disabled: bool = ...,
+) -> Callable[[Callable[[ViewT, Any, Any], Any]], Button[ViewT]]:
+    ...
+
+
+@overload
+def button(
+    cls: Type[ButtonT],
+    context_cls: Type[Context] = ...,
+    *,
+    label: Optional[str] = ...,
+    custom_id: Optional[str] = ...,
+    style: hikari.ButtonStyle = ...,
+    emoji: Optional[Union[str, hikari.Emoji]] = ...,
+    row: Optional[int] = ...,
+    disabled: bool = ...,
+) -> Callable[[Callable[..., Any]], ButtonT]:
+    ...
+
+
+def button(
+    cls: Type[Button[ViewT]] = Button,
+    context_cls: Type[Context] = Context,
     *,
     label: Optional[str] = None,
     custom_id: Optional[str] = None,
@@ -203,7 +243,7 @@ def button(
     emoji: Optional[Union[str, hikari.Emoji]] = None,
     row: Optional[int] = None,
     disabled: bool = False,
-) -> Callable[[Callable[[ViewT, Button[ViewT], Context], Any]], Button[ViewT]]:
+) -> Callable[[Callable[[ViewT, Any, Any], Any]], Button[ViewT]]:
     """A decorator to transform a coroutine function into a Discord UI Button's callback.
     This must be inside a subclass of View.
 
@@ -229,9 +269,10 @@ def button(
     """
 
     def decorator(func: Callable[..., Any]) -> Any:
-        if not inspect.iscoroutinefunction(func):
-            raise TypeError("button must decorate coroutine function.")
-        item: Button[Any] = Button(
+        nonlocal cls, context_cls
+        cls, context_cls = _parse_item_signature(func, cls, context_cls)
+
+        item: Button[Any] = cls(
             label=label,
             custom_id=custom_id,
             style=style,
@@ -239,6 +280,7 @@ def button(
             row=row,
             disabled=disabled,
             url=None,
+            context_cls=context_cls,
         )
 
         return DecoratedItem(item, func)

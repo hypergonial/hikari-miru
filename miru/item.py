@@ -30,9 +30,12 @@ from typing import Any
 from typing import Callable
 from typing import Generic
 from typing import Optional
+from typing import Tuple
+from typing import Type
 from typing import TypeVar
 
 import hikari
+from hikari.internal import reflect as hikari_reflect
 
 from .context import Context
 from .interaction import Interaction
@@ -41,6 +44,7 @@ if TYPE_CHECKING:
     from .view import View
 
 ViewT = TypeVar("ViewT", bound="View")
+ItemT = TypeVar("ItemT", bound="Item[Any]")
 
 __all__ = ["Item", "DecoratedItem"]
 
@@ -58,6 +62,7 @@ class Item(abc.ABC, Generic[ViewT]):
         self._custom_id: Optional[str] = None
         self._persistent: bool = False
         self._disabled: bool = False
+        self._context_cls: Type[Context] = Context
 
     @property
     def row(self) -> Optional[int]:
@@ -131,26 +136,22 @@ class Item(abc.ABC, Generic[ViewT]):
         """
         The component's underlying component type.
         """
-        ...
 
     @abstractmethod
     def _build(self, action_row: hikari.api.ActionRowBuilder) -> None:
         """
         Called internally to build and append the item to an action row
         """
-        ...
 
     async def callback(self, context: Context) -> None:
         """
         The component's callback, gets called when the component receives an interaction.
         """
-        pass
 
     async def _refresh(self, interaction: Interaction) -> None:
         """
         Called on an item to refresh its internal data.
         """
-        pass
 
 
 class DecoratedItem:
@@ -190,3 +191,24 @@ class DecoratedItem:
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
         return self.callback(*args, **kwargs)
+
+
+def _parse_item_signature(
+    callback: Callable[..., Any], item_cls: Type[ItemT], context_cls: Type[Context]
+) -> Tuple[Type[ItemT], Type[Context]]:
+    signature = hikari_reflect.resolve_signature(callback)
+
+    if len(signature.parameters) != 3:
+        raise TypeError(f"Miru callbacks must be in the form '(self, item, context)'")
+
+    _, item, context = signature.parameters.values()
+
+    if item.annotation is not item.empty:
+        if isinstance(item.annotation, type) and issubclass(item.annotation, item_cls):
+            item_cls = item.annotation
+
+    if context.annotation is not context.empty:
+        if isinstance(context.annotation, type) and issubclass(context.annotation, context_cls):
+            context_cls = context.annotation
+
+    return item_cls, context_cls

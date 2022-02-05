@@ -25,7 +25,6 @@ from __future__ import annotations
 import typing
 
 import hikari
-from hikari.snowflakes import Snowflake
 
 from .interaction import Interaction
 from .traits import ViewsAware
@@ -89,12 +88,12 @@ class Context:
         return self._interaction.guild_locale
 
     @property
-    def channel_id(self) -> Snowflake:
+    def channel_id(self) -> hikari.Snowflake:
         """The ID of the channel the context represents."""
         return self._interaction.channel_id
 
     @property
-    def guild_id(self) -> typing.Optional[Snowflake]:
+    def guild_id(self) -> typing.Optional[hikari.Snowflake]:
         """The ID of the guild the context represents. Will be None in DMs."""
         return self._interaction.guild_id
 

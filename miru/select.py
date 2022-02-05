@@ -29,19 +29,24 @@ from typing import Any
 from typing import Callable
 from typing import Optional
 from typing import Sequence
+from typing import Type
 from typing import TypeVar
 from typing import Union
+from typing import overload
 
 import hikari
 
+from .context import Context
 from .item import DecoratedItem
 from .item import Item
+from .item import _parse_item_signature
 
 if TYPE_CHECKING:
-    from .context import Context
     from .view import View
 
 ViewT = TypeVar("ViewT", bound="View")
+SelectT = TypeVar("SelectT", bound="Select[Any]")
+ContextT = TypeVar("ContextT", bound="Context")
 
 __all__ = ["SelectOption", "Select", "select"]
 
@@ -128,6 +133,7 @@ class Select(Item[ViewT]):
         max_values: int = 1,
         disabled: bool = False,
         row: Optional[int] = None,
+        context_cls: Type[Context] = Context,
     ) -> None:
         super().__init__()
         self._values: Sequence[str] = []
@@ -139,6 +145,8 @@ class Select(Item[ViewT]):
         self._max_values: int = max_values
         self._placeholder: Optional[str] = placeholder
         self._row: Optional[int] = row if row is not None else None
+
+        self._context_cls = context_cls
 
         if len(self._options) > 25:
             raise ValueError("A select can have a maximum of 25 options.")
@@ -240,7 +248,40 @@ class Select(Item[ViewT]):
         self._values = interaction.values
 
 
+@overload
 def select(
+    *,
+    context_cls: Type[Context] = ...,
+    options: Sequence[Union[hikari.SelectMenuOption, SelectOption]],
+    custom_id: Optional[str] = ...,
+    placeholder: Optional[str] = ...,
+    min_values: int = ...,
+    max_values: int = ...,
+    disabled: bool = ...,
+    row: Optional[int] = ...,
+) -> Callable[[Callable[[ViewT, Any, Any], Any]], Select[ViewT]]:
+    ...
+
+
+@overload
+def select(
+    cls: Type[SelectT],
+    context_cls: Type[Context] = ...,
+    *,
+    options: Sequence[Union[hikari.SelectMenuOption, SelectOption]],
+    custom_id: Optional[str] = ...,
+    placeholder: Optional[str] = ...,
+    min_values: int = ...,
+    max_values: int = ...,
+    disabled: bool = ...,
+    row: Optional[int] = ...,
+) -> Callable[[Callable[..., Any]], SelectT]:
+    ...
+
+
+def select(
+    cls: Type[Select[ViewT]] = Select,
+    context_cls: Type[Context] = Context,
     *,
     options: Sequence[Union[hikari.SelectMenuOption, SelectOption]],
     custom_id: Optional[str] = None,
@@ -249,16 +290,16 @@ def select(
     max_values: int = 1,
     disabled: bool = False,
     row: Optional[int] = None,
-) -> Callable[[Callable[[ViewT, Select[ViewT], Context], Any]], Select[ViewT]]:
+) -> Callable[[Callable[[ViewT, Any, Any], Any]], Select[ViewT]]:
     """
     A decorator to transform a function into a Discord UI SelectMenu's callback. This must be inside a subclass of View.
     """
 
     def decorator(func: Callable[..., Any]) -> Any:
-        if not inspect.iscoroutinefunction(func):
-            raise TypeError("select must decorate coroutine function.")
+        nonlocal cls, context_cls
+        cls, context_cls = _parse_item_signature(func, cls, context_cls)
 
-        item: Select[Any] = Select(
+        item: Select[Any] = cls(
             options=options,
             custom_id=custom_id,
             placeholder=placeholder,
@@ -266,6 +307,7 @@ def select(
             max_values=max_values,
             disabled=disabled,
             row=row,
+            context_cls=context_cls,
         )
         return DecoratedItem(item, func)
 
