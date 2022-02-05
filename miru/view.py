@@ -559,7 +559,7 @@ def get_view(message: hikari.SnowflakeishOr[hikari.PartialMessage]) -> Optional[
 
     message_id = hikari.Snowflake(message)
 
-    if message_id in View._views.keys():
+    if int(message_id) in View._views.keys():
         return View._views[message_id]
 
     return None
