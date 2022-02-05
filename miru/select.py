@@ -75,7 +75,7 @@ class SelectOption:
             A boolean determining of the option is default or not, by default False
         """
         self.label: str = label
-        self.value: str = value if value else label
+        self.value: str = value if value is None else label
         self.description: Optional[str] = description
         if isinstance(emoji, str):
             emoji = hikari.Emoji.parse(emoji)
