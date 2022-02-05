@@ -46,7 +46,7 @@ from .traits import ViewsAware
 
 ViewT = TypeVar("ViewT", bound="View")
 
-__all__ = ["View", "load", "unload"]
+__all__ = ["View", "load", "unload", "get_view"]
 
 
 class _Weights(Generic[ViewT]):
