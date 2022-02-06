@@ -230,7 +230,7 @@ class View:
         if item in self.children:
             raise RuntimeError("Item is already attached to this view.")
 
-        if item._view is not None:
+        if hasattr(item, "_view") and item._view is not None:
             raise RuntimeError("Item is already attached to a view.")
 
         self._weights.add_item(item)
