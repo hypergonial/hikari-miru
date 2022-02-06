@@ -237,7 +237,7 @@ class StopButton(NavButton[NavigatorViewT]):
         super().__init__(style=style, label=label, custom_id=custom_id, emoji=emoji, row=row)
 
     async def callback(self, context: Context) -> None:
-        if not self.view.message:
+        if not self.view.message or not self.view._inter:
             return
 
         for button in self.view.children:
