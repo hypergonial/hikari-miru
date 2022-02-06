@@ -13,6 +13,8 @@ Version 1.1.0
 
 - Add ``miru.get_view()`` to get a currently running view by message snowflakeish.
 
+- Add ``ephemeral`` kwarg to ``NavigatorView`` for ephemeral support.
+
 - Annotate ``miru.button()`` and ``miru.select()`` to return their respective objects.
 
 - No longer use explicit submodules unless they are exported in context type signatures.
