@@ -20,9 +20,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import logging
 from typing import Any
 from typing import List
-from typing import Literal
 from typing import Mapping
 from typing import Optional
 from typing import Union
@@ -42,6 +42,8 @@ from .buttons import NextButton
 from .buttons import PrevButton
 
 __all__ = ["NavigatorView"]
+
+logger = logging.getLogger(__name__)
 
 
 class NavigatorView(View):
@@ -74,6 +76,9 @@ class NavigatorView(View):
     ) -> None:
         self._pages: List[Union[str, hikari.Embed]] = pages
         self._current_page: int = 0
+        self._ephemeral: bool = False
+        # The last interaction used, used for ephemeral handling
+        self._inter: Optional[hikari.MessageResponseMixin[Any]] = None
         super().__init__(timeout=timeout, autodefer=autodefer)
 
         if buttons is not None:
@@ -110,6 +115,14 @@ class NavigatorView(View):
         # Ensure this value is always correct
         self._current_page = max(0, min(value, len(self.pages)))
 
+    @property
+    def ephemeral(self) -> bool:
+        """
+        Value determining if the navigator is sent ephemerally or not.
+        This value will be ignored if the navigator is not sent on an interaction.
+        """
+        return self._ephemeral
+
     async def on_timeout(self) -> None:
         if self.message is None:
             return
@@ -117,7 +130,10 @@ class NavigatorView(View):
         for button in self.children:
             button.disabled = True
 
-        await self.message.edit(components=self.build())
+        if self._ephemeral and self._inter:
+            await self._inter.edit_initial_response(components=self.build())
+        else:
+            await self.message.edit(components=self.build())
 
     def get_default_buttons(self: NavigatorViewT) -> List[NavButton[NavigatorViewT]]:
         """Returns the default set of buttons.
@@ -148,12 +164,18 @@ class NavigatorView(View):
         return super().add_item(item)
 
     def _get_page_payload(self, page: Union[str, hikari.Embed]) -> Mapping[str, Any]:
-        if isinstance(page, str):
-            return dict(content=page, embeds=[], components=self.build())
-        elif isinstance(page, hikari.Embed):
-            return dict(content="", embed=page, components=self.build())
-        else:
+        """Get the page content that is to be sent."""
+
+        content = page if isinstance(page, str) else ""
+        embeds = [page] if isinstance(page, hikari.Embed) else []
+
+        if not content and not embeds:
             raise TypeError("Expected type str or hikari.Embed to send as page.")
+
+        if self.ephemeral:
+            return dict(content=content, embeds=embeds, components=self.build(), flags=hikari.MessageFlag.EPHEMERAL)
+        else:
+            return dict(content=content, embeds=embeds, components=self.build())
 
     async def send_page(self, context: Context, page_index: Optional[int] = None) -> None:
         """Send a page, editing the original message.
@@ -163,7 +185,7 @@ class NavigatorView(View):
         context : Context
             The context that should be used to send this page
         page_index : Optional[int], optional
-            The index of the page to send, if not specifed sends the current page, by default None
+            The index of the page to send, if not specifed, sends the current page, by default None
         """
         if page_index:
             self.current_page = page_index
@@ -175,6 +197,7 @@ class NavigatorView(View):
                 await button.before_page_change()
 
         payload = self._get_page_payload(page)
+        self._inter = context.interaction  # Update latest inter
         await context.edit_response(**payload)
 
     def start(self, message: hikari.Message) -> None:
@@ -189,7 +212,8 @@ class NavigatorView(View):
 
     async def send(
         self,
-        channel_or_interaction: Union[hikari.SnowflakeishOr[hikari.PartialChannel], hikari.MessageResponseMixin[Any]],
+        channel_or_interaction: Union[hikari.SnowflakeishOr[hikari.TextableChannel], hikari.MessageResponseMixin[Any]],
+        ephemeral: bool = False,
     ) -> None:
         """Start up the navigator, send the first page, and start listening for interactions.
 
@@ -197,19 +221,30 @@ class NavigatorView(View):
         ----------
         channel_or_interaction : Union[hikari.SnowflakeishOr[hikari.PartialChannel], hikari.MessageResponseMixin[Any]]
             A channel or interaction to use to send the navigator.
+        ephemeral: bool
+            If an interaction was provided, determines if the navigator will be sent ephemerally or not.
         """
         self.current_page = 0
+        print(ephemeral)
+        self._ephemeral = ephemeral if not isinstance(channel_or_interaction, (int, hikari.TextableChannel)) else False
+        print(self.ephemeral)
 
         for button in self.children:
             if isinstance(button, NavButton):
                 await button.before_page_change()
 
+        if self.ephemeral and self.timeout and self.timeout > 900:
+            logger.warning(
+                f"Using a timeout value longer than 900 seconds (Used {self.timeout}) in ephemeral navigator {self.__class__.__name__} may cause on_timeout to fail."
+            )
+
         payload = self._get_page_payload(self.pages[0])
 
-        if isinstance(channel_or_interaction, (int, hikari.PartialChannel)):
+        if isinstance(channel_or_interaction, (int, hikari.TextableChannel)):
             channel = hikari.Snowflake(channel_or_interaction)
             message = await self.app.rest.create_message(channel, **payload)
         else:
+            self._inter = channel_or_interaction
             await channel_or_interaction.create_initial_response(
                 hikari.ResponseType.MESSAGE_CREATE,
                 **payload,
