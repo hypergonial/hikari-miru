@@ -28,4 +28,4 @@ from .select import *
 from .traits import *
 from .view import *
 
-__version__ = "1.1.0"
+__version__ = "1.1.1"

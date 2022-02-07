@@ -6,6 +6,11 @@ These are all the changelogs for stable releases of hikari-miru (version 1.0.0 t
 
 ----
 
+Version 1.1.1
+=============
+
+- Remove debug prints from ``NavigatorView.send()``
+
 Version 1.1.0
 =============
 

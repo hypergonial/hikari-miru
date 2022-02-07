@@ -245,6 +245,6 @@ class StopButton(NavButton[NavigatorViewT]):
 
         if self.view._inter and self.view.ephemeral:
             await self.view._inter.edit_initial_response(components=self.view.build())
-        else:
+        elif self.view.message:
             await self.view.message.edit(components=self.view.build())
         self.view.stop()
