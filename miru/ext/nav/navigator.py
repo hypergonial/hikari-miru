@@ -225,9 +225,7 @@ class NavigatorView(View):
             If an interaction was provided, determines if the navigator will be sent ephemerally or not.
         """
         self.current_page = 0
-        print(ephemeral)
         self._ephemeral = ephemeral if not isinstance(channel_or_interaction, (int, hikari.TextableChannel)) else False
-        print(self.ephemeral)
 
         for button in self.children:
             if isinstance(button, NavButton):
