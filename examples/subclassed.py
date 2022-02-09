@@ -35,7 +35,7 @@ class YesButton(miru.Button):
 
     # The callback is the function that gets called when the button is pressed
     # If you are subclassing, you must use the name "callback" when defining it.
-    async def callback(self, ctx: miru.Context) -> None:
+    async def callback(self, ctx: miru.ViewContext) -> None:
         # You can specify the ephemeral message flag to make your response ephemeral
         await ctx.respond("I'm sorry but this is unacceptable.", flags=hikari.MessageFlag.EPHEMERAL)
         # You can access the view an item is attached to by accessing it's view property
@@ -48,7 +48,7 @@ class NoButton(miru.Button):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
-    async def callback(self, ctx: miru.Context) -> None:
+    async def callback(self, ctx: miru.ViewContext) -> None:
         await ctx.respond("This is the only correct answer.", flags=hikari.MessageFlag.EPHEMERAL)
         self.view.answer = False
         self.view.stop()

@@ -20,12 +20,51 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+
+from .abc import *
 from .button import *
 from .context import *
 from .interaction import *
-from .item import *
+from .modal import *
 from .select import *
+from .text_input import *
 from .traits import *
 from .view import *
 
-__version__ = "1.1.1"
+__version__ = "1.2.0"
+
+
+def load(bot: MiruAware) -> None:
+    """Load miru and pass the current running application to it.
+
+    Parameters
+    ----------
+    bot : ViewsAware
+        The currently running application. Must implement traits
+        RESTAware and EventManagerAware.
+
+    Raises
+    ------
+    RuntimeError
+        miru is already loaded
+    TypeError
+        Parameter bot does not have traits specified in ViewsAware
+    """
+    if ItemHandler._app is not None:
+        raise RuntimeError("miru is already loaded!")
+    if not isinstance(bot, MiruAware):
+        raise TypeError(f"Expected type with trait ViewsAware for parameter bot, not {type(bot)}")
+
+    ItemHandler._app = bot
+
+
+def unload() -> None:
+    """Unload miru and remove the current running application from it.
+
+    .. warning::
+        Unbound persistent views should be stopped manually.
+    """
+    for message, view in View._views.items():
+        view.stop()
+
+    ItemHandler._app = None

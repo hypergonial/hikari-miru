@@ -19,11 +19,11 @@ to a truthy value, the interaction will be ignored.
     class ChecksView(miru.View):
 
         @miru.button(label="Click me!", style=hikari.ButtonStyle.SUCCESS)
-        async def basic_button(self, button: miru.Button, ctx: miru.Context) -> None:
+        async def basic_button(self, button: miru.Button, ctx: miru.ViewContext) -> None:
             await ctx.respond("You clicked me!")
         
         # Define a custom view check
-        async def view_check(self, ctx: miru.Context) -> bool:
+        async def view_check(self, ctx: miru.ViewContext) -> bool:
             # This view will only handle interactions that belong to this user
             # For every other user the interaction will simply fail
             return ctx.user.id == 123456789
@@ -47,7 +47,7 @@ keyword argument passed to views. To execute code when the view times out, you c
     class TimeoutView(miru.View):
 
         @miru.button(label="Click me!", style=hikari.ButtonStyle.SUCCESS)
-        async def basic_button(self, button: miru.Button, ctx: miru.Context) -> None:
+        async def basic_button(self, button: miru.Button, ctx: miru.ViewContext) -> None:
             await ctx.respond("You clicked me!")
         
         async def on_timeout(self) -> None:

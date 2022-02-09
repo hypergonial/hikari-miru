@@ -33,17 +33,17 @@ This is what a basic component menu looks like with miru:
                 miru.SelectOption(label="Option 2"),
             ],
         )
-        async def basic_select(self, select: miru.Select, ctx: miru.Context) -> None:
+        async def basic_select(self, select: miru.Select, ctx: miru.ViewContext) -> None:
             await ctx.respond(f"You've chosen {select.values[0]}!")
 
         # Define a new Button with the Style of success (Green)
         @miru.button(label="Click me!", style=hikari.ButtonStyle.SUCCESS)
-        async def basic_button(self, button: miru.Button, ctx: miru.Context) -> None:
+        async def basic_button(self, button: miru.Button, ctx: miru.ViewContext) -> None:
             await ctx.respond("You clicked me!")
 
         # Define a new Button that when pressed will stop the view & invalidate all the buttons in this view
         @miru.button(label="Stop me!", style=hikari.ButtonStyle.DANGER)
-        async def stop_button(self, button: miru.Button, ctx: miru.Context) -> None:
+        async def stop_button(self, button: miru.Button, ctx: miru.ViewContext) -> None:
             self.stop()  # Called to stop the view
 
 
@@ -102,7 +102,7 @@ Below you can see such an example:
 
         # The callback is the function that gets called when the button is pressed
         # If you are subclassing, you must use the name "callback" when defining it.
-        async def callback(self, ctx: miru.Context) -> None:
+        async def callback(self, ctx: miru.ViewContext) -> None:
             # You can specify the ephemeral message flag to make your response ephemeral
             await ctx.respond("I'm sorry but this is unacceptable.", flags=hikari.MessageFlag.EPHEMERAL)
             # You can access the view an item is attached to by accessing it's view property
@@ -115,7 +115,7 @@ Below you can see such an example:
         def __init__(self, *args, **kwargs) -> None:
             super().__init__(*args, **kwargs)
 
-        async def callback(self, ctx: miru.Context) -> None:
+        async def callback(self, ctx: miru.ViewContext) -> None:
             await ctx.respond("This is the only correct answer.", flags=hikari.MessageFlag.EPHEMERAL)
             self.view.answer = False
             self.view.stop()

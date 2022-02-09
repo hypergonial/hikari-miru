@@ -70,7 +70,7 @@ You may use any mix of the built-in and custom navigation buttons in your naviga
         def __init__(self):
             super().__init__(label="Page: 1", row=1)
 
-        async def callback(self, ctx: miru.Context) -> None:
+        async def callback(self, ctx: miru.ViewContext) -> None:
             await ctx.respond("You clicked me!", flags=hikari.MessageFlag.EPHEMERAL)
 
         async def before_page_change(self) -> None:

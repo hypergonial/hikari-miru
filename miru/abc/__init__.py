@@ -20,15 +20,5 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import typing
-
-import hikari
-
-__all__ = ["MiruAware"]
-
-
-@typing.runtime_checkable
-class MiruAware(hikari.RESTAware, hikari.EventManagerAware, typing.Protocol):
-    """
-    A trait that implements RESTAware and EventManagerAware.
-    """
+from .item import *
+from .item_handler import *

@@ -22,48 +22,44 @@
 
 from __future__ import annotations
 
+import abc
 import typing
+from itertools import chain
 
 import hikari
 from hikari.snowflakes import Snowflake
 
-from .interaction import Interaction
-from .traits import ViewsAware
+from .abc.item import ModalItem
+from .interaction import ComponentInteraction
+from .interaction import ModalInteraction
+from .traits import MiruAware
 
 if typing.TYPE_CHECKING:
+    from .abc.item_handler import ItemHandler
+    from .modal import Modal
     from .view import View
 
-__all__ = ["Context"]
+__all__ = ["Context", "ViewContext", "ModalContext"]
+
+InteractionT = typing.TypeVar("InteractionT", "ComponentInteraction", "ModalInteraction")
 
 
-class Context:
-    """
-    A context object proxying a component interaction.
-    """
+class Context(abc.ABC, typing.Generic[InteractionT]):
+    """A context object proxying a Discord interaction."""
 
-    def __init__(self, view: View, interaction: Interaction) -> None:
-        self._view: View = view
-        self._interaction: Interaction = interaction
+    def __init__(self, item_handler: ItemHandler, interaction: InteractionT) -> None:
+        self._interaction: InteractionT = interaction
+        self._item_handler: ItemHandler = item_handler
 
     @property
-    def interaction(self) -> Interaction:
+    def interaction(self) -> InteractionT:
         """The underlying interaction object."""
         return self._interaction
 
     @property
-    def view(self) -> View:
-        """The view this context originates from."""
-        return self._view
-
-    @property
-    def app(self) -> ViewsAware:
+    def app(self) -> MiruAware:
         """The application that loaded miru."""
-        return self._view.app
-
-    @property
-    def message(self) -> hikari.Message:
-        """The message object this context is proxying."""
-        return self._interaction.message
+        return self._item_handler.app
 
     @property
     def user(self) -> hikari.User:
@@ -97,14 +93,6 @@ class Context:
     def guild_id(self) -> typing.Optional[Snowflake]:
         """The ID of the guild the context represents. Will be None in DMs."""
         return self._interaction.guild_id
-
-    def get_guild(self) -> typing.Optional[hikari.GatewayGuild]:
-        """Gets the guild this context represents, if any. Requires application cache."""
-        return self.interaction.get_guild()
-
-    def get_channel(self) -> typing.Union[hikari.GuildTextChannel, hikari.GuildNewsChannel, None]:
-        """Gets the channel this context represents, None if in a DM. Requires application cache."""
-        return self.interaction.get_channel()
 
     async def respond(
         self,
@@ -277,3 +265,67 @@ class Context:
             raise RuntimeError("Interaction was already responded to.")
 
         await self.interaction.create_initial_response(hikari.ResponseType.DEFERRED_MESSAGE_UPDATE, flags=flags)
+
+
+class ViewContext(Context[ComponentInteraction]):
+    """A context object proxying a ComponentInteraction."""
+
+    def __init__(self, view: View, interaction: ComponentInteraction) -> None:
+        super().__init__(view, interaction)
+        self._view = view
+
+    @property
+    def view(self) -> View:
+        """The view this context originates from."""
+        return self._view
+
+    @property
+    def message(self) -> typing.Optional[hikari.Message]:
+        """The message object this context is proxying."""
+        return self._interaction.message
+
+    def get_guild(self) -> typing.Optional[hikari.GatewayGuild]:
+        """Gets the guild this context represents, if any. Requires application cache."""
+        return self._interaction.get_guild()
+
+    def get_channel(self) -> typing.Union[hikari.GuildTextChannel, hikari.GuildNewsChannel, None]:
+        """Gets the channel this context represents, None if in a DM. Requires application cache."""
+        return self._interaction.get_channel()
+
+    async def respond_with_modal(self, modal: Modal) -> None:
+        """Respond to this interaction with a modal."""
+
+        if self.interaction._issued_response:
+            raise RuntimeError("Interaction was already responded to.")
+
+        await self.interaction.create_modal_response(modal.title, modal.custom_id, modal.build())
+        modal.start()
+
+
+class ModalContext(Context[ModalInteraction]):
+    """A context object proxying a ModalInteraction."""
+
+    def __init__(self, modal: Modal, interaction: ModalInteraction) -> None:
+        super().__init__(modal, interaction)
+        self._modal = modal
+
+    @property
+    def modal(self) -> Modal:
+        """The modal this context originates from."""
+        return self._modal
+
+    @property
+    def values(self) -> typing.Dict[ModalItem[Modal], str]:
+        """
+        The values received as input for this modal.
+        """
+        # I hate this
+        items: typing.Dict[ModalItem[Modal], str] = {}
+        components = list(chain(*[action_row.components for action_row in self.interaction.components]))
+
+        for item in self.modal.children:
+            assert isinstance(item, ModalItem)
+            for component in components:
+                if item.custom_id == component.custom_id:
+                    items[item] = component.value
+        return items

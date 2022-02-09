@@ -28,7 +28,7 @@ from typing import Union
 import hikari
 
 from miru.button import Button
-from miru.context import Context
+from miru.context import ViewContext
 
 if TYPE_CHECKING:
     from .navigator import NavigatorView
@@ -108,7 +108,7 @@ class NextButton(NavButton[NavigatorViewT]):
     ):
         super().__init__(style=style, label=label, custom_id=custom_id, emoji=emoji, row=row)
 
-    async def callback(self, context: Context) -> None:
+    async def callback(self, context: ViewContext) -> None:
         self.view.current_page += 1
         await self.view.send_page(context)
 
@@ -135,7 +135,7 @@ class PrevButton(NavButton[NavigatorViewT]):
     ):
         super().__init__(style=style, label=label, custom_id=custom_id, emoji=emoji, row=row)
 
-    async def callback(self, context: Context) -> None:
+    async def callback(self, context: ViewContext) -> None:
         self.view.current_page -= 1
         await self.view.send_page(context)
 
@@ -162,7 +162,7 @@ class FirstButton(NavButton[NavigatorViewT]):
     ):
         super().__init__(style=style, label=label, custom_id=custom_id, emoji=emoji, row=row)
 
-    async def callback(self, context: Context) -> None:
+    async def callback(self, context: ViewContext) -> None:
         self.view.current_page = 0
         await self.view.send_page(context)
 
@@ -189,7 +189,7 @@ class LastButton(NavButton[NavigatorViewT]):
     ):
         super().__init__(style=style, label=label, custom_id=custom_id, emoji=emoji, row=row)
 
-    async def callback(self, context: Context) -> None:
+    async def callback(self, context: ViewContext) -> None:
         self.view.current_page = len(self.view.pages) - 1
         await self.view.send_page(context)
 
@@ -236,11 +236,12 @@ class StopButton(NavButton[NavigatorViewT]):
     ):
         super().__init__(style=style, label=label, custom_id=custom_id, emoji=emoji, row=row)
 
-    async def callback(self, context: Context) -> None:
+    async def callback(self, context: ViewContext) -> None:
         if not self.view.message and not self.view._inter:
             return
 
         for button in self.view.children:
+            assert isinstance(button, NavButton)
             button.disabled = True
 
         if self.view._inter and self.view.ephemeral:

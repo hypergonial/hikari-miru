@@ -33,11 +33,11 @@ as unbound views have no concept of what message they are attached to.
 
         # Providing custom IDs to all items
         @miru.button(label="Button 1", custom_id="my_unique_custom_id_1")
-        async def button_one(self, button: miru.Button, ctx: miru.Context) -> None:
+        async def button_one(self, button: miru.Button, ctx: miru.ViewContext) -> None:
             await ctx.respond("You pressed button 1.")
 
         @miru.button(label="Button 2", custom_id="my_unique_custom_id_2")
-        async def button_two(self, button: miru.Button, ctx: miru.Context) -> None:
+        async def button_two(self, button: miru.Button, ctx: miru.ViewContext) -> None:
             await ctx.respond("You pressed button 2.")
 
 
@@ -93,11 +93,11 @@ simply pass a message ID to ``start_listener()``. This also allows for the view 
 
         # Providing custom IDs to all items
         @miru.button(label="Button 1", custom_id="my_unique_custom_id_1")
-        async def button_one(self, button: miru.Button, ctx: miru.Context) -> None:
+        async def button_one(self, button: miru.Button, ctx: miru.ViewContext) -> None:
             await ctx.respond("You pressed button 1.")
 
         @miru.button(label="Button 2", custom_id="my_unique_custom_id_2")
-        async def button_two(self, button: miru.Button, ctx: miru.Context) -> None:
+        async def button_two(self, button: miru.Button, ctx: miru.ViewContext) -> None:
             await ctx.respond("You pressed button 2.")
 
 

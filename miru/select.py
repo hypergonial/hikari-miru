@@ -34,11 +34,11 @@ from typing import Union
 
 import hikari
 
-from .item import DecoratedItem
-from .item import Item
+from .abc.item import DecoratedItem
+from .abc.item import ViewItem
 
 if TYPE_CHECKING:
-    from .context import Context
+    from .context import ViewContext
     from .view import View
 
 ViewT = TypeVar("ViewT", bound="View")
@@ -92,7 +92,7 @@ class SelectOption:
         )
 
 
-class Select(Item[ViewT]):
+class Select(ViewItem[ViewT]):
     """A view component representing a select menu.
 
     Parameters
@@ -249,7 +249,7 @@ def select(
     max_values: int = 1,
     disabled: bool = False,
     row: Optional[int] = None,
-) -> Callable[[Callable[[ViewT, Select[ViewT], Context], Any]], Select[ViewT]]:
+) -> Callable[[Callable[[ViewT, Select[ViewT], ViewContext], Any]], Select[ViewT]]:
     """
     A decorator to transform a function into a Discord UI SelectMenu's callback. This must be inside a subclass of View.
     """

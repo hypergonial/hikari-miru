@@ -52,7 +52,7 @@ def format(session: nox.Session):
 
 @nox.session()
 def mypy(session: nox.Session):
-    session.install("-Ur", "requirements.txt")
+    session.install("git+https://github.com/thesadru/hikari@feat/modal")
     session.install("-U", "mypy")
     session.run("python", "-m", "mypy", PATH_TO_PROJECT)
 
@@ -60,5 +60,5 @@ def mypy(session: nox.Session):
 @nox.session(reuse_venv=True)
 def sphinx(session):
     session.install("-Ur", "doc_requirements.txt")
-    session.install("-Ur", "requirements.txt")
+    session.install("git+https://github.com/thesadru/hikari@feat/modal")
     session.run("python", "-m", "sphinx.cmd.build", "docs/source", "docs/build", "-b", "html")

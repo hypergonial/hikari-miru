@@ -27,10 +27,10 @@ import typing
 
 import hikari
 
-__all__ = ["Interaction"]
+__all__ = ["ComponentInteraction", "ModalInteraction"]
 
 
-class Interaction(hikari.ComponentInteraction):
+class ComponentInteraction(hikari.ComponentInteraction):
     """
     Represents a component interaction on Discord. This object is practically identical to hikari.ComponentInteraction,
     with the only exception being that response status is tracked for automatic deferring and short-hand methods.
@@ -39,8 +39,8 @@ class Interaction(hikari.ComponentInteraction):
     _issued_response: bool = False
 
     @classmethod
-    def from_hikari(cls, interaction: hikari.ComponentInteraction) -> Interaction:
-        """Create a new Interaction object from a hikari.ComponentInteraction. This should be rarely used.
+    def from_hikari(cls, interaction: hikari.ComponentInteraction) -> ComponentInteraction:
+        """Create a new ComponentInteraction object from a hikari.ComponentInteraction. This should be rarely used.
 
         Parameters
         ----------
@@ -49,7 +49,7 @@ class Interaction(hikari.ComponentInteraction):
 
         Returns
         -------
-        Interaction
+        ComponentInteraction
             The created interaction object.
         """
         return cls(
@@ -57,6 +57,57 @@ class Interaction(hikari.ComponentInteraction):
             component_type=interaction.component_type,
             custom_id=interaction.custom_id,
             values=interaction.values,
+            guild_id=interaction.guild_id,
+            message=interaction.message,
+            member=interaction.member,
+            user=interaction.user,
+            locale=interaction.locale,
+            guild_locale=interaction.guild_locale,
+            app=interaction.app,
+            id=interaction.id,
+            application_id=interaction.application_id,
+            type=interaction.type,
+            token=interaction.token,
+            version=interaction.version,
+        )
+
+    @functools.wraps(hikari.ComponentInteraction.create_initial_response)
+    async def create_initial_response(self, *args: typing.Any, **kwargs: typing.Any) -> None:
+        await super().create_initial_response(*args, **kwargs)
+        self._issued_response = True
+
+    @functools.wraps(hikari.ComponentInteraction.create_modal_response)
+    async def create_modal_response(self, *args: typing.Any, **kwargs: typing.Any) -> None:
+        await super().create_modal_response(*args, **kwargs)
+        self._issued_response = True
+
+
+class ModalInteraction(hikari.ModalInteraction):
+    """
+    Represents modal interaction on Discord. This object is practically identical to hikari.ModalInteraction,
+    with the only exception being that response status is tracked for automatic deferring and short-hand methods.
+    """
+
+    _issued_response: bool = False
+
+    @classmethod
+    def from_hikari(cls, interaction: hikari.ModalInteraction) -> ModalInteraction:
+        """Create a new ModalInteraction object from a hikari.ModalInteraction. This should be rarely used.
+
+        Parameters
+        ----------
+        interaction : hikari.ModalInteraction
+            The ModalInteraction this object should be created from.
+
+        Returns
+        -------
+        ModalInteraction
+            The created interaction object.
+        """
+        return cls(
+            channel_id=interaction.channel_id,
+            components=interaction.components,
+            custom_id=interaction.custom_id,
             guild_id=interaction.guild_id,
             message=interaction.message,
             member=interaction.member,

@@ -29,8 +29,8 @@ from typing import Union
 
 import hikari
 
-from miru.context import Context
-from miru.item import Item
+from miru import Item
+from miru.context import ViewContext
 from miru.view import View
 
 from .buttons import FirstButton
@@ -128,6 +128,7 @@ class NavigatorView(View):
             return
 
         for button in self.children:
+            assert isinstance(button, NavButton)
             button.disabled = True
 
         if self._ephemeral and self._inter:
@@ -145,12 +146,12 @@ class NavigatorView(View):
         """
         return [FirstButton(), PrevButton(), IndicatorButton(), NextButton(), LastButton()]
 
-    def add_item(self, item: Item[NavigatorViewT]) -> None:
-        """Adds a new item to the view. Item must be of type NavButton.
+    def add_item(self, item: Item) -> None:
+        """Adds a new item to the view. MessageItem must be of type NavButton.
 
         Parameters
         ----------
-        item : Item[NavigatorViewT]
+        item : MessageItem[NavigatorViewT]
             An instance of NavButton
 
         Raises
@@ -177,7 +178,7 @@ class NavigatorView(View):
         else:
             return dict(content=content, embeds=embeds, components=self.build())
 
-    async def send_page(self, context: Context, page_index: Optional[int] = None) -> None:
+    async def send_page(self, context: ViewContext, page_index: Optional[int] = None) -> None:
         """Send a page, editing the original message.
 
         Parameters

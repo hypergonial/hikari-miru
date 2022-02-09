@@ -34,30 +34,31 @@ from typing import TypeVar
 
 import hikari
 
-from .context import Context
-from .interaction import Interaction
+from ..interaction import ComponentInteraction
 
 if TYPE_CHECKING:
-    from .view import View
+    from ..context import ViewContext
+    from ..modal import Modal
+    from ..view import View
+    from .item_handler import ItemHandler
 
 ViewT = TypeVar("ViewT", bound="View")
+ModalT = TypeVar("ModalT", bound="Modal")
 
-__all__ = ["Item", "DecoratedItem"]
+__all__ = ["Item", "DecoratedItem", "ViewItem", "ModalItem"]
 
 
-class Item(abc.ABC, Generic[ViewT]):
+class Item(abc.ABC):
     """
-    An abstract base class for view components. Cannot be directly instantiated.
+    An abstract base class for all components. Cannot be directly instantiated.
     """
 
     def __init__(self) -> None:
-        self._view: Optional[ViewT] = None
         self._row: Optional[int] = None
         self._width: int = 1
         self._rendered_row: Optional[int] = None  # Where it actually ends up when rendered by Discord
         self._custom_id: Optional[str] = None
-        self._persistent: bool = False
-        self._disabled: bool = False
+        self._handler: Optional[ItemHandler] = None
 
     @property
     def row(self) -> Optional[int]:
@@ -86,16 +87,6 @@ class Item(abc.ABC, Generic[ViewT]):
         return self._width
 
     @property
-    def view(self) -> ViewT:
-        """
-        The view this item is attached to.
-        """
-        if not self._view:
-            raise AttributeError(f"{self.__class__.__name__} hasn't been attached to a view yet")
-
-        return self._view
-
-    @property
     def custom_id(self) -> Optional[str]:
         """
         The item's custom identifier. This will be used to track the item through interactions and
@@ -113,19 +104,6 @@ class Item(abc.ABC, Generic[ViewT]):
         self._custom_id = value
 
     @property
-    def disabled(self) -> bool:
-        """
-        Indicates whether the item is disabled or not.
-        """
-        return self._disabled
-
-    @disabled.setter
-    def disabled(self, value: bool) -> None:
-        if not isinstance(value, bool):
-            raise TypeError("Expected type bool for property disabled.")
-        self._disabled = value
-
-    @property
     @abstractmethod
     def type(self) -> hikari.ComponentType:
         """
@@ -140,27 +118,97 @@ class Item(abc.ABC, Generic[ViewT]):
         """
         ...
 
-    async def callback(self, context: Context) -> None:
-        """
-        The component's callback, gets called when the component receives an interaction.
-        """
-        pass
 
-    async def _refresh(self, interaction: Interaction) -> None:
+class ViewItem(Item, abc.ABC, Generic[ViewT]):
+    """
+    An abstract base class for view components. Cannot be directly instantiated.
+    """
+
+    def __init__(self) -> None:
+        super().__init__()
+        self._handler: Optional[ViewT] = None
+        self._persistent: bool = False
+        self._disabled: bool = False
+
+    @property
+    def view(self) -> ViewT:
+        """
+        The view this item is attached to.
+        """
+        if not self._handler:
+            raise AttributeError(f"{self.__class__.__name__} hasn't been attached to a view yet")
+
+        return self._handler
+
+    @property
+    def disabled(self) -> bool:
+        """
+        Indicates whether the item is disabled or not.
+        """
+        return self._disabled
+
+    @disabled.setter
+    def disabled(self, value: bool) -> None:
+        if not isinstance(value, bool):
+            raise TypeError("Expected type bool for property disabled.")
+        self._disabled = value
+
+    async def _refresh(self, interaction: ComponentInteraction) -> None:
         """
         Called on an item to refresh its internal data.
         """
         pass
 
+    async def callback(self, context: ViewContext) -> None:
+        """
+        The component's callback, gets called when the component receives an interaction.
+        """
+        pass
+
+
+class ModalItem(Item, abc.ABC, Generic[ModalT]):
+    """
+    An abstract base class for modal components. Cannot be directly instantiated.
+    """
+
+    def __init__(self) -> None:
+        super().__init__()
+        self._handler: Optional[ModalT] = None
+        self._persistent: bool = False
+        self._required: bool = False
+
+    @property
+    def modal(self) -> Optional[ModalT]:
+        """
+        The modal this item is attached to.
+        """
+        if not self._handler:
+            raise AttributeError(f"{self.__class__.__name__} hasn't been attached to a modal yet.")
+
+        return self._handler
+
+    @property
+    def required(self) -> bool:
+        """
+        Indicates whether the item is required or not.
+        """
+        return self._required
+
+    @required.setter
+    def required(self, value: bool) -> None:
+        if not isinstance(value, bool):
+            raise TypeError("Expected type bool for property required.")
+        self._required = value
+
 
 class DecoratedItem:
     """A partial item made using a decorator."""
 
-    def __init__(self, item: Item[Any], callback: Callable[..., Any]) -> None:
+    def __init__(self, item: ViewItem[ViewT], callback: Callable[..., Any]) -> None:
         self.item = item
         self.callback = callback
 
-    def build(self, view: ViewT) -> Item[ViewT]:
+    def build(self, view: ViewT) -> Item:
         """Convert a DecoratedItem into an Item.
 
         Parameters
