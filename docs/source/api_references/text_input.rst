@@ -2,6 +2,6 @@
 TextInput API Reference
 =======================
 
-.. automodule:: miru.TextInput
+.. automodule:: miru.text_input
    :members:
    :show-inheritance:

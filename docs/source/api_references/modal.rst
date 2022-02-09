@@ -2,6 +2,6 @@
 Modal API Reference
 ===================
 
-.. automodule:: miru.Modal
+.. automodule:: miru.modal
    :members:
    :show-inheritance:
