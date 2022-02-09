@@ -1,1 +1,1 @@
-hikari>=2.0.0.dev106
+git+https://github.com/thesadru/hikari@feat/modal
