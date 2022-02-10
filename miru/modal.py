@@ -187,7 +187,13 @@ class Modal(ItemHandler):
         traceback.print_exception(error.__class__, error, error.__traceback__, file=sys.stderr)
 
     async def callback(self: ModalT, context: ModalContext) -> None:
-        """Called when the modal is submitted."""
+        """Called when the modal is submitted.
+
+        Parameters
+        ----------
+        context : ModalContext
+            The context that belongs to this interaction callback.
+        """
         pass
 
     async def _handle_callback(self: ModalT, context: ModalContext) -> None:
