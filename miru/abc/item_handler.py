@@ -138,7 +138,7 @@ class ItemHandler(abc.ABC):
         return self._autodefer
 
     def add_item(self, item: Item) -> None:
-        """Adds a new item to the modal.
+        """Adds a new item to the item handler.
 
         Parameters
         ----------

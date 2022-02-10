@@ -139,7 +139,7 @@ class View(ItemHandler):
         ValueError
             A view already has 25 components attached.
         TypeError
-            Parameter item is not an instance of MessageItem.
+            Parameter item is not an instance of ViewItem.
         RuntimeError
             The item is already attached to this view.
         RuntimeError

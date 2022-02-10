@@ -124,6 +124,26 @@ class Modal(ItemHandler):
         return self._values
 
     def add_item(self, item: Item) -> None:
+        """Adds a new item to the modal.
+
+        Parameters
+        ----------
+        item : Item
+            An instance of ModalItem to be added.
+
+        Raises
+        ------
+        TypeError
+            item is not of type ModalItem.
+        ValueError
+            The modal already has 25 components attached.
+        TypeError
+            Parameter item is not an instance of ModalItem.
+        RuntimeError
+            The item is already attached to this view.
+        RuntimeError
+            The item is already attached to another view.
+        """
         if not isinstance(item, ModalItem):
             raise TypeError("Expected type ModalItem for parameter item.")
 
