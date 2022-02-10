@@ -93,6 +93,15 @@ class TextInput(ModalItem[ModalT]):
         if self.custom_id is None:
             self.custom_id = os.urandom(16).hex()
 
+        if not value:
+            return
+
+        if self.min_length is not None and self.min_length < len(value):
+            raise ValueError("Parameter value does not meet minimum length requirement.")
+
+        if self.max_length is not None and self.max_length > len(value):
+            raise ValueError("Parameter value does not meet maximum length requirement.")
+
     @property
     def type(self) -> hikari.ComponentType:
         return hikari.ComponentType.TEXT_INPUT
@@ -142,6 +151,13 @@ class TextInput(ModalItem[ModalT]):
 
     @value.setter
     def value(self, value: Optional[str]) -> None:
+        if value:
+            if self.min_length is not None and self.min_length < len(value):
+                raise ValueError("Parameter value does not meet minimum length requirement.")
+
+            if self.max_length is not None and self.max_length > len(value):
+                raise ValueError("Parameter value does not meet maximum length requirement.")
+
         self._value = str(value) if value else None
 
     @property
@@ -153,6 +169,9 @@ class TextInput(ModalItem[ModalT]):
     def min_length(self, value: Optional[int]) -> None:
         if not isinstance(value, int):
             raise TypeError("Expected type int for property min_length.")
+        if self.value:
+            if value is not None and value < len(self.value):
+                raise ValueError("New minimum length constraint does not satisfy pre-filled value.")
         self._min_length = value
 
     @property
@@ -164,6 +183,9 @@ class TextInput(ModalItem[ModalT]):
     def max_length(self, value: Optional[int]) -> None:
         if not isinstance(value, int):
             raise TypeError("Expected type int for property max_length.")
+        if self.value:
+            if value is not None and value > len(self.value):
+                raise ValueError("New maximum length constraint does not satisfy pre-filled value.")
         self._max_length = value
 
     def _build(self, action_row: hikari.api.ActionRowBuilder) -> None:

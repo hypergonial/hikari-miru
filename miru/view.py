@@ -41,9 +41,9 @@ from .abc.item import DecoratedItem
 from .abc.item import Item
 from .abc.item import ViewItem
 from .abc.item_handler import ItemHandler
+from .button import Button
 from .context import ViewContext
 from .interaction import ComponentInteraction
-from .traits import MiruAware
 
 ViewT = TypeVar("ViewT", bound="View")
 
@@ -321,6 +321,11 @@ class View(ItemHandler):
         TypeError
             Parameter message is not an instance of hikari.Message
         """
+
+        # Optimize URL-button-only views by not starting listener
+        if all((isinstance(item, Button) and item.url is not None) for item in self.children):
+            return
+
         if not isinstance(message, hikari.Message):
             raise TypeError("Expected instance of hikari.Message.")
 

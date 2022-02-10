@@ -75,6 +75,7 @@ class Modal(ItemHandler):
         self._title: str = title
         self._custom_id: str = custom_id or os.urandom(16).hex()
         self._values: Optional[Dict[ModalItem[Modal], str]] = None
+        self._ctx: Optional[ModalContext] = None
 
         if len(self._title) > 100:
             raise ValueError("Modal title is too long. Maximum 100 characters.")
@@ -196,6 +197,23 @@ class Modal(ItemHandler):
         """
         pass
 
+    async def get_response_context(self) -> ModalContext:
+        """Get the context object that was created after submitting the modal.
+
+        Returns
+        -------
+        ModalContext
+            The modal context that was created from the submit interaction.
+
+        Raises
+        ------
+        RuntimeError
+            The modal was not responded to.
+        """
+        if self._ctx is None:
+            raise RuntimeError("This modal was not responded to.")
+        return self._ctx
+
     async def _handle_callback(self: ModalT, context: ModalContext) -> None:
         """
         Handle the callback of a modal item. Seperate task in case the view is stopped in the callback.
@@ -205,6 +223,7 @@ class Modal(ItemHandler):
 
         try:
             await self.callback(context)
+            self._ctx = context
 
             if not context.interaction._issued_response and self.autodefer:
                 await context.defer()
