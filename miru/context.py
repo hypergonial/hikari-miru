@@ -315,7 +315,7 @@ class ModalContext(Context[ModalInteraction]):
         return self._modal
 
     @property
-    def values(self) -> typing.Dict[ModalItem[Modal], str]:
+    def values(self) -> typing.Optional[typing.Dict[ModalItem[Modal], str]]:
         """
         The values received as input for this modal.
         """
@@ -328,4 +328,6 @@ class ModalContext(Context[ModalInteraction]):
             for component in components:
                 if item.custom_id == component.custom_id:
                     items[item] = component.value
-        return items
+        if items:
+            return items
+        return None

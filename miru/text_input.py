@@ -146,6 +146,7 @@ class TextInput(ModalItem[ModalT]):
 
     @property
     def min_length(self) -> Optional[int]:
+        """What the required minimum length of the input text should be."""
         return self._min_length
 
     @min_length.setter
@@ -156,13 +157,14 @@ class TextInput(ModalItem[ModalT]):
 
     @property
     def max_length(self) -> Optional[int]:
-        return self._min_length
+        """What the maximum allowed length of the input text should be."""
+        return self._max_length
 
     @max_length.setter
     def max_length(self, value: Optional[int]) -> None:
         if not isinstance(value, int):
             raise TypeError("Expected type int for property max_length.")
-        self._min_length = value
+        self._max_length = value
 
     def _build(self, action_row: hikari.api.ActionRowBuilder) -> None:
 
