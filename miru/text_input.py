@@ -169,6 +169,7 @@ class TextInput(ModalItem[ModalT]):
         assert self.custom_id is not None
         text_input = action_row.add_text_input(style=self.style, custom_id=self.custom_id, label=self.label)
 
+        text_input.set_required(self.required)
         if self.max_length:
             text_input.set_max_length(self.max_length)
         if self.min_length:
