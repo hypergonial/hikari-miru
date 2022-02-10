@@ -197,7 +197,7 @@ class Modal(ItemHandler):
         """
         pass
 
-    async def get_response_context(self) -> ModalContext:
+    def get_response_context(self) -> ModalContext:
         """Get the context object that was created after submitting the modal.
 
         Returns
