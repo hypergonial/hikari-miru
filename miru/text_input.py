@@ -96,10 +96,10 @@ class TextInput(ModalItem[ModalT]):
         if not value:
             return
 
-        if self.min_length is not None and self.min_length < len(value):
+        if self.min_length is not None and self.min_length > len(value):
             raise ValueError("Parameter value does not meet minimum length requirement.")
 
-        if self.max_length is not None and self.max_length > len(value):
+        if self.max_length is not None and self.max_length < len(value):
             raise ValueError("Parameter value does not meet maximum length requirement.")
 
     @property
@@ -170,7 +170,7 @@ class TextInput(ModalItem[ModalT]):
         if not isinstance(value, int):
             raise TypeError("Expected type int for property min_length.")
         if self.value:
-            if value is not None and value < len(self.value):
+            if value is not None and value > len(self.value):
                 raise ValueError("New minimum length constraint does not satisfy pre-filled value.")
         self._min_length = value
 
@@ -184,7 +184,7 @@ class TextInput(ModalItem[ModalT]):
         if not isinstance(value, int):
             raise TypeError("Expected type int for property max_length.")
         if self.value:
-            if value is not None and value > len(self.value):
+            if value is not None and value < len(self.value):
                 raise ValueError("New maximum length constraint does not satisfy pre-filled value.")
         self._max_length = value
 
