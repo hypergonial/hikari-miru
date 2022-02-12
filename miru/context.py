@@ -24,7 +24,6 @@ from __future__ import annotations
 
 import abc
 import typing
-from itertools import chain
 
 import hikari
 from hikari.snowflakes import Snowflake
@@ -93,6 +92,14 @@ class Context(abc.ABC, typing.Generic[InteractionT]):
     def guild_id(self) -> typing.Optional[Snowflake]:
         """The ID of the guild the context represents. Will be None in DMs."""
         return self._interaction.guild_id
+
+    def get_guild(self) -> typing.Optional[hikari.GatewayGuild]:
+        """Gets the guild this context represents, if any. Requires application cache."""
+        return self._interaction.get_guild()
+
+    def get_channel(self) -> typing.Optional[hikari.TextableGuildChannel]:
+        """Gets the channel this context represents, None if in a DM. Requires application cache."""
+        return self._interaction.get_channel()
 
     async def respond(
         self,
@@ -284,14 +291,6 @@ class ViewContext(Context[ComponentInteraction]):
         """The message object this context is proxying."""
         return self._interaction.message
 
-    def get_guild(self) -> typing.Optional[hikari.GatewayGuild]:
-        """Gets the guild this context represents, if any. Requires application cache."""
-        return self._interaction.get_guild()
-
-    def get_channel(self) -> typing.Union[hikari.GuildTextChannel, hikari.GuildNewsChannel, None]:
-        """Gets the channel this context represents, None if in a DM. Requires application cache."""
-        return self._interaction.get_channel()
-
     async def respond_with_modal(self, modal: Modal) -> None:
         """Respond to this interaction with a modal."""
 
@@ -319,15 +318,14 @@ class ModalContext(Context[ModalInteraction]):
         """
         The values received as input for this modal.
         """
-        # I hate this
-        items: typing.Dict[ModalItem[Modal], str] = {}
-        components = list(chain(*[action_row.components for action_row in self.interaction.components]))
 
-        for item in self.modal.children:
-            assert isinstance(item, ModalItem)
-            for component in components:
-                if item.custom_id == component.custom_id:
-                    items[item] = component.value
-        if items:
-            return items
-        return None
+        children = {item.custom_id: item for item in self.modal.children if isinstance(item, ModalItem)}
+        items = {
+            children[component.custom_id]: component.value
+            for action_row in self.interaction.components
+            for component in action_row.components
+        }
+        if not items:
+            return None
+
+        return items
