@@ -29,26 +29,26 @@ import hikari
 from hikari.snowflakes import Snowflake
 
 from .abc.item import ModalItem
+from .abc.item_handler import ItemHandler
 from .interaction import ComponentInteraction
 from .interaction import ModalInteraction
 from .traits import MiruAware
 
 if typing.TYPE_CHECKING:
-    from .abc.item_handler import ItemHandler
     from .modal import Modal
     from .view import View
 
-__all__ = ["Context", "ViewContext", "ModalContext"]
+__all__ = ["Context", "ViewContext", "ModalContext", "RawContext"]
 
 InteractionT = typing.TypeVar("InteractionT", "ComponentInteraction", "ModalInteraction")
 
 
 class Context(abc.ABC, typing.Generic[InteractionT]):
-    """A context object proxying a Discord interaction."""
+    """An abstract base class for context
+    objects that proxying a Discord interaction."""
 
-    def __init__(self, item_handler: ItemHandler, interaction: InteractionT) -> None:
+    def __init__(self, interaction: InteractionT) -> None:
         self._interaction: InteractionT = interaction
-        self._item_handler: ItemHandler = item_handler
 
     @property
     def interaction(self) -> InteractionT:
@@ -58,7 +58,10 @@ class Context(abc.ABC, typing.Generic[InteractionT]):
     @property
     def app(self) -> MiruAware:
         """The application that loaded miru."""
-        return self._item_handler.app
+        if not ItemHandler._app:
+            raise AttributeError(f"miru was not loaded, {self.__class__.__name__} has no property app.")
+
+        return ItemHandler._app
 
     @property
     def user(self) -> hikari.User:
@@ -274,11 +277,15 @@ class Context(abc.ABC, typing.Generic[InteractionT]):
         await self.interaction.create_initial_response(hikari.ResponseType.DEFERRED_MESSAGE_UPDATE, flags=flags)
 
 
+class RawContext(Context[InteractionT]):
+    """Raw context proxying interactions received by the gateway."""
+
+
 class ViewContext(Context[ComponentInteraction]):
-    """A context object proxying a ComponentInteraction."""
+    """A context object proxying a ComponentInteraction for a view item."""
 
     def __init__(self, view: View, interaction: ComponentInteraction) -> None:
-        super().__init__(view, interaction)
+        super().__init__(interaction)
         self._view = view
 
     @property
@@ -305,7 +312,7 @@ class ModalContext(Context[ModalInteraction]):
     """A context object proxying a ModalInteraction."""
 
     def __init__(self, modal: Modal, interaction: ModalInteraction) -> None:
-        super().__init__(modal, interaction)
+        super().__init__(interaction)
         self._modal = modal
 
     @property

@@ -13,7 +13,7 @@ Version 1.2.0
 
 - Added support for text input fields via ``miru.TextInput``.
 
-- Added ``ViewContext`` and ``ModalContext`` that inherit from ``Context``.
+- Added ``ViewContext``, ``RawContext``, and ``ModalContext`` that inherit from ``Context``.
 
 - Added ``miru.abc.ViewItem`` and ``miru.abc.ModalItem`` that inherit from ``miru.abc.Item``.
 
@@ -26,6 +26,10 @@ Version 1.2.0
 - Renamed ``miru.Interaction`` to ``miru.ComponentInteraction``.
 
 - Added ``miru.ModalInteraction``.
+
+- Added two new event types ``ModalInteractionCreateEvent`` and ``ComponentInteractionCreateEvent``.
+
+- These listeners include the interaction object and a ``RawContext`` with the event object.
 
 Version 1.1.1
 =============
