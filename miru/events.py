@@ -36,9 +36,6 @@ if t.TYPE_CHECKING:
 
 __all__ = ["Event", "ComponentInteractionCreateEvent", "ModalInteractionCreateEvent"]
 
-# The currently running app instance that will be subscribed to the listener
-_app: t.Optional[MiruAware] = None
-
 
 @attr.define()
 class Event(hikari.Event):
@@ -62,37 +59,40 @@ class ModalInteractionCreateEvent(Event):
     interaction: ModalInteraction = attr.field()
 
 
-def start_listeners(app: MiruAware) -> None:
-    """Start all custom event listeners, this is called during miru.load()"""
-    if _app is not None:
-        raise RuntimeError(f"miru is already loaded, cannot start listeners.")
-    _app = app
-    _app.event_manager.subscribe(hikari.InteractionCreateEvent, _sort_interactions)
+class _EventListener:
 
+    # The currently running app instance that will be subscribed to the listener
+    _app: t.Optional[MiruAware] = None
 
-def stop_listeners() -> None:
-    """Stop all custom event listeners for events, this is called during miru.unload()"""
-    if _app is None:
-        raise RuntimeError(f"miru was never loaded, cannot stop listeners.")
-    _app.event_manager.unsubscribe(hikari.InteractionCreateEvent, _sort_interactions)
-    _app = None
+    def start_listeners(self, app: MiruAware) -> None:
+        """Start all custom event listeners, this is called during miru.load()"""
+        if self._app is not None:
+            raise RuntimeError(f"miru is already loaded, cannot start listeners.")
+        self._app = app
+        self._app.event_manager.subscribe(hikari.InteractionCreateEvent, self._sort_interactions)
 
+    def stop_listeners(self) -> None:
+        """Stop all custom event listeners for events, this is called during miru.unload()"""
+        if self._app is None:
+            raise RuntimeError(f"miru was never loaded, cannot stop listeners.")
+        self._app.event_manager.unsubscribe(hikari.InteractionCreateEvent, self._sort_interactions)
+        self._app = None
 
-async def _sort_interactions(event: hikari.InteractionCreateEvent) -> None:
-    """Sort interaction create events and dispatch miru custom events."""
+    async def _sort_interactions(self, event: hikari.InteractionCreateEvent) -> None:
+        """Sort interaction create events and dispatch miru custom events."""
 
-    assert _app is not None
+        assert self._app is not None
 
-    if not isinstance(event.interaction, (hikari.ComponentInteraction, hikari.ModalInteraction)):
-        return
+        if not isinstance(event.interaction, (hikari.ComponentInteraction, hikari.ModalInteraction)):
+            return
 
-    # God why does mypy hate me so much for naming two variables the same in two if statement arms >_<
-    if isinstance(event.interaction, hikari.ComponentInteraction):
-        comp_inter = ComponentInteraction.from_hikari(event.interaction)
-        comp_ctx = RawContext(comp_inter)
-        _app.event_manager.dispatch(ComponentInteractionCreateEvent(_app, comp_ctx, comp_inter))
+        # God why does mypy hate me so much for naming two variables the same in two if statement arms >_<
+        if isinstance(event.interaction, hikari.ComponentInteraction):
+            comp_inter = ComponentInteraction.from_hikari(event.interaction)
+            comp_ctx = RawContext(comp_inter)
+            self._app.event_manager.dispatch(ComponentInteractionCreateEvent(self._app, comp_ctx, comp_inter))
 
-    elif isinstance(event.interaction, hikari.ModalInteraction):
-        modal_inter = ModalInteraction.from_hikari(event.interaction)
-        modal_ctx = RawContext(modal_inter)
-        _app.event_manager.dispatch(ModalInteractionCreateEvent(_app, modal_ctx, modal_inter))
+        elif isinstance(event.interaction, hikari.ModalInteraction):
+            modal_inter = ModalInteraction.from_hikari(event.interaction)
+            modal_ctx = RawContext(modal_inter)
+            self._app.event_manager.dispatch(ModalInteractionCreateEvent(self._app, modal_ctx, modal_inter))

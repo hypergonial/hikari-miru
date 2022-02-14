@@ -20,13 +20,16 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import typing
+
 from .abc.item_handler import ItemHandler
-from .events import start_listeners
-from .events import stop_listeners
+from .events import _EventListener
 from .traits import MiruAware
 from .view import View
 
 __all__ = ["load", "unload"]
+
+_event_listener: typing.Optional[_EventListener] = None
 
 
 def load(bot: MiruAware) -> None:
@@ -53,7 +56,8 @@ def load(bot: MiruAware) -> None:
         raise TypeError(f"Expected type with trait ViewsAware for parameter bot, not {type(bot)}")
 
     ItemHandler._app = bot
-    start_listeners(bot)
+    _event_listener = _EventListener()
+    _event_listener.start_listeners(bot)
 
 
 def unload() -> None:
@@ -67,4 +71,5 @@ def unload() -> None:
         view.stop()
 
     ItemHandler._app = None
-    stop_listeners()
+    if _event_listener:
+        _event_listener.stop_listeners()
