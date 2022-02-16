@@ -109,6 +109,23 @@ class Context(abc.ABC, typing.Generic[InteractionT]):
         """Gets the channel this context represents, None if in a DM. Requires application cache."""
         return self._interaction.get_channel()
 
+    async def fetch_response(self) -> hikari.Message:
+        """Fetch the response message.
+
+        Returns
+        -------
+        hikari.Message
+            The response message object.
+
+        Raises
+        ------
+        RuntimeError
+            The interaction was not yet responded to.
+        """
+        if self._interaction._issued_response:
+            return await self._interaction.fetch_initial_response()
+        raise RuntimeError("This interaction was not yet issued a response.")
+
     async def respond(
         self,
         content: hikari.UndefinedOr[typing.Any] = hikari.UNDEFINED,
