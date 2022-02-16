@@ -62,6 +62,11 @@ class Context(abc.ABC, typing.Generic[InteractionT]):
             raise AttributeError(f"miru was not loaded, {self.__class__.__name__} has no property app.")
 
         return ItemHandler._app
+    
+    @property
+    def bot(self) -> MiruAware:
+        """The application that loaded miru."""
+        return self.app
 
     @property
     def user(self) -> hikari.User:
