@@ -104,7 +104,7 @@ class Button(ViewItem[ViewT]):
 
         if self.url is None and self.custom_id is None:
             self.custom_id = os.urandom(16).hex()
-        
+
         if isinstance(self._emoji, str):
             self._emoji = hikari.Emoji.parse(self._emoji)
 

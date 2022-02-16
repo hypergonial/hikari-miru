@@ -129,7 +129,7 @@ class ItemHandler(abc.ABC):
             raise AttributeError(f"miru was not loaded, {self.__class__.__name__} has no attribute app.")
 
         return self._app
-    
+
     @property
     def bot(self) -> MiruAware:
         """
