@@ -74,6 +74,11 @@ class Context(abc.ABC, typing.Generic[InteractionT]):
         return self._interaction.user
 
     @property
+    def author(self) -> hikari.User:
+        """Alias for Context.user"""
+        return self.user
+
+    @property
     def member(self) -> typing.Optional[hikari.InteractionMember]:
         """The member who triggered this interaction. Will be None in DMs."""
         return self._interaction.member
