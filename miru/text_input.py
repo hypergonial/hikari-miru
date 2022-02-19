@@ -96,10 +96,10 @@ class TextInput(ModalItem[ModalT]):
         if not value:
             return
 
-        if self.min_length is not None and self.min_length > len(value):
+        if self.min_length is not None and self.min_length > len(self._value):
             raise ValueError("Parameter value does not meet minimum length requirement.")
 
-        if self.max_length is not None and self.max_length < len(value):
+        if self.max_length is not None and self.max_length < len(self._value):
             raise ValueError("Parameter value does not meet maximum length requirement.")
 
     @property
