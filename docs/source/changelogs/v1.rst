@@ -17,6 +17,8 @@ Version 1.2.0
 
 - Added ``Context.fetch_response()`` to fetch initial response.
 
+- Added ``Context.bot`` and ``Context.author`` as aliases for ``Context.app`` and ``Context.user`` respectively.
+
 - Added ``miru.abc.ViewItem`` and ``miru.abc.ModalItem`` that inherit from ``miru.abc.Item``.
 
 - Views now expect items of type ``ViewItem`` and provide ``ViewContext``.
