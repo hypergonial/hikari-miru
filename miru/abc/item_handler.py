@@ -72,7 +72,7 @@ class _Weights:
 
 
 class ItemHandler(abc.ABC):
-    """Abstract base class all item-handlers inherit from.
+    """Abstract base class all item-handlers (e.g. views, modals) inherit from.
 
     Parameters
     ----------
@@ -116,7 +116,7 @@ class ItemHandler(abc.ABC):
     @property
     def timeout(self) -> Optional[float]:
         """
-        The amount of time the view is allowed to idle for, in seconds. Must be None for persistent views.
+        The amount of time the item handler is allowed to idle for, in seconds. Must be None for persistent views.
         """
         return self._timeout
 
@@ -168,7 +168,7 @@ class ItemHandler(abc.ABC):
             raise ValueError("View cannot have more than 25 components attached.")
 
         if not isinstance(item, Item):
-            raise TypeError(f"Expected ModalItem not {type(item)} for parameter item.")
+            raise TypeError(f"Expected Item not {type(item)} for parameter item.")
 
         if item in self.children:
             raise RuntimeError("Item is already attached to this item handler.")
@@ -182,7 +182,7 @@ class ItemHandler(abc.ABC):
         self.children.append(item)
 
     def remove_item(self, item: Item) -> None:
-        """Removes the specified item from the modal.
+        """Removes the specified item from the item handler.
 
         Parameters
         ----------
@@ -198,7 +198,7 @@ class ItemHandler(abc.ABC):
             item._handler = None
 
     def clear_items(self) -> None:
-        """Removes all items from this modal."""
+        """Removes all items from this item handler."""
         for item in self.children:
             item._handler = None
             item._rendered_row = None
@@ -212,7 +212,7 @@ class ItemHandler(abc.ABC):
         Returns
         -------
         List[hikari.impl.ActionRowBuilder]
-            A list of action rows containing all items attached to this modal,
+            A list of action rows containing all items attached to this item handler,
             converted to hikari component objects.
 
         Raises
