@@ -81,11 +81,11 @@ class TextInput(ModalItem[ModalT]):
         super().__init__()
         self._width: int = 5
         self._style: Union[hikari.TextInputStyle, int] = style
-        self._placeholder: Optional[str] = placeholder
-        self._value: Optional[str] = value
-        self._label: str = label
+        self._placeholder: Optional[str] = str(placeholder)
+        self._value: Optional[str] = str(value)
+        self._label: str = str(label)
         self._required: bool = required
-        self._custom_id: Optional[str] = custom_id
+        self._custom_id: Optional[str] = str(custom_id)
         self._max_length: Optional[int] = max_length
         self._min_length: Optional[int] = min_length
         self._row: Optional[int] = int(row) if row is not None else None
