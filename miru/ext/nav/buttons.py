@@ -35,8 +35,6 @@ if TYPE_CHECKING:
 
 NavigatorViewT = TypeVar("NavigatorViewT", bound="NavigatorView")
 
-__all__ = ["NavButton", "NextButton", "PrevButton", "FirstButton", "LastButton", "IndicatorButton", "StopButton"]
-
 
 class NavButton(Button[NavigatorViewT]):
     """A baseclass for all navigation buttons. NavigatorView requires instances of this class as it's items.
