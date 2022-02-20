@@ -81,8 +81,8 @@ class TextInput(ModalItem[ModalT]):
         super().__init__()
         self._width: int = 5
         self._style: Union[hikari.TextInputStyle, int] = style
-        self._placeholder: Optional[str] = str(placeholder)
-        self._value: Optional[str] = str(value)
+        self._placeholder: Optional[str] = str(placeholder) if placeholder else None
+        self._value: Optional[str] = str(value) if value else None
         self._label: str = str(label)
         self._required: bool = required
         self._custom_id: Optional[str] = custom_id
