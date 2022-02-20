@@ -20,11 +20,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from .buttons import (
-    NextButton, PrevButton, FirstButton, LastButton, IndicatorButton, StopButton
-)
+from .buttons import FirstButton
+from .buttons import IndicatorButton
+from .buttons import LastButton
+from .buttons import NextButton
+from .buttons import PrevButton
+from .buttons import StopButton
 from .navigator import NavigatorView
-
 
 __all__ = [
     "NavButton",
