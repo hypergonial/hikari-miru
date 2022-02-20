@@ -93,7 +93,7 @@ class TextInput(ModalItem[ModalT]):
         if self.custom_id is None:
             self.custom_id = os.urandom(16).hex()
 
-        if not value:
+        if not self._value:
             return
 
         if self.min_length is not None and self.min_length > len(self._value):
