@@ -41,8 +41,6 @@ from .buttons import NavigatorViewT
 from .buttons import NextButton
 from .buttons import PrevButton
 
-__all__ = ["NavigatorView"]
-
 logger = logging.getLogger(__name__)
 
 
