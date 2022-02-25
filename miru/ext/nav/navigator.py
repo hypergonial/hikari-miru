@@ -213,6 +213,7 @@ class NavigatorView(View):
         self,
         channel_or_interaction: Union[hikari.SnowflakeishOr[hikari.TextableChannel], hikari.MessageResponseMixin[Any]],
         ephemeral: bool = False,
+        responded: bool = False,
     ) -> None:
         """Start up the navigator, send the first page, and start listening for interactions.
 
@@ -220,8 +221,10 @@ class NavigatorView(View):
         ----------
         channel_or_interaction : Union[hikari.SnowflakeishOr[hikari.PartialChannel], hikari.MessageResponseMixin[Any]]
             A channel or interaction to use to send the navigator.
-        ephemeral: bool
+        ephemeral : bool
             If an interaction was provided, determines if the navigator will be sent ephemerally or not.
+        responded : bool
+            If an interaction was provided, determines if the interaction was previously acknowledged or not.
         """
         self.current_page = 0
         self._ephemeral = ephemeral if not isinstance(channel_or_interaction, (int, hikari.TextableChannel)) else False
@@ -242,10 +245,13 @@ class NavigatorView(View):
             message = await self.app.rest.create_message(channel, **payload)
         else:
             self._inter = channel_or_interaction
-            await channel_or_interaction.create_initial_response(
-                hikari.ResponseType.MESSAGE_CREATE,
-                **payload,
-            )
-            message = await channel_or_interaction.fetch_initial_response()
+            if not responded:
+                await channel_or_interaction.create_initial_response(
+                    hikari.ResponseType.MESSAGE_CREATE,
+                    **payload,
+                )
+                message = await channel_or_interaction.fetch_initial_response()
+            else:
+                message = await channel_or_interaction.execute(**payload)
 
         self.start(message)

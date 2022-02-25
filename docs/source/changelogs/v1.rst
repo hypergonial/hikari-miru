@@ -35,6 +35,8 @@ Version 1.2.0
 
 - These listeners include the interaction object and a ``RawContext`` with the event object.
 
+- Added ``responded`` kwarg to ``NavigatorView`` to have the ability to send navigators on acknowledged interactions.
+
 Version 1.1.1
 =============
 
