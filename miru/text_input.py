@@ -191,9 +191,10 @@ class TextInput(ModalItem[ModalT]):
     def _build(self, action_row: hikari.api.ActionRowBuilder) -> None:
 
         assert self.custom_id is not None
-        text_input = action_row.add_text_input(style=self.style, custom_id=self.custom_id, label=self.label)
+        text_input = action_row.add_text_input(custom_id=self.custom_id, label=self.label)
 
         text_input.set_required(self.required)
+        text_input.set_style(self.style)
         if self.max_length:
             text_input.set_max_length(self.max_length)
         if self.min_length:
