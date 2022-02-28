@@ -22,8 +22,8 @@
 
 from .buttons import FirstButton
 from .buttons import IndicatorButton
-from .buttons import NavButton
 from .buttons import LastButton
+from .buttons import NavButton
 from .buttons import NextButton
 from .buttons import PrevButton
 from .buttons import StopButton

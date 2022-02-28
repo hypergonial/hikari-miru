@@ -67,7 +67,7 @@ as unbound views have no concept of what message they are attached to.
                 components=view.build(),
             )
 
-            view.start(message)
+            # You do not need to start unbound persistent views since there is already a listener running for them.
 
 
     bot.run()
@@ -132,7 +132,7 @@ simply pass a message ID to ``start_listener()``. This also allows for the view 
                 "This is a persistent component menu, and works after bot restarts!",
                 components=view.build(),
             )
-
+            # Bound persistent views need to be started for every message.
             view.start(message)
 
 
