@@ -219,11 +219,14 @@ class Select(ViewItem[ViewT]):
         for option in self.options:
             if isinstance(option, SelectOption):
                 option = option._convert()
+
             _option = select.add_option(option.label, option.value)
+            _option.set_is_default(option.is_default)
             if option.description:
                 _option.set_description(option.description)
             if option.emoji:
                 _option.set_emoji(option.emoji)
+
             _option.add_to_menu()
 
         select.add_to_container()
