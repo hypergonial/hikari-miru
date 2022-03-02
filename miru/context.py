@@ -224,6 +224,7 @@ class Context(abc.ABC, typing.Generic[InteractionT]):
         attachments: hikari.UndefinedOr[typing.Sequence[hikari.Resourceish]] = hikari.UNDEFINED,
         embed: hikari.UndefinedOr[hikari.Embed] = hikari.UNDEFINED,
         embeds: hikari.UndefinedOr[typing.Sequence[hikari.Embed]] = hikari.UNDEFINED,
+        replace_attachments: bool = False,
         mentions_everyone: hikari.UndefinedOr[bool] = hikari.UNDEFINED,
         user_mentions: hikari.UndefinedOr[
             typing.Union[hikari.SnowflakeishSequence[hikari.PartialUser], bool]
@@ -275,6 +276,7 @@ class Context(abc.ABC, typing.Generic[InteractionT]):
                 attachments=attachments,
                 embed=embed,
                 embeds=embeds,
+                replace_attachments=replace_attachments,
                 mentions_everyone=mentions_everyone,
                 user_mentions=user_mentions,
                 role_mentions=role_mentions,
@@ -350,9 +352,10 @@ class ViewContext(Context[ComponentInteraction]):
 class ModalContext(Context[ModalInteraction]):
     """A context object proxying a ModalInteraction."""
 
-    def __init__(self, modal: Modal, interaction: ModalInteraction) -> None:
+    def __init__(self, modal: Modal, interaction: ModalInteraction, values: typing.Dict[ModalItem[Modal], str]) -> None:
         super().__init__(interaction)
         self._modal = modal
+        self._values = values
 
     @property
     def modal(self) -> Modal:
@@ -360,18 +363,6 @@ class ModalContext(Context[ModalInteraction]):
         return self._modal
 
     @property
-    def values(self) -> typing.Optional[typing.Dict[ModalItem[Modal], str]]:
-        """
-        The values received as input for this modal.
-        """
-
-        children = {item.custom_id: item for item in self.modal.children if isinstance(item, ModalItem)}
-        items = {
-            children[component.custom_id]: component.value
-            for action_row in self.interaction.components
-            for component in action_row.components
-        }
-        if not items:
-            return None
-
-        return items
+    def values(self) -> typing.Dict[ModalItem[Modal], str]:
+        """The values received as input for this modal."""
+        return self._values

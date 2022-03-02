@@ -107,7 +107,7 @@ class Modal(ItemHandler):
         """
         return self._custom_id
 
-    @title.setter
+    @custom_id.setter
     def custom_id(self, value: str) -> None:
         if not isinstance(value, str):
             raise TypeError("Expected type str for property custom_id.")
@@ -239,9 +239,22 @@ class Modal(ItemHandler):
 
         if isinstance(event.interaction, hikari.ModalInteraction):
 
+            children = {item.custom_id: item for item in self.children if isinstance(item, ModalItem)}
+
+            values = {  # Check if any components match the provided custom_ids
+                children[component.custom_id]: component.value
+                for action_row in event.interaction.components
+                for component in action_row.components
+                if children.get(component.custom_id) is not None
+            }
+            if not values:
+                return
+
+            self._values = values
+
             interaction: ModalInteraction = ModalInteraction.from_hikari(event.interaction)
 
-            context = ModalContext(self, interaction)
+            context = ModalContext(self, interaction, values)
 
             passed = await self.modal_check(context)
             if not passed:
