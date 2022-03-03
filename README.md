@@ -31,11 +31,11 @@ class MyView(miru.View):
         await ctx.respond("Scissors!")
 
     @miru.button(label="Scissors", emoji=chr(9986), style=hikari.ButtonStyle.PRIMARY)
-    async def scissors_button(self, button: miru.Button, ctx: miru.ViewContext):
+    async def scissors_button(self, button: miru.Button, ctx: miru.ViewContext) -> None:
         await ctx.respond("Rock!")
 
     @miru.button(emoji=chr(9209), style=hikari.ButtonStyle.DANGER, row=2)
-    async def stop_button(self, button: miru.Button, ctx: miru.ViewContext):
+    async def stop_button(self, button: miru.Button, ctx: miru.ViewContext) -> None:
         self.stop() # Stop listening for interactions
 
 
