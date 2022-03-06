@@ -38,7 +38,7 @@ def load(bot: MiruAware) -> None:
 
     Parameters
     ----------
-    bot : ViewsAware
+    bot : MiruAware
         The currently running application. Must implement traits
         RESTAware and EventManagerAware.
 
@@ -47,7 +47,7 @@ def load(bot: MiruAware) -> None:
     RuntimeError
         miru is already loaded
     TypeError
-        Parameter bot does not have traits specified in ViewsAware
+        Parameter bot does not have traits specified in MiruAware
     """
     if ItemHandler._app is not None:
         raise RuntimeError("miru is already loaded!")

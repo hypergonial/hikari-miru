@@ -30,6 +30,7 @@ from typing import Union
 import hikari
 
 from miru import Item
+from miru.abc.item_handler import ItemHandler
 from miru.context import ViewContext
 from miru.view import View
 
@@ -144,18 +145,23 @@ class NavigatorView(View):
         """
         return [FirstButton(), PrevButton(), IndicatorButton(), NextButton(), LastButton()]
 
-    def add_item(self, item: Item) -> None:
-        """Adds a new item to the view. MessageItem must be of type NavButton.
+    def add_item(self, item: Item) -> ItemHandler:
+        """Adds a new item to the navigator. Item must be of type NavButton.
 
         Parameters
         ----------
-        item : MessageItem[NavigatorViewT]
+        item : Item[NavigatorViewT]
             An instance of NavButton
 
         Raises
         ------
         TypeError
             Parameter item was not an instance of NavButton
+
+        Returns
+        -------
+        ItemHandler
+            The item handler the item was added to.
         """
         if not isinstance(item, NavButton):
             raise TypeError("Expected type NavButton for parameter item.")

@@ -144,7 +144,7 @@ class ItemHandler(abc.ABC):
         """
         return self._autodefer
 
-    def add_item(self, item: Item) -> None:
+    def add_item(self, item: Item) -> ItemHandler:
         """Adds a new item to the item handler.
 
         Parameters
@@ -162,6 +162,11 @@ class ItemHandler(abc.ABC):
             The item is already attached to this item handler.
         RuntimeError
             The item is already attached to another item handler.
+
+        Returns
+        -------
+        ItemHandler
+            The item handler the item was added to.
         """
 
         if len(self.children) > 25:
@@ -181,13 +186,20 @@ class ItemHandler(abc.ABC):
         item._handler = self
         self.children.append(item)
 
-    def remove_item(self, item: Item) -> None:
+        return self
+
+    def remove_item(self, item: Item) -> ItemHandler:
         """Removes the specified item from the item handler.
 
         Parameters
         ----------
         item : Item[Any]
             The item to be removed.
+
+        Returns
+        -------
+        ItemHandler
+            The item handler the item was removed from.
         """
         try:
             self.children.remove(item)
@@ -197,14 +209,24 @@ class ItemHandler(abc.ABC):
             self._weights.remove_item(item)
             item._handler = None
 
-    def clear_items(self) -> None:
-        """Removes all items from this item handler."""
+        return self
+
+    def clear_items(self) -> ItemHandler:
+        """Removes all items from this item handler.
+
+        Returns
+        -------
+        ItemHandler
+            The item handler items were cleared from.
+        """
         for item in self.children:
             item._handler = None
             item._rendered_row = None
 
         self.children.clear()
         self._weights.clear()
+
+        return self
 
     def build(self) -> List[hikari.impl.ActionRowBuilder]:
         """Converts the view into action rows, must be called before sending.

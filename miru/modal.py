@@ -126,7 +126,7 @@ class Modal(ItemHandler):
         """
         return self._values
 
-    def add_item(self, item: Item) -> None:
+    def add_item(self, item: Item) -> ItemHandler:
         """Adds a new item to the modal.
 
         Parameters
@@ -146,9 +146,14 @@ class Modal(ItemHandler):
             The item is already attached to this view.
         RuntimeError
             The item is already attached to another view.
+
+        Returns
+        -------
+        ItemHandler
+            The item handler the item was added to.
         """
         if not isinstance(item, ModalItem):
-            raise TypeError("Expected type ModalItem for parameter item.")
+            raise TypeError(f"Expected type ModalItem for parameter item, not {item.__class__.__name__}.")
 
         return super().add_item(item)
 
@@ -169,7 +174,7 @@ class Modal(ItemHandler):
         return True
 
     async def on_error(
-        self: ModalT,
+        self,
         error: Exception,
         context: Optional[ModalContext] = None,
     ) -> None:
@@ -189,7 +194,7 @@ class Modal(ItemHandler):
 
         traceback.print_exception(error.__class__, error, error.__traceback__, file=sys.stderr)
 
-    async def callback(self: ModalT, context: ModalContext) -> None:
+    async def callback(self, context: ModalContext) -> None:
         """Called when the modal is submitted.
 
         Parameters
@@ -216,7 +221,7 @@ class Modal(ItemHandler):
             raise RuntimeError("This modal was not responded to.")
         return self._ctx
 
-    async def _handle_callback(self: ModalT, context: ModalContext) -> None:
+    async def _handle_callback(self, context: ModalContext) -> None:
         """
         Handle the callback of a modal item. Seperate task in case the view is stopped in the callback.
         """

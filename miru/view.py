@@ -126,7 +126,7 @@ class View(ItemHandler):
         """
         return True if self._message_id is not None else False
 
-    def add_item(self, item: Item) -> None:
+    def add_item(self, item: Item) -> ItemHandler:
         """Adds a new item to the view.
 
         Parameters
@@ -144,12 +144,17 @@ class View(ItemHandler):
             The item is already attached to this view.
         RuntimeError
             The item is already attached to another view.
+
+        Returns
+        -------
+        ItemHandler
+            The item handler the item was added to.
         """
 
         if not isinstance(item, ViewItem):
-            raise TypeError("Expected type MessageItem for parameter item.")
+            raise TypeError(f"Expected type ViewItem for parameter item, not {item.__class__.__name__}.")
 
-        super().add_item(item)
+        return super().add_item(item)
 
     async def view_check(self, context: ViewContext) -> bool:
         """Called before any callback in the view is called. Must evaluate to a truthy value to pass.

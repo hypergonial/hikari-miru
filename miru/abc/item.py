@@ -208,8 +208,8 @@ class DecoratedItem:
         self.item = item
         self.callback = callback
 
-    def build(self, view: ViewT) -> Item:
-        """Convert a DecoratedItem into an Item.
+    def build(self, view: ViewT) -> ViewItem[ViewT]:
+        """Convert a DecoratedItem into a ViewItem.
 
         Parameters
         ----------
@@ -218,7 +218,7 @@ class DecoratedItem:
 
         Returns
         -------
-        Item[ViewT]
+        ViewItem[ViewT]
             The converted item.
         """
         self.item.callback = partial(self.callback, view, self.item)  # type: ignore[assignment]
