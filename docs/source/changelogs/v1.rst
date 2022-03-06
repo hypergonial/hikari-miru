@@ -19,6 +19,8 @@ Version 1.2.0
 
 - Added ``Context.bot`` and ``Context.author`` as aliases for ``Context.app`` and ``Context.user`` respectively.
 
+- Added overloads to ``Context.defer()`` to allow use of different deffered response-types.
+
 - Added ``miru.abc.ViewItem`` and ``miru.abc.ModalItem`` that inherit from ``miru.abc.Item``.
 
 - Views now expect items of type ``ViewItem`` and provide ``ViewContext``.
@@ -34,6 +36,8 @@ Version 1.2.0
 - Added two new event types ``ModalInteractionCreateEvent`` and ``ComponentInteractionCreateEvent``.
 
 - These listeners include the interaction object and a ``RawContext`` with the event object.
+
+- ``ItemHandler.add_item()``, ``ItemHandler.remove_item()``, and ``ItemHandler.clear_items()`` now return the ``ItemHandler`` object to allow for method chaining.
 
 - Added ``responded`` kwarg to ``NavigatorView`` to have the ability to send navigators on acknowledged interactions.
 

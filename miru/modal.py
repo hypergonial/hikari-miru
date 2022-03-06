@@ -225,7 +225,6 @@ class Modal(ItemHandler):
         """
         Handle the callback of a modal item. Seperate task in case the view is stopped in the callback.
         """
-
         try:
             await self.callback(context)
             self._ctx = context
