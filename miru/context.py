@@ -361,7 +361,7 @@ class ViewContext(Context[ComponentInteraction]):
         return self._view
 
     @property
-    def message(self) -> t.Optional[hikari.Message]:
+    def message(self) -> hikari.Message:
         """The message object for the view this context is proxying."""
         return self._interaction.message
 
