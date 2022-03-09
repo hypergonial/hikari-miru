@@ -125,9 +125,7 @@ class View(ItemHandler):
         return True if self._message_id is not None else False
 
     @classmethod
-    async def from_message(
-        cls, message: hikari.Message, *, timeout: Optional[float] = 120, autodefer: bool = True
-    ) -> View:
+    def from_message(cls, message: hikari.Message, *, timeout: Optional[float] = 120, autodefer: bool = True) -> View:
         """Create a new from the components included in the passed message. Returns an empty view if the message has no components attached.
 
         Parameters
