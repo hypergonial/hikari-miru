@@ -33,6 +33,8 @@ Version 1.2.0
 
 - Added ``miru.ModalInteraction``.
 
+- Added ``View.from_message()`` classmethod to allow creation of views from message components.
+
 - Added two new event types ``ModalInteractionCreateEvent`` and ``ComponentInteractionCreateEvent``.
 
 - These listeners include the interaction object and a ``RawContext`` with the event object.
