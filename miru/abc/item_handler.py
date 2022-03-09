@@ -235,15 +235,11 @@ class ItemHandler(abc.ABC):
         -------
         List[hikari.impl.ActionRowBuilder]
             A list of action rows containing all items attached to this item handler,
-            converted to hikari component objects.
-
-        Raises
-        ------
-        ValueError
-            The view has no items attached to it.
+            converted to hikari component objects. If the view has no items attached,
+            this returns an empty list.
         """
-        if len(self.children) == 0:
-            raise ValueError("Empty item handlers cannot be built.")
+        if not self.children:
+            return []
 
         self.children.sort(key=lambda i: i._rendered_row if i._rendered_row is not None else sys.maxsize)
 
