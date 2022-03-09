@@ -204,6 +204,20 @@ class Select(ViewItem[ViewT]):
             raise TypeError("Expected type int for property max_values.")
         self._max_values = value
 
+    @classmethod
+    def _from_component(cls, component: hikari.PartialComponent, row: Optional[int] = None) -> ViewItem[ViewT]:
+        assert isinstance(component, hikari.SelectMenuComponent)
+
+        return cls(
+            options=component.options,
+            custom_id=component.custom_id,
+            placeholder=component.placeholder,
+            min_values=component.min_values,
+            max_values=component.max_values,
+            disabled=component.is_disabled,
+            row=row,
+        )
+
     def _build(self, action_row: hikari.api.ActionRowBuilder) -> None:
         """
         Called internally to build and append to an action row

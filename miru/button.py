@@ -178,6 +178,20 @@ class Button(ViewItem[ViewT]):
 
         self._url = value
 
+    @classmethod
+    def _from_component(cls, component: hikari.PartialComponent, row: Optional[int] = None) -> ViewItem[ViewT]:
+        assert isinstance(component, hikari.ButtonComponent)
+
+        return cls(
+            style=component.style,
+            label=component.label,
+            disabled=component.is_disabled,
+            custom_id=component.custom_id,
+            url=component.url,
+            emoji=component.emoji,
+            row=row,
+        )
+
     def _build(self, action_row: hikari.api.ActionRowBuilder) -> None:
         button: Union[
             hikari.api.InteractiveButtonBuilder[hikari.api.ActionRowBuilder],

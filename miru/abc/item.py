@@ -153,9 +153,17 @@ class ViewItem(Item, abc.ABC, Generic[ViewT]):
             raise TypeError("Expected type bool for property disabled.")
         self._disabled = value
 
+    @classmethod
+    @abstractmethod
+    def _from_component(cls, component: hikari.PartialComponent, row: Optional[int] = None) -> ViewItem[ViewT]:
+        """
+        Converts the passed hikari component into a miru ViewItem.
+        """
+        ...
+
     async def _refresh(self, interaction: ComponentInteraction) -> None:
         """
-        Called on an item to refresh its internal data.
+        Called on an item to refresh it's internal data.
         """
         pass
 

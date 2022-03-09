@@ -41,6 +41,7 @@ from .abc.item_handler import ItemHandler
 from .button import Button
 from .context import ViewContext
 from .interaction import ComponentInteraction
+from .select import Select
 
 ViewT = TypeVar("ViewT", bound="View")
 
@@ -123,12 +124,53 @@ class View(ItemHandler):
         """
         return True if self._message_id is not None else False
 
+    @classmethod
+    async def from_message(
+        cls, message: hikari.Message, *, timeout: Optional[float] = 120, autodefer: bool = True
+    ) -> View:
+        """Create a new from the components included in the passed message. Returns an empty view if the message has no components attached.
+
+        Parameters
+        ----------
+        message : hikari.Message
+            The message to read components from
+        timeout : Optional[float], optional
+            The timeout of the created view, by default 120
+        autodefer : bool, optional
+            If unhandled interactions should be automatically deferred or not, by default True
+
+        Returns
+        -------
+        View
+            The view that represents the components attached to this message.
+
+        .. warning::
+            Any custom behaviour (such as callbacks) will not be re-created, if you want to access an already running view that is bound to a message, use :obj:`miru.view.get_view` instead.
+        """
+
+        view = cls(timeout=timeout, autodefer=autodefer)
+
+        if not message.components:
+            return view
+
+        for row, action_row in enumerate(message.components):
+            assert isinstance(action_row, hikari.ActionRowComponent)
+
+            for component in action_row.components:
+                if isinstance(component, hikari.ButtonComponent):
+                    view.add_item(Button._from_component(component, row))
+
+                elif isinstance(component, hikari.SelectMenuComponent):
+                    view.add_item(Select._from_component(component, row))
+
+        return view
+
     def add_item(self, item: Item) -> ItemHandler:
         """Adds a new item to the view.
 
         Parameters
         ----------
-        item : MessageItem[Any]
+        item : ViewItem
             The item to be added.
 
         Raises
@@ -144,7 +186,7 @@ class View(ItemHandler):
 
         Returns
         -------
-        ItemHandler
+        View
             The item handler the item was added to.
         """
 
@@ -366,7 +408,7 @@ def get_view(message: hikari.SnowflakeishOr[hikari.PartialMessage]) -> Optional[
 
     message_id = hikari.Snowflake(message)
 
-    if int(message_id) in View._views.keys():
-        return View._views[message_id]
+    if view := View._views.get(int(message_id)):
+        return view
 
     return None
