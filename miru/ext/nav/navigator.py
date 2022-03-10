@@ -112,7 +112,7 @@ class NavigatorView(View):
             raise TypeError("Expected type int for property current_page.")
 
         # Ensure this value is always correct
-        self._current_page = max(0, min(value, len(self.pages)-1))
+        self._current_page = max(0, min(value, len(self.pages) - 1))
 
     @property
     def ephemeral(self) -> bool:

@@ -230,7 +230,7 @@ class IndicatorButton(NavButton[NavigatorViewT]):
             return
 
         try:
-            page_number = int(list(modal.values.values())[0])-1
+            page_number = int(list(modal.values.values())[0]) - 1
         except (ValueError, TypeError):
             self.view._inter = modal.get_response_context().interaction
             return await modal.get_response_context().defer()
