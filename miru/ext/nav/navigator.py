@@ -31,7 +31,7 @@ import hikari
 
 from miru import Item
 from miru.abc.item_handler import ItemHandler
-from miru.context import ViewContext
+from miru.context import Context
 from miru.view import View
 
 from .buttons import FirstButton
@@ -112,7 +112,7 @@ class NavigatorView(View):
             raise TypeError("Expected type int for property current_page.")
 
         # Ensure this value is always correct
-        self._current_page = max(0, min(value, len(self.pages)))
+        self._current_page = max(0, min(value, len(self.pages)-1))
 
     @property
     def ephemeral(self) -> bool:
@@ -182,13 +182,13 @@ class NavigatorView(View):
         else:
             return dict(content=content, embeds=embeds, components=self.build())
 
-    async def send_page(self, context: ViewContext, page_index: Optional[int] = None) -> None:
+    async def send_page(self, context: Context[Any], page_index: Optional[int] = None) -> None:
         """Send a page, editing the original message.
 
         Parameters
         ----------
         context : Context
-            The context that should be used to send this page
+            The context object that should be used to send this page
         page_index : Optional[int], optional
             The index of the page to send, if not specifed, sends the current page, by default None
         """

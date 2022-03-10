@@ -43,6 +43,8 @@ Version 1.2.0
 
 - Added ``responded`` kwarg to ``NavigatorView`` to have the ability to send navigators on acknowledged interactions.
 
+- Added a "Jump to page" modal to built-in ``ext.nav.IndicatorButton`` when pressed.
+
 - Fixed selectoption ``is_default`` fields being ignored.
 
 Version 1.1.1

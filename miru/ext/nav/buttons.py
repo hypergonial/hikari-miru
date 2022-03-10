@@ -29,6 +29,8 @@ import hikari
 
 from miru.button import Button
 from miru.context import ViewContext
+from miru.modal import Modal
+from miru.text_input import TextInput
 
 if TYPE_CHECKING:
     from .navigator import NavigatorView
@@ -209,13 +211,32 @@ class IndicatorButton(NavButton[NavigatorViewT]):
         style: Union[hikari.ButtonStyle, int] = hikari.ButtonStyle.SECONDARY,
         custom_id: Optional[str] = None,
         emoji: Union[hikari.Emoji, str, None] = None,
+        disabled: bool = False,
         row: Optional[int] = None,
     ):
         # Either label or emoji is required, so we pass a placeholder
-        super().__init__(style=style, label="0/0", custom_id=custom_id, emoji=emoji, row=row, disabled=True)
+        super().__init__(style=style, label="0/0", custom_id=custom_id, emoji=emoji, disabled=disabled, row=row)
 
     async def before_page_change(self) -> None:
         self.label = f"{self.view.current_page+1}/{len(self.view.pages)}"
+
+    async def callback(self, context: ViewContext) -> None:
+        modal = Modal("Jump to page", autodefer=False)
+        modal.add_item(TextInput(label="Page Number", placeholder="Enter a page number to jump to it..."))
+        await context.respond_with_modal(modal)
+        await modal.wait()
+
+        if not modal.values:
+            return
+
+        try:
+            page_number = int(list(modal.values.values())[0])-1
+        except (ValueError, TypeError):
+            self.view._inter = modal.get_response_context().interaction
+            return await modal.get_response_context().defer()
+
+        self.view.current_page = page_number
+        await self.view.send_page(modal.get_response_context())
 
 
 class StopButton(NavButton[NavigatorViewT]):
