@@ -218,6 +218,7 @@ class NavigatorView(View):
     async def send(
         self,
         channel_or_interaction: Union[hikari.SnowflakeishOr[hikari.TextableChannel], hikari.MessageResponseMixin[Any]],
+        start_at: int = 0,
         ephemeral: bool = False,
         responded: bool = False,
     ) -> None:
@@ -227,12 +228,14 @@ class NavigatorView(View):
         ----------
         channel_or_interaction : Union[hikari.SnowflakeishOr[hikari.PartialChannel], hikari.MessageResponseMixin[Any]]
             A channel or interaction to use to send the navigator.
+        start_at : int
+            If provided, the page number to start the pagination at.
         ephemeral : bool
             If an interaction was provided, determines if the navigator will be sent ephemerally or not.
         responded : bool
             If an interaction was provided, determines if the interaction was previously acknowledged or not.
         """
-        self.current_page = 0
+        self.current_page = start_at
         self._ephemeral = ephemeral if not isinstance(channel_or_interaction, (int, hikari.TextableChannel)) else False
 
         for button in self.children:
