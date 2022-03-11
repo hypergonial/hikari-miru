@@ -34,7 +34,7 @@ from .interaction import ModalInteraction
 if t.TYPE_CHECKING:
     from .traits import MiruAware
 
-__all__ = ["Event", "MiruStartedEvent", "ComponentInteractionCreateEvent", "ModalInteractionCreateEvent"]
+__all__ = ["Event", "MiruStartedEvent", "MiruStoppedEvent", "ComponentInteractionCreateEvent", "ModalInteractionCreateEvent"]
 
 
 @attr.define()
@@ -47,11 +47,14 @@ class Event(hikari.Event):
 @attr.define()
 class MiruStartedEvent(Event):
     """An event that is dispatched when miru is loaded."""
+
     ...
+
 
 @attr.define()
 class MiruStoppedEvent(Event):
     """An event that is dispatched when miru is unloaded."""
+
     ...
 
 
