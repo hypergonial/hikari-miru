@@ -34,7 +34,7 @@ from .interaction import ModalInteraction
 if t.TYPE_CHECKING:
     from .traits import MiruAware
 
-__all__ = ["Event", "ComponentInteractionCreateEvent", "ModalInteractionCreateEvent"]
+__all__ = ["Event", "MiruStartedEvent", "ComponentInteractionCreateEvent", "ModalInteractionCreateEvent"]
 
 
 @attr.define()
@@ -42,13 +42,24 @@ class Event(hikari.Event):
     """A base class for every miru event."""
 
     app: MiruAware = attr.field()
-    context: RawContext[t.Any] = attr.field()
+
+
+@attr.define()
+class MiruStartedEvent(Event):
+    """An event that is dispatched when miru is loaded."""
+    ...
+
+@attr.define()
+class MiruStoppedEvent(Event):
+    """An event that is dispatched when miru is unloaded."""
+    ...
 
 
 @attr.define()
 class ComponentInteractionCreateEvent(Event):
     """An event that is dispatched when a new component interaction is received."""
 
+    context: RawContext[t.Any] = attr.field()
     interaction: ComponentInteraction = attr.field()
 
 
@@ -56,6 +67,7 @@ class ComponentInteractionCreateEvent(Event):
 class ModalInteractionCreateEvent(Event):
     """An event that is dispatched when a new modal interaction is received."""
 
+    context: RawContext[t.Any] = attr.field()
     interaction: ModalInteraction = attr.field()
 
 
@@ -70,12 +82,14 @@ class _EventListener:
             raise RuntimeError(f"miru is already loaded, cannot start listeners.")
         self._app = app
         self._app.event_manager.subscribe(hikari.InteractionCreateEvent, self._sort_interactions)
+        self._app.event_manager.dispatch(MiruStartedEvent(self._app))
 
     def stop_listeners(self) -> None:
         """Stop all custom event listeners for events, this is called during miru.unload()"""
         if self._app is None:
             raise RuntimeError(f"miru was never loaded, cannot stop listeners.")
         self._app.event_manager.unsubscribe(hikari.InteractionCreateEvent, self._sort_interactions)
+        self._app.event_manager.dispatch(MiruStoppedEvent(self._app))
         self._app = None
 
     async def _sort_interactions(self, event: hikari.InteractionCreateEvent) -> None:
