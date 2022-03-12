@@ -31,6 +31,7 @@ from hikari.snowflakes import Snowflake
 from .abc.item import ModalItem
 from .abc.item_handler import ItemHandler
 from .interaction import ComponentInteraction
+from .interaction import InteractionResponse
 from .interaction import ModalInteraction
 from .traits import MiruAware
 
@@ -38,7 +39,7 @@ if t.TYPE_CHECKING:
     from .modal import Modal
     from .view import View
 
-__all__ = ["Context", "ViewContext", "ModalContext", "RawContext"]
+__all__ = ["Context", "ViewContext", "ModalContext", "RawComponentContext", "RawModalContext"]
 
 InteractionT = t.TypeVar("InteractionT", "ComponentInteraction", "ModalInteraction")
 
@@ -150,7 +151,7 @@ class Context(abc.ABC, t.Generic[InteractionT]):
         role_mentions: hikari.UndefinedOr[
             t.Union[hikari.SnowflakeishSequence[hikari.PartialRole], bool]
         ] = hikari.UNDEFINED,
-    ) -> None:
+    ) -> InteractionResponse:
         """Short-hand method to respond to the interaction this context represents.
 
         Parameters
@@ -179,9 +180,14 @@ class Context(abc.ABC, t.Generic[InteractionT]):
             The set of allowed role mentions in this message. Set to True to allow all.
         flags : t.Union[undefined.UndefinedType, int, hikari.MessageFlag], optional
             Message flags that should be included with this message.
+
+        Returns
+        -------
+        InteractionResponse
+            A proxy object representing the response to the interaction.
         """
         if self.interaction._issued_response:
-            await self.interaction.execute(
+            message = await self.interaction.execute(
                 content,
                 tts=tts,
                 component=component,
@@ -195,6 +201,7 @@ class Context(abc.ABC, t.Generic[InteractionT]):
                 role_mentions=role_mentions,
                 flags=flags,
             )
+            return InteractionResponse(self.interaction, message)
         else:
             await self.interaction.create_initial_response(
                 hikari.ResponseType.MESSAGE_CREATE,
@@ -211,6 +218,7 @@ class Context(abc.ABC, t.Generic[InteractionT]):
                 role_mentions=role_mentions,
                 flags=flags,
             )
+            return InteractionResponse(self.interaction)
 
     async def edit_response(
         self,
@@ -232,7 +240,7 @@ class Context(abc.ABC, t.Generic[InteractionT]):
         role_mentions: hikari.UndefinedOr[
             t.Union[hikari.SnowflakeishSequence[hikari.PartialRole], bool]
         ] = hikari.UNDEFINED,
-    ) -> None:
+    ) -> InteractionResponse:
         """A short-hand method to edit the last response belonging to this interaction.
 
         Parameters
@@ -263,7 +271,7 @@ class Context(abc.ABC, t.Generic[InteractionT]):
             Message flags that should be included with this message.
         """
         if self.interaction._issued_response:
-            await self.interaction.edit_initial_response(
+            message = await self.interaction.edit_initial_response(
                 content,
                 component=component,
                 components=components,
@@ -276,6 +284,7 @@ class Context(abc.ABC, t.Generic[InteractionT]):
                 user_mentions=user_mentions,
                 role_mentions=role_mentions,
             )
+            return InteractionResponse(self.interaction, message)
         else:
             await self.interaction.create_initial_response(
                 hikari.ResponseType.MESSAGE_UPDATE,
@@ -292,6 +301,7 @@ class Context(abc.ABC, t.Generic[InteractionT]):
                 role_mentions=role_mentions,
                 flags=flags,
             )
+            return InteractionResponse(self.interaction)
 
     @t.overload
     async def defer(
@@ -344,21 +354,8 @@ class Context(abc.ABC, t.Generic[InteractionT]):
         await self.interaction.create_initial_response(hikari.ResponseType.DEFERRED_MESSAGE_UPDATE, flags=flags)
 
 
-class RawContext(Context[InteractionT]):
-    """Raw context proxying interactions received by the gateway."""
-
-
-class ViewContext(Context[ComponentInteraction]):
-    """A context object proxying a ComponentInteraction for a view item."""
-
-    def __init__(self, view: View, interaction: ComponentInteraction) -> None:
-        super().__init__(interaction)
-        self._view = view
-
-    @property
-    def view(self) -> View:
-        """The view this context originates from."""
-        return self._view
+class RawComponentContext(Context[ComponentInteraction]):
+    """Raw context proxying component interactions received directly over the gateway."""
 
     @property
     def message(self) -> hikari.Message:
@@ -375,8 +372,27 @@ class ViewContext(Context[ComponentInteraction]):
         modal.start()
 
 
-class ModalContext(Context[ModalInteraction]):
-    """A context object proxying a ModalInteraction."""
+class RawModalContext(Context[ModalInteraction]):
+    """Raw context object proxying a ModalInteraction received directly over the gateway."""
+
+    ...
+
+
+class ViewContext(RawComponentContext):
+    """A context object proxying a ComponentInteraction for a view item."""
+
+    def __init__(self, view: View, interaction: ComponentInteraction) -> None:
+        super().__init__(interaction)
+        self._view = view
+
+    @property
+    def view(self) -> View:
+        """The view this context originates from."""
+        return self._view
+
+
+class ModalContext(RawModalContext):
+    """A context object proxying a ModalInteraction received by a miru modal."""
 
     def __init__(self, modal: Modal, interaction: ModalInteraction, values: t.Dict[ModalItem[Modal], str]) -> None:
         super().__init__(interaction)

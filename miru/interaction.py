@@ -23,11 +23,11 @@
 from __future__ import annotations
 
 import functools
-import typing
+import typing as t
 
 import hikari
 
-__all__ = ["ComponentInteraction", "ModalInteraction"]
+__all__ = ["ComponentInteraction", "ModalInteraction", "InteractionResponse"]
 
 
 class ComponentInteraction(hikari.ComponentInteraction):
@@ -72,12 +72,12 @@ class ComponentInteraction(hikari.ComponentInteraction):
         )
 
     @functools.wraps(hikari.ComponentInteraction.create_initial_response)
-    async def create_initial_response(self, *args: typing.Any, **kwargs: typing.Any) -> None:
+    async def create_initial_response(self, *args: t.Any, **kwargs: t.Any) -> None:
         await super().create_initial_response(*args, **kwargs)
         self._issued_response = True
 
     @functools.wraps(hikari.ComponentInteraction.create_modal_response)
-    async def create_modal_response(self, *args: typing.Any, **kwargs: typing.Any) -> None:
+    async def create_modal_response(self, *args: t.Any, **kwargs: t.Any) -> None:
         await super().create_modal_response(*args, **kwargs)
         self._issued_response = True
 
@@ -123,6 +123,91 @@ class ModalInteraction(hikari.ModalInteraction):
         )
 
     @functools.wraps(hikari.ComponentInteraction.create_initial_response)
-    async def create_initial_response(self, *args: typing.Any, **kwargs: typing.Any) -> None:
+    async def create_initial_response(self, *args: t.Any, **kwargs: t.Any) -> None:
         await super().create_initial_response(*args, **kwargs)
         self._issued_response = True
+
+
+class InteractionResponse:
+    """
+    Represents a response to an interaction, allows for standardized handling of responses.
+    This class is not meant to be directly instantiated, and is instead returned by :obj:`miru.context.Context`.
+    """
+
+    def __init__(
+        self, interaction: hikari.MessageResponseMixin[t.Any], message: t.Optional[hikari.Message] = None
+    ) -> None:
+        self.interaction = interaction
+        self.message = message
+
+    async def retrieve_message(self) -> hikari.Message:
+        """Get or fetch the message created by this response.
+        Initial responses need to be fetched, while followups will be provided directly.
+
+        Returns
+        -------
+        hikari.Message
+            The message created by this response.
+        """
+        if self.message:
+            return self.message
+
+        return await self.interaction.fetch_initial_response()
+
+    async def delete(self) -> None:
+        """Delete the response issued to the interaction this object represents."""
+        if self.message:
+            await self.interaction.delete_message(self.message)
+
+        await self.interaction.delete_initial_response()
+
+    async def edit(
+        self,
+        content: hikari.UndefinedOr[t.Any] = hikari.UNDEFINED,
+        *,
+        component: hikari.UndefinedOr[hikari.api.ComponentBuilder] = hikari.UNDEFINED,
+        components: hikari.UndefinedOr[t.Sequence[hikari.api.ComponentBuilder]] = hikari.UNDEFINED,
+        attachment: hikari.UndefinedOr[hikari.Resourceish] = hikari.UNDEFINED,
+        attachments: hikari.UndefinedOr[t.Sequence[hikari.Resourceish]] = hikari.UNDEFINED,
+        embed: hikari.UndefinedOr[hikari.Embed] = hikari.UNDEFINED,
+        embeds: hikari.UndefinedOr[t.Sequence[hikari.Embed]] = hikari.UNDEFINED,
+        replace_attachments: bool = False,
+        mentions_everyone: hikari.UndefinedOr[bool] = hikari.UNDEFINED,
+        user_mentions: hikari.UndefinedOr[
+            t.Union[hikari.SnowflakeishSequence[hikari.PartialUser], bool]
+        ] = hikari.UNDEFINED,
+        role_mentions: hikari.UndefinedOr[
+            t.Union[hikari.SnowflakeishSequence[hikari.PartialRole], bool]
+        ] = hikari.UNDEFINED,
+    ) -> InteractionResponse:
+        if self.message:
+            message = await self.interaction.edit_message(
+                self.message,
+                content,
+                component=component,
+                components=components,
+                attachment=attachment,
+                attachments=attachments,
+                embed=embed,
+                embeds=embeds,
+                replace_attachments=replace_attachments,
+                mentions_everyone=mentions_everyone,
+                user_mentions=user_mentions,
+                role_mentions=role_mentions,
+            )
+            return InteractionResponse(self.interaction, message)
+
+        message = await self.interaction.edit_initial_response(
+            content,
+            component=component,
+            components=components,
+            attachment=attachment,
+            attachments=attachments,
+            embed=embed,
+            embeds=embeds,
+            replace_attachments=replace_attachments,
+            mentions_everyone=mentions_everyone,
+            user_mentions=user_mentions,
+            role_mentions=role_mentions,
+        )
+        return InteractionResponse(self.interaction, message)

@@ -27,14 +27,21 @@ import typing as t
 import attr
 import hikari
 
-from .context import RawContext
+from .context import RawComponentContext
+from .context import RawModalContext
 from .interaction import ComponentInteraction
 from .interaction import ModalInteraction
 
 if t.TYPE_CHECKING:
     from .traits import MiruAware
 
-__all__ = ["Event", "MiruStartedEvent", "MiruStoppedEvent", "ComponentInteractionCreateEvent", "ModalInteractionCreateEvent"]
+__all__ = [
+    "Event",
+    "MiruStartedEvent",
+    "MiruStoppedEvent",
+    "ComponentInteractionCreateEvent",
+    "ModalInteractionCreateEvent",
+]
 
 
 @attr.define()
@@ -62,7 +69,7 @@ class MiruStoppedEvent(Event):
 class ComponentInteractionCreateEvent(Event):
     """An event that is dispatched when a new component interaction is received."""
 
-    context: RawContext[t.Any] = attr.field()
+    context: RawComponentContext = attr.field()
     interaction: ComponentInteraction = attr.field()
 
 
@@ -70,7 +77,7 @@ class ComponentInteractionCreateEvent(Event):
 class ModalInteractionCreateEvent(Event):
     """An event that is dispatched when a new modal interaction is received."""
 
-    context: RawContext[t.Any] = attr.field()
+    context: RawModalContext = attr.field()
     interaction: ModalInteraction = attr.field()
 
 
@@ -106,10 +113,10 @@ class _EventListener:
         # God why does mypy hate me so much for naming two variables the same in two if statement arms >_<
         if isinstance(event.interaction, hikari.ComponentInteraction):
             comp_inter = ComponentInteraction.from_hikari(event.interaction)
-            comp_ctx = RawContext(comp_inter)
+            comp_ctx = RawComponentContext(comp_inter)
             self._app.event_manager.dispatch(ComponentInteractionCreateEvent(self._app, comp_ctx, comp_inter))
 
         elif isinstance(event.interaction, hikari.ModalInteraction):
             modal_inter = ModalInteraction.from_hikari(event.interaction)
-            modal_ctx = RawContext(modal_inter)
+            modal_ctx = RawModalContext(modal_inter)
             self._app.event_manager.dispatch(ModalInteractionCreateEvent(self._app, modal_ctx, modal_inter))
