@@ -13,9 +13,11 @@ Version 1.2.0
 
 - Added support for text input fields via ``miru.TextInput``.
 
-- Added ``ViewContext``, ``RawContext``, and ``ModalContext`` that inherit from ``Context``.
+- Added ``RawComponentContext``, ``RawModalContext``, ``ViewContext``, and ``ModalContext`` that inherit from ``Context``.
 
-- Added ``Context.fetch_response()`` to fetch initial response.
+- Added ``miru.InteractionResponse``.
+
+- ``Context.respond()`` and ``Context.edit_response()`` now return an ``InteractionResponse`` object.
 
 - Added ``Context.bot`` and ``Context.author`` as aliases for ``Context.app`` and ``Context.user`` respectively.
 
@@ -27,7 +29,7 @@ Version 1.2.0
 
 - ``Button`` and ``Select`` are now subclasses of ``ViewItem``.
 
-- Added ``miru.abc.ItemHandler``. ``View`` and ``Modal`` now inherit from it.
+- Added ``miru.abc.ItemHandler``. ``View`` and ``Modal`` subclass of this.
 
 - Renamed ``miru.Interaction`` to ``miru.ComponentInteraction``.
 
@@ -37,11 +39,13 @@ Version 1.2.0
 
 - Added two new event types ``ModalInteractionCreateEvent`` and ``ComponentInteractionCreateEvent``.
 
-- These listeners include the interaction object and a ``RawContext`` with the event object.
+- These listeners include the corresponding raw context with the event object, along with every field from ``hikari.InteractionCreateEvent``.
 
 - ``ItemHandler.add_item()``, ``ItemHandler.remove_item()``, and ``ItemHandler.clear_items()`` now return the ``ItemHandler`` object to allow for method chaining.
 
 - Added ``responded`` kwarg to ``NavigatorView`` to have the ability to send navigators on acknowledged interactions.
+
+- Added ``start_at`` kwarg to ``NavigatorView`` to define what the first page should be.
 
 - Added a "Jump to page" modal to built-in ``ext.nav.IndicatorButton`` when pressed.
 
