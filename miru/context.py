@@ -50,11 +50,17 @@ class Context(abc.ABC, t.Generic[InteractionT]):
 
     def __init__(self, interaction: InteractionT) -> None:
         self._interaction: InteractionT = interaction
+        self._responses: t.List[InteractionResponse] = []
 
     @property
     def interaction(self) -> InteractionT:
         """The underlying interaction object."""
         return self._interaction
+
+    @property
+    def responses(self) -> t.List[InteractionResponse]:
+        """A list of all responses issued to the interaction this context is proxying."""
+        return self._responses
 
     @property
     def app(self) -> MiruAware:
@@ -115,21 +121,21 @@ class Context(abc.ABC, t.Generic[InteractionT]):
         """Gets the channel this context represents, None if in a DM. Requires application cache."""
         return self._interaction.get_channel()
 
-    async def fetch_response(self) -> hikari.Message:
-        """Fetch the initial response message.
+    async def get_last_response(self) -> InteractionResponse:
+        """Get the last response issued to the interaction this context is proxying.
 
         Returns
         -------
-        hikari.Message
-            The response message object.
+        InteractionResponse
+            The response object.
 
         Raises
         ------
         RuntimeError
             The interaction was not yet responded to.
         """
-        if self._interaction._issued_response:
-            return await self._interaction.fetch_initial_response()
+        if self._responses:
+            return self._responses[-1]
         raise RuntimeError("This interaction was not yet issued a response.")
 
     async def respond(
@@ -201,7 +207,9 @@ class Context(abc.ABC, t.Generic[InteractionT]):
                 role_mentions=role_mentions,
                 flags=flags,
             )
-            return InteractionResponse(self.interaction, message)
+            response = InteractionResponse(self.interaction, message)
+            self._responses.append(response)
+            return response
         else:
             await self.interaction.create_initial_response(
                 hikari.ResponseType.MESSAGE_CREATE,
@@ -218,7 +226,9 @@ class Context(abc.ABC, t.Generic[InteractionT]):
                 role_mentions=role_mentions,
                 flags=flags,
             )
-            return InteractionResponse(self.interaction)
+            response = InteractionResponse(self.interaction)
+            self._responses.append(response)
+            return response
 
     async def edit_response(
         self,
@@ -269,6 +279,11 @@ class Context(abc.ABC, t.Generic[InteractionT]):
             The set of allowed role mentions in this message. Set to True to allow all.
         flags : t.Union[undefined.UndefinedType, int, hikari.MessageFlag], optional
             Message flags that should be included with this message.
+
+        Returns
+        -------
+        InteractionResponse
+            A proxy object representing the response to the interaction.
         """
         if self.interaction._issued_response:
             message = await self.interaction.edit_initial_response(
@@ -284,7 +299,9 @@ class Context(abc.ABC, t.Generic[InteractionT]):
                 user_mentions=user_mentions,
                 role_mentions=role_mentions,
             )
-            return InteractionResponse(self.interaction, message)
+            response = InteractionResponse(self.interaction, message)
+            self._responses.append(response)
+            return response
         else:
             await self.interaction.create_initial_response(
                 hikari.ResponseType.MESSAGE_UPDATE,
@@ -301,7 +318,9 @@ class Context(abc.ABC, t.Generic[InteractionT]):
                 role_mentions=role_mentions,
                 flags=flags,
             )
-            return InteractionResponse(self.interaction)
+            response = InteractionResponse(self.interaction)
+            self._responses.append(response)
+            return response
 
     @t.overload
     async def defer(
