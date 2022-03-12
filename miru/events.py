@@ -37,8 +37,6 @@ if t.TYPE_CHECKING:
 
 __all__ = [
     "Event",
-    "MiruStartedEvent",
-    "MiruStoppedEvent",
     "ComponentInteractionCreateEvent",
     "ModalInteractionCreateEvent",
 ]
@@ -49,20 +47,6 @@ class Event(hikari.Event):
     """A base class for every miru event."""
 
     app: MiruAware = attr.field()
-
-
-@attr.define()
-class MiruStartedEvent(Event):
-    """An event that is dispatched when miru is loaded."""
-
-    ...
-
-
-@attr.define()
-class MiruStoppedEvent(Event):
-    """An event that is dispatched when miru is unloaded."""
-
-    ...
 
 
 @attr.define()
@@ -92,14 +76,12 @@ class _EventListener:
             raise RuntimeError(f"miru is already loaded, cannot start listeners.")
         self._app = app
         self._app.event_manager.subscribe(hikari.InteractionCreateEvent, self._sort_interactions)
-        self._app.event_manager.dispatch(MiruStartedEvent(self._app))
 
     def stop_listeners(self) -> None:
         """Stop all custom event listeners for events, this is called during miru.unload()"""
         if self._app is None:
             raise RuntimeError(f"miru was never loaded, cannot stop listeners.")
         self._app.event_manager.unsubscribe(hikari.InteractionCreateEvent, self._sort_interactions)
-        self._app.event_manager.dispatch(MiruStoppedEvent(self._app))
         self._app = None
 
     async def _sort_interactions(self, event: hikari.InteractionCreateEvent) -> None:
