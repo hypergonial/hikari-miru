@@ -27,6 +27,9 @@ import typing as t
 
 import hikari
 
+if t.TYPE_CHECKING:
+    from .context import Context
+
 __all__ = ["ComponentInteraction", "ModalInteraction", "InteractionResponse"]
 
 
@@ -128,17 +131,18 @@ class ModalInteraction(hikari.ModalInteraction):
         self._issued_response = True
 
 
+InteractionT = t.TypeVar("InteractionT", "ComponentInteraction", "ModalInteraction")
+
+
 class InteractionResponse:
     """
     Represents a response to an interaction, allows for standardized handling of responses.
     This class is not meant to be directly instantiated, and is instead returned by :obj:`miru.context.Context`.
     """
 
-    def __init__(
-        self, interaction: hikari.MessageResponseMixin[t.Any], message: t.Optional[hikari.Message] = None
-    ) -> None:
-        self.interaction = interaction
-        self.message = message
+    def __init__(self, context: Context[InteractionT], message: t.Optional[hikari.Message] = None) -> None:
+        self._context: Context[t.Any] = context  # Before you ask why it is Any, because mypy is dumb
+        self._message: t.Optional[hikari.Message] = message
 
     async def retrieve_message(self) -> hikari.Message:
         """Get or fetch the message created by this response.
@@ -149,17 +153,19 @@ class InteractionResponse:
         hikari.Message
             The message created by this response.
         """
-        if self.message:
-            return self.message
+        if self._message:
+            return self._message
 
-        return await self.interaction.fetch_initial_response()
+        assert isinstance(self._context.interaction, (ComponentInteraction, ModalInteraction))
+        return await self._context.interaction.fetch_initial_response()
 
     async def delete(self) -> None:
         """Delete the response issued to the interaction this object represents."""
-        if self.message:
-            await self.interaction.delete_message(self.message)
 
-        await self.interaction.delete_initial_response()
+        if self._message:
+            await self._context.interaction.delete_message(self._message)
+
+        await self._context.interaction.delete_initial_response()
 
     async def edit(
         self,
@@ -180,9 +186,10 @@ class InteractionResponse:
             t.Union[hikari.SnowflakeishSequence[hikari.PartialRole], bool]
         ] = hikari.UNDEFINED,
     ) -> InteractionResponse:
-        if self.message:
-            message = await self.interaction.edit_message(
-                self.message,
+
+        if self._message:
+            message = await self._context.interaction.edit_message(
+                self._message,
                 content,
                 component=component,
                 components=components,
@@ -195,9 +202,9 @@ class InteractionResponse:
                 user_mentions=user_mentions,
                 role_mentions=role_mentions,
             )
-            return InteractionResponse(self.interaction, message)
+            return self._context._create_response(message)
 
-        message = await self.interaction.edit_initial_response(
+        message = await self._context.interaction.edit_initial_response(
             content,
             component=component,
             components=components,
@@ -210,4 +217,4 @@ class InteractionResponse:
             user_mentions=user_mentions,
             role_mentions=role_mentions,
         )
-        return InteractionResponse(self.interaction, message)
+        return self._context._create_response()

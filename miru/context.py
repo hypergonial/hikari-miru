@@ -113,6 +113,12 @@ class Context(abc.ABC, t.Generic[InteractionT]):
         """The ID of the guild the context represents. Will be None in DMs."""
         return self._interaction.guild_id
 
+    def _create_response(self, message: t.Optional[hikari.Message] = None) -> InteractionResponse:
+        """Create a new response and add it to the list of tracked responses."""
+        response = InteractionResponse(self, message)
+        self._responses.append(response)
+        return response
+
     def get_guild(self) -> t.Optional[hikari.GatewayGuild]:
         """Gets the guild this context represents, if any. Requires application cache."""
         return self._interaction.get_guild()
@@ -207,9 +213,7 @@ class Context(abc.ABC, t.Generic[InteractionT]):
                 role_mentions=role_mentions,
                 flags=flags,
             )
-            response = InteractionResponse(self.interaction, message)
-            self._responses.append(response)
-            return response
+            return self._create_response(message)
         else:
             await self.interaction.create_initial_response(
                 hikari.ResponseType.MESSAGE_CREATE,
@@ -226,9 +230,7 @@ class Context(abc.ABC, t.Generic[InteractionT]):
                 role_mentions=role_mentions,
                 flags=flags,
             )
-            response = InteractionResponse(self.interaction)
-            self._responses.append(response)
-            return response
+            return self._create_response()
 
     async def edit_response(
         self,
@@ -299,9 +301,8 @@ class Context(abc.ABC, t.Generic[InteractionT]):
                 user_mentions=user_mentions,
                 role_mentions=role_mentions,
             )
-            response = InteractionResponse(self.interaction, message)
-            self._responses.append(response)
-            return response
+            return self._create_response(message)
+
         else:
             await self.interaction.create_initial_response(
                 hikari.ResponseType.MESSAGE_UPDATE,
@@ -318,9 +319,7 @@ class Context(abc.ABC, t.Generic[InteractionT]):
                 role_mentions=role_mentions,
                 flags=flags,
             )
-            response = InteractionResponse(self.interaction)
-            self._responses.append(response)
-            return response
+            return self._create_response()
 
     @t.overload
     async def defer(
