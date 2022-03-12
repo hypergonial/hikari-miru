@@ -186,7 +186,36 @@ class InteractionResponse:
             t.Union[hikari.SnowflakeishSequence[hikari.PartialRole], bool]
         ] = hikari.UNDEFINED,
     ) -> InteractionResponse:
+        """A short-hand method to edit the message belonging to this response.
 
+        Parameters
+        ----------
+        content : undefined.UndefinedOr[t.Any], optional
+            The content of the message. Anything passed here will be cast to str.
+        attachment : undefined.UndefinedOr[hikari.Resourceish], optional
+            An attachment to add to this message.
+        attachments : undefined.UndefinedOr[t.Sequence[hikari.Resourceish]], optional
+            A sequence of attachments to add to this message.
+        component : undefined.UndefinedOr[hikari.api.special_endpoints.ComponentBuilder], optional
+            A component to add to this message.
+        components : undefined.UndefinedOr[t.Sequence[hikari.api.special_endpoints.ComponentBuilder]], optional
+            A sequence of components to add to this message.
+        embed : undefined.UndefinedOr[hikari.Embed], optional
+            An embed to add to this message.
+        embeds : undefined.UndefinedOr[t.Sequence[hikari.Embed]], optional
+            A sequence of embeds to add to this message.
+        mentions_everyone : undefined.UndefinedOr[bool], optional
+            If True, mentioning @everyone will be allowed.
+        user_mentions : undefined.UndefinedOr[t.Union[hikari.SnowflakeishSequence[hikari.PartialUser], bool]], optional
+            The set of allowed user mentions in this message. Set to True to allow all.
+        role_mentions : undefined.UndefinedOr[t.Union[hikari.SnowflakeishSequence[hikari.PartialRole], bool]], optional
+            The set of allowed role mentions in this message. Set to True to allow all.
+
+        Returns
+        -------
+        InteractionResponse
+            A proxy object representing the response to the interaction.
+        """
         if self._message:
             message = await self._context.interaction.edit_message(
                 self._message,
