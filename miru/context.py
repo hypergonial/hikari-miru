@@ -58,6 +58,11 @@ class Context(abc.ABC, t.Generic[InteractionT]):
         return self._interaction
 
     @property
+    def custom_id(self) -> str:
+        """The developer provided unique identifier for the interaction this context is proxying."""
+        return self._interaction.custom_id
+
+    @property
     def responses(self) -> t.List[InteractionResponse]:
         """A list of all responses issued to the interaction this context is proxying."""
         return self._responses
