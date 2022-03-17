@@ -219,6 +219,7 @@ class IndicatorButton(NavButton[NavigatorViewT]):
 
     async def before_page_change(self) -> None:
         self.label = f"{self.view.current_page+1}/{len(self.view.pages)}"
+        self.disabled = self.disabled if len(self.view.pages) != 1 else True
 
     async def callback(self, context: ViewContext) -> None:
         modal = Modal("Jump to page", autodefer=False)
