@@ -34,11 +34,12 @@ from miru.abc.item_handler import ItemHandler
 from miru.context import Context
 from miru.view import View
 
-from .items import FirstButton, NavItem
+from .items import FirstButton
 from .items import IndicatorButton
 from .items import LastButton
 from .items import NavButton
 from .items import NavigatorViewT
+from .items import NavItem
 from .items import NextButton
 from .items import PrevButton
 
