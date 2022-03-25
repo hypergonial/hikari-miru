@@ -231,9 +231,9 @@ class StopButton(NavButton[NavigatorViewT]):
         if not self.view.message and not self.view._inter:
             return
 
-        for button in self.view.children:
-            assert isinstance(button, NavButton)
-            button.disabled = True
+        for item in self.view.children:
+            if isinstance(item, (NavButton, NavSelect)):
+                item.disabled = True
 
         if self.view._inter and self.view.ephemeral:
             await self.view._inter.edit_initial_response(components=self.view.build())
