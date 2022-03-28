@@ -96,12 +96,12 @@ class Context(abc.ABC, t.Generic[InteractionT]):
         return self._interaction.member
 
     @property
-    def locale(self) -> str:
+    def locale(self) -> t.Union[str, hikari.Locale]:
         """The locale of this context."""
         return self._interaction.locale
 
     @property
-    def guild_locale(self) -> t.Optional[str]:
+    def guild_locale(self) -> t.Optional[t.Union[str, hikari.Locale]]:
         """
         The guild locale of this context, if in a guild.
         This will default to `en-US` if not a community guild.
