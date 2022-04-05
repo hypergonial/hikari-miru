@@ -57,7 +57,7 @@ class NavigatorView(View):
         A list of navigation buttons to override the default ones with, by default None
     timeout : Optional[float], optional
         [The duration after which the view times out, in seconds, by default 120.0
-    autodefer : bool, optional
+    auto_defer : bool, optional
         If unhandled interactions should be automatically deferred or not, by default True
 
     Raises
@@ -72,14 +72,14 @@ class NavigatorView(View):
         pages: List[Union[str, hikari.Embed]],
         buttons: Optional[List[NavButton[NavigatorViewT]]] = None,
         timeout: Optional[float] = 120.0,
-        autodefer: bool = True,
+        auto_defer: bool = True,
     ) -> None:
         self._pages: List[Union[str, hikari.Embed]] = pages
         self._current_page: int = 0
         self._ephemeral: bool = False
         # The last interaction used, used for ephemeral handling
         self._inter: Optional[hikari.MessageResponseMixin[Any]] = None
-        super().__init__(timeout=timeout, autodefer=autodefer)
+        super().__init__(timeout=timeout, auto_defer=auto_defer)
 
         if buttons is not None:
             for button in buttons:

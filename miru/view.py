@@ -88,7 +88,7 @@ class View:
     ----------
     timeout : Optional[float], optional
         The duration after which the view times out, in seconds, by default 120.0
-    autodefer : bool, optional
+    auto_defer : bool, optional
         If unhandled interactions should be automatically deferred or not, by default True
 
     Raises
@@ -123,11 +123,11 @@ class View:
         self,
         *,
         timeout: Optional[float] = 120.0,
-        autodefer: bool = True,
+        auto_defer: bool = True,
     ) -> None:
         self._timeout: Optional[float] = float(timeout) if timeout else None
         self._children: List[Item[Any]] = []
-        self._autodefer: bool = autodefer
+        self._auto_defer: bool = auto_defer
         self._message: Optional[hikari.Message] = None
         self._message_id: Optional[int] = None  # Only for bound persistent views
 
@@ -181,11 +181,11 @@ class View:
         return self._app
 
     @property
-    def autodefer(self) -> Optional[bool]:
+    def auto_defer(self) -> Optional[bool]:
         """
         A boolean indicating if received interactions should automatically be deferred if not responded to or not.
         """
-        return self._autodefer
+        return self._auto_defer
 
     @property
     def message(self) -> Optional[hikari.Message]:
@@ -361,7 +361,7 @@ class View:
             await item._refresh(context.interaction)
             await item.callback(context)
 
-            if not context.interaction._issued_response and self.autodefer:
+            if not context.interaction._issued_response and self.auto_defer:
                 await context.defer()
 
         except Exception as error:
@@ -386,7 +386,7 @@ class View:
                     return
 
                 for item in items:
-                    # Create task here to ensure autodefer works even if callback stops view
+                    # Create task here to ensure auto_defer works even if callback stops view
                     asyncio.create_task(self._handle_callback(item, context))
 
     async def _listen_for_events(self, message_id: Optional[int] = None) -> None:

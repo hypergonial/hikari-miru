@@ -75,7 +75,7 @@ async def buttons(event: hikari.GuildMessageCreateEvent) -> None:
         view = Persistence()
         message = await event.message.respond(
             "This is a persistent component menu, and works after bot restarts!",
-             components=view.build(),
+            components=view.build(),
         )
 
         view.start(message)

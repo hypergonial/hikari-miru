@@ -32,9 +32,9 @@ class BasicView(miru.View):
 
     # Define a new Select menu with two options
     @miru.select(
-        placeholder="Select me!", 
+        placeholder="Select me!",
         options=[
-            miru.SelectOption(label="Option 1"), 
+            miru.SelectOption(label="Option 1"),
             miru.SelectOption(label="Option 2"),
         ],
     )
@@ -53,7 +53,7 @@ class BasicView(miru.View):
 
 
 bot = hikari.GatewayBot("...")
-miru.load(bot) # Start miru
+miru.load(bot)  # Start miru
 
 
 @bot.listen()
