@@ -76,7 +76,9 @@ class NavigatorView(View):
         self._pages: List[Union[str, hikari.Embed]] = pages
         self._current_page: int = 0
         self._ephemeral: bool = False
-        # The last interaction used, used for ephemeral handling
+        # If the nav is using interaction-based handling or not
+        self._using_inter: bool = False
+        # The last interaction received, used for inter-based handling
         self._inter: Optional[hikari.MessageResponseMixin[Any]] = None
         super().__init__(timeout=timeout, autodefer=autodefer)
 
@@ -130,7 +132,7 @@ class NavigatorView(View):
             assert isinstance(button, NavItem)
             button.disabled = True
 
-        if self._ephemeral and self._inter:
+        if self._using_inter and self._inter:
             await self._inter.edit_initial_response(components=self.build())
         else:
             await self.message.edit(components=self.build())
@@ -236,7 +238,8 @@ class NavigatorView(View):
             If an interaction was provided, determines if the interaction was previously acknowledged or not.
         """
         self.current_page = start_at
-        self._ephemeral = ephemeral if not isinstance(channel_or_interaction, (int, hikari.TextableChannel)) else False
+        self._ephemeral = ephemeral if isinstance(channel_or_interaction, hikari.MessageResponseMixin) else False
+        self._using_inter = isinstance(channel_or_interaction, hikari.MessageResponseMixin)
 
         for button in self.children:
             if isinstance(button, NavItem):
