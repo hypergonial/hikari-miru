@@ -42,6 +42,10 @@ if TYPE_CHECKING:
 class NavItem(ViewItem, abc.ABC):
     """A baseclass for all navigation items. NavigatorView requires instances of this class as it's items."""
 
+    def __init__(self) -> None:
+        super().__init__()
+        self._handler: Optional[NavigatorView] = None
+
     async def before_page_change(self) -> None:
         """
         Called when the navigator is about to transition to the next page. Also called before the first page is sent.
@@ -55,17 +59,16 @@ class NavItem(ViewItem, abc.ABC):
         """
         if not self._handler:
             raise AttributeError(f"{self.__class__.__name__} hasn't been attached to a view yet")
-        # Cannot assert due to circular dependency
-        return self._handler  # type: ignore[return-value]
+        return self._handler
 
 
-class NavButton(NavItem, Button):
+class NavButton(Button, NavItem):
     """A base class for all navigation buttons."""
 
     ...
 
 
-class NavSelect(NavItem, Select):
+class NavSelect(Select, NavItem):
     """A base class for all navigation selects."""
 
     ...
