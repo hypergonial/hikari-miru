@@ -19,11 +19,11 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+from __future__ import annotations
 
 import abc
 from typing import TYPE_CHECKING
 from typing import Optional
-from typing import TypeVar
 from typing import Union
 
 import hikari
@@ -38,10 +38,8 @@ from miru.text_input import TextInput
 if TYPE_CHECKING:
     from .navigator import NavigatorView
 
-NavigatorViewT = TypeVar("NavigatorViewT", bound="NavigatorView")
 
-
-class NavItem(ViewItem[NavigatorViewT], abc.ABC):
+class NavItem(ViewItem, abc.ABC):
     """A baseclass for all navigation items. NavigatorView requires instances of this class as it's items."""
 
     async def before_page_change(self) -> None:
@@ -50,20 +48,30 @@ class NavItem(ViewItem[NavigatorViewT], abc.ABC):
         """
         pass
 
+    @property
+    def view(self) -> NavigatorView:
+        """
+        The view this item is attached to.
+        """
+        if not self._handler:
+            raise AttributeError(f"{self.__class__.__name__} hasn't been attached to a view yet")
+        # Cannot assert due to circular dependency
+        return self._handler  # type: ignore[return-value]
 
-class NavButton(NavItem[NavigatorViewT], Button[NavigatorViewT]):
+
+class NavButton(NavItem, Button):
     """A base class for all navigation buttons."""
 
     ...
 
 
-class NavSelect(NavItem[NavigatorViewT], Select[NavigatorViewT]):
+class NavSelect(NavItem, Select):
     """A base class for all navigation selects."""
 
     ...
 
 
-class NextButton(NavButton[NavigatorViewT]):
+class NextButton(NavButton):
     """
     A built-in NavButton to jump to the next page.
     """
@@ -90,7 +98,7 @@ class NextButton(NavButton[NavigatorViewT]):
             self.disabled = False
 
 
-class PrevButton(NavButton[NavigatorViewT]):
+class PrevButton(NavButton):
     """
     A built-in NavButton to jump to previous page.
     """
@@ -117,7 +125,7 @@ class PrevButton(NavButton[NavigatorViewT]):
             self.disabled = False
 
 
-class FirstButton(NavButton[NavigatorViewT]):
+class FirstButton(NavButton):
     """
     A built-in NavButton to jump to first page.
     """
@@ -144,7 +152,7 @@ class FirstButton(NavButton[NavigatorViewT]):
             self.disabled = False
 
 
-class LastButton(NavButton[NavigatorViewT]):
+class LastButton(NavButton):
     """
     A built-in NavButton to jump to the last page.
     """
@@ -171,7 +179,7 @@ class LastButton(NavButton[NavigatorViewT]):
             self.disabled = False
 
 
-class IndicatorButton(NavButton[NavigatorViewT]):
+class IndicatorButton(NavButton):
     """
     A built-in NavButton to show the current page's number.
     """
@@ -211,7 +219,7 @@ class IndicatorButton(NavButton[NavigatorViewT]):
         await self.view.send_page(modal.get_response_context())
 
 
-class StopButton(NavButton[NavigatorViewT]):
+class StopButton(NavButton):
     """
     A built-in NavButton to stop the navigator and disable all buttons.
     """

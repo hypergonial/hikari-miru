@@ -38,7 +38,6 @@ from .items import FirstButton
 from .items import IndicatorButton
 from .items import LastButton
 from .items import NavButton
-from .items import NavigatorViewT
 from .items import NavItem
 from .items import NextButton
 from .items import PrevButton
@@ -70,7 +69,7 @@ class NavigatorView(View):
         self,
         *,
         pages: List[Union[str, hikari.Embed]],
-        buttons: Optional[List[NavButton[NavigatorViewT]]] = None,
+        buttons: Optional[List[NavButton]] = None,
         timeout: Optional[float] = 120.0,
         autodefer: bool = True,
     ) -> None:
@@ -136,7 +135,7 @@ class NavigatorView(View):
         else:
             await self.message.edit(components=self.build())
 
-    def get_default_buttons(self: NavigatorViewT) -> List[NavButton[NavigatorViewT]]:
+    def get_default_buttons(self) -> List[NavButton]:
         """Returns the default set of buttons.
 
         Returns

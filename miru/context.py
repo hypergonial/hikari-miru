@@ -417,7 +417,7 @@ class ViewContext(RawComponentContext):
 class ModalContext(RawModalContext):
     """A context object proxying a ModalInteraction received by a miru modal."""
 
-    def __init__(self, modal: Modal, interaction: ModalInteraction, values: t.Dict[ModalItem[Modal], str]) -> None:
+    def __init__(self, modal: Modal, interaction: ModalInteraction, values: t.Dict[ModalItem, str]) -> None:
         super().__init__(interaction)
         self._modal = modal
         self._values = values
@@ -428,6 +428,6 @@ class ModalContext(RawModalContext):
         return self._modal
 
     @property
-    def values(self) -> t.Dict[ModalItem[Modal], str]:
+    def values(self) -> t.Dict[ModalItem, str]:
         """The values received as input for this modal."""
         return self._values
