@@ -365,7 +365,7 @@ class View(ItemHandler):
 
             View._views[message_id] = self
 
-        self._listener_task = asyncio.create_task(self._listen_for_events(message_id))
+        self._listener_task = self._create_task(self._listen_for_events(message_id))
 
     def start(self, message: hikari.Message) -> None:
         """Start up the view and begin listening for interactions.
@@ -390,7 +390,7 @@ class View(ItemHandler):
 
         self._message = message
         self._message_id = message.id
-        self._listener_task = asyncio.create_task(self._listen_for_events(message.id))
+        self._listener_task = self._create_task(self._listen_for_events(message.id))
 
         # Handle replacement of view on message edit
         if message.id in View._views.keys():

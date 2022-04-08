@@ -41,7 +41,7 @@ Version 1.2.0
 
 - Added ``View.wait_for_input()`` to wait for any component interaction relating to the view.
 
-- Added ``timeout`` parameter to ``View.wait()``.
+- Added ``timeout`` parameter to ``ItemHandler.wait()``.
 
 - Added two new event types ``ModalInteractionCreateEvent`` and ``ComponentInteractionCreateEvent``.
 
