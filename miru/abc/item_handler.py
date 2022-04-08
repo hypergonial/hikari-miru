@@ -33,6 +33,9 @@ import hikari
 from ..traits import MiruAware
 from .item import Item
 
+if t.TYPE_CHECKING:
+    from ..context import Context
+
 __all__ = ["ItemHandler"]
 
 
@@ -98,6 +101,7 @@ class ItemHandler(abc.ABC):
         self._stopped: asyncio.Event = asyncio.Event()
         self._listener_task: t.Optional[asyncio.Task[None]] = None
         self._running_tasks: t.List[asyncio.Task[t.Any]] = []
+        self._last_context: t.Optional[Context[t.Any]] = None
 
         if len(self.children) > 25:
             raise ValueError(f"{self.__class__.__name__} cannot have more than 25 components attached.")
@@ -142,6 +146,13 @@ class ItemHandler(abc.ABC):
         A boolean indicating if the received interaction should automatically be deferred if not responded to or not.
         """
         return self._autodefer
+
+    @property
+    def last_context(self) -> t.Optional[Context[t.Any]]:
+        """
+        The last context that was received by the item handler.
+        """
+        return self._last_context
 
     def add_item(self, item: Item) -> ItemHandler:
         """Adds a new item to the item handler.

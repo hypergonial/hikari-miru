@@ -31,6 +31,8 @@ Version 1.2.0
 
 - Added ``miru.abc.ItemHandler``. ``View`` and ``Modal`` subclass of this.
 
+- Added ``miru.abc.ItemHandler.last_context`` to access the last received context & interaction by the item handler.
+
 - Renamed ``miru.Interaction`` to ``miru.ComponentInteraction``.
 
 - Added ``miru.ModalInteraction``.

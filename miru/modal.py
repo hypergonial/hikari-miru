@@ -26,10 +26,7 @@ import asyncio
 import os
 import sys
 import traceback
-from typing import Any
-from typing import Dict
-from typing import Optional
-from typing import TypeVar
+import typing as t
 
 import hikari
 
@@ -39,7 +36,7 @@ from .abc.item_handler import ItemHandler
 from .context import ModalContext
 from .interaction import ModalInteraction
 
-ModalT = TypeVar("ModalT", bound="Modal")
+ModalT = t.TypeVar("ModalT", bound="Modal")
 
 
 class Modal(ItemHandler):
@@ -68,16 +65,16 @@ class Modal(ItemHandler):
         self,
         title: str,
         *,
-        custom_id: Optional[str] = None,
-        timeout: Optional[float] = 300.0,
+        custom_id: t.Optional[str] = None,
+        timeout: t.Optional[float] = 300.0,
         autodefer: bool = True,
     ) -> None:
         super().__init__(timeout=timeout, autodefer=autodefer)
 
         self._title: str = title
         self._custom_id: str = custom_id or os.urandom(16).hex()
-        self._values: Optional[Dict[ModalItem, str]] = None
-        self._ctx: Optional[ModalContext] = None
+        self._values: t.Optional[t.Dict[ModalItem, str]] = None
+        self._ctx: t.Optional[ModalContext] = None
 
         if len(self._title) > 100:
             raise ValueError("Modal title is too long. Maximum 100 characters.")
@@ -120,11 +117,19 @@ class Modal(ItemHandler):
         self._custom_id = value
 
     @property
-    def values(self) -> Optional[Dict[ModalItem, str]]:
+    def values(self) -> t.Optional[t.Dict[ModalItem, str]]:
         """
         The input values received by this modal.
         """
         return self._values
+
+    @property
+    def last_context(self) -> t.Optional[ModalContext]:
+        """
+        The last context that was received by the modal.
+        """
+        assert isinstance(self._last_context, ModalContext)
+        return self._last_context
 
     def add_item(self, item: Item) -> ItemHandler:
         """Adds a new item to the modal.
@@ -176,7 +181,7 @@ class Modal(ItemHandler):
     async def on_error(
         self,
         error: Exception,
-        context: Optional[ModalContext] = None,
+        context: t.Optional[ModalContext] = None,
     ) -> None:
         """Called when an error occurs in a callback function.
         Override for custom error-handling logic.
@@ -259,6 +264,7 @@ class Modal(ItemHandler):
             interaction: ModalInteraction = ModalInteraction.from_hikari(event.interaction)
 
             context = ModalContext(self, interaction, values)
+            self._last_context = context
 
             passed = await self.modal_check(context)
             if not passed:
