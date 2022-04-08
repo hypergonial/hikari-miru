@@ -317,8 +317,12 @@ class ItemHandler(abc.ABC):
         task.add_done_callback(lambda t: self._running_tasks.remove(t))
         return task
 
-    async def wait(self) -> None:
+    async def wait(self, timeout: t.Optional[float] = None) -> None:
+        """Wait until the item handler has stopped receiveing interactions.
+
+        Parameters
+        ----------
+        timeout : Optional[float], optional
+            The amount of time to wait, in seconds, by default None
         """
-        Wait until the item handler has stopped.
-        """
-        await asyncio.wait_for(self._stopped.wait(), timeout=None)
+        await asyncio.wait_for(self._stopped.wait(), timeout=timeout)

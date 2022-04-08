@@ -39,6 +39,8 @@ Version 1.2.0
 
 - Added ``View.from_message()`` classmethod to allow creation of views from message components.
 
+- Added ``View.wait_for_input()`` to wait for any component interaction relating to the view.
+
 - Added two new event types ``ModalInteractionCreateEvent`` and ``ComponentInteractionCreateEvent``.
 
 - These listeners include the corresponding raw context with the event object, along with every field from ``hikari.InteractionCreateEvent``.
