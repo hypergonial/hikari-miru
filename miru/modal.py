@@ -226,6 +226,26 @@ class Modal(ItemHandler):
             raise RuntimeError("This modal was not responded to.")
         return self._ctx
 
+    def get_context(
+        self, interaction: ModalInteraction, values: t.Dict[ModalItem, str], *, cls: t.Type[ModalContext] = ModalContext
+    ) -> ModalContext:
+        """
+        Get the context for this modal. Override this function to provide a custom context object.
+
+        Parameters
+        ----------
+        interaction : ModalInteraction
+            The interaction to construct the context from.
+        cls : Optional[Type[ModalContext]], optional
+            The class to use for the context, by default ModalContext.
+
+        Returns
+        -------
+        ModalContext
+            The context for this interaction.
+        """
+        return cls(self, interaction, values)
+
     async def _handle_callback(self, context: ModalContext) -> None:
         """
         Handle the callback of a modal item. Seperate task in case the view is stopped in the callback.
@@ -263,7 +283,7 @@ class Modal(ItemHandler):
 
             interaction: ModalInteraction = ModalInteraction.from_hikari(event.interaction)
 
-            context = ModalContext(self, interaction, values)
+            context = self.get_context(interaction, values)
             self._last_context = context
 
             passed = await self.modal_check(context)

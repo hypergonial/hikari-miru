@@ -246,6 +246,24 @@ class View(ItemHandler):
 
         super().stop()
 
+    def get_context(self, interaction: ComponentInteraction, *, cls: t.Type[ViewContext] = ViewContext) -> ViewContext:
+        """
+        Get the context for this view. Override this function to provide a custom context object.
+
+        Parameters
+        ----------
+        interaction : ComponentInteraction
+            The interaction to construct the context from.
+        cls : Type[ViewContext], optional
+            The class to use for the context, by default ViewContext.
+
+        Returns
+        -------
+        ViewContext
+            The context for this interaction.
+        """
+        return cls(self, interaction)
+
     async def _handle_callback(self, item: ViewItem, context: ViewContext) -> None:
         """
         Handle the callback of a view item. Seperate task in case the view is stopped in the callback.
@@ -277,7 +295,7 @@ class View(ItemHandler):
             items = [item for item in self.children if item.custom_id == interaction.custom_id]
             if len(items) > 0:
 
-                context = ViewContext(self, interaction)
+                context = self.get_context(interaction)
                 self._last_context = context
 
                 passed = await self.view_check(context)
