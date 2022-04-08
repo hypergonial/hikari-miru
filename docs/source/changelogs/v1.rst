@@ -43,6 +43,8 @@ Version 1.2.0
 
 - Added ``timeout`` parameter to ``ItemHandler.wait()``.
 
+- Added ``View.get_context()`` and ``Modal.get_context()`` for custom context support.
+
 - Added two new event types ``ModalInteractionCreateEvent`` and ``ComponentInteractionCreateEvent``.
 
 - These listeners include the corresponding raw context with the event object, along with every field from ``hikari.InteractionCreateEvent``.
