@@ -88,6 +88,7 @@ class View(ItemHandler):
         super().__init__(timeout=timeout, autodefer=autodefer)
         self._message: t.Optional[hikari.Message] = None
         self._message_id: t.Optional[int] = None  # Only for bound persistent views
+        self._inputted: asyncio.Event = asyncio.Event()
 
         for decorated_item in self._view_children:  # Sort and instantiate decorated callbacks
             # Must deepcopy, otherwise multiple views will have the same item reference
@@ -252,6 +253,9 @@ class View(ItemHandler):
         assert isinstance(context.interaction, ComponentInteraction)
 
         try:
+            self._inputted.set()
+            self._inputted.clear()
+
             await item._refresh(context.interaction)
             await item.callback(context)
 
@@ -320,6 +324,16 @@ class View(ItemHandler):
             View._views.pop(self._message_id, None)
 
         await super()._handle_timeout()
+
+    async def wait_for_input(self, timeout: t.Optional[float] = None) -> None:
+        """Wait for any input to be received.
+
+        Parameters
+        ----------
+        timeout : Optional[float], optional
+            The amount of time to wait for input, in seconds, by default None
+        """
+        await asyncio.wait_for(self._inputted.wait(), timeout=timeout)
 
     def start_listener(self, message: t.Optional[hikari.SnowflakeishOr[hikari.PartialMessage]] = None) -> None:
         """Re-registers a persistent view for listening after an application restart.
