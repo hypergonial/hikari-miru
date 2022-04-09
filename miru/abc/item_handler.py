@@ -266,13 +266,13 @@ class ItemHandler(Sequence[hikari.api.ActionRowBuilder], abc.ABC):
         return self
 
     def build(self) -> t.List[hikari.impl.ActionRowBuilder]:
-        """Converts the view into action rows, must be called before sending.
+        """Creates the action rows the item handler represents.
 
         Returns
         -------
         List[hikari.impl.ActionRowBuilder]
             A list of action rows containing all items attached to this item handler,
-            converted to hikari component objects. If the view has no items attached,
+            converted to hikari component objects. If the item handler has no items attached,
             this returns an empty list.
         """
         if not self.children:
