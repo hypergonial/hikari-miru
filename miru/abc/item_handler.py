@@ -27,6 +27,7 @@ import asyncio
 import itertools
 import sys
 import typing as t
+from collections.abc import Sequence
 
 import hikari
 
@@ -72,7 +73,7 @@ class _Weights:
         self._weights = [0, 0, 0, 0, 0]
 
 
-class ItemHandler(abc.ABC):
+class ItemHandler(Sequence[hikari.api.ActionRowBuilder], abc.ABC):
     """Abstract base class all item-handlers (e.g. views, modals) inherit from.
 
     Parameters
@@ -108,6 +109,32 @@ class ItemHandler(abc.ABC):
 
         if self.app is None:
             raise RuntimeError(f"miru.load() was never called before instantiation of {self.__class__.__name__}.")
+
+    @t.overload
+    def __getitem__(self, value: int) -> hikari.api.ActionRowBuilder:
+        ...
+
+    @t.overload
+    def __getitem__(self, value: slice) -> t.Sequence[hikari.api.ActionRowBuilder]:
+        ...
+
+    def __getitem__(
+        self, value: t.Union[slice, int]
+    ) -> t.Union[hikari.api.ActionRowBuilder, t.Sequence[hikari.api.ActionRowBuilder]]:
+        return self.build()[value]
+
+    def __iter__(self) -> t.Iterator[hikari.api.ActionRowBuilder]:
+        for action_row in self.build():
+            yield action_row
+
+    def __contains__(self, value: object) -> bool:
+        return value in self.build()
+
+    def __len__(self) -> int:
+        return len(self.build())
+
+    def __reversed__(self) -> t.Iterator[hikari.api.ActionRowBuilder]:
+        return self.build().__reversed__()
 
     @property
     def children(self) -> t.List[Item]:
