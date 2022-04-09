@@ -129,9 +129,9 @@ class NavigatorView(View):
             button.disabled = True
 
         if self._using_inter and self._inter:
-            await self._inter.edit_initial_response(components=self.build())
+            await self._inter.edit_initial_response(components=self)
         else:
-            await self.message.edit(components=self.build())
+            await self.message.edit(components=self)
 
     def get_default_buttons(self) -> t.List[NavButton]:
         """Returns the default set of buttons.
@@ -176,9 +176,9 @@ class NavigatorView(View):
             raise TypeError("Expected type str or hikari.Embed to send as page.")
 
         if self.ephemeral:
-            return dict(content=content, embeds=embeds, components=self.build(), flags=hikari.MessageFlag.EPHEMERAL)
+            return dict(content=content, embeds=embeds, components=self, flags=hikari.MessageFlag.EPHEMERAL)
         else:
-            return dict(content=content, embeds=embeds, components=self.build())
+            return dict(content=content, embeds=embeds, components=self)
 
     async def send_page(self, context: Context[t.Any], page_index: t.Optional[int] = None) -> None:
         """Send a page, editing the original message.

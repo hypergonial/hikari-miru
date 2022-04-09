@@ -245,7 +245,7 @@ class StopButton(NavButton):
                 item.disabled = True
 
         if self.view._using_inter and self.view._inter:
-            await self.view._inter.edit_initial_response(components=self.view.build())
+            await self.view._inter.edit_initial_response(components=self.view)
         elif self.view.message:
-            await self.view.message.edit(components=self.view.build())
+            await self.view.message.edit(components=self.view)
         self.view.stop()
