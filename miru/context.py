@@ -217,16 +217,16 @@ class Context(abc.ABC, t.Generic[InteractionT]):
 
     async def edit_response(
         self,
-        content: hikari.UndefinedOr[t.Any] = hikari.UNDEFINED,
+        content: hikari.UndefinedNoneOr[t.Any] = hikari.UNDEFINED,
         *,
         flags: t.Union[int, hikari.MessageFlag, hikari.UndefinedType] = hikari.UNDEFINED,
         tts: hikari.UndefinedOr[bool] = hikari.UNDEFINED,
-        component: hikari.UndefinedOr[hikari.api.ComponentBuilder] = hikari.UNDEFINED,
-        components: hikari.UndefinedOr[t.Sequence[hikari.api.ComponentBuilder]] = hikari.UNDEFINED,
+        component: hikari.UndefinedNoneOr[hikari.api.ComponentBuilder] = hikari.UNDEFINED,
+        components: hikari.UndefinedNoneOr[t.Sequence[hikari.api.ComponentBuilder]] = hikari.UNDEFINED,
         attachment: hikari.UndefinedOr[hikari.Resourceish] = hikari.UNDEFINED,
         attachments: hikari.UndefinedOr[t.Sequence[hikari.Resourceish]] = hikari.UNDEFINED,
-        embed: hikari.UndefinedOr[hikari.Embed] = hikari.UNDEFINED,
-        embeds: hikari.UndefinedOr[t.Sequence[hikari.Embed]] = hikari.UNDEFINED,
+        embed: hikari.UndefinedNoneOr[hikari.Embed] = hikari.UNDEFINED,
+        embeds: hikari.UndefinedNoneOr[t.Sequence[hikari.Embed]] = hikari.UNDEFINED,
         replace_attachments: bool = False,
         mentions_everyone: hikari.UndefinedOr[bool] = hikari.UNDEFINED,
         user_mentions: hikari.UndefinedOr[
