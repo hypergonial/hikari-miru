@@ -147,7 +147,7 @@ class Context(abc.ABC, t.Generic[InteractionT]):
             t.Union[hikari.SnowflakeishSequence[hikari.PartialRole], bool]
         ] = hikari.UNDEFINED,
     ) -> InteractionResponse:
-        """Short-hand method to respond to the interaction this context represents.
+        """Short-hand method to create a new message response via the interaction this context represents.
 
         Parameters
         ----------
@@ -236,7 +236,8 @@ class Context(abc.ABC, t.Generic[InteractionT]):
             t.Union[hikari.SnowflakeishSequence[hikari.PartialRole], bool]
         ] = hikari.UNDEFINED,
     ) -> InteractionResponse:
-        """A short-hand method to edit the last response belonging to this interaction.
+        """A short-hand method to edit the last message belonging to this interaction.
+        In the case of modals, this will be the component's message that triggered the modal.
 
         Parameters
         ----------
