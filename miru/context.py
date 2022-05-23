@@ -409,8 +409,8 @@ class ModalContext(RawModalContext):
     def values(self) -> t.Dict[ModalItem, str]:
         """The values received as input for this modal."""
         return self._values
-    
-    def get_value_with_id(self, custom_id: str, default: hikari.UndefinedOr[t.Any] = hikari.UNDEFINED) -> str:
+
+    def get_value_with_id(self, custom_id: str, default: hikari.UndefinedOr[t.Any] = hikari.UNDEFINED) -> t.Any:
         """Get the value for a modal item with the given custom ID.
 
         Parameters
