@@ -422,8 +422,8 @@ class ModalContext(RawModalContext):
 
         Returns
         -------
-        str
-            The value of the item with the given custom ID.
+        Any
+            The value of the item with the given custom ID or the default value.
 
         Raises
         ------
