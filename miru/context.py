@@ -409,6 +409,34 @@ class ModalContext(RawModalContext):
     def values(self) -> t.Dict[ModalItem, str]:
         """The values received as input for this modal."""
         return self._values
+    
+    def get_value_with_id(self, custom_id: str, default: hikari.UndefinedOr[t.Any] = hikari.UNDEFINED) -> str:
+        """Get the value for a modal item with the given custom ID.
+
+        Parameters
+        ----------
+        custom_id : str
+            The custom_id of the component.
+        default : hikari.UndefinedOr[t.Any], optional
+            A default value to return if the item was not found, by default hikari.UNDEFINED
+
+        Returns
+        -------
+        str
+            The value of the item with the given custom ID.
+
+        Raises
+        ------
+        KeyError
+            The item was not found and no default was provided.
+        """
+        for item, value in self.values.items():
+            if item.custom_id == custom_id:
+                return value
+
+        if default is hikari.UNDEFINED:
+            raise KeyError(f"No modal item with ID {custom_id}.")
+        return default
 
 
 # MIT License
