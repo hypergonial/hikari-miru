@@ -87,6 +87,11 @@ class Context(abc.ABC, t.Generic[InteractionT]):
         return self._interaction.guild_locale
 
     @property
+    def app_permissions(self) -> t.Optional[hikari.Permissions]:
+        """The permissions of the user who triggered the interaction. Will be None in DMs."""
+        return self._interaction.app_permissions
+
+    @property
     def channel_id(self) -> Snowflake:
         """The ID of the channel the context represents."""
         return self._interaction.channel_id
