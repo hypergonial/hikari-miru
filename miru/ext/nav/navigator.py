@@ -1,10 +1,11 @@
+from __future__ import annotations
+
 import logging
 import typing as t
 
 import hikari
 
 from miru import Item
-from miru.abc.item_handler import ItemHandler
 from miru.context import Context
 from miru.view import View
 
@@ -121,7 +122,7 @@ class NavigatorView(View):
         """
         return [FirstButton(), PrevButton(), IndicatorButton(), NextButton(), LastButton()]
 
-    def add_item(self, item: Item) -> ItemHandler:
+    def add_item(self, item: Item) -> NavigatorView:
         """Adds a new item to the navigator. Item must be of type NavButton.
 
         Parameters
@@ -142,7 +143,13 @@ class NavigatorView(View):
         if not isinstance(item, NavItem):
             raise TypeError("Expected type NavItem for parameter item.")
 
-        return super().add_item(item)
+        return super().add_item(item)  # type: ignore[return-value]
+
+    def remove_item(self, item: Item) -> NavigatorView:
+        return super().remove_item(item)  # type: ignore[return-value]
+
+    def clear_items(self) -> NavigatorView:
+        return super().clear_items()  # type: ignore[return-value]
 
     def _get_page_payload(self, page: t.Union[str, hikari.Embed]) -> t.Mapping[str, t.Any]:
         """Get the page content that is to be sent."""

@@ -144,7 +144,7 @@ class View(ItemHandler):
 
         return view
 
-    def add_item(self, item: Item) -> ItemHandler:
+    def add_item(self: View, item: Item) -> View:
         """Adds a new item to the view.
 
         Parameters
@@ -166,13 +166,20 @@ class View(ItemHandler):
         Returns
         -------
         View
-            The item handler the item was added to.
+            The view the item was added to.
         """
 
         if not isinstance(item, ViewItem):
             raise TypeError(f"Expected type ViewItem for parameter item, not {item.__class__.__name__}.")
 
-        return super().add_item(item)
+        return super().add_item(item)  # type: ignore[return-value]
+
+    # typing.Self please save me
+    def remove_item(self, item: Item) -> View:
+        return super().remove_item(item)  # type: ignore[return-value]
+
+    def clear_items(self) -> View:
+        return super().clear_items()  # type: ignore[return-value]
 
     async def view_check(self, context: ViewContext) -> bool:
         """Called before any callback in the view is called. Must evaluate to a truthy value to pass.

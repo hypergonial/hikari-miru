@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import copy
 import os
 import sys
 import traceback
@@ -39,6 +40,22 @@ class Modal(ItemHandler):
         Raised if miru.load() was never called before instantiation.
     """
 
+    _modal_children: t.List[ModalItem] = []
+
+    def __init_subclass__(cls) -> None:
+        """
+        Get ModalItem classvars
+        """
+        children: t.List[ModalItem] = []
+        for base_cls in reversed(cls.mro()):
+            for value in base_cls.__dict__.values():
+                if isinstance(value, ModalItem):
+                    children.append(value)
+
+        if len(children) > 25:
+            raise ValueError("Modal cannot have more than 25 components attached.")
+        cls._modal_children = children
+
     def __init__(
         self,
         title: str,
@@ -59,6 +76,9 @@ class Modal(ItemHandler):
 
         if len(self._custom_id) > 100:
             raise ValueError("Modal custom_id is too long. Maximum 100 characters.")
+
+        for item in self._modal_children:
+            self.add_item(copy.deepcopy(item))
 
     @property
     def title(self) -> str:
@@ -109,7 +129,7 @@ class Modal(ItemHandler):
         assert isinstance(self._last_context, ModalContext)
         return self._last_context
 
-    def add_item(self, item: Item) -> ItemHandler:
+    def add_item(self, item: Item) -> Modal:
         """Adds a new item to the modal.
 
         Parameters
@@ -138,7 +158,13 @@ class Modal(ItemHandler):
         if not isinstance(item, ModalItem):
             raise TypeError(f"Expected type ModalItem for parameter item, not {item.__class__.__name__}.")
 
-        return super().add_item(item)
+        return super().add_item(item)  # type: ignore[return-value]
+
+    def remove_item(self, item: Item) -> Modal:
+        return super().remove_item(item)  # type: ignore[return-value]
+
+    def clear_items(self) -> Modal:
+        return super().clear_items()  # type: ignore[return-value]
 
     async def modal_check(self, context: ModalContext) -> bool:
         """Called before any callback in the modal is called. Must evaluate to a truthy value to pass.
