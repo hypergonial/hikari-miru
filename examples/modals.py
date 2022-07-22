@@ -2,27 +2,29 @@ import hikari
 import miru
 
 
-class ModalView(miru.View):
-
-    # Create a new button that will invoke our modal
-    @miru.button(label="Click me!", style=hikari.ButtonStyle.PRIMARY)
-    async def modal_button(self, button: miru.Button, ctx: miru.ViewContext) -> None:
-        modal = MyModal("Example Title")
-        modal.add_item(miru.TextInput(label="Example Label", placeholder="Type something!", required=True))
-        modal.add_item(miru.TextInput(label="Paragraph example", value="Pre-filled content!", style=hikari.TextInputStyle.PARAGRAPH))
-        # You may also use Modal.send() if not working withhin a miru context. (e.g. slash commands)
-        # Keep in mind that modals can only be sent in response to interactions.
-        await ctx.respond_with_modal(modal)
-
-
 class MyModal(miru.Modal):
+    # Define our modal items
+    # You can also use Modal.add_item() to add items to the modal after instantiation, just like with views.
+    name = miru.TextInput(label="Name", placeholder="Enter your name!", required=True)
+    bio = miru.TextInput(label="Biography", value="Pre-filled content!", style=hikari.TextInputStyle.PARAGRAPH)
 
     # The callback function is called after the user hits 'Submit'
     async def callback(self, ctx: miru.ModalContext) -> None:
         # ModalContext.values is a mapping of {TextInput: value}
         values = [value for value in ctx.values.values()]
         await ctx.respond(f"Received the following input: ```{' | '.join(values)}```")
-    # You may also access the values the modal holds by using Modal.values
+
+class ModalView(miru.View):
+
+    # Create a new button that will invoke our modal
+    @miru.button(label="Click me!", style=hikari.ButtonStyle.PRIMARY)
+    async def modal_button(self, button: miru.Button, ctx: miru.ViewContext) -> None:
+        modal = MyModal("Example Title")
+        # You may also use Modal.send(interaction) if not working with a miru context object. (e.g. slash commands)
+        # Keep in mind that modals can only be sent in response to interactions.
+        await ctx.respond_with_modal(modal)
+        # OR
+        # await modal.send(ctx.interaction)
 
 
 bot = hikari.GatewayBot("...")
@@ -38,7 +40,7 @@ async def modals(event: hikari.GuildMessageCreateEvent) -> None:
     if event.content.startswith("miru"):
         view = ModalView()
         message = await event.message.respond(
-            "This is a basic component menu built with miru!", components=view
+            "This button triggers a modal!", components=view
         )
         view.start(message)
 
