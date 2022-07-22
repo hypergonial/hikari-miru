@@ -31,6 +31,9 @@ Let's create our first modal:
 
 There is also an alternative way to add items to a modal, through the :obj:`miru.Modal.add_item` method, similarly to views.
 
+.. warning::
+    Please be careful when naming your modal item variables. They cannot shadow existing modal properties such as **title** or **custom_id**.
+
 Now we will get an **interaction** through the use of a button so we can send the user our modal:
 
 ::
