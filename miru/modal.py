@@ -40,17 +40,17 @@ class Modal(ItemHandler):
         Raised if miru.load() was never called before instantiation.
     """
 
-    _modal_children: t.List[ModalItem] = []
+    _modal_children: t.Dict[str, ModalItem] = {}
 
     def __init_subclass__(cls) -> None:
         """
         Get ModalItem classvars
         """
-        children: t.List[ModalItem] = []
+        children: t.Dict[str, ModalItem] = {}
         for base_cls in reversed(cls.mro()):
-            for value in base_cls.__dict__.values():
+            for name, value in base_cls.__dict__.items():
                 if isinstance(value, ModalItem):
-                    children.append(value)
+                    children[name] = value
 
         if len(children) > 25:
             raise ValueError("Modal cannot have more than 25 components attached.")
@@ -77,8 +77,9 @@ class Modal(ItemHandler):
         if len(self._custom_id) > 100:
             raise ValueError("Modal custom_id is too long. Maximum 100 characters.")
 
-        for item in self._modal_children:
+        for name, item in self._modal_children.items():
             self.add_item(copy.deepcopy(item))
+            setattr(self, name, item)
 
     @property
     def title(self) -> str:
