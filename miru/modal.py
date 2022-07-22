@@ -78,8 +78,9 @@ class Modal(ItemHandler):
             raise ValueError("Modal custom_id is too long. Maximum 100 characters.")
 
         for name, item in self._modal_children.items():
-            self.add_item(copy.deepcopy(item))
-            setattr(self, name, item)
+            copied = copy.deepcopy(item)
+            self.add_item(copied)
+            setattr(self, name, copied)
 
     @property
     def title(self) -> str:
