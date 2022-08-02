@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import abc
+import asyncio
+import datetime
 import typing as t
 
 import hikari
@@ -151,6 +153,7 @@ class Context(abc.ABC, t.Generic[InteractionT]):
         role_mentions: hikari.UndefinedOr[
             t.Union[hikari.SnowflakeishSequence[hikari.PartialRole], bool]
         ] = hikari.UNDEFINED,
+        delete_after: hikari.UndefinedOr[t.Union[float, int, datetime.timedelta]] = hikari.UNDEFINED,
     ) -> InteractionResponse:
         """Short-hand method to create a new message response via the interaction this context represents.
 
@@ -201,7 +204,7 @@ class Context(abc.ABC, t.Generic[InteractionT]):
                 role_mentions=role_mentions,
                 flags=flags,
             )
-            return self._create_response(message)
+            response = self._create_response(message)
         else:
             await self.interaction.create_initial_response(
                 hikari.ResponseType.MESSAGE_CREATE,
@@ -218,7 +221,10 @@ class Context(abc.ABC, t.Generic[InteractionT]):
                 role_mentions=role_mentions,
                 flags=flags,
             )
-            return self._create_response()
+            response = self._create_response()
+        if delete_after:
+            response.delete_after(delete_after)
+        return response
 
     async def edit_response(
         self,

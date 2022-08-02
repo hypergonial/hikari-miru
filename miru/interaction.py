@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import asyncio
+import datetime
 import functools
 import typing as t
 
@@ -123,6 +125,31 @@ class InteractionResponse:
     def __init__(self, context: Context[InteractionT], message: t.Optional[hikari.Message] = None) -> None:
         self._context: Context[t.Any] = context  # Before you ask why it is Any, because mypy is dumb
         self._message: t.Optional[hikari.Message] = message
+        self._delete_after_task: t.Optional[asyncio.Task[None]] = None
+
+    async def _do_delete_after(self, delay: float) -> None:
+        """Delete the response after the specified delay.
+
+        This should not be called manually,
+        and instead should be triggered by the ``delete_after`` method of this class.
+        """
+        await asyncio.sleep(delay)
+        await self.delete()
+
+    def delete_after(self, delay: t.Union[int, float, datetime.timedelta]) -> None:
+        """Delete the response after the specified delay.
+
+        Parameters
+        ----------
+        delay : Union[int, float, datetime.timedelta]
+            The delay after which the response should be deleted.
+        """
+        if self._delete_after_task is not None:
+            raise RuntimeError("A delete_after task is already running.")
+
+        if isinstance(delay, datetime.timedelta):
+            delay = delay.total_seconds()
+        self._delete_after_task = asyncio.create_task(self._do_delete_after(delay))
 
     async def retrieve_message(self) -> hikari.Message:
         """Get or fetch the message created by this response.
