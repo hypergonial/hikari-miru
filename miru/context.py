@@ -28,7 +28,7 @@ class Context(abc.ABC, t.Generic[InteractionT]):
 
     def __init__(self, interaction: InteractionT) -> None:
         self._interaction: InteractionT = interaction
-        self._responses: t.List[InteractionResponse] = []
+        self._responses: t.MutableSequence[InteractionResponse] = []
 
     @property
     def interaction(self) -> InteractionT:
@@ -41,7 +41,7 @@ class Context(abc.ABC, t.Generic[InteractionT]):
         return self._interaction.custom_id
 
     @property
-    def responses(self) -> t.List[InteractionResponse]:
+    def responses(self) -> t.Sequence[InteractionResponse]:
         """A list of all responses issued to the interaction this context is proxying."""
         return self._responses
 
@@ -401,7 +401,7 @@ class ViewContext(RawComponentContext):
 class ModalContext(RawModalContext):
     """A context object proxying a ModalInteraction received by a miru modal."""
 
-    def __init__(self, modal: Modal, interaction: ModalInteraction, values: t.Dict[ModalItem, str]) -> None:
+    def __init__(self, modal: Modal, interaction: ModalInteraction, values: t.Mapping[ModalItem, str]) -> None:
         super().__init__(interaction)
         self._modal = modal
         self._values = values
@@ -412,7 +412,7 @@ class ModalContext(RawModalContext):
         return self._modal
 
     @property
-    def values(self) -> t.Dict[ModalItem, str]:
+    def values(self) -> t.Mapping[ModalItem, str]:
         """The values received as input for this modal."""
         return self._values
 

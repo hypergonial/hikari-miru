@@ -39,15 +39,17 @@ class View(ItemHandler):
         Raised if miru.load() was never called before instantiation.
     """
 
-    _view_children: t.ClassVar[t.List[DecoratedItem]] = []  # Decorated callbacks that need to be turned into items
+    _view_children: t.Sequence[DecoratedItem] = []  # Decorated callbacks that need to be turned into items
     # Mapping of message_id: View
-    _views: t.Dict[int, View] = {}  # List of all currently active BOUND views, unbound persistent are not listed here
+    _views: t.MutableMapping[
+        int, View
+    ] = {}  # List of all currently active BOUND views, unbound persistent are not listed here
 
     def __init_subclass__(cls) -> None:
         """
         Get decorated callbacks
         """
-        children: t.List[DecoratedItem] = []
+        children: t.MutableSequence[DecoratedItem] = []
         for base_cls in reversed(cls.mro()):
             for value in base_cls.__dict__.values():
                 if isinstance(value, DecoratedItem):

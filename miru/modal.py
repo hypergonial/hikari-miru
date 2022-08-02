@@ -41,13 +41,13 @@ class Modal(ItemHandler):
         Raised if miru.load() was never called before instantiation.
     """
 
-    _modal_children: t.Dict[str, ModalItem] = {}
+    _modal_children: t.Mapping[str, ModalItem] = {}
 
     def __init_subclass__(cls) -> None:
         """
         Get ModalItem classvars
         """
-        children: t.Dict[str, ModalItem] = {}
+        children: t.MutableMapping[str, ModalItem] = {}
         for base_cls in reversed(cls.mro()):
             for name, value in base_cls.__dict__.items():
                 if isinstance(value, ModalItem):
@@ -69,7 +69,7 @@ class Modal(ItemHandler):
 
         self._title: str = title
         self._custom_id: str = custom_id or os.urandom(16).hex()
-        self._values: t.Optional[t.Dict[ModalItem, str]] = None
+        self._values: t.Optional[t.Mapping[ModalItem, str]] = None
         self._ctx: t.Optional[ModalContext] = None
 
         if len(self._title) > 100:
@@ -118,7 +118,7 @@ class Modal(ItemHandler):
         self._custom_id = value
 
     @property
-    def values(self) -> t.Optional[t.Dict[ModalItem, str]]:
+    def values(self) -> t.Optional[t.Mapping[ModalItem, str]]:
         """
         The input values received by this modal.
         """
@@ -234,7 +234,11 @@ class Modal(ItemHandler):
         return self._ctx
 
     def get_context(
-        self, interaction: ModalInteraction, values: t.Dict[ModalItem, str], *, cls: t.Type[ModalContext] = ModalContext
+        self,
+        interaction: ModalInteraction,
+        values: t.Mapping[ModalItem, str],
+        *,
+        cls: t.Type[ModalContext] = ModalContext,
     ) -> ModalContext:
         """
         Get the context for this modal. Override this function to provide a custom context object.

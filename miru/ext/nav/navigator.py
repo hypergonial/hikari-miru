@@ -44,12 +44,12 @@ class NavigatorView(View):
     def __init__(
         self,
         *,
-        pages: t.List[t.Union[str, hikari.Embed]],
-        buttons: t.Optional[t.List[NavButton]] = None,
+        pages: t.Sequence[t.Union[str, hikari.Embed]],
+        buttons: t.Optional[t.Sequence[NavButton]] = None,
         timeout: t.Optional[t.Union[float, int, datetime.timedelta]] = 120.0,
         autodefer: bool = True,
     ) -> None:
-        self._pages: t.List[t.Union[str, hikari.Embed]] = pages
+        self._pages: t.Sequence[t.Union[str, hikari.Embed]] = pages
         self._current_page: int = 0
         self._ephemeral: bool = False
         # If the nav is using interaction-based handling or not
@@ -71,7 +71,7 @@ class NavigatorView(View):
                 raise TypeError("Expected type List[str, hikari.Embed] for parameter pages.")
 
     @property
-    def pages(self) -> t.List[t.Union[str, hikari.Embed]]:
+    def pages(self) -> t.Sequence[t.Union[str, hikari.Embed]]:
         """
         The pages the navigator is iterating through.
         """
@@ -113,7 +113,7 @@ class NavigatorView(View):
         else:
             await self.message.edit(components=self)
 
-    def get_default_buttons(self) -> t.List[NavButton]:
+    def get_default_buttons(self) -> t.Sequence[NavButton]:
         """Returns the default set of buttons.
 
         Returns

@@ -86,7 +86,7 @@ class ItemHandler(Sequence, abc.ABC):  # type: ignore[type-arg]
         self._weights: _Weights = _Weights()
         self._stopped: asyncio.Event = asyncio.Event()
         self._listener_task: t.Optional[asyncio.Task[None]] = None
-        self._running_tasks: t.List[asyncio.Task[t.Any]] = []
+        self._running_tasks: t.MutableSequence[asyncio.Task[t.Any]] = []
         self._last_context: t.Optional[Context[t.Any]] = None
 
         if len(self.children) > 25:
@@ -250,7 +250,7 @@ class ItemHandler(Sequence, abc.ABC):  # type: ignore[type-arg]
 
         return self
 
-    def build(self) -> t.List[hikari.impl.ActionRowBuilder]:
+    def build(self) -> t.Sequence[hikari.impl.ActionRowBuilder]:
         """Creates the action rows the item handler represents.
 
         Returns
