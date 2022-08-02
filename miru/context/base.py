@@ -8,25 +8,163 @@ import typing as t
 import hikari
 from hikari.snowflakes import Snowflake
 
-from .abc.item import ModalItem
-from .abc.item_handler import ItemHandler
-from .interaction import ComponentInteraction
-from .interaction import InteractionResponse
-from .interaction import ModalInteraction
-from .traits import MiruAware
-
-if t.TYPE_CHECKING:
-    from .modal import Modal
-    from .view import View
-
-__all__ = ["Context", "ViewContext", "ModalContext", "RawComponentContext", "RawModalContext"]
+from ..abc.item_handler import ItemHandler
+from ..interaction import ComponentInteraction
+from ..interaction import ModalInteraction
+from ..traits import MiruAware
 
 InteractionT = t.TypeVar("InteractionT", "ComponentInteraction", "ModalInteraction")
+
+__all__ = ("Context", "InteractionResponse")
+
+
+class InteractionResponse:
+    """
+    Represents a response to an interaction, allows for standardized handling of responses.
+    This class is not meant to be directly instantiated, and is instead returned by :obj:`miru.context.Context`.
+    """
+
+    __slots__ = ["_context", "_message", "_delete_after_task"]
+
+    def __init__(self, context: Context[InteractionT], message: t.Optional[hikari.Message] = None) -> None:
+        self._context: Context[t.Any] = context  # Before you ask why it is Any, because mypy is dumb
+        self._message: t.Optional[hikari.Message] = message
+        self._delete_after_task: t.Optional[asyncio.Task[None]] = None
+
+    async def _do_delete_after(self, delay: float) -> None:
+        """Delete the response after the specified delay.
+
+        This should not be called manually,
+        and instead should be triggered by the ``delete_after`` method of this class.
+        """
+        await asyncio.sleep(delay)
+        await self.delete()
+
+    def delete_after(self, delay: t.Union[int, float, datetime.timedelta]) -> None:
+        """Delete the response after the specified delay.
+
+        Parameters
+        ----------
+        delay : Union[int, float, datetime.timedelta]
+            The delay after which the response should be deleted.
+        """
+        if self._delete_after_task is not None:
+            raise RuntimeError("A delete_after task is already running.")
+
+        if isinstance(delay, datetime.timedelta):
+            delay = delay.total_seconds()
+        self._delete_after_task = asyncio.create_task(self._do_delete_after(delay))
+
+    async def retrieve_message(self) -> hikari.Message:
+        """Get or fetch the message created by this response.
+        Initial responses need to be fetched, while followups will be provided directly.
+
+        Returns
+        -------
+        hikari.Message
+            The message created by this response.
+        """
+        if self._message:
+            return self._message
+
+        assert isinstance(self._context.interaction, (ComponentInteraction, ModalInteraction))
+        return await self._context.interaction.fetch_initial_response()
+
+    async def delete(self) -> None:
+        """Delete the response issued to the interaction this object represents."""
+
+        if self._message:
+            await self._context.interaction.delete_message(self._message)
+
+        await self._context.interaction.delete_initial_response()
+
+    async def edit(
+        self,
+        content: hikari.UndefinedOr[t.Any] = hikari.UNDEFINED,
+        *,
+        component: hikari.UndefinedOr[hikari.api.ComponentBuilder] = hikari.UNDEFINED,
+        components: hikari.UndefinedOr[t.Sequence[hikari.api.ComponentBuilder]] = hikari.UNDEFINED,
+        attachment: hikari.UndefinedOr[hikari.Resourceish] = hikari.UNDEFINED,
+        attachments: hikari.UndefinedOr[t.Sequence[hikari.Resourceish]] = hikari.UNDEFINED,
+        embed: hikari.UndefinedOr[hikari.Embed] = hikari.UNDEFINED,
+        embeds: hikari.UndefinedOr[t.Sequence[hikari.Embed]] = hikari.UNDEFINED,
+        replace_attachments: bool = False,
+        mentions_everyone: hikari.UndefinedOr[bool] = hikari.UNDEFINED,
+        user_mentions: hikari.UndefinedOr[
+            t.Union[hikari.SnowflakeishSequence[hikari.PartialUser], bool]
+        ] = hikari.UNDEFINED,
+        role_mentions: hikari.UndefinedOr[
+            t.Union[hikari.SnowflakeishSequence[hikari.PartialRole], bool]
+        ] = hikari.UNDEFINED,
+    ) -> InteractionResponse:
+        """A short-hand method to edit the message belonging to this response.
+
+        Parameters
+        ----------
+        content : undefined.UndefinedOr[t.Any], optional
+            The content of the message. Anything passed here will be cast to str.
+        attachment : undefined.UndefinedOr[hikari.Resourceish], optional
+            An attachment to add to this message.
+        attachments : undefined.UndefinedOr[t.Sequence[hikari.Resourceish]], optional
+            A sequence of attachments to add to this message.
+        component : undefined.UndefinedOr[hikari.api.special_endpoints.ComponentBuilder], optional
+            A component to add to this message.
+        components : undefined.UndefinedOr[t.Sequence[hikari.api.special_endpoints.ComponentBuilder]], optional
+            A sequence of components to add to this message.
+        embed : undefined.UndefinedOr[hikari.Embed], optional
+            An embed to add to this message.
+        embeds : undefined.UndefinedOr[t.Sequence[hikari.Embed]], optional
+            A sequence of embeds to add to this message.
+        mentions_everyone : undefined.UndefinedOr[bool], optional
+            If True, mentioning @everyone will be allowed.
+        user_mentions : undefined.UndefinedOr[t.Union[hikari.SnowflakeishSequence[hikari.PartialUser], bool]], optional
+            The set of allowed user mentions in this message. Set to True to allow all.
+        role_mentions : undefined.UndefinedOr[t.Union[hikari.SnowflakeishSequence[hikari.PartialRole], bool]], optional
+            The set of allowed role mentions in this message. Set to True to allow all.
+
+        Returns
+        -------
+        InteractionResponse
+            A proxy object representing the response to the interaction.
+        """
+        if self._message:
+            message = await self._context.interaction.edit_message(
+                self._message,
+                content,
+                component=component,
+                components=components,
+                attachment=attachment,
+                attachments=attachments,
+                embed=embed,
+                embeds=embeds,
+                replace_attachments=replace_attachments,
+                mentions_everyone=mentions_everyone,
+                user_mentions=user_mentions,
+                role_mentions=role_mentions,
+            )
+            return self._context._create_response(message)
+
+        message = await self._context.interaction.edit_initial_response(
+            content,
+            component=component,
+            components=components,
+            attachment=attachment,
+            attachments=attachments,
+            embed=embed,
+            embeds=embeds,
+            replace_attachments=replace_attachments,
+            mentions_everyone=mentions_everyone,
+            user_mentions=user_mentions,
+            role_mentions=role_mentions,
+        )
+        return self._context._create_response()
 
 
 class Context(abc.ABC, t.Generic[InteractionT]):
     """An abstract base class for context
     objects that proxying a Discord interaction."""
+
+    __slots__ = ("_interaction", "_responses")
 
     def __init__(self, interaction: InteractionT) -> None:
         self._interaction: InteractionT = interaction
@@ -365,90 +503,6 @@ class Context(abc.ABC, t.Generic[InteractionT]):
             raise RuntimeError("Interaction was already responded to.")
 
         await self.interaction.create_initial_response(hikari.ResponseType.DEFERRED_MESSAGE_UPDATE, flags=flags)
-
-
-class RawComponentContext(Context[ComponentInteraction]):
-    """Raw context proxying component interactions received directly over the gateway."""
-
-    @property
-    def message(self) -> hikari.Message:
-        """The message object for the view this context is proxying."""
-        return self._interaction.message
-
-    async def respond_with_modal(self, modal: Modal) -> None:
-        """Respond to this interaction with a modal."""
-
-        if self.interaction._issued_response:
-            raise RuntimeError("Interaction was already responded to.")
-
-        await self.interaction.create_modal_response(modal.title, modal.custom_id, modal.build())
-        modal.start()
-
-
-class RawModalContext(Context[ModalInteraction]):
-    """Raw context object proxying a ModalInteraction received directly over the gateway."""
-
-    ...
-
-
-class ViewContext(RawComponentContext):
-    """A context object proxying a ComponentInteraction for a view item."""
-
-    def __init__(self, view: View, interaction: ComponentInteraction) -> None:
-        super().__init__(interaction)
-        self._view = view
-
-    @property
-    def view(self) -> View:
-        """The view this context originates from."""
-        return self._view
-
-
-class ModalContext(RawModalContext):
-    """A context object proxying a ModalInteraction received by a miru modal."""
-
-    def __init__(self, modal: Modal, interaction: ModalInteraction, values: t.Mapping[ModalItem, str]) -> None:
-        super().__init__(interaction)
-        self._modal = modal
-        self._values = values
-
-    @property
-    def modal(self) -> Modal:
-        """The modal this context originates from."""
-        return self._modal
-
-    @property
-    def values(self) -> t.Mapping[ModalItem, str]:
-        """The values received as input for this modal."""
-        return self._values
-
-    def get_value_with_id(self, custom_id: str, default: hikari.UndefinedOr[t.Any] = hikari.UNDEFINED) -> t.Any:
-        """Get the value for a modal item with the given custom ID.
-
-        Parameters
-        ----------
-        custom_id : str
-            The custom_id of the component.
-        default : hikari.UndefinedOr[t.Any], optional
-            A default value to return if the item was not found, by default hikari.UNDEFINED
-
-        Returns
-        -------
-        Any
-            The value of the item with the given custom ID or the default value.
-
-        Raises
-        ------
-        KeyError
-            The item was not found and no default was provided.
-        """
-        for item, value in self.values.items():
-            if item.custom_id == custom_id:
-                return value
-
-        if default is hikari.UNDEFINED:
-            raise KeyError(f"No modal item with ID {custom_id}.")
-        return default
 
 
 # MIT License

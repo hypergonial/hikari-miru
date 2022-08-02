@@ -14,7 +14,7 @@ from .abc.item import Item
 from .abc.item import ViewItem
 from .abc.item_handler import ItemHandler
 from .button import Button
-from .context import ViewContext
+from .context.view import ViewContext
 from .interaction import ComponentInteraction
 from .select import Select
 

@@ -5,8 +5,8 @@ import typing as t
 import attr
 import hikari
 
-from .context import RawComponentContext
-from .context import RawModalContext
+from .context.raw import RawComponentContext
+from .context.raw import RawModalContext
 from .interaction import ComponentInteraction
 from .interaction import ModalInteraction
 

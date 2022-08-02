@@ -10,18 +10,20 @@ from .abc.item import DecoratedItem
 from .abc.item import ViewItem
 
 if t.TYPE_CHECKING:
-    from .context import ViewContext
+    from .context.view import ViewContext
     from .view import View
 
     ViewT = t.TypeVar("ViewT", bound="View")
 
-__all__ = ["SelectOption", "Select", "select"]
+__all__ = ("SelectOption", "Select", "select")
 
 
 class SelectOption:
     """
     A more lenient way to instantiate select options.
     """
+
+    __slots__ = ["label", "value", "description", "emoji", "is_default"]
 
     def __init__(
         self,

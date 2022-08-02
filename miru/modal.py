@@ -13,7 +13,7 @@ import hikari
 from .abc.item import Item
 from .abc.item import ModalItem
 from .abc.item_handler import ItemHandler
-from .context import ModalContext
+from .context.modal import ModalContext
 from .interaction import ModalInteraction
 
 ModalT = t.TypeVar("ModalT", bound="Modal")
