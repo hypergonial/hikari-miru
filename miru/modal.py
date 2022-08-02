@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import copy
+import datetime
 import os
 import sys
 import traceback
@@ -61,7 +62,7 @@ class Modal(ItemHandler):
         title: str,
         *,
         custom_id: t.Optional[str] = None,
-        timeout: t.Optional[float] = 300.0,
+        timeout: t.Optional[t.Union[float, int, datetime.timedelta]] = 300.0,
         autodefer: bool = True,
     ) -> None:
         super().__init__(timeout=timeout, autodefer=autodefer)

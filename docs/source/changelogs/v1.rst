@@ -59,6 +59,8 @@ Version 1.2.0
 
 - Added a "Jump to page" modal to built-in ``ext.nav.IndicatorButton`` when pressed.
 
+- Allow passing ``datetime.timedelta`` to ``ItemHandler.timeout`` upon instantiation.
+
 - Fixed selectoption ``is_default`` fields being ignored.
 
 Version 1.1.1

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import copy
+import datetime
 import sys
 import traceback
 import typing as t
@@ -60,7 +61,7 @@ class View(ItemHandler):
     def __init__(
         self,
         *,
-        timeout: t.Optional[float] = 120.0,
+        timeout: t.Optional[t.Union[float, int, datetime.timedelta]] = 120.0,
         autodefer: bool = True,
     ) -> None:
         super().__init__(timeout=timeout, autodefer=autodefer)

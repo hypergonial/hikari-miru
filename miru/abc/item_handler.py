@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import abc
 import asyncio
+import datetime
 import itertools
 import sys
 import typing as t
@@ -72,7 +73,12 @@ class ItemHandler(Sequence, abc.ABC):  # type: ignore[type-arg]
 
     _app: t.ClassVar[t.Optional[MiruAware]] = None
 
-    def __init__(self, *, timeout: t.Optional[float] = 120.0, autodefer: bool = True) -> None:
+    def __init__(
+        self, *, timeout: t.Optional[t.Union[float, int, datetime.timedelta]] = 120.0, autodefer: bool = True
+    ) -> None:
+        if isinstance(timeout, datetime.timedelta):
+            timeout = timeout.total_seconds()
+
         self._timeout: t.Optional[float] = float(timeout) if timeout else None
         self._children: t.List[Item] = []
         self._autodefer: bool = autodefer

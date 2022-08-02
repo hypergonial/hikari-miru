@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import datetime
 import logging
 import typing as t
 
@@ -45,7 +46,7 @@ class NavigatorView(View):
         *,
         pages: t.List[t.Union[str, hikari.Embed]],
         buttons: t.Optional[t.List[NavButton]] = None,
-        timeout: t.Optional[float] = 120.0,
+        timeout: t.Optional[t.Union[float, int, datetime.timedelta]] = 120.0,
         autodefer: bool = True,
     ) -> None:
         self._pages: t.List[t.Union[str, hikari.Embed]] = pages
