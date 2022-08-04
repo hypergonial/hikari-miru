@@ -153,7 +153,7 @@ class ModalItem(Item, abc.ABC):
     An abstract base class for modal components. Cannot be directly instantiated.
     """
 
-    __slots__ = "_required"
+    __slots__ = ("_required",)
 
     def __init__(self) -> None:
         super().__init__()
@@ -186,6 +186,8 @@ class ModalItem(Item, abc.ABC):
 
 class DecoratedItem:
     """A partial item made using a decorator."""
+
+    __slots__ = ("item", "callback")
 
     def __init__(self, item: ViewItem, callback: t.Callable[..., t.Any]) -> None:
         self.item = item
