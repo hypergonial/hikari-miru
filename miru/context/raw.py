@@ -17,7 +17,7 @@ __all__ = ("RawComponentContext", "RawModalContext")
 class RawComponentContext(Context[ComponentInteraction]):
     """Raw context proxying component interactions received directly over the gateway."""
 
-    __slots__ = ("_interaction", "_responses")
+    __slots__ = ()
 
     @property
     def message(self) -> hikari.Message:
@@ -37,7 +37,7 @@ class RawComponentContext(Context[ComponentInteraction]):
 class RawModalContext(Context[ModalInteraction]):
     """Raw context object proxying a ModalInteraction received directly over the gateway."""
 
-    __slots__ = ("_interaction", "_responses")
+    __slots__ = ()
 
     ...
 

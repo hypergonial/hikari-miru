@@ -14,7 +14,7 @@ __all__ = ("ViewContext",)
 class ViewContext(RawComponentContext):
     """A context object proxying a ComponentInteraction for a view item."""
 
-    __slots__ = ("_interaction", "_responses", "_view")
+    __slots__ = "_view"
 
     def __init__(self, view: View, interaction: ComponentInteraction) -> None:
         super().__init__(interaction)

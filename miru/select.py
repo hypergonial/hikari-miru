@@ -23,7 +23,7 @@ class SelectOption:
     A more lenient way to instantiate select options.
     """
 
-    __slots__ = ["label", "value", "description", "emoji", "is_default"]
+    __slots__ = ("label", "value", "description", "emoji", "is_default")
 
     def __init__(
         self,
@@ -91,6 +91,8 @@ class Select(ViewItem):
     ValueError
         Exceeded the maximum of 25 select menu options possible.
     """
+
+    __slots__ = ("_values", "_options", "_min_values", "_max_values", "_placeholder")
 
     def __init__(
         self,

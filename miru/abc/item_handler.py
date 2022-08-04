@@ -24,6 +24,8 @@ class _Weights:
     Calculate the position of an item based on it's width, and keep track of item positions
     """
 
+    __slots__ = ("_weights",)
+
     def __init__(self) -> None:
 
         self._weights = [0, 0, 0, 0, 0]

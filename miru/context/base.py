@@ -24,7 +24,7 @@ class InteractionResponse:
     This class is not meant to be directly instantiated, and is instead returned by :obj:`miru.context.Context`.
     """
 
-    __slots__ = ["_context", "_message", "_delete_after_task"]
+    __slots__ = ("_context", "_message", "_delete_after_task")
 
     def __init__(self, context: Context[InteractionT], message: t.Optional[hikari.Message] = None) -> None:
         self._context: Context[t.Any] = context  # Before you ask why it is Any, because mypy is dumb

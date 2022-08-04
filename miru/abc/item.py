@@ -23,6 +23,8 @@ class Item(abc.ABC):
     An abstract base class for all components. Cannot be directly instantiated.
     """
 
+    __slots__ = ("_row", "_width", "_rendered_row", "_custom_id", "_handler")
+
     def __init__(self) -> None:
         self._row: t.Optional[int] = None
         self._width: int = 1
@@ -94,6 +96,8 @@ class ViewItem(Item, abc.ABC):
     An abstract base class for view components. Cannot be directly instantiated.
     """
 
+    __slots__ = ("_persistent", "_disabled")
+
     def __init__(self) -> None:
         super().__init__()
         self._handler: t.Optional[View] = None
@@ -149,10 +153,11 @@ class ModalItem(Item, abc.ABC):
     An abstract base class for modal components. Cannot be directly instantiated.
     """
 
+    __slots__ = "_required"
+
     def __init__(self) -> None:
         super().__init__()
         self._handler: t.Optional[Modal] = None
-        self._persistent: bool = False
         self._required: bool = False
 
     @property

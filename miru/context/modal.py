@@ -17,7 +17,7 @@ __all__ = ("ModalContext",)
 class ModalContext(RawModalContext):
     """A context object proxying a ModalInteraction received by a miru modal."""
 
-    __slots__ = ("_interaction", "_responses", "_modal", "_values")
+    __slots__ = ("_modal", "_values")
 
     def __init__(self, modal: Modal, interaction: ModalInteraction, values: t.Mapping[ModalItem, str]) -> None:
         super().__init__(interaction)
