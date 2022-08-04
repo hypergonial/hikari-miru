@@ -42,7 +42,7 @@ async def modals(event: hikari.GuildMessageCreateEvent) -> None:
         message = await event.message.respond(
             "This button triggers a modal!", components=view
         )
-        view.start(message)
+        await view.start(message)
 
 
 bot.run()

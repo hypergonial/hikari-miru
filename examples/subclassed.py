@@ -49,7 +49,7 @@ async def buttons(event: hikari.GuildMessageCreateEvent) -> None:
         view.add_item(NoButton(style=hikari.ButtonStyle.DANGER, label="No"))  # Pass arguments to NoButton
         message = await event.message.respond("Do you put pineapple on your pizza?", components=view)
 
-        view.start(message)  # Start listening for interactions
+        await view.start(message)  # Start listening for interactions
 
         await view.wait()  # Wait until the view is stopped or times out
 

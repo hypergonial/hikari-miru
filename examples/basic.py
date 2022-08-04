@@ -48,7 +48,7 @@ async def buttons(event: hikari.GuildMessageCreateEvent) -> None:
             "This is a basic component menu built with miru!", components=view
         )
 
-        view.start(message)  # Start listening for interactions
+        await view.start(message)  # Start listening for interactions
 
         await view.wait()  # Wait until the view is stopped or times out
 

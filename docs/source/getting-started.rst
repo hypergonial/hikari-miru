@@ -68,7 +68,7 @@ This is what a basic component menu looks like with miru:
                 "This is a basic component menu built with miru!", components=view
             )
 
-            view.start(message)  # Start listening for interactions
+            await view.start(message)  # Start listening for interactions
 
             await view.wait()  # Wait until the view is stopped or times out
 
@@ -136,7 +136,7 @@ Below you can see such an example:
             view.add_item(NoButton(style=hikari.ButtonStyle.DANGER, label="No"))  # Pass arguments to NoButton
             message = await event.message.respond("Do you put pineapple on your pizza?", components=view)
 
-            view.start(message)  # Start listening for interactions
+            await view.start(message)  # Start listening for interactions
 
             await view.wait()  # Wait until the view is stopped or times out
 

@@ -134,7 +134,7 @@ simply pass a message ID to ``start_listener()``. This also allows for the view 
                 components=view,
             )
             # Bound persistent views need to be started for every message.
-            view.start(message)
+            await view.start(message)
 
 
     bot.run()

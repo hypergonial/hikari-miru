@@ -64,7 +64,7 @@ Now we will get an **interaction** through the use of a button so we can send th
             message = await event.message.respond(
                 "This button triggers a modal!", components=view
             )
-            view.start(message)
+            await view.start(message)
 
 
     bot.run()
