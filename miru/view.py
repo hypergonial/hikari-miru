@@ -379,13 +379,13 @@ class View(ItemHandler):
 
         Parameters
         ----------
-        message : hikari.Message
+        message : Union[hikari.Message, Awaitable[hikari.Message]]
             The message the view was built for.
 
         Raises
         ------
         TypeError
-            Parameter message is not an instance of hikari.Message
+            Parameter 'message' cannot be resolved to an instance of 'hikari.Message'.
         """
 
         # Optimize URL-button-only views by not starting listener

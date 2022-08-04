@@ -194,7 +194,7 @@ class NavigatorView(View):
 
         Parameters
         ----------
-        message : hikari.Message
+        message : Union[hikari.Message, Awaitable[hikari.Message]]
             The message this view was built for.
         """
         await super().start(message)
