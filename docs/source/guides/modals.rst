@@ -1,7 +1,7 @@
 Modals
 ======
 
-With the release of miru v1.2.0, **modals** are now available to use. They function in a very similar way to
+With the release of miru v2.0.0, **modals** are now available to use. They function in a very similar way to
 views, with a few notable exceptions, namely:
 
 - Modal listeners start automatically after sending.
