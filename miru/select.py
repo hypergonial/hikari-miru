@@ -92,8 +92,6 @@ class Select(ViewItem):
         Exceeded the maximum of 25 select menu options possible.
     """
 
-    __slots__ = ("_values", "_options", "_min_values", "_max_values", "_placeholder")
-
     def __init__(
         self,
         *,

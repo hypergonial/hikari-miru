@@ -46,8 +46,6 @@ class Button(ViewItem):
         if both custom_id and url are provided.
     """
 
-    __slots__ = ("_style", "_label", "_emoji", "_url")
-
     def __init__(
         self,
         *,
