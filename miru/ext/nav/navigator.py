@@ -189,7 +189,7 @@ class NavigatorView(View):
         self._inter = context.interaction  # Update latest inter
         await context.edit_response(**payload)
 
-    def start(self, message: hikari.Message) -> None:
+    async def start(self, message: t.Union[hikari.Message, t.Awaitable[hikari.Message]]) -> None:
         """Start up the navigator listener. This should not be called directly, use send() instead.
 
         Parameters
@@ -197,7 +197,7 @@ class NavigatorView(View):
         message : hikari.Message
             The message this view was built for.
         """
-        super().start(message)
+        await super().start(message)
 
     async def send(
         self,
@@ -250,7 +250,7 @@ class NavigatorView(View):
             else:
                 message = await channel_or_interaction.execute(**payload)
 
-        self.start(message)
+        await self.start(message)
 
 
 # MIT License

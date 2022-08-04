@@ -394,7 +394,7 @@ class View(ItemHandler):
 
         if inspect.isawaitable(message):
             message = await message
-        
+
         if not isinstance(message, hikari.Message):
             raise TypeError("Parameter message must be an instance of hikari.Message")
 

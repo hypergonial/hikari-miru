@@ -31,7 +31,7 @@ class RawComponentContext(Context[ComponentInteraction]):
             raise RuntimeError("Interaction was already responded to.")
 
         await self.interaction.create_modal_response(modal.title, modal.custom_id, modal.build())
-        modal.start()
+        await modal.start()
 
 
 class RawModalContext(Context[ModalInteraction]):
