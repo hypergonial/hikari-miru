@@ -31,6 +31,9 @@ class InteractionResponse:
         self._message: t.Optional[hikari.Message] = message
         self._delete_after_task: t.Optional[asyncio.Task[None]] = None
 
+    def __await__(self) -> t.Generator[t.Any, None, hikari.Message]:
+        return self.retrieve_message().__await__()
+
     async def _do_delete_after(self, delay: float) -> None:
         """Delete the response after the specified delay.
 
@@ -58,6 +61,10 @@ class InteractionResponse:
     async def retrieve_message(self) -> hikari.Message:
         """Get or fetch the message created by this response.
         Initial responses need to be fetched, while followups will be provided directly.
+
+        .. note::
+            The object itself can also be awaited directly, which in turn calls this method,
+            producing the same results.
 
         Returns
         -------

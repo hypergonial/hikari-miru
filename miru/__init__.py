@@ -9,7 +9,7 @@ from .text_input import *
 from .traits import *
 from .view import *
 
-__version__ = "1.2.0"
+__version__ = "2.0.0"
 
 # MIT License
 #

@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import copy
 import datetime
+import inspect
 import sys
 import traceback
 import typing as t
@@ -373,7 +374,7 @@ class View(ItemHandler):
 
         self._listener_task = self._create_task(self._listen_for_events(message_id))
 
-    def start(self, message: hikari.Message) -> None:
+    async def start(self, message: t.Union[hikari.Message, t.Awaitable[hikari.Message]]) -> None:
         """Start up the view and begin listening for interactions.
 
         Parameters
@@ -391,8 +392,11 @@ class View(ItemHandler):
         if all((isinstance(item, Button) and item.url is not None) for item in self.children):
             return
 
+        if inspect.isawaitable(message):
+            message = await message
+        
         if not isinstance(message, hikari.Message):
-            raise TypeError("Expected instance of hikari.Message.")
+            raise TypeError("Parameter message must be an instance of hikari.Message")
 
         self._message = message
         self._message_id = message.id

@@ -323,14 +323,14 @@ class Modal(ItemHandler):
         else:
             await self._process_interactions(event)
 
-    def start(self) -> None:
+    async def start(self) -> None:
         """Start up the modal and begin listening for interactions."""
         self._listener_task = self._create_task(self._listen_for_events())
 
     async def send(self, interaction: hikari.ModalResponseMixin) -> None:
         """Send this modal as a response to the provided interaction."""
         await interaction.create_modal_response(self.title, self.custom_id, components=self.build())
-        self.start()
+        await self.start()
 
 
 # MIT License
