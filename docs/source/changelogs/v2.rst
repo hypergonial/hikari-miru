@@ -65,6 +65,8 @@ Version 2.0.0
 
 - Add ``delete_after`` to ``Context.respond()`` as a kwarg, and as a method to ``InteractionResponse``.
 
+- Added ``miru.ext.nav.utils.Paginator`` to help pagination of long strings.
+
 - ``View.start()`` now accepts awaitables that return ``hikari.Message``, thus allowing it to function with custom objects that support this behaviour.
 
 - Fixed selectoption ``is_default`` fields being ignored.
