@@ -18,6 +18,8 @@ class Paginator:
         The character used to divide lines, by default "\\n"
     """
 
+    __slots__ = ("_max_len", "_prefix", "_suffix", "_line_separator", "_pages")
+
     def __init__(self, max_len: int = 1000, prefix: str = "", suffix: str = "", line_separator: str = "\n") -> None:
         self._max_len = max_len
         self._prefix = prefix
@@ -25,14 +27,11 @@ class Paginator:
         self._line_separator = line_separator
         self._pages: t.List[str] = []
 
-    def add_line(self, line: str) -> None:
-        """Add a line to the paginator.
+    def _add_line(self, line: str) -> None:
+        """Add a line to the paginator."""
 
-        Parameters
-        ----------
-        line : str
-            The string to add to the paginator.
-        """
+        if len(self._prefix + line + self._line_separator + self._suffix) > self._max_len:
+            raise ValueError(f"A single line cannot be longer than the maximum length of a page ({self._max_len} characters).")
 
         if not self._pages:
             self._pages[0] = self._prefix
@@ -44,7 +43,22 @@ class Paginator:
         else:
             self._pages[-1] += self._suffix
             self._pages.append(self._prefix)
-            self.add_line(line)
+            self._add_line(line)
+
+    def add_line(self, line: str) -> None:
+        """Add a line or multiple lines to the paginator.
+
+        Parameters
+        ----------
+        line : str
+            The string to add to the paginator. If it contains the line seperator, the text will be split into multiple lines.
+        Raises
+        ------
+        ValueError
+            If a single line is longer than the maximum length of a page. (Includes the prefix and suffix)
+        """
+        for bean in line.split(self._line_separator):
+            self._add_line(bean)
 
     @property
     def pages(self) -> t.Sequence[str]:
