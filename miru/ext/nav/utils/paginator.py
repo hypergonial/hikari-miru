@@ -31,7 +31,9 @@ class Paginator:
         """Add a line to the paginator."""
 
         if len(self._prefix + line + self._line_separator + self._suffix) > self._max_len:
-            raise ValueError(f"A single line cannot be longer than the maximum length of a page ({self._max_len} characters).")
+            raise ValueError(
+                f"A single line cannot be longer than the maximum length of a page ({self._max_len} characters)."
+            )
 
         if not self._pages:
             self._pages[0] = self._prefix

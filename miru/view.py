@@ -396,7 +396,7 @@ class View(ItemHandler):
             message = await message
 
         if not isinstance(message, hikari.Message):
-            raise TypeError("Parameter message must be an instance of hikari.Message")
+            raise TypeError(f"Parameter message must be an instance of 'hikari.Message', not '{message.__class__.__name__}'.")
 
         self._message = message
         self._message_id = message.id
