@@ -262,11 +262,13 @@ class Modal(ItemHandler):
         Handle the callback of a modal item. Seperate task in case the view is stopped in the callback.
         """
         try:
+            now = datetime.datetime.now()
             await self.callback(context)
             self._ctx = context
 
             if not context.interaction._issued_response and self.autodefer:
-                await context.defer()
+                if (datetime.datetime.now() - now).total_seconds() <= 3:  # Avoid deferring if inter already timed out
+                    await context.defer()
             self.stop()  # Modals can only receive one response
 
         except Exception as error:

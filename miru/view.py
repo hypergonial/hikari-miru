@@ -257,9 +257,8 @@ class View(ItemHandler):
         """
         Handle the callback of a view item. Seperate task in case the view is stopped in the callback.
         """
-        assert isinstance(context.interaction, ComponentInteraction)
-
         try:
+            now = datetime.datetime.now()
             self._inputted.set()
             self._inputted.clear()
 
@@ -267,7 +266,8 @@ class View(ItemHandler):
             await item.callback(context)
 
             if not context.interaction._issued_response and self.autodefer:
-                await context.defer()
+                if (datetime.datetime.now() - now).total_seconds() <= 3:  # Avoid deferring if inter already timed out
+                    await context.defer()
 
         except Exception as error:
             await self.on_error(error, item, context)
@@ -396,7 +396,9 @@ class View(ItemHandler):
             message = await message
 
         if not isinstance(message, hikari.Message):
-            raise TypeError(f"Parameter message must be an instance of 'hikari.Message', not '{message.__class__.__name__}'.")
+            raise TypeError(
+                f"Parameter message must be an instance of 'hikari.Message', not '{message.__class__.__name__}'."
+            )
 
         self._message = message
         self._message_id = message.id
