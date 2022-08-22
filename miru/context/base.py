@@ -413,6 +413,8 @@ class Context(abc.ABC, t.Generic[InteractionT]):
             An embed to add to this message.
         embeds : undefined.UndefinedOr[t.Sequence[hikari.Embed]], optional
             A sequence of embeds to add to this message.
+        replace_attachments: bool
+            Whether to replace the attachments with the provided ones.
         mentions_everyone : undefined.UndefinedOr[bool], optional
             If True, mentioning @everyone will be allowed.
         user_mentions : undefined.UndefinedOr[t.Union[hikari.SnowflakeishSequence[hikari.PartialUser], bool]], optional
