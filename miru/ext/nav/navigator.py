@@ -31,9 +31,12 @@ class NavigatorView(View):
     buttons : Optional[List[NavButton[NavigatorViewT]]], optional
         A list of navigation buttons to override the default ones with, by default None
     timeout : Optional[float], optional
-        [The duration after which the view times out, in seconds, by default 120.0
+        The duration after which the view times out, in seconds, by default 120.0
     autodefer : bool, optional
         If unhandled interactions should be automatically deferred or not, by default True
+    replace_attachments : bool, optional
+        If True, replace all attachments when editing the message. This must be `True` if
+        you are using different images on each page.
 
     Raises
     ------
@@ -48,8 +51,10 @@ class NavigatorView(View):
         buttons: t.Optional[t.Sequence[NavButton]] = None,
         timeout: t.Optional[t.Union[float, int, datetime.timedelta]] = 120.0,
         autodefer: bool = True,
+        replace_attachments: bool = True,
     ) -> None:
         self._pages: t.Sequence[t.Union[str, hikari.Embed]] = pages
+        self._replace_attachments = replace_attachments
         self._current_page: int = 0
         self._ephemeral: bool = False
         # If the nav is using interaction-based handling or not
@@ -187,7 +192,7 @@ class NavigatorView(View):
 
         payload = self._get_page_payload(page)
         self._inter = context.interaction  # Update latest inter
-        await context.edit_response(**payload)
+        await context.edit_response(**payload, attachments=[], replace_attachments=True)
 
     async def start(self, message: t.Union[hikari.Message, t.Awaitable[hikari.Message]]) -> None:
         """Start up the navigator listener. This should not be called directly, use send() instead.

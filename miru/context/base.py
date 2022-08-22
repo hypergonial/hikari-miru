@@ -454,6 +454,7 @@ class Context(abc.ABC, t.Generic[InteractionT]):
                 tts=tts,
                 embed=embed,
                 embeds=embeds,
+                replace_attachments=replace_attachments,
                 mentions_everyone=mentions_everyone,
                 user_mentions=user_mentions,
                 role_mentions=role_mentions,
