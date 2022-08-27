@@ -192,7 +192,7 @@ class NavigatorView(View):
 
         payload = self._get_page_payload(page)
         self._inter = context.interaction  # Update latest inter
-        await context.edit_response(**payload, attachments=[], replace_attachments=self._replace_attachments)
+        await context.edit_response(**payload, replace_attachments=self._replace_attachments)
 
     async def start(self, message: t.Union[hikari.Message, t.Awaitable[hikari.Message]]) -> None:
         """Start up the navigator listener. This should not be called directly, use send() instead.
