@@ -289,6 +289,7 @@ class Context(abc.ABC, t.Generic[InteractionT]):
         components: hikari.UndefinedOr[t.Sequence[hikari.api.ComponentBuilder]] = hikari.UNDEFINED,
         attachment: hikari.UndefinedOr[hikari.Resourceish] = hikari.UNDEFINED,
         attachments: hikari.UndefinedOr[t.Sequence[hikari.Resourceish]] = hikari.UNDEFINED,
+        replace_attachments: bool = False,
         embed: hikari.UndefinedOr[hikari.Embed] = hikari.UNDEFINED,
         embeds: hikari.UndefinedOr[t.Sequence[hikari.Embed]] = hikari.UNDEFINED,
         mentions_everyone: hikari.UndefinedOr[bool] = hikari.UNDEFINED,
@@ -312,6 +313,8 @@ class Context(abc.ABC, t.Generic[InteractionT]):
             An attachment to add to this message.
         attachments : undefined.UndefinedOr[t.Sequence[hikari.Resourceish]], optional
             A sequence of attachments to add to this message.
+        replace_attachments: bool
+            Whether to replace the attachments with the provided ones.
         component : undefined.UndefinedOr[hikari.api.special_endpoints.ComponentBuilder], optional
             A component to add to this message.
         components : undefined.UndefinedOr[t.Sequence[hikari.api.special_endpoints.ComponentBuilder]], optional
@@ -342,6 +345,7 @@ class Context(abc.ABC, t.Generic[InteractionT]):
                 components=components,
                 attachment=attachment,
                 attachments=attachments,
+                replace_attachments=replace_attachments,
                 embed=embed,
                 embeds=embeds,
                 mentions_everyone=mentions_everyone,
@@ -359,6 +363,7 @@ class Context(abc.ABC, t.Generic[InteractionT]):
                 components=components,
                 attachment=attachment,
                 attachments=attachments,
+                replace_attachments=replace_attachments,
                 embed=embed,
                 embeds=embeds,
                 mentions_everyone=mentions_everyone,
@@ -413,6 +418,8 @@ class Context(abc.ABC, t.Generic[InteractionT]):
             An embed to add to this message.
         embeds : undefined.UndefinedOr[t.Sequence[hikari.Embed]], optional
             A sequence of embeds to add to this message.
+        replace_attachments: bool
+            Whether to replace the attachments with the provided ones.
         mentions_everyone : undefined.UndefinedOr[bool], optional
             If True, mentioning @everyone will be allowed.
         user_mentions : undefined.UndefinedOr[t.Union[hikari.SnowflakeishSequence[hikari.PartialUser], bool]], optional
@@ -454,6 +461,7 @@ class Context(abc.ABC, t.Generic[InteractionT]):
                 tts=tts,
                 embed=embed,
                 embeds=embeds,
+                replace_attachments=replace_attachments,
                 mentions_everyone=mentions_everyone,
                 user_mentions=user_mentions,
                 role_mentions=role_mentions,
