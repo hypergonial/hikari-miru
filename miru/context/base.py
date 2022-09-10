@@ -3,6 +3,7 @@ from __future__ import annotations
 import abc
 import asyncio
 import datetime
+import logging
 import typing as t
 
 import hikari
@@ -16,6 +17,8 @@ from ..traits import MiruAware
 InteractionT = t.TypeVar("InteractionT", "ComponentInteraction", "ModalInteraction")
 
 __all__ = ("Context", "InteractionResponse")
+
+logger = logging.getLogger("__name__")
 
 
 class InteractionResponse:
@@ -338,6 +341,10 @@ class Context(abc.ABC, t.Generic[InteractionT]):
             A proxy object representing the response to the interaction.
         """
         if self.interaction._issued_response:
+            if replace_attachments:
+                logger.warning(
+                    "Cannot replace attachments on an already issued response.\nThis is due to a bug in the modals branch of hikari."
+                )
             message = await self.interaction.execute(
                 content,
                 tts=tts,
@@ -345,7 +352,6 @@ class Context(abc.ABC, t.Generic[InteractionT]):
                 components=components,
                 attachment=attachment,
                 attachments=attachments,
-                replace_attachments=replace_attachments,
                 embed=embed,
                 embeds=embeds,
                 mentions_everyone=mentions_everyone,
