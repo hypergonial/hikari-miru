@@ -7,6 +7,7 @@ import typing as t
 import hikari
 
 from miru import Item
+from miru import interaction
 from miru.context import Context
 from miru.view import View
 
@@ -51,7 +52,7 @@ class NavigatorView(View):
         buttons: t.Optional[t.Sequence[NavButton]] = None,
         timeout: t.Optional[t.Union[float, int, datetime.timedelta]] = 120.0,
         autodefer: bool = True,
-        replace_attachments: bool = True,
+        replace_attachments: bool = False,
     ) -> None:
         self._pages: t.Sequence[t.Union[str, hikari.Embed]] = pages
         self._replace_attachments = replace_attachments
@@ -157,7 +158,7 @@ class NavigatorView(View):
     def clear_items(self) -> NavigatorView:
         return super().clear_items()  # type: ignore[return-value]
 
-    def _get_page_payload(self, page: t.Union[str, hikari.Embed]) -> t.Mapping[str, t.Any]:
+    def _get_page_payload(self, page: t.Union[str, hikari.Embed]) -> t.MutableMapping[str, t.Any]:
         """Get the page content that is to be sent."""
 
         content = page if isinstance(page, str) else ""
@@ -191,8 +192,20 @@ class NavigatorView(View):
                 await button.before_page_change()
 
         payload = self._get_page_payload(page)
+        if self._replace_attachments:
+            payload["replace_attachments"] = True
+
         self._inter = context.interaction  # Update latest inter
-        await context.edit_response(**payload, replace_attachments=self._replace_attachments)
+
+        # TODO: Remove this when hikari gets fixed upstream
+        if context.interaction._issued_response:
+            await context.app.rest.edit_webhook_message(
+                context.interaction.webhook_id, context.interaction.token, **payload
+            )
+        else:
+            await context.app.rest.create_interaction_response(
+                context.interaction.id, context.interaction.token, **payload
+            )
 
     async def start(self, message: t.Union[hikari.Message, t.Awaitable[hikari.Message]]) -> None:
         """Start up the navigator listener. This should not be called directly, use send() instead.
