@@ -204,7 +204,7 @@ class NavigatorView(View):
             )
         else:
             await context.app.rest.create_interaction_response(
-                context.interaction.id, context.interaction.token, **payload
+                context.interaction.id, context.interaction.token, hikari.ResponseType.MESSAGE_UPDATE, **payload
             )
 
     async def start(self, message: t.Union[hikari.Message, t.Awaitable[hikari.Message]]) -> None:
