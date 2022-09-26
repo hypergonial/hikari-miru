@@ -55,7 +55,7 @@ async def buttons(event: hikari.GuildMessageCreateEvent) -> None:
         view = Persistence()
         await event.message.respond(
             "This is a persistent component menu, and works after bot restarts!",
-             components=view,
+            components=view,
         )
         # Unbound views do not need to be started, as starting one listener will handle all views of the same type.
         # Bound views (ones that are bound to a message) must be started here via view.start().

@@ -21,6 +21,7 @@ __all__ = ["ItemHandler"]
 
 T = t.TypeVar("T", bound=hikari.api.ComponentBuilder)
 
+
 class _Weights:
     """
     Calculate the position of an item based on it's width, and keep track of item positions
@@ -107,9 +108,7 @@ class BaseItemHandler(Sequence, abc.ABC, t.Generic[T]):  # type: ignore[type-arg
     def __getitem__(self, value: slice) -> t.Sequence[T]:
         ...
 
-    def __getitem__(
-        self, value: t.Union[slice, int]
-    ) -> t.Union[T, t.Sequence[T]]:
+    def __getitem__(self, value: t.Union[slice, int]) -> t.Union[T, t.Sequence[T]]:
         return self.build()[value]
 
     def __iter__(self) -> t.Iterator[T]:
@@ -319,10 +318,8 @@ class BaseItemHandler(Sequence, abc.ABC, t.Generic[T]):  # type: ignore[type-arg
         """
         await asyncio.wait_for(self._stopped.wait(), timeout=timeout)
 
-
     def build(self) -> t.Sequence[T]:
         ...
-
 
     def _build_inner(self, builder: type[T]) -> t.Sequence[T]:
         if not self.children:
@@ -352,7 +349,6 @@ class ItemHandler(BaseItemHandler[hikari.impl.ActionRowBuilder]):
             this returns an empty list.
         """
         return self._build_inner(hikari.impl.ActionRowBuilder)
-
 
 
 # MIT License

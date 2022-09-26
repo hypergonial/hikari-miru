@@ -76,11 +76,9 @@ class BaseItem(abc.ABC, t.Generic[T]):
 
         self._custom_id = value
 
-
     @abc.abstractmethod
     def _build(self, action_row: t.Any) -> None:
         ...
-
 
     @property
     @abstractmethod
@@ -208,7 +206,6 @@ class ModalItem(BaseItem[hikari.impl.ModalActionRowBuilder], abc.ABC):
         Called internally to build and append the item to an action row
         """
         ...
-
 
 
 class DecoratedItem:

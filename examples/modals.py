@@ -14,6 +14,7 @@ class MyModal(miru.Modal):
         values = [value for value in ctx.values.values()]
         await ctx.respond(f"Received the following input: ```{' | '.join(values)}```")
 
+
 class ModalView(miru.View):
 
     # Create a new button that will invoke our modal
@@ -30,6 +31,7 @@ class ModalView(miru.View):
 bot = hikari.GatewayBot("...")
 miru.load(bot)
 
+
 @bot.listen()
 async def modals(event: hikari.GuildMessageCreateEvent) -> None:
 
@@ -39,9 +41,7 @@ async def modals(event: hikari.GuildMessageCreateEvent) -> None:
 
     if event.content.startswith("miru"):
         view = ModalView()
-        message = await event.message.respond(
-            "This button triggers a modal!", components=view
-        )
+        message = await event.message.respond("This button triggers a modal!", components=view)
         await view.start(message)
 
 
