@@ -283,12 +283,11 @@ class Modal(BaseItemHandler[hikari.impl.ModalActionRowBuilder]):
 
             children = {item.custom_id: item for item in self.children if isinstance(item, ModalItem)}
 
-
             values = {  # Check if any components match the provided custom_ids
-                children[component.custom_id]: component.value  # type: ignore[attr-defined]
+                children[component.custom_id]: component.value
                 for action_row in event.interaction.components
                 for component in action_row.components  # type: ignore[attr-defined]
-                if children.get(component.custom_id) is not None  # type: ignore[attr-defined]
+                if children.get(component.custom_id) is not None
             }
             if not values:
                 return
