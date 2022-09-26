@@ -1,6 +1,6 @@
 import typing
 
-from .abc.item_handler import ItemHandler
+from .abc.item_handler import BaseItemHandler
 from .events import _EventListener
 from .traits import MiruAware
 from .view import View
@@ -27,13 +27,13 @@ def load(bot: MiruAware) -> None:
     TypeError
         Parameter bot does not have traits specified in MiruAware
     """
-    if ItemHandler._app is not None:
+    if BaseItemHandler._app is not None:
         raise RuntimeError("miru is already loaded!")
 
     if not isinstance(bot, MiruAware):
         raise TypeError(f"Expected type with trait ViewsAware for parameter bot, not {type(bot)}")
 
-    ItemHandler._app = bot
+    BaseItemHandler._app = bot
     _event_listener = _EventListener()
     _event_listener.start_listeners(bot)
 
@@ -48,7 +48,7 @@ def unload() -> None:
     for view in View._views.values():
         view.stop()
 
-    ItemHandler._app = None
+    BaseItemHandler._app = None
     if _event_listener:
         _event_listener.stop_listeners()
 

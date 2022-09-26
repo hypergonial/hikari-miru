@@ -10,16 +10,16 @@ import typing as t
 
 import hikari
 
-from .abc.item import Item
+from .abc.item import BaseItem
 from .abc.item import ModalItem
-from .abc.item_handler import ItemHandler
+from .abc.item_handler import BaseItemHandler
 from .context.modal import ModalContext
 from .interaction import ModalInteraction
 
 ModalT = t.TypeVar("ModalT", bound="Modal")
 
 
-class Modal(ItemHandler):
+class Modal(BaseItemHandler[hikari.impl.ModalActionRowBuilder]):
     """Represents a Discord Modal.
 
     Parameters
@@ -132,7 +132,7 @@ class Modal(ItemHandler):
         assert isinstance(self._last_context, ModalContext)
         return self._last_context
 
-    def add_item(self, item: Item) -> Modal:
+    def add_item(self, item: BaseItem[hikari.impl.ModalActionRowBuilder]) -> Modal:
         """Adds a new item to the modal.
 
         Parameters
@@ -163,7 +163,7 @@ class Modal(ItemHandler):
 
         return super().add_item(item)  # type: ignore[return-value]
 
-    def remove_item(self, item: Item) -> Modal:
+    def remove_item(self, item: BaseItem[hikari.impl.ModalActionRowBuilder]) -> Modal:
         return super().remove_item(item)  # type: ignore[return-value]
 
     def clear_items(self) -> Modal:
@@ -285,8 +285,7 @@ class Modal(ItemHandler):
 
             values = {  # Check if any components match the provided custom_ids
                 children[component.custom_id]: component.value  # type: ignore[attr-defined]
-                for action_row in event.interaction.components
-                for component in action_row.components
+                for component in event.interaction.components
                 if children.get(component.custom_id) is not None  # type: ignore[attr-defined]
             }
             if not values:
@@ -333,6 +332,18 @@ class Modal(ItemHandler):
         """Send this modal as a response to the provided interaction."""
         await interaction.create_modal_response(self.title, self.custom_id, components=self.build())
         await self.start()
+
+    def build(self) -> t.Sequence[hikari.impl.ModalActionRowBuilder]:
+        """Creates the action rows the item handler represents.
+
+        Returns
+        -------
+        List[hikari.impl.ActionRowBuilder]
+            A list of action rows containing all items attached to this item handler,
+            converted to hikari component objects. If the item handler has no items attached,
+            this returns an empty list.
+        """
+        return self._build_inner(hikari.impl.ModalActionRowBuilder)
 
 
 # MIT License

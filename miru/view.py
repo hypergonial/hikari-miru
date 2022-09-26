@@ -11,7 +11,7 @@ import typing as t
 import hikari
 
 from .abc.item import DecoratedItem
-from .abc.item import Item
+from .abc.item import BaseItem
 from .abc.item import ViewItem
 from .abc.item_handler import ItemHandler
 from .button import Button
@@ -148,7 +148,7 @@ class View(ItemHandler):
 
         return view
 
-    def add_item(self: View, item: Item) -> View:
+    def add_item(self: View, item: BaseItem[hikari.impl.ActionRowBuilder]) -> View:
         """Adds a new item to the view.
 
         Parameters
@@ -179,7 +179,7 @@ class View(ItemHandler):
         return super().add_item(item)  # type: ignore[return-value]
 
     # typing.Self please save me
-    def remove_item(self, item: Item) -> View:
+    def remove_item(self, item: BaseItem[hikari.impl.ActionRowBuilder]) -> View:
         return super().remove_item(item)  # type: ignore[return-value]
 
     def clear_items(self) -> View:

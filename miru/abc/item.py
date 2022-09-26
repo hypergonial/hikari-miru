@@ -13,12 +13,15 @@ if t.TYPE_CHECKING:
     from ..context import ViewContext
     from ..modal import Modal
     from ..view import View
-    from .item_handler import ItemHandler
-
-__all__ = ["Item", "DecoratedItem", "ViewItem", "ModalItem"]
+    from .item_handler import BaseItemHandler
 
 
-class Item(abc.ABC):
+__all__ = ["BaseItem", "DecoratedItem", "ViewItem", "ModalItem"]
+
+T = t.TypeVar("T", bound=hikari.api.ComponentBuilder)
+
+
+class BaseItem(abc.ABC, t.Generic[T]):
     """
     An abstract base class for all components. Cannot be directly instantiated.
     """
@@ -28,7 +31,7 @@ class Item(abc.ABC):
         self._width: int = 1
         self._rendered_row: t.Optional[int] = None  # Where it actually ends up when rendered by Discord
         self._custom_id: t.Optional[str] = None
-        self._handler: t.Optional[ItemHandler] = None
+        self._handler: t.Optional[BaseItemHandler[T]] = None
 
     @property
     def row(self) -> t.Optional[int]:
@@ -73,23 +76,22 @@ class Item(abc.ABC):
 
         self._custom_id = value
 
+
+    @abc.abstractmethod
+    def _build(self, action_row: t.Any) -> None:
+        ...
+
+
     @property
     @abstractmethod
-    def type(self) -> hikari.ComponentType:
+    def type(self) -> int:
         """
         The component's underlying component type.
         """
         ...
 
-    @abstractmethod
-    def _build(self, action_row: hikari.api.ActionRowBuilder) -> None:
-        """
-        Called internally to build and append the item to an action row
-        """
-        ...
 
-
-class ViewItem(Item, abc.ABC):
+class ViewItem(BaseItem[hikari.impl.ActionRowBuilder], abc.ABC):
     """
     An abstract base class for view components. Cannot be directly instantiated.
     """
@@ -123,6 +125,21 @@ class ViewItem(Item, abc.ABC):
             raise TypeError("Expected type bool for property disabled.")
         self._disabled = value
 
+    @property
+    @abstractmethod
+    def type(self) -> hikari.ComponentType:
+        """
+        The component's underlying component type.
+        """
+        ...
+
+    @abstractmethod
+    def _build(self, action_row: hikari.api.ActionRowBuilder) -> None:
+        """
+        Called internally to build and append the item to an action row
+        """
+        ...
+
     @classmethod
     @abstractmethod
     def _from_component(cls, component: hikari.PartialComponent, row: t.Optional[int] = None) -> ViewItem:
@@ -144,7 +161,7 @@ class ViewItem(Item, abc.ABC):
         pass
 
 
-class ModalItem(Item, abc.ABC):
+class ModalItem(BaseItem[hikari.impl.ModalActionRowBuilder], abc.ABC):
     """
     An abstract base class for modal components. Cannot be directly instantiated.
     """
@@ -176,6 +193,22 @@ class ModalItem(Item, abc.ABC):
         if not isinstance(value, bool):
             raise TypeError("Expected type bool for property required.")
         self._required = value
+
+    @property
+    @abstractmethod
+    def type(self) -> hikari.ModalComponentType:
+        """
+        The component's underlying component type.
+        """
+        ...
+
+    @abstractmethod
+    def _build(self, action_row: hikari.api.ModalActionRowBuilder) -> None:
+        """
+        Called internally to build and append the item to an action row
+        """
+        ...
+
 
 
 class DecoratedItem:
