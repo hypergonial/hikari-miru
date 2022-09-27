@@ -11,7 +11,7 @@ from collections.abc import Sequence
 import hikari
 
 from ..traits import MiruAware
-from .item import BaseItem
+from .item import Item
 
 if t.TYPE_CHECKING:
     from ..context import Context
@@ -33,7 +33,7 @@ class _Weights:
 
         self._weights = [0, 0, 0, 0, 0]
 
-    def add_item(self, item: BaseItem[T]) -> None:
+    def add_item(self, item: Item[T]) -> None:
         if item.row is not None:
             if item.width + self._weights[item.row] > 5:
                 raise ValueError(f"Item does not fit on row {item.row}!")
@@ -48,7 +48,7 @@ class _Weights:
                     return
             raise ValueError("Item does not fit on this item handler.")
 
-    def remove_item(self, item: BaseItem[T]) -> None:
+    def remove_item(self, item: Item[T]) -> None:
         if item._rendered_row is not None:
             self._weights[item._rendered_row] -= item.width
             item._rendered_row = None
@@ -58,7 +58,7 @@ class _Weights:
 
 
 # Add Sequence[hikari.api.ActionRowBuilder] here when dropping 3.8 support
-class BaseItemHandler(Sequence, abc.ABC, t.Generic[T]):  # type: ignore[type-arg]
+class ItemHandler(Sequence, abc.ABC, t.Generic[T]):  # type: ignore[type-arg]
     """Abstract base class all item-handlers (e.g. views, modals) inherit from.
 
     Parameters
@@ -85,7 +85,7 @@ class BaseItemHandler(Sequence, abc.ABC, t.Generic[T]):  # type: ignore[type-arg
             timeout = timeout.total_seconds()
 
         self._timeout: t.Optional[float] = float(timeout) if timeout else None
-        self._children: t.List[BaseItem[T]] = []
+        self._children: t.List[Item[T]] = []
         self._autodefer: bool = autodefer
 
         self._weights: _Weights = _Weights()
@@ -125,7 +125,7 @@ class BaseItemHandler(Sequence, abc.ABC, t.Generic[T]):  # type: ignore[type-arg
         return self.build().__reversed__()
 
     @property
-    def children(self) -> t.List[BaseItem[T]]:
+    def children(self) -> t.List[Item[T]]:
         """
         A list of all items attached to the item handler.
         """
@@ -169,7 +169,7 @@ class BaseItemHandler(Sequence, abc.ABC, t.Generic[T]):  # type: ignore[type-arg
         """
         return self._last_context
 
-    def add_item(self, item: BaseItem[T]) -> BaseItemHandler[T]:
+    def add_item(self, item: Item[T]) -> ItemHandler[T]:
         """Adds a new item to the item handler.
 
         Parameters
@@ -197,7 +197,7 @@ class BaseItemHandler(Sequence, abc.ABC, t.Generic[T]):  # type: ignore[type-arg
         if len(self.children) > 25:
             raise ValueError("View cannot have more than 25 components attached.")
 
-        if not isinstance(item, BaseItem):
+        if not isinstance(item, Item):
             raise TypeError(f"Expected Item not {type(item)} for parameter item.")
 
         if item in self.children:
@@ -213,7 +213,7 @@ class BaseItemHandler(Sequence, abc.ABC, t.Generic[T]):  # type: ignore[type-arg
 
         return self
 
-    def remove_item(self, item: BaseItem[T]) -> BaseItemHandler[T]:
+    def remove_item(self, item: Item[T]) -> ItemHandler[T]:
         """Removes the specified item from the item handler.
 
         Parameters
@@ -236,7 +236,7 @@ class BaseItemHandler(Sequence, abc.ABC, t.Generic[T]):  # type: ignore[type-arg
 
         return self
 
-    def clear_items(self) -> BaseItemHandler[T]:
+    def clear_items(self) -> ItemHandler[T]:
         """Removes all items from this item handler.
 
         Returns
@@ -337,7 +337,7 @@ class BaseItemHandler(Sequence, abc.ABC, t.Generic[T]):  # type: ignore[type-arg
         return action_rows
 
 
-class ItemHandler(BaseItemHandler[hikari.impl.ActionRowBuilder]):
+class ViewItemHandler(ItemHandler[hikari.impl.ActionRowBuilder]):
     def build(self) -> t.Sequence[hikari.impl.ActionRowBuilder]:
         """Creates the action rows the item handler represents.
 

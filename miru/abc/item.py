@@ -13,15 +13,15 @@ if t.TYPE_CHECKING:
     from ..context import ViewContext
     from ..modal import Modal
     from ..view import View
-    from .item_handler import BaseItemHandler
+    from .item_handler import ItemHandler
 
 
-__all__ = ["BaseItem", "DecoratedItem", "ViewItem", "ModalItem"]
+__all__ = ["Item", "DecoratedItem", "ViewItem", "ModalItem"]
 
 T = t.TypeVar("T", bound=hikari.api.ComponentBuilder)
 
 
-class BaseItem(abc.ABC, t.Generic[T]):
+class Item(abc.ABC, t.Generic[T]):
     """
     An abstract base class for all components. Cannot be directly instantiated.
     """
@@ -31,7 +31,7 @@ class BaseItem(abc.ABC, t.Generic[T]):
         self._width: int = 1
         self._rendered_row: t.Optional[int] = None  # Where it actually ends up when rendered by Discord
         self._custom_id: t.Optional[str] = None
-        self._handler: t.Optional[BaseItemHandler[T]] = None
+        self._handler: t.Optional[ItemHandler[T]] = None
 
     @property
     def row(self) -> t.Optional[int]:
@@ -89,7 +89,7 @@ class BaseItem(abc.ABC, t.Generic[T]):
         ...
 
 
-class ViewItem(BaseItem[hikari.impl.ActionRowBuilder], abc.ABC):
+class ViewItem(Item[hikari.impl.ActionRowBuilder], abc.ABC):
     """
     An abstract base class for view components. Cannot be directly instantiated.
     """
@@ -159,7 +159,7 @@ class ViewItem(BaseItem[hikari.impl.ActionRowBuilder], abc.ABC):
         pass
 
 
-class ModalItem(BaseItem[hikari.impl.ModalActionRowBuilder], abc.ABC):
+class ModalItem(Item[hikari.impl.ModalActionRowBuilder], abc.ABC):
     """
     An abstract base class for modal components. Cannot be directly instantiated.
     """

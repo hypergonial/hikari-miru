@@ -10,16 +10,16 @@ import typing as t
 
 import hikari
 
-from .abc.item import BaseItem
+from .abc.item import Item
 from .abc.item import ModalItem
-from .abc.item_handler import BaseItemHandler
+from .abc.item_handler import ItemHandler
 from .context.modal import ModalContext
 from .interaction import ModalInteraction
 
 ModalT = t.TypeVar("ModalT", bound="Modal")
 
 
-class Modal(BaseItemHandler[hikari.impl.ModalActionRowBuilder]):
+class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder]):
     """Represents a Discord Modal.
 
     Parameters
@@ -132,7 +132,7 @@ class Modal(BaseItemHandler[hikari.impl.ModalActionRowBuilder]):
         assert isinstance(self._last_context, ModalContext)
         return self._last_context
 
-    def add_item(self, item: BaseItem[hikari.impl.ModalActionRowBuilder]) -> Modal:
+    def add_item(self, item: Item[hikari.impl.ModalActionRowBuilder]) -> Modal:
         """Adds a new item to the modal.
 
         Parameters
@@ -163,7 +163,7 @@ class Modal(BaseItemHandler[hikari.impl.ModalActionRowBuilder]):
 
         return super().add_item(item)  # type: ignore[return-value]
 
-    def remove_item(self, item: BaseItem[hikari.impl.ModalActionRowBuilder]) -> Modal:
+    def remove_item(self, item: Item[hikari.impl.ModalActionRowBuilder]) -> Modal:
         return super().remove_item(item)  # type: ignore[return-value]
 
     def clear_items(self) -> Modal:

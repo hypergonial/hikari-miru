@@ -6,7 +6,7 @@ import typing as t
 
 import hikari
 
-from miru import BaseItem
+from miru import Item
 from miru import interaction
 from miru.context import Context
 from miru.view import View
@@ -129,7 +129,7 @@ class NavigatorView(View):
         """
         return [FirstButton(), PrevButton(), IndicatorButton(), NextButton(), LastButton()]
 
-    def add_item(self, item: BaseItem[hikari.impl.ActionRowBuilder]) -> NavigatorView:
+    def add_item(self, item: Item[hikari.impl.ActionRowBuilder]) -> NavigatorView:
         """Adds a new item to the navigator. Item must be of type NavButton.
 
         Parameters
@@ -152,7 +152,7 @@ class NavigatorView(View):
 
         return super().add_item(item)  # type: ignore[return-value]
 
-    def remove_item(self, item: BaseItem[hikari.impl.ActionRowBuilder]) -> NavigatorView:
+    def remove_item(self, item: Item[hikari.impl.ActionRowBuilder]) -> NavigatorView:
         return super().remove_item(item)  # type: ignore[return-value]
 
     def clear_items(self) -> NavigatorView:
