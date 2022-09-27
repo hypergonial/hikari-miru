@@ -13,7 +13,7 @@ import hikari
 from .abc.item import Item
 from .abc.item import DecoratedItem
 from .abc.item import ViewItem
-from .abc.item_handler import ViewItemHandler
+from .abc.item_handler import ItemHandler
 from .button import Button
 from .context.view import ViewContext
 from .interaction import ComponentInteraction
@@ -22,7 +22,7 @@ from .select import Select
 __all__ = ["View", "get_view"]
 
 
-class View(ViewItemHandler):
+class View(ItemHandler[hikari.impl.ActionRowBuilder]):
     """Represents a set of Discord UI components attached to a message.
 
     Parameters
@@ -147,6 +147,18 @@ class View(ViewItemHandler):
                     view.add_item(Select._from_component(component, row))
 
         return view
+
+    def build(self) -> t.Sequence[hikari.impl.ActionRowBuilder]:
+        """Creates the action rows the item handler represents.
+
+        Returns
+        -------
+        List[hikari.impl.ActionRowBuilder]
+            A list of action rows containing all items attached to this item handler,
+            converted to hikari component objects. If the item handler has no items attached,
+            this returns an empty list.
+        """
+        return self._build_inner(hikari.impl.ActionRowBuilder)
 
     def add_item(self: View, item: Item[hikari.impl.ActionRowBuilder]) -> View:
         """Adds a new item to the view.
