@@ -10,8 +10,8 @@ import typing as t
 
 import hikari
 
-from .abc.item import Item
 from .abc.item import DecoratedItem
+from .abc.item import Item
 from .abc.item import ViewItem
 from .abc.item_handler import ItemHandler
 from .button import Button
