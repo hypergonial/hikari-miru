@@ -19,7 +19,7 @@ from .interaction import ModalInteraction
 ModalT = t.TypeVar("ModalT", bound="Modal")
 
 
-class Modal(ItemHandler):
+class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder]):
     """Represents a Discord Modal.
 
     Parameters
@@ -132,7 +132,11 @@ class Modal(ItemHandler):
         assert isinstance(self._last_context, ModalContext)
         return self._last_context
 
-    def add_item(self, item: Item) -> Modal:
+    @property
+    def _builder(self) -> type[hikari.impl.ModalActionRowBuilder]:
+        return hikari.impl.ModalActionRowBuilder
+
+    def add_item(self, item: Item[hikari.impl.ModalActionRowBuilder]) -> Modal:
         """Adds a new item to the modal.
 
         Parameters
@@ -163,7 +167,7 @@ class Modal(ItemHandler):
 
         return super().add_item(item)  # type: ignore[return-value]
 
-    def remove_item(self, item: Item) -> Modal:
+    def remove_item(self, item: Item[hikari.impl.ModalActionRowBuilder]) -> Modal:
         return super().remove_item(item)  # type: ignore[return-value]
 
     def clear_items(self) -> Modal:
@@ -284,10 +288,10 @@ class Modal(ItemHandler):
             children = {item.custom_id: item for item in self.children if isinstance(item, ModalItem)}
 
             values = {  # Check if any components match the provided custom_ids
-                children[component.custom_id]: component.value  # type: ignore[attr-defined]
+                children[component.custom_id]: component.value
                 for action_row in event.interaction.components
-                for component in action_row.components
-                if children.get(component.custom_id) is not None  # type: ignore[attr-defined]
+                for component in action_row.components  # type: ignore[attr-defined]
+                if children.get(component.custom_id) is not None
             }
             if not values:
                 return
