@@ -132,6 +132,10 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder]):
         assert isinstance(self._last_context, ModalContext)
         return self._last_context
 
+    @property
+    def _builder(self) -> type[hikari.impl.ModalActionRowBuilder]:
+        return hikari.impl.ModalActionRowBuilder
+
     def add_item(self, item: Item[hikari.impl.ModalActionRowBuilder]) -> Modal:
         """Adds a new item to the modal.
 
@@ -333,18 +337,6 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder]):
         """Send this modal as a response to the provided interaction."""
         await interaction.create_modal_response(self.title, self.custom_id, components=self.build())
         await self.start()
-
-    def build(self) -> t.Sequence[hikari.impl.ModalActionRowBuilder]:
-        """Creates the action rows the item handler represents.
-
-        Returns
-        -------
-        List[hikari.impl.ActionRowBuilder]
-            A list of action rows containing all items attached to this item handler,
-            converted to hikari component objects. If the item handler has no items attached,
-            this returns an empty list.
-        """
-        return self._build_inner(hikari.impl.ModalActionRowBuilder)
 
 
 # MIT License

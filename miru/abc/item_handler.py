@@ -169,6 +169,11 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[T]):  # type: ignore[type-arg]
         """
         return self._last_context
 
+    @property
+    @abc.abstractmethod
+    def _builder(self) -> type[T]:
+        ...
+
     def add_item(self, item: Item[T]) -> ItemHandler[T]:
         """Adds a new item to the item handler.
 
@@ -253,6 +258,30 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[T]):  # type: ignore[type-arg]
 
         return self
 
+    def build(self) -> t.Sequence[T]:
+        """Creates the action rows the item handler represents.
+
+        Returns
+        -------
+        List[hikari.impl.ActionRowBuilder]
+            A list of action rows containing all items attached to this item handler,
+            converted to hikari component objects. If the item handler has no items attached,
+            this returns an empty list.
+        """
+        if not self.children:
+            return []
+
+        self.children.sort(key=lambda i: i._rendered_row if i._rendered_row is not None else sys.maxsize)
+
+        action_rows = []
+
+        for row, items in itertools.groupby(self.children, lambda i: i._rendered_row):
+            action_row = self._builder()
+            for item in items:
+                item._build(action_row)
+            action_rows.append(action_row)
+        return action_rows
+
     async def on_timeout(self) -> None:
         """
         Called when the item handler times out. Override for custom timeout logic.
@@ -317,24 +346,6 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[T]):  # type: ignore[type-arg]
             The amount of time to wait, in seconds, by default None
         """
         await asyncio.wait_for(self._stopped.wait(), timeout=timeout)
-
-    def build(self) -> t.Sequence[T]:
-        ...
-
-    def _build_inner(self, builder: type[T]) -> t.Sequence[T]:
-        if not self.children:
-            return []
-
-        self.children.sort(key=lambda i: i._rendered_row if i._rendered_row is not None else sys.maxsize)
-
-        action_rows = []
-
-        for row, items in itertools.groupby(self.children, lambda i: i._rendered_row):
-            action_row = builder()
-            for item in items:
-                item._build(action_row)
-            action_rows.append(action_row)
-        return action_rows
 
 
 # MIT License

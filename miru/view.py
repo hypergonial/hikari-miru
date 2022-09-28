@@ -109,6 +109,10 @@ class View(ItemHandler[hikari.impl.ActionRowBuilder]):
         assert isinstance(self._last_context, ViewContext)
         return self._last_context
 
+    @property
+    def _builder(self) -> type[hikari.impl.ActionRowBuilder]:
+        return hikari.impl.ActionRowBuilder
+
     @classmethod
     def from_message(cls, message: hikari.Message, *, timeout: t.Optional[float] = 120, autodefer: bool = True) -> View:
         """Create a new from the components included in the passed message. Returns an empty view if the message has no components attached.
@@ -147,18 +151,6 @@ class View(ItemHandler[hikari.impl.ActionRowBuilder]):
                     view.add_item(Select._from_component(component, row))
 
         return view
-
-    def build(self) -> t.Sequence[hikari.impl.ActionRowBuilder]:
-        """Creates the action rows the item handler represents.
-
-        Returns
-        -------
-        List[hikari.impl.ActionRowBuilder]
-            A list of action rows containing all items attached to this item handler,
-            converted to hikari component objects. If the item handler has no items attached,
-            this returns an empty list.
-        """
-        return self._build_inner(hikari.impl.ActionRowBuilder)
 
     def add_item(self: View, item: Item[hikari.impl.ActionRowBuilder]) -> View:
         """Adds a new item to the view.
