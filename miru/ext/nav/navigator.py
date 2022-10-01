@@ -172,6 +172,7 @@ class NavigatorView(View):
         else:
             return dict(content=content, embeds=embeds, components=self)
 
+    @property
     def is_persistent(self) -> bool:
         return super().is_persistent and not self.ephemeral
 
@@ -297,6 +298,9 @@ class NavigatorView(View):
                 message = await channel_or_interaction.fetch_initial_response()
             else:
                 message = await channel_or_interaction.execute(**payload)
+
+        if self.is_persistent:
+            return # Do not send the page if persistent
 
         await self.start(message, start_at=start_at)
 
