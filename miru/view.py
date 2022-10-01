@@ -348,7 +348,8 @@ class View(ItemHandler[hikari.impl.ActionRowBuilder]):
 
     def start_listener(self, message: t.Optional[hikari.SnowflakeishOr[hikari.PartialMessage]] = None) -> None:
         """Re-registers a persistent view for listening after an application restart.
-        Specify message_id to create a bound persistent view that can be edited afterwards.
+        Specify message to create a bound persistent view that can be edited afterwards.
+        Note: It is sufficient to pass in an ID of the message here.
 
         Parameters
         ----------
