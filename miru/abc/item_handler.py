@@ -275,7 +275,7 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[T]):  # type: ignore[type-arg]
 
         action_rows = []
 
-        for row, items in itertools.groupby(self.children, lambda i: i._rendered_row):
+        for _, items in itertools.groupby(self.children, lambda i: i._rendered_row):
             action_row = self._builder()
             for item in items:
                 item._build(action_row)
