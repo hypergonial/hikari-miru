@@ -35,11 +35,14 @@ miru.load(bot)
 @bot.listen()
 async def modals(event: hikari.GuildMessageCreateEvent) -> None:
 
-    # Do not process messages from bots or empty messages
-    if event.is_bot or not event.content:
+    # Do not process messages from bots or webhooks
+    if not event.is_human:
         return
 
-    if event.content.startswith("miru"):
+    me = bot.get_me()
+
+    # If the bot is mentioned
+    if me.id in event.message.user_mentions_ids:
         view = ModalView()
         message = await event.message.respond("This button triggers a modal!", components=view)
         await view.start(message)

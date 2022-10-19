@@ -47,11 +47,14 @@ async def startup_views(event: hikari.StartedEvent) -> None:
 @bot.listen()
 async def buttons(event: hikari.GuildMessageCreateEvent) -> None:
 
-    # Do not process messages from bots or empty messages
-    if event.is_bot or not event.content:
+    # Do not process messages from bots or webhooks
+    if not event.is_human:
         return
 
-    if event.content.startswith("miru"):
+    me = bot.get_me()
+
+    # If the bot is mentioned
+    if me.id in event.message.user_mentions_ids:
         view = Persistence()
         await event.message.respond(
             "This is a persistent component menu, and works after bot restarts!",

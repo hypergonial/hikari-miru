@@ -55,11 +55,13 @@ Now we will get an **interaction** through the use of a button so we can send th
     @bot.listen()
     async def modals(event: hikari.GuildMessageCreateEvent) -> None:
 
-        # Do not process messages from bots or empty messages
-        if event.is_bot or not event.content:
+        # Do not process messages from bots or webhooks
+        if not event.is_human:
             return
+        
+        me = bot.get_me()
 
-        if event.content.startswith("miru"):
+        if me.id in event.message.user_mentions_ids:
             view = ModalView()
             message = await event.message.respond(
                 "This button triggers a modal!", components=view

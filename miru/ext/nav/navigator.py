@@ -300,7 +300,7 @@ class NavigatorView(View):
                 message = await channel_or_interaction.execute(**payload)
 
         if self.is_persistent:
-            return # Do not send the page if persistent
+            return  # Do not send the page if persistent
 
         await self.start(message, start_at=start_at)
 

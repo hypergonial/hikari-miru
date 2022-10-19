@@ -54,31 +54,27 @@ This is what a basic component menu looks like with miru:
     # This function must be called on startup, otherwise you cannot instantiate views
 
 
-    @bot.listen() # Create a hikari message listener
+    @bot.listen()
     async def buttons(event: hikari.GuildMessageCreateEvent) -> None:
 
-        # Do not process messages from bots or empty messages
-        if event.is_bot or not event.content:
+        # Ignore bots or webhooks pinging us
+        if not event.is_human:
             return
 
-        if event.content.startswith("miru"):
-            view = BasicView()  # Create an instance of our newly created BasicView
-            # Attach the components defined in the view to our message
-            message = await event.message.respond(
-                "This is a basic component menu built with miru!", components=view
-            )
+        me = bot.get_me()
 
+        # If the bot is mentioned
+        if me.id in event.message.user_mentions_ids:
+            view = MyView(timeout=60)  # Create a new view
+            message = await event.message.respond("Rock Paper Scissors!", components=view)
             await view.start(message)  # Start listening for interactions
+            await view.wait() # Wait until the view times out or gets stopped
+            await event.message.respond("Thank you for playing!")
 
-            await view.wait()  # Wait until the view is stopped or times out
-
-            print("View stopped or timed out!")
-
-
-    bot.run() # Run the bot
+    bot.run()
 
 If you run this code, you should see some basic logging information, and your bot will be online!
-Typing ``miru`` in any channel should make the bot send the component menu defined above!
+Mentioning the bot in any channel should make the bot send the component menu defined above!
 
 Subclassing
 -----------
@@ -127,10 +123,12 @@ Below you can see such an example:
     @bot.listen()
     async def buttons(event: hikari.GuildMessageCreateEvent) -> None:
 
-        if event.is_bot or not event.content:
+        if not event.is_human:
             return
+        
+        me = bot.get_me()
 
-        if event.content.startswith("miru"):
+        if me.id in event.message.user_mentions_ids:
             view = miru.View()  # Create a new view
             view.add_item(YesButton())  # Add our custom buttons to it
             view.add_item(NoButton(style=hikari.ButtonStyle.DANGER, label="No"))  # Pass arguments to NoButton
@@ -148,6 +146,6 @@ Below you can see such an example:
 
     bot.run()
 
-Running this code and typing ``miru`` in a channel the bot can see should similarly yield a component menu.
+Running this code and mentioning the bot in a channel it can see should similarly yield a component menu.
 The benefits of this approach are that you can define custom methods for your individual components,
 and create template items for re-use later, reducing the need to paste the same code over and over again.

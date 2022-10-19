@@ -56,11 +56,12 @@ as unbound views have no concept of what message they are attached to.
     @bot.listen()
     async def buttons(event: hikari.GuildMessageCreateEvent) -> None:
 
-        # Do not process messages from bots or empty messages
-        if event.is_bot or not event.content:
+        if not event.is_human:
             return
 
-        if event.content.startswith("miru"):
+        me = bot.get_me()
+
+        if me.id in event.message.user_mentions_ids:
             view = Persistence()
             message = await event.message.respond(
                 "This is a persistent view, and works after bot restarts!",
@@ -123,17 +124,18 @@ simply pass a message ID to ``start_listener()``. This also allows for the view 
     @bot.listen()
     async def buttons(event: hikari.GuildMessageCreateEvent) -> None:
 
-        # Do not process messages from bots or empty messages
-        if event.is_bot or not event.content:
+        if not event.is_human:
             return
 
-        if event.content.startswith("miru"):
+        me = bot.get_me()
+
+        if me.id in event.message.user_mentions_ids:
             view = Persistence()
             message = await event.message.respond(
                 "This is a persistent component menu, and works after bot restarts!",
                 components=view,
             )
-            # Bound persistent views need to be started for every message.
+            # Bound persistent views however need to be started for every message.
             await view.start(message)
 
 
