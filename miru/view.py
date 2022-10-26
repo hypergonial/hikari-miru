@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import copy
 import datetime
+import hashlib
 import inspect
 import sys
 import traceback
@@ -296,17 +297,15 @@ class View(ItemHandler):
                     # Create task here to ensure autodefer works even if callback stops view
                     self._create_task(self._handle_callback(item, context))
 
-    async def _listen_for_events(self, message_id: t.Optional[int] = None) -> None:
-        """
-        Listen for incoming interaction events through the gateway.
-        """
-
     async def _handle_timeout(self) -> None:
         """
         Handle the timing out of the view.
         """
         if self._message_id:
             View._views.pop(self._message_id, None)
+        else:
+            for item in self._children:
+                View._views.pop(item.custom_id, None)
 
         await super()._handle_timeout()
 
@@ -341,16 +340,19 @@ class View(ItemHandler):
 
         message_id = hikari.Snowflake(message) if message else None
 
+        def set_id(id):
+            # Handle replacement of bound views on message edit
+            if id in View._views.keys():
+                View._views[id].stop()
+
+            View._views[id] = self
+
         if message_id:
             self._message_id = message_id
-
-            # Handle replacement of bound views on message edit
-            if message_id in View._views.keys():
-                View._views[message_id].stop()
-
-            View._views[message_id] = self
-
-        self._listener_task = self._create_task(self._listen_for_events(message_id))
+            set_id(message_id)
+        else:
+            for item in self._children:
+                set_id(item.custom_id)
 
     async def start(self, message: t.Union[hikari.Message, t.Awaitable[hikari.Message]]) -> None:
         """Start up the view and begin listening for interactions.
@@ -380,7 +382,6 @@ class View(ItemHandler):
 
         self._message = message
         self._message_id = message.id
-        self._listener_task = self._create_task(self._listen_for_events(message.id))
 
         # Handle replacement of view on message edit
         if message.id in View._views.keys():

@@ -12,7 +12,10 @@ async def on_inter(event: hikari.InteractionCreateEvent) -> None:
     if not event.interaction.message:
         return
 
-    view_ = View._views.get(event.interaction.message.id)
+    view_ = (
+        View._views.get(event.interaction.message.id)
+        or View._views.get(event.interaction.custom_id)
+    )
     if not view_:
         return
 
