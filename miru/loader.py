@@ -1,13 +1,15 @@
-import typing
+import functools
+import typing as t
+
+import hikari
 
 from .abc.item_handler import ItemHandler
-from .events import _EventListener
+from .events import on_inter
 from .traits import MiruAware
 from .view import View
+from .context import base
 
 __all__ = ["load", "unload"]
-
-_event_listener: typing.Optional[_EventListener] = None
 
 
 def load(bot: MiruAware) -> None:
@@ -34,8 +36,7 @@ def load(bot: MiruAware) -> None:
         raise TypeError(f"Expected type with trait ViewsAware for parameter bot, not {type(bot)}")
 
     ItemHandler._app = bot
-    _event_listener = _EventListener()
-    _event_listener.start_listeners(bot)
+    bot.event_manager.subscribe(hikari.InteractionCreateEvent, on_inter)
 
 
 def unload() -> None:
@@ -49,9 +50,8 @@ def unload() -> None:
         view.stop()
 
     ItemHandler._app = None
-    if _event_listener:
-        _event_listener.stop_listeners()
-
+    if View._app:
+        View._app.event_manager.unsubscribe(hikari.InteractionCreateEvent, on_inter)
 
 # MIT License
 #

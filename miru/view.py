@@ -301,28 +301,6 @@ class View(ItemHandler):
         Listen for incoming interaction events through the gateway.
         """
 
-        if message_id:
-            predicate = (
-                lambda e: isinstance(e.interaction, hikari.ComponentInteraction)
-                and e.interaction.message.id == message_id
-            )
-        else:
-            predicate = lambda e: isinstance(e.interaction, hikari.ComponentInteraction)
-
-        while True:
-            try:
-                event = await self.app.event_manager.wait_for(
-                    hikari.InteractionCreateEvent,
-                    timeout=self.timeout,
-                    predicate=predicate,
-                )
-            except asyncio.TimeoutError:
-                # Handle timeouts, stop listening
-                await self._handle_timeout()
-
-            else:
-                await self._process_interactions(event)
-
     async def _handle_timeout(self) -> None:
         """
         Handle the timing out of the view.
