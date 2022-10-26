@@ -10,9 +10,9 @@ class BasicView(miru.View):
 
     # Define a new Select menu with two options
     @miru.select(
-        placeholder="Select me!", 
+        placeholder="Select me!",
         options=[
-            miru.SelectOption(label="Option 1"), 
+            miru.SelectOption(label="Option 1"),
             miru.SelectOption(label="Option 2"),
         ],
     )
@@ -31,22 +31,23 @@ class BasicView(miru.View):
 
 
 bot = hikari.GatewayBot("...")
-miru.load(bot) # Start miru
+miru.load(bot)  # Start miru
 
 
 @bot.listen()
 async def buttons(event: hikari.GuildMessageCreateEvent) -> None:
 
-    # Do not process messages from bots or empty messages
-    if event.is_bot or not event.content:
+    # Do not process messages from bots or webhooks
+    if not event.is_human:
         return
 
-    if event.content.startswith("miru"):
+    me = bot.get_me()
+
+    # If the bot is mentioned
+    if me.id in event.message.user_mentions_ids:
         view = BasicView()  # Create an instance of our newly created BasicView
         # Attach the components defined in the view to our message
-        message = await event.message.respond(
-            "This is a basic component menu built with miru!", components=view
-        )
+        message = await event.message.respond("This is a basic component menu built with miru!", components=view)
 
         await view.start(message)  # Start listening for interactions
 

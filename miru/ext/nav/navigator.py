@@ -129,7 +129,7 @@ class NavigatorView(View):
         """
         return [FirstButton(), PrevButton(), IndicatorButton(), NextButton(), LastButton()]
 
-    def add_item(self, item: Item) -> NavigatorView:
+    def add_item(self, item: Item[hikari.impl.ActionRowBuilder]) -> NavigatorView:
         """Adds a new item to the navigator. Item must be of type NavButton.
 
         Parameters
@@ -152,7 +152,7 @@ class NavigatorView(View):
 
         return super().add_item(item)  # type: ignore[return-value]
 
-    def remove_item(self, item: Item) -> NavigatorView:
+    def remove_item(self, item: Item[hikari.impl.ActionRowBuilder]) -> NavigatorView:
         return super().remove_item(item)  # type: ignore[return-value]
 
     def clear_items(self) -> NavigatorView:
@@ -171,6 +171,10 @@ class NavigatorView(View):
             return dict(content=content, embeds=embeds, components=self, flags=hikari.MessageFlag.EPHEMERAL)
         else:
             return dict(content=content, embeds=embeds, components=self)
+
+    @property
+    def is_persistent(self) -> bool:
+        return super().is_persistent and not self.ephemeral
 
     async def send_page(self, context: Context[t.Any], page_index: t.Optional[int] = None) -> None:
         """Send a page, editing the original message.
@@ -207,21 +211,49 @@ class NavigatorView(View):
                 context.interaction.id, context.interaction.token, hikari.ResponseType.MESSAGE_UPDATE, **payload
             )
 
-    async def start(self, message: t.Union[hikari.Message, t.Awaitable[hikari.Message]]) -> None:
+    async def start(self, message: t.Union[hikari.Message, t.Awaitable[hikari.Message]], *, start_at: int = 0) -> None:
         """Start up the navigator listener. This should not be called directly, use send() instead.
 
         Parameters
         ----------
         message : Union[hikari.Message, Awaitable[hikari.Message]]
             The message this view was built for.
+        start_at : int, optional
+            The page index to start at, by default 0
         """
         await super().start(message)
+        self.current_page = start_at
+
+    def start_listener(
+        self, message: t.Optional[hikari.SnowflakeishOr[hikari.PartialMessage]] = None, *, start_at: int = 0
+    ) -> None:
+        """Re-registers a persistent view for listening after an application restart.
+        Specify message to create a bound persistent view that can be edited afterwards.
+        Note: It is sufficient to pass in an ID of the message here.
+
+        Parameters
+        ----------
+        message: Optional[hikari.SnowflakeishOr[hikari.PartialMessage]], optional
+            If provided, the persistent view will be bound to this message, and if the
+            message is edited with a new view, that will be taken into account.
+            Unbound views do not support message editing with additional views.
+        start_at : int, optional
+            The page index to start at, by default 0
+
+        Raises
+        ------
+        ValueError
+            The view is not persistent.
+        """
+        super().start_listener(message)
+        self.current_page = start_at
 
     async def send(
         self,
         channel_or_interaction: t.Union[
             hikari.SnowflakeishOr[hikari.TextableChannel], hikari.MessageResponseMixin[t.Any]
         ],
+        *,
         start_at: int = 0,
         ephemeral: bool = False,
         responded: bool = False,
@@ -239,7 +271,6 @@ class NavigatorView(View):
         responded : bool
             If an interaction was provided, determines if the interaction was previously acknowledged or not.
         """
-        self.current_page = start_at
         self._ephemeral = ephemeral if isinstance(channel_or_interaction, hikari.MessageResponseMixin) else False
         self._using_inter = isinstance(channel_or_interaction, hikari.MessageResponseMixin)
 
@@ -252,7 +283,7 @@ class NavigatorView(View):
                 f"Using a timeout value longer than 900 seconds (Used {self.timeout}) in ephemeral navigator {self.__class__.__name__} may cause on_timeout to fail."
             )
 
-        payload = self._get_page_payload(self.pages[0])
+        payload = self._get_page_payload(self.pages[start_at])
 
         if isinstance(channel_or_interaction, (int, hikari.TextableChannel)):
             channel = hikari.Snowflake(channel_or_interaction)
@@ -268,7 +299,10 @@ class NavigatorView(View):
             else:
                 message = await channel_or_interaction.execute(**payload)
 
-        await self.start(message)
+        if self.is_persistent:
+            return  # Do not send the page if persistent
+
+        await self.start(message, start_at=start_at)
 
 
 # MIT License

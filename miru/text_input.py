@@ -78,8 +78,8 @@ class TextInput(ModalItem):
             raise ValueError("Parameter value does not meet maximum length requirement.")
 
     @property
-    def type(self) -> hikari.ComponentType:
-        return hikari.ComponentType.TEXT_INPUT
+    def type(self) -> hikari.ModalComponentType:
+        return hikari.ModalComponentType.TEXT_INPUT
 
     @property
     def style(self) -> t.Union[hikari.TextInputStyle, int]:
@@ -163,8 +163,7 @@ class TextInput(ModalItem):
                 raise ValueError("New maximum length constraint does not satisfy pre-filled value.")
         self._max_length = value
 
-    def _build(self, action_row: hikari.api.ActionRowBuilder) -> None:
-
+    def _build(self, action_row: hikari.api.ModalActionRowBuilder) -> None:
         assert self.custom_id is not None
         text_input = action_row.add_text_input(custom_id=self.custom_id, label=self.label)
 
