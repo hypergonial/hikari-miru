@@ -43,6 +43,8 @@ async def on_inter(event: hikari.InteractionCreateEvent) -> None:
     if not event.interaction.message:
         return
 
+    # `custom_id` must be fetched first. When an interaction has a `message_id`
+    # and a `custom_id`, `custom_id` takes priority.
     item_handler = _events.get(event.interaction.custom_id) or _events.get(event.interaction.message.id)
     if not item_handler:
         return

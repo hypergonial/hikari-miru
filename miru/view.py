@@ -366,7 +366,6 @@ def get_view(message: hikari.SnowflakeishOr[hikari.PartialMessage]) -> t.Optiona
     RuntimeError
         miru was not loaded before this call.
     """
-    # FIX
     if View._app is None:
         raise RuntimeError("miru is not yet loaded! Please call miru.load() first.")
 
