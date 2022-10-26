@@ -18,6 +18,7 @@ from .items import NavButton
 from .items import NavItem
 from .items import NextButton
 from .items import PrevButton
+from ...listen import _events
 
 logger = logging.getLogger(__name__)
 
@@ -245,7 +246,9 @@ class NavigatorView(View):
         ValueError
             The view is not persistent.
         """
-        super().start_listener(message)
+        if message:
+            _events.subscribe(self, hikari.Snowflake(message))
+        super().start_listener()
         self.current_page = start_at
 
     async def send(
