@@ -1,9 +1,34 @@
 from __future__ import annotations
 
 import hikari
+import typing as t
 
-from .view import View
+if t.TYPE_CHECKING:
+    from .abc import item
 
+
+class EventManager:
+    def __init__(self) -> None:
+        self.reg: dict[str, item.ItemHandler] = {}
+        self.item_handlers: dict[item.ItemHandler, list[str]] = {}
+
+    def add(self, item_handler: item.ItemHandler, *custom_ids: str):
+        for custom_id in custom_ids:
+            if handler := self.reg.get(custom_id):
+                handler.stop()
+            self.reg[custom_id] = item_handler
+
+        self.item_handlers[item_handler] = custom_ids
+
+    def pop(self, item_handler: item.ItemHandler):
+        for custom_id in self.item_handlers[item_handler]:
+            self.reg.pop(custom_id, None)
+        self.item_handlers.pop(item_handler)
+
+    def get(self, custom_id)  -> item.ItemHandler | None:
+        return self.reg.get(custom_id)
+
+_events = EventManager()
 
 async def on_inter(event: hikari.InteractionCreateEvent) -> None:
     if not isinstance(event.interaction, (hikari.ComponentInteraction, hikari.ModalInteraction)):
@@ -12,14 +37,14 @@ async def on_inter(event: hikari.InteractionCreateEvent) -> None:
     if not event.interaction.message:
         return
 
-    view_ = (
-        View._views.get(event.interaction.message.id)
-        or View._views.get(event.interaction.custom_id)
+    item_handler = (
+        _events.get(event.interaction.custom_id)
+        or _events.get(event.interaction.message.id)
     )
-    if not view_:
+    if not item_handler:
         return
 
-    await view_._process_interactions(event)
+    await item_handler._process_interactions(event)
 
 
 # MIT License

@@ -11,6 +11,7 @@ from collections.abc import Sequence
 import hikari
 
 from ..traits import MiruAware
+from ..events import _events
 from .item import Item
 
 if t.TYPE_CHECKING:
@@ -286,12 +287,7 @@ class ItemHandler(Sequence, abc.ABC):  # type: ignore[type-arg]
         """
         Stop listening for interactions.
         """
-        self._stopped.set()
-
-        if self._listener_task is not None:
-            self._listener_task.cancel()
-
-        self._listener_task = None
+        _events.pop(self)
 
     @abc.abstractmethod
     async def _process_interactions(self, event: hikari.InteractionCreateEvent) -> None:

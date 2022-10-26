@@ -15,6 +15,7 @@ from .abc.item import ModalItem
 from .abc.item_handler import ItemHandler
 from .context.modal import ModalContext
 from .interaction import ModalInteraction
+from .events import _events
 
 ModalT = t.TypeVar("ModalT", bound="Modal")
 
@@ -306,34 +307,14 @@ class Modal(ItemHandler):
             # Create task here to ensure autodefer works even if callback stops view
             self._create_task(self._handle_callback(context))
 
-    async def _listen_for_events(self) -> None:
-        """
-        Listen for incoming interaction events through the gateway.
-        """
-
-        predicate = (
-            lambda e: isinstance(e.interaction, hikari.ModalInteraction) and e.interaction.custom_id == self.custom_id
-        )
-        try:
-            event = await self.app.event_manager.wait_for(
-                hikari.InteractionCreateEvent,
-                timeout=self._timeout,
-                predicate=predicate,
-            )
-        except asyncio.TimeoutError:
-            await self._handle_timeout()
-        else:
-            await self._process_interactions(event)
-
     async def start(self) -> None:
         """Start up the modal and begin listening for interactions."""
-        self._listener_task = self._create_task(self._listen_for_events())
+        _events.add(self, self.custom_id)
 
     async def send(self, interaction: hikari.ModalResponseMixin) -> None:
         """Send this modal as a response to the provided interaction."""
         await interaction.create_modal_response(self.title, self.custom_id, components=self.build())
         await self.start()
-
 
 # MIT License
 #

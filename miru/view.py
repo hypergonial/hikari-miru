@@ -19,6 +19,7 @@ from .button import Button
 from .context.view import ViewContext
 from .interaction import ComponentInteraction
 from .select import Select
+from .events import _events
 
 __all__ = ["View", "get_view"]
 
@@ -42,10 +43,6 @@ class View(ItemHandler):
     """
 
     _view_children: t.Sequence[DecoratedItem] = []  # Decorated callbacks that need to be turned into items
-    # Mapping of message_id: View
-    _views: t.MutableMapping[
-        int, View
-    ] = {}  # List of all currently active BOUND views, unbound persistent are not listed here
 
     def __init_subclass__(cls) -> None:
         """
@@ -227,15 +224,6 @@ class View(ItemHandler):
 
         traceback.print_exception(error.__class__, error, error.__traceback__, file=sys.stderr)
 
-    def stop(self) -> None:
-        """
-        Stop listening for interactions.
-        """
-        if self._message_id:
-            View._views.pop(self._message_id, None)
-
-        super().stop()
-
     def get_context(self, interaction: ComponentInteraction, *, cls: t.Type[ViewContext] = ViewContext) -> ViewContext:
         """
         Get the context for this view. Override this function to provide a custom context object.
@@ -319,7 +307,7 @@ class View(ItemHandler):
         """
         await asyncio.wait_for(self._inputted.wait(), timeout=timeout)
 
-    def start_listener(self, message: t.Optional[hikari.SnowflakeishOr[hikari.PartialMessage]] = None) -> None:
+    def start_listener(self) -> None:
         """Re-registers a persistent view for listening after an application restart.
         Specify message_id to create a bound persistent view that can be edited afterwards.
 
@@ -338,21 +326,7 @@ class View(ItemHandler):
         if not self.is_persistent:
             raise ValueError("This can only be used on persistent views.")
 
-        message_id = hikari.Snowflake(message) if message else None
-
-        def set_id(id):
-            # Handle replacement of bound views on message edit
-            if id in View._views.keys():
-                View._views[id].stop()
-
-            View._views[id] = self
-
-        if message_id:
-            self._message_id = message_id
-            set_id(message_id)
-        else:
-            for item in self._children:
-                set_id(item.custom_id)
+        _events.add(self, *[item.custom_id for item in self._children])
 
     async def start(self, message: t.Union[hikari.Message, t.Awaitable[hikari.Message]]) -> None:
         """Start up the view and begin listening for interactions.
@@ -383,11 +357,7 @@ class View(ItemHandler):
         self._message = message
         self._message_id = message.id
 
-        # Handle replacement of view on message edit
-        if message.id in View._views.keys():
-            View._views[message.id].stop()
-
-        View._views[message.id] = self
+        _events.add(self, self._message_id)
 
 
 def get_view(message: hikari.SnowflakeishOr[hikari.PartialMessage]) -> t.Optional[View]:
@@ -408,7 +378,7 @@ def get_view(message: hikari.SnowflakeishOr[hikari.PartialMessage]) -> t.Optiona
     RuntimeError
         miru was not loaded before this call.
     """
-
+    # FIX
     if View._app is None:
         raise RuntimeError("miru is not yet loaded! Please call miru.load() first.")
 
