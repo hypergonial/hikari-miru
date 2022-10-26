@@ -248,8 +248,8 @@ class NavigatorView(View):
         """
         if message:
             _events.subscribe(self, hikari.Snowflake(message))
-        super().start_listener()
         self.current_page = start_at
+        super().start_listener()
 
     async def send(
         self,
