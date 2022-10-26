@@ -9,10 +9,10 @@ if t.TYPE_CHECKING:
 
 class EventManager:
     def __init__(self) -> None:
-        self.reg: dict[str, item.ItemHandler] = {}
-        self.item_handlers: dict[item.ItemHandler, list[str]] = {}
+        self.reg: dict[str, item.ItemHandler[t.Any]] = {}
+        self.item_handlers: dict[item.ItemHandler[t.Any], list[str]] = {}
 
-    def add(self, item_handler: item.ItemHandler, *custom_ids: str):
+    def add(self, item_handler: item.ItemHandler[t.Any], *custom_ids: str):
         for custom_id in custom_ids:
             if handler := self.reg.get(custom_id):
                 handler.stop()
@@ -20,12 +20,12 @@ class EventManager:
 
         self.item_handlers[item_handler] = custom_ids
 
-    def pop(self, item_handler: item.ItemHandler):
+    def pop(self, item_handler: item.ItemHandler[t.Any]):
         for custom_id in self.item_handlers[item_handler]:
             self.reg.pop(custom_id, None)
         self.item_handlers.pop(item_handler)
 
-    def get(self, custom_id)  -> item.ItemHandler | None:
+    def get(self, custom_id)  -> item.ItemHandler[t.Any] | None:
         return self.reg.get(custom_id)
 
 _events = EventManager()
