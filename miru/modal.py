@@ -15,7 +15,7 @@ from .abc.item import ModalItem
 from .abc.item_handler import ItemHandler
 from .context.modal import ModalContext
 from .interaction import ModalInteraction
-from .events import _events
+from .listen import _events
 
 ModalT = t.TypeVar("ModalT", bound="Modal")
 

@@ -11,7 +11,7 @@ from collections.abc import Sequence
 import hikari
 
 from ..traits import MiruAware
-from ..events import _events
+from ..listen import _events
 from .item import Item
 
 if t.TYPE_CHECKING:

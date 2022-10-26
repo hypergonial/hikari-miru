@@ -19,7 +19,7 @@ from .button import Button
 from .context.view import ViewContext
 from .interaction import ComponentInteraction
 from .select import Select
-from .events import _events
+from .listen import _events
 
 __all__ = ["View", "get_view"]
 

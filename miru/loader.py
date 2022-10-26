@@ -4,11 +4,11 @@ import typing as t
 import hikari
 
 from .abc.item_handler import ItemHandler
-from .events import on_inter
+from .listen import on_inter
 from .traits import MiruAware
 from .view import View
 from .context import base
-from .events import _events
+from .listen import _events
 
 __all__ = ["load", "unload"]
 
