@@ -285,18 +285,6 @@ class View(ItemHandler):
                     # Create task here to ensure autodefer works even if callback stops view
                     self._create_task(self._handle_callback(item, context))
 
-    async def _handle_timeout(self) -> None:
-        """
-        Handle the timing out of the view.
-        """
-        if self._message_id:
-            View._views.pop(self._message_id, None)
-        else:
-            for item in self._children:
-                View._views.pop(item.custom_id, None)
-
-        await super()._handle_timeout()
-
     async def wait_for_input(self, timeout: t.Optional[float] = None) -> None:
         """Wait for any input to be received.
 
@@ -326,7 +314,7 @@ class View(ItemHandler):
         if not self.is_persistent:
             raise ValueError("This can only be used on persistent views.")
 
-        _events.add(self, *[item.custom_id for item in self._children])
+        _events.subscribe(self, *[item.custom_id for item in self._children])
 
     async def start(self, message: t.Union[hikari.Message, t.Awaitable[hikari.Message]]) -> None:
         """Start up the view and begin listening for interactions.
@@ -357,7 +345,7 @@ class View(ItemHandler):
         self._message = message
         self._message_id = message.id
 
-        _events.add(self, self._message_id)
+        _events.subscribe(self, self._message_id)
 
 
 def get_view(message: hikari.SnowflakeishOr[hikari.PartialMessage]) -> t.Optional[View]:
@@ -384,10 +372,10 @@ def get_view(message: hikari.SnowflakeishOr[hikari.PartialMessage]) -> t.Optiona
 
     message_id = hikari.Snowflake(message)
 
-    if view := View._views.get(int(message_id)):
-        return view
-
-    return None
+    inst = _events.get(message_id)
+    if not isinstance(inst, View):
+        return None
+    return inst
 
 
 # MIT License

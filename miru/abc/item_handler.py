@@ -28,7 +28,6 @@ class _Weights:
     __slots__ = ("_weights",)
 
     def __init__(self) -> None:
-
         self._weights = [0, 0, 0, 0, 0]
 
     def add_item(self, item: Item) -> None:
@@ -85,11 +84,10 @@ class ItemHandler(Sequence, abc.ABC):  # type: ignore[type-arg]
         self._timeout: t.Optional[float] = float(timeout) if timeout else None
         self._children: t.List[Item] = []
         self._autodefer: bool = autodefer
+        self._running_tasks: list[asyncio.Task[None]] = []
 
         self._weights: _Weights = _Weights()
         self._stopped: asyncio.Event = asyncio.Event()
-        self._listener_task: t.Optional[asyncio.Task[None]] = None
-        self._running_tasks: t.MutableSequence[asyncio.Task[t.Any]] = []
         self._last_context: t.Optional[Context[t.Any]] = None
 
         if len(self.children) > 25:
@@ -287,7 +285,8 @@ class ItemHandler(Sequence, abc.ABC):  # type: ignore[type-arg]
         """
         Stop listening for interactions.
         """
-        _events.pop(self)
+        _events.unsubscribe(self)
+        self._stopped.set()
 
     @abc.abstractmethod
     async def _process_interactions(self, event: hikari.InteractionCreateEvent) -> None:
@@ -305,12 +304,7 @@ class ItemHandler(Sequence, abc.ABC):  # type: ignore[type-arg]
             if on_error := getattr(self, "on_error", None):
                 await on_error(error)
 
-        self._stopped.set()
-
-        if self._listener_task is not None:
-            self._listener_task.cancel()
-
-        self._listener_task = None
+        self.stop()
 
     def _create_task(self, coro: t.Awaitable[t.Any], *, name: t.Optional[str] = None) -> asyncio.Task[t.Any]:
         """

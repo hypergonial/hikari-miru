@@ -1,4 +1,5 @@
 from __future__ import annotations
+import collections
 
 import hikari
 import typing as t
@@ -9,10 +10,10 @@ if t.TYPE_CHECKING:
 
 class EventManager:
     def __init__(self) -> None:
-        self.reg: dict[str, item.ItemHandler[t.Any]] = {}
-        self.item_handlers: dict[item.ItemHandler[t.Any], list[str]] = {}
+        self.reg: dict[t.Any, item.ItemHandler[t.Any]] = {}
+        self.item_handlers: dict[item.ItemHandler[t.Any], t.Sequence[t.Any]] = {}
 
-    def add(self, item_handler: item.ItemHandler[t.Any], *custom_ids: str):
+    def subscribe(self, item_handler: item.ItemHandler[t.Any], *custom_ids: t.Any) -> None:
         for custom_id in custom_ids:
             if handler := self.reg.get(custom_id):
                 handler.stop()
@@ -20,15 +21,20 @@ class EventManager:
 
         self.item_handlers[item_handler] = custom_ids
 
-    def pop(self, item_handler: item.ItemHandler[t.Any]):
+    def unsubscribe(self, item_handler: item.ItemHandler[t.Any]) -> None:
         for custom_id in self.item_handlers[item_handler]:
             self.reg.pop(custom_id, None)
         self.item_handlers.pop(item_handler)
 
-    def get(self, custom_id)  -> item.ItemHandler[t.Any] | None:
+    def get(self, custom_id: t.Any) -> item.ItemHandler[t.Any] | None:
         return self.reg.get(custom_id)
 
+    def values(self) -> t.Iterator[item.ItemHandler[t.Any]]:
+        return self.item_handlers.values()  # type: ignore
+
+
 _events = EventManager()
+
 
 async def on_inter(event: hikari.InteractionCreateEvent) -> None:
     if not isinstance(event.interaction, (hikari.ComponentInteraction, hikari.ModalInteraction)):
@@ -37,10 +43,7 @@ async def on_inter(event: hikari.InteractionCreateEvent) -> None:
     if not event.interaction.message:
         return
 
-    item_handler = (
-        _events.get(event.interaction.custom_id)
-        or _events.get(event.interaction.message.id)
-    )
+    item_handler = _events.get(event.interaction.custom_id) or _events.get(event.interaction.message.id)
     if not item_handler:
         return
 

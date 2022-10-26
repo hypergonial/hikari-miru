@@ -8,6 +8,7 @@ from .events import on_inter
 from .traits import MiruAware
 from .view import View
 from .context import base
+from .events import _events
 
 __all__ = ["load", "unload"]
 
@@ -46,12 +47,13 @@ def unload() -> None:
     .. warning::
         Unbound persistent views should be stopped manually.
     """
-    for view in View._views.values():
+    for view in _events.values():
         view.stop()
 
     ItemHandler._app = None
     if View._app:
         View._app.event_manager.unsubscribe(hikari.InteractionCreateEvent, on_inter)
+
 
 # MIT License
 #

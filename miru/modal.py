@@ -309,12 +309,13 @@ class Modal(ItemHandler):
 
     async def start(self) -> None:
         """Start up the modal and begin listening for interactions."""
-        _events.add(self, self.custom_id)
+        _events.subscribe(self, self.custom_id)
 
     async def send(self, interaction: hikari.ModalResponseMixin) -> None:
         """Send this modal as a response to the provided interaction."""
         await interaction.create_modal_response(self.title, self.custom_id, components=self.build())
         await self.start()
+
 
 # MIT License
 #
