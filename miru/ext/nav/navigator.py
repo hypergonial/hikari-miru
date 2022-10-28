@@ -106,7 +106,7 @@ class NavigatorView(View):
         return self._ephemeral
 
     async def on_timeout(self) -> None:
-        if self.message is None:
+        if (self.message is None) or (self._using_inter and self._inter is None):
             return
 
         for button in self.children:
@@ -134,7 +134,7 @@ class NavigatorView(View):
         Parameters
         ----------
         item : Item[NavigatorViewT]
-            An instance of NavButton
+            An instance of NavItem
 
         Raises
         ------
@@ -167,9 +167,15 @@ class NavigatorView(View):
             raise TypeError("Expected type str or hikari.Embed to send as page.")
 
         if self.ephemeral:
-            return dict(content=content, embeds=embeds, components=self, flags=hikari.MessageFlag.EPHEMERAL)
+            return dict(
+                content=content,
+                embeds=embeds,
+                components=self,
+                flags=hikari.MessageFlag.EPHEMERAL,
+                replace_attachments=self._replace_attachments,
+            )
         else:
-            return dict(content=content, embeds=embeds, components=self)
+            return dict(content=content, embeds=embeds, components=self, replace_attachments=self._replace_attachments)
 
     @property
     def is_persistent(self) -> bool:
@@ -195,56 +201,33 @@ class NavigatorView(View):
                 await button.before_page_change()
 
         payload = self._get_page_payload(page)
-        if self._replace_attachments:
-            payload["replace_attachments"] = True
 
         self._inter = context.interaction  # Update latest inter
 
-        # TODO: Remove this when hikari gets fixed upstream
-        if context.interaction._issued_response:
-            await context.app.rest.edit_webhook_message(
-                context.interaction.webhook_id, context.interaction.token, **payload
-            )
-        else:
-            await context.app.rest.create_interaction_response(
-                context.interaction.id, context.interaction.token, hikari.ResponseType.MESSAGE_UPDATE, **payload
-            )
+        await context.edit_response(**payload)
 
-    async def start(self, message: t.Union[hikari.Message, t.Awaitable[hikari.Message]], *, start_at: int = 0) -> None:
+    async def start(
+        self,
+        message: t.Optional[
+            t.Union[
+                hikari.SnowflakeishOr[hikari.PartialMessage], t.Awaitable[hikari.SnowflakeishOr[hikari.PartialMessage]]
+            ]
+        ] = None,
+        *,
+        start_at: int = 0,
+    ) -> None:
         """Start up the navigator listener. This should not be called directly, use send() instead.
 
         Parameters
         ----------
         message : Union[hikari.Message, Awaitable[hikari.Message]]
-            The message this view was built for.
+            If provided, the view will be bound to this message, and if the
+            message is edited with a new view, this view will be stopped.
+            Unbound views do not support message editing with additional views.
         start_at : int, optional
             The page index to start at, by default 0
         """
         await super().start(message)
-        self.current_page = start_at
-
-    def start_listener(
-        self, message: t.Optional[hikari.SnowflakeishOr[hikari.PartialMessage]] = None, *, start_at: int = 0
-    ) -> None:
-        """Re-registers a persistent view for listening after an application restart.
-        Specify message to create a bound persistent view that can be edited afterwards.
-        Note: It is sufficient to pass in an ID of the message here.
-
-        Parameters
-        ----------
-        message: Optional[hikari.SnowflakeishOr[hikari.PartialMessage]], optional
-            If provided, the persistent view will be bound to this message, and if the
-            message is edited with a new view, that will be taken into account.
-            Unbound views do not support message editing with additional views.
-        start_at : int, optional
-            The page index to start at, by default 0
-
-        Raises
-        ------
-        ValueError
-            The view is not persistent.
-        """
-        super().start_listener(message)
         self.current_page = start_at
 
     async def send(
@@ -287,6 +270,7 @@ class NavigatorView(View):
         if isinstance(channel_or_interaction, (int, hikari.TextableChannel)):
             channel = hikari.Snowflake(channel_or_interaction)
             message = await self.app.rest.create_message(channel, **payload)
+
         else:
             self._inter = channel_or_interaction
             if not responded:
@@ -298,8 +282,8 @@ class NavigatorView(View):
             else:
                 message = await channel_or_interaction.execute(**payload)
 
-        if self.is_persistent:
-            return  # Do not send the page if persistent
+        if self.is_persistent and not self.is_bound:
+            return  # Do not start the view if unbound persistent
 
         await self.start(message, start_at=start_at)
 

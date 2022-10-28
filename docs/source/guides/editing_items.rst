@@ -16,10 +16,14 @@ Example:
     import miru
 
     class EditView(miru.View):
+        def __init__(self, *args, **kwargs) -> None:
+            super().__init__(*args, **kwargs)
+            self.counter = 0
 
-        @miru.button(label="Random Number", style=hikari.ButtonStyle.PRIMARY)
-        async def edit_button(self, button: miru.Button, ctx: miru.ViewContext) -> None:
-            button.label = str(random.randint(0, 100)) # Change the property we want to edit
+        @miru.button(label="Counter: 0", style=hikari.ButtonStyle.PRIMARY)
+        async def counter_button(self, button: miru.Button, ctx: miru.ViewContext) -> None:
+            self.counter += 1
+            button.label = f"Counter: {self.counter}" # Change the property we want to edit
             await ctx.edit_response(components=view) # Re-send the view components
         
         @miru.button(label="Disable Menu", style=hikari.ButtonStyle.DANGER)
@@ -27,8 +31,9 @@ Example:
             for item in self.children:
                 item.disabled = True # Disable all items attached to the view
             await ctx.edit_response(components=view)
+            view.stop()
 
     ...
 
-Using the above view code should generate a button, that when clicked, changes it's label to a random number between 0 and 100.
-The second button iterates through all items attached to the view and disables them.
+Using the above view code should generate a button, that when clicked, increments it's counter shown on the label.
+The second button iterates through all items attached to the view and disables them, then stops the view.

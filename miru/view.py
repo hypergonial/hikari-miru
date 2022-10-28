@@ -69,7 +69,7 @@ class View(ItemHandler[hikari.impl.ActionRowBuilder]):
         super().__init__(timeout=timeout, autodefer=autodefer)
         self._message: t.Optional[hikari.Message] = None
         self._message_id: t.Optional[int] = None  # Only for bound persistent views
-        self._inputted: asyncio.Event = asyncio.Event()
+        self._input_event: asyncio.Event = asyncio.Event()
 
         for decorated_item in self._view_children:  # Sort and instantiate decorated callbacks
             # Must deepcopy, otherwise multiple views will have the same item reference
@@ -84,12 +84,14 @@ class View(ItemHandler[hikari.impl.ActionRowBuilder]):
         Determines if this view is persistent or not.
         """
 
-        return self.timeout is None and all(isinstance(item, ViewItem) and item._persistent for item in self.children)
+        return self.timeout is None and all(
+            isinstance(item, ViewItem) and item._is_persistent for item in self.children
+        )
 
     @property
     def message(self) -> t.Optional[hikari.Message]:
         """
-        The message this view is attached to. This is None if the view was started with start_listener().
+        The message this view is bound to. Will be None if the view is not bound, or if a message_id was passed to view.start().
         """
         return self._message
 
@@ -98,7 +100,7 @@ class View(ItemHandler[hikari.impl.ActionRowBuilder]):
         """
         Determines if the view is bound to a message or not. If this is False, message edits will not be supported.
         """
-        return True if self._message_id is not None else False
+        return self._message_id is not None
 
     @property
     def last_context(self) -> t.Optional[ViewContext]:
@@ -264,8 +266,8 @@ class View(ItemHandler[hikari.impl.ActionRowBuilder]):
         """
         try:
             now = datetime.datetime.now()
-            self._inputted.set()
-            self._inputted.clear()
+            self._input_event.set()
+            self._input_event.clear()
 
             await item._refresh(context.interaction)
             await item.callback(context)
@@ -343,48 +345,24 @@ class View(ItemHandler[hikari.impl.ActionRowBuilder]):
         timeout : Optional[float], optional
             The amount of time to wait for input, in seconds, by default None
         """
-        await asyncio.wait_for(self._inputted.wait(), timeout=timeout)
+        await asyncio.wait_for(self._input_event.wait(), timeout=timeout)
 
-    def start_listener(self, message: t.Optional[hikari.SnowflakeishOr[hikari.PartialMessage]] = None) -> None:
-        """Re-registers a persistent view for listening after an application restart.
-        Specify message to create a bound persistent view that can be edited afterwards.
-        Note: It is sufficient to pass in an ID of the message here.
-
-        Parameters
-        ----------
-        message: Optional[hikari.SnowflakeishOr[hikari.PartialMessage]], optional
-            If provided, the persistent view will be bound to this message, and if the
-            message is edited with a new view, that will be taken into account.
-            Unbound views do not support message editing with additional views.
-
-        Raises
-        ------
-        ValueError
-            The view is not persistent.
-        """
-        if not self.is_persistent:
-            raise ValueError("This can only be used on persistent views.")
-
-        message_id = hikari.Snowflake(message) if message else None
-
-        if message_id:
-            self._message_id = message_id
-
-            # Handle replacement of bound views on message edit
-            if message_id in View._views.keys():
-                View._views[message_id].stop()
-
-            View._views[message_id] = self
-
-        self._listener_task = self._create_task(self._listen_for_events(message_id))
-
-    async def start(self, message: t.Union[hikari.Message, t.Awaitable[hikari.Message]]) -> None:
+    async def start(
+        self,
+        message: t.Optional[
+            t.Union[
+                hikari.SnowflakeishOr[hikari.PartialMessage], t.Awaitable[hikari.SnowflakeishOr[hikari.PartialMessage]]
+            ]
+        ] = None,
+    ) -> None:
         """Start up the view and begin listening for interactions.
 
         Parameters
         ----------
         message : Union[hikari.Message, Awaitable[hikari.Message]]
-            The message the view was built for.
+            If provided, the view will be bound to this message, and if the
+            message is edited with a new view, this view will be stopped.
+            Unbound views do not support message editing with additional views.
 
         Raises
         ------
@@ -396,23 +374,31 @@ class View(ItemHandler[hikari.impl.ActionRowBuilder]):
         if all((isinstance(item, Button) and item.url is not None) for item in self.children):
             return
 
-        if inspect.isawaitable(message):
-            message = await message
-
-        if not isinstance(message, hikari.Message):
-            raise TypeError(
-                f"Parameter message must be an instance of 'hikari.Message', not '{message.__class__.__name__}'."
+        if message is None and not self.is_persistent:
+            raise ValueError(
+                f"View '{self.__class__.__name__}' is not persistent, parameter 'message' must be provided."
             )
 
-        self._message = message
-        self._message_id = message.id
-        self._listener_task = self._create_task(self._listen_for_events(message.id))
+        if message is None:
+            self._listener_task = self._create_task(self._listen_for_events())
+            return
+
+        result = (await message) if inspect.isawaitable(message) else message
+        if not isinstance(result, (hikari.PartialMessage, hikari.Snowflake, int)):
+            raise TypeError("Parameter 'message' cannot be resolved to an instance of 'hikari.Message'.")
+
+        self._message_id = hikari.Snowflake(result)
+
+        if isinstance(result, hikari.Message):
+            self._message = result
+
+        self._listener_task = self._create_task(self._listen_for_events(self._message_id))
 
         # Handle replacement of view on message edit
-        if message.id in View._views.keys():
-            View._views[message.id].stop()
+        if self._message_id in View._views.keys():
+            View._views[self._message_id].stop()
 
-        View._views[message.id] = self
+        View._views[self._message_id] = self
 
 
 def get_view(message: hikari.SnowflakeishOr[hikari.PartialMessage]) -> t.Optional[View]:

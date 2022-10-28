@@ -95,7 +95,7 @@ class ViewItem(Item[hikari.impl.ActionRowBuilder], abc.ABC):
     def __init__(self) -> None:
         super().__init__()
         self._handler: t.Optional[View] = None
-        self._persistent: bool = False
+        self._is_persistent: bool = False
         self._disabled: bool = False
 
     @property
