@@ -11,6 +11,8 @@ Version 2.0.0
 
 - BREAKING: ``View.start()`` is now asynchronous and needs to be awaited.
 
+- BREAKING: ``View.start_listener()`` has been removed. Use ``View.start()`` instead.
+
 - Added support for modals via ``miru.Modal``.
 
 - Added support for text input fields via ``miru.TextInput``.
