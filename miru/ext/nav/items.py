@@ -181,7 +181,7 @@ class IndicatorButton(NavButton):
         self.disabled = self.disabled if len(self.view.pages) != 1 else True
 
     async def callback(self, context: ViewContext) -> None:
-        modal = Modal("Jump to page", autodefer=False)
+        modal = Modal(title="Jump to page")
         modal.add_item(TextInput(label="Page Number", placeholder="Enter a page number to jump to it..."))
         await context.respond_with_modal(modal)
         await modal.wait()

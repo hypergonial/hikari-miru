@@ -62,9 +62,8 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder]):
         *,
         custom_id: t.Optional[str] = None,
         timeout: t.Optional[t.Union[float, int, datetime.timedelta]] = 300.0,
-        autodefer: bool = True,
     ) -> None:
-        super().__init__(timeout=timeout, autodefer=autodefer)
+        super().__init__(timeout=timeout)
 
         self._title: str = title
         self._custom_id: str = custom_id or os.urandom(16).hex()
@@ -262,16 +261,11 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder]):
 
     async def _handle_callback(self, context: ModalContext) -> None:
         """
-        Handle the callback of a modal item. Seperate task in case the view is stopped in the callback.
+        Handle the callback of the modal. Seperate task in case the modal is stopped in the callback.
         """
         try:
-            now = datetime.datetime.now()
             await self.callback(context)
             self._ctx = context
-
-            if not context._issued_response and self.autodefer:
-                if (datetime.datetime.now() - now).total_seconds() <= 3:  # Avoid deferring if inter already timed out
-                    await context.defer()
             self.stop()  # Modals can only receive one response
 
         except Exception as error:
@@ -330,7 +324,8 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder]):
             await self._process_interactions(event)
 
     async def start(self) -> None:
-        """Start up the modal and begin listening for interactions."""
+        """Start up the modal and begin listening for interactions.
+        This should not be called manually, use `Modal.send()` instead."""
         self._listener_task = self._create_task(self._listen_for_events())
 
     async def send(self, interaction: hikari.ModalResponseMixin) -> None:

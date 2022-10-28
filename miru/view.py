@@ -66,7 +66,8 @@ class View(ItemHandler[hikari.impl.ActionRowBuilder]):
         timeout: t.Optional[t.Union[float, int, datetime.timedelta]] = 120.0,
         autodefer: bool = True,
     ) -> None:
-        super().__init__(timeout=timeout, autodefer=autodefer)
+        super().__init__(timeout=timeout)
+        self._autodefer: bool = autodefer
         self._message: t.Optional[hikari.Message] = None
         self._message_id: t.Optional[int] = None  # Only for bound persistent views
         self._input_event: asyncio.Event = asyncio.Event()
@@ -101,6 +102,13 @@ class View(ItemHandler[hikari.impl.ActionRowBuilder]):
         Determines if the view is bound to a message or not. If this is False, message edits will not be supported.
         """
         return self._message_id is not None
+
+    @property
+    def autodefer(self) -> bool:
+        """
+        A boolean indicating if the received interaction should automatically be deferred if not responded to or not.
+        """
+        return self._autodefer
 
     @property
     def last_context(self) -> t.Optional[ViewContext]:

@@ -78,15 +78,12 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT]):  # type: ignore[type-
 
     _app: t.ClassVar[t.Optional[MiruAware]] = None
 
-    def __init__(
-        self, *, timeout: t.Optional[t.Union[float, int, datetime.timedelta]] = 120.0, autodefer: bool = True
-    ) -> None:
+    def __init__(self, *, timeout: t.Optional[t.Union[float, int, datetime.timedelta]] = 120.0) -> None:
         if isinstance(timeout, datetime.timedelta):
             timeout = timeout.total_seconds()
 
         self._timeout: t.Optional[float] = float(timeout) if timeout else None
         self._children: t.List[Item[BuilderT]] = []
-        self._autodefer: bool = autodefer
 
         self._weights: _Weights = _Weights()
         self._stopped: asyncio.Event = asyncio.Event()
@@ -154,13 +151,6 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT]):  # type: ignore[type-
         The application that loaded the miru extension.
         """
         return self.app
-
-    @property
-    def autodefer(self) -> t.Optional[bool]:
-        """
-        A boolean indicating if the received interaction should automatically be deferred if not responded to or not.
-        """
-        return self._autodefer
 
     @property
     def last_context(self) -> t.Optional[Context[t.Any]]:

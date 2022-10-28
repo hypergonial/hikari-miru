@@ -232,9 +232,7 @@ class NavigatorView(View):
 
     async def send(
         self,
-        to: t.Union[
-            hikari.SnowflakeishOr[hikari.TextableChannel], hikari.MessageResponseMixin[t.Any]
-        ],
+        to: t.Union[hikari.SnowflakeishOr[hikari.TextableChannel], hikari.MessageResponseMixin[t.Any]],
         *,
         start_at: int = 0,
         ephemeral: bool = False,
