@@ -300,6 +300,9 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder]):
             context = self.get_context(event.interaction, values)
             self._last_context = context
 
+            for item in self.children:
+                await item._refresh_state(context)
+
             passed = await self.modal_check(context)
             if not passed:
                 return

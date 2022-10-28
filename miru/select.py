@@ -10,6 +10,7 @@ from .abc.item import DecoratedItem
 from .abc.item import ViewItem
 
 if t.TYPE_CHECKING:
+    from .context.base import Context
     from .context.view import ViewContext
     from .view import View
 
@@ -227,8 +228,9 @@ class Select(ViewItem):
     def width(self) -> int:
         return 5
 
-    async def _refresh(self, interaction: hikari.ComponentInteraction) -> None:
-        self._values = interaction.values
+    async def _refresh_state(self, context: Context[hikari.ComponentInteraction]) -> None:
+        assert isinstance(context, ViewContext)
+        self._values = context.interaction.values
 
 
 def select(

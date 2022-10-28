@@ -33,7 +33,7 @@ class ModalContext(RawModalContext):
         """The values received as input for this modal."""
         return self._values
 
-    def get_value_with_id(self, custom_id: str, default: hikari.UndefinedOr[t.Any] = hikari.UNDEFINED) -> t.Any:
+    def get_value_by_id(self, custom_id: str, default: hikari.UndefinedOr[t.Any] = hikari.UNDEFINED) -> t.Any:
         """Get the value for a modal item with the given custom ID.
 
         Parameters
@@ -59,6 +59,38 @@ class ModalContext(RawModalContext):
 
         if default is hikari.UNDEFINED:
             raise KeyError(f"No modal item with ID {custom_id}.")
+        return default
+
+    def get_value_by_predicate(
+        self,
+        predicate: t.Callable[[ModalItem], bool],
+        default: hikari.UndefinedOr[t.Any] = hikari.UNDEFINED,
+    ) -> t.Any:
+        """Get the value for the first modal item that matches the given predicate.
+
+        Parameters
+        ----------
+        predicate : Callable[[ModalItem], bool]
+            A predicate to match the item.
+        default : hikari.UndefinedOr[t.Any], optional
+            A default value to return if no item was matched, by default hikari.UNDEFINED
+
+        Returns
+        -------
+        Any
+            The value of the item that matched the predicate or the default value.
+
+        Raises
+        ------
+        KeyError
+            The item was not found and no default was provided.
+        """
+        for item, value in self.values.items():
+            if predicate(item):
+                return value
+
+        if default is hikari.UNDEFINED:
+            raise KeyError("No modal item matched the given predicate.")
         return default
 
 

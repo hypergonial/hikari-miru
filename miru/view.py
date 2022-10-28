@@ -269,7 +269,7 @@ class View(ItemHandler[hikari.impl.ActionRowBuilder]):
             self._input_event.set()
             self._input_event.clear()
 
-            await item._refresh(context.interaction)
+            await item._refresh_state(context)
             await item.callback(context)
 
             if not context._issued_response and self.autodefer:

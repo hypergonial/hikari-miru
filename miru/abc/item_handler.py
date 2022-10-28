@@ -19,7 +19,7 @@ if t.TYPE_CHECKING:
 __all__ = ["ItemHandler"]
 
 
-T = t.TypeVar("T", bound=hikari.api.ComponentBuilder)
+BuilderT = t.TypeVar("BuilderT", bound=hikari.api.ComponentBuilder)
 
 
 class _Weights:
@@ -33,7 +33,7 @@ class _Weights:
 
         self._weights = [0, 0, 0, 0, 0]
 
-    def add_item(self, item: Item[T]) -> None:
+    def add_item(self, item: Item[BuilderT]) -> None:
         if item.row is not None:
             if item.width + self._weights[item.row] > 5:
                 raise ValueError(f"Item does not fit on row {item.row}!")
@@ -48,7 +48,7 @@ class _Weights:
                     return
             raise ValueError("Item does not fit on this item handler.")
 
-    def remove_item(self, item: Item[T]) -> None:
+    def remove_item(self, item: Item[BuilderT]) -> None:
         if item._rendered_row is not None:
             self._weights[item._rendered_row] -= item.width
             item._rendered_row = None
@@ -58,7 +58,7 @@ class _Weights:
 
 
 # Add Sequence[hikari.api.ActionRowBuilder] here when dropping 3.8 support
-class ItemHandler(Sequence, abc.ABC, t.Generic[T]):  # type: ignore[type-arg]
+class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT]):  # type: ignore[type-arg]
     """Abstract base class all item-handlers (e.g. views, modals) inherit from.
 
     Parameters
@@ -85,7 +85,7 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[T]):  # type: ignore[type-arg]
             timeout = timeout.total_seconds()
 
         self._timeout: t.Optional[float] = float(timeout) if timeout else None
-        self._children: t.List[Item[T]] = []
+        self._children: t.List[Item[BuilderT]] = []
         self._autodefer: bool = autodefer
 
         self._weights: _Weights = _Weights()
@@ -101,17 +101,17 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[T]):  # type: ignore[type-arg]
             raise RuntimeError(f"miru.install() was not called before instantiation of {self.__class__.__name__}.")
 
     @t.overload
-    def __getitem__(self, value: int) -> T:
+    def __getitem__(self, value: int) -> BuilderT:
         ...
 
     @t.overload
-    def __getitem__(self, value: slice) -> t.Sequence[T]:
+    def __getitem__(self, value: slice) -> t.Sequence[BuilderT]:
         ...
 
-    def __getitem__(self, value: t.Union[slice, int]) -> t.Union[T, t.Sequence[T]]:
+    def __getitem__(self, value: t.Union[slice, int]) -> t.Union[BuilderT, t.Sequence[BuilderT]]:
         return self.build()[value]
 
-    def __iter__(self) -> t.Iterator[T]:
+    def __iter__(self) -> t.Iterator[BuilderT]:
         for action_row in self.build():
             yield action_row
 
@@ -121,11 +121,11 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[T]):  # type: ignore[type-arg]
     def __len__(self) -> int:
         return len(self.build())
 
-    def __reversed__(self) -> t.Iterator[T]:
+    def __reversed__(self) -> t.Iterator[BuilderT]:
         return self.build().__reversed__()
 
     @property
-    def children(self) -> t.List[Item[T]]:
+    def children(self) -> t.List[Item[BuilderT]]:
         """
         A list of all items attached to the item handler.
         """
@@ -171,10 +171,10 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[T]):  # type: ignore[type-arg]
 
     @property
     @abc.abstractmethod
-    def _builder(self) -> type[T]:
+    def _builder(self) -> type[BuilderT]:
         ...
 
-    def add_item(self, item: Item[T]) -> ItemHandler[T]:
+    def add_item(self, item: Item[BuilderT]) -> ItemHandler[BuilderT]:
         """Adds a new item to the item handler.
 
         Parameters
@@ -218,7 +218,7 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[T]):  # type: ignore[type-arg]
 
         return self
 
-    def remove_item(self, item: Item[T]) -> ItemHandler[T]:
+    def remove_item(self, item: Item[BuilderT]) -> ItemHandler[BuilderT]:
         """Removes the specified item from the item handler.
 
         Parameters
@@ -241,7 +241,7 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[T]):  # type: ignore[type-arg]
 
         return self
 
-    def clear_items(self) -> ItemHandler[T]:
+    def clear_items(self) -> ItemHandler[BuilderT]:
         """Removes all items from this item handler.
 
         Returns
@@ -258,7 +258,7 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[T]):  # type: ignore[type-arg]
 
         return self
 
-    def build(self) -> t.Sequence[T]:
+    def build(self) -> t.Sequence[BuilderT]:
         """Creates the action rows the item handler represents.
 
         Returns

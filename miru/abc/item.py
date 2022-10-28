@@ -8,6 +8,7 @@ from functools import partial
 import hikari
 
 if t.TYPE_CHECKING:
+    from ..context import Context
     from ..context import ViewContext
     from ..modal import Modal
     from ..view import View
@@ -16,10 +17,10 @@ if t.TYPE_CHECKING:
 
 __all__ = ["Item", "DecoratedItem", "ViewItem", "ModalItem"]
 
-T = t.TypeVar("T", bound=hikari.api.ComponentBuilder)
+BuilderT = t.TypeVar("BuilderT", bound=hikari.api.ComponentBuilder)
 
 
-class Item(abc.ABC, t.Generic[T]):
+class Item(abc.ABC, t.Generic[BuilderT]):
     """
     An abstract base class for all components. Cannot be directly instantiated.
     """
@@ -29,7 +30,7 @@ class Item(abc.ABC, t.Generic[T]):
         self._width: int = 1
         self._rendered_row: t.Optional[int] = None  # Where it actually ends up when rendered by Discord
         self._custom_id: t.Optional[str] = None
-        self._handler: t.Optional[ItemHandler[T]] = None
+        self._handler: t.Optional[ItemHandler[BuilderT]] = None
 
     @property
     def row(self) -> t.Optional[int]:
@@ -85,6 +86,12 @@ class Item(abc.ABC, t.Generic[T]):
         The component's underlying component type.
         """
         ...
+
+    async def _refresh_state(self, context: Context[t.Any]) -> None:
+        """
+        Called on an item to refresh it's internal state.
+        """
+        pass
 
 
 class ViewItem(Item[hikari.impl.ActionRowBuilder], abc.ABC):
@@ -143,12 +150,6 @@ class ViewItem(Item[hikari.impl.ActionRowBuilder], abc.ABC):
         Converts the passed hikari component into a miru ViewItem.
         """
         ...
-
-    async def _refresh(self, interaction: hikari.ComponentInteraction) -> None:
-        """
-        Called on an item to refresh it's internal data.
-        """
-        pass
 
     async def callback(self, context: ViewContext) -> None:
         """

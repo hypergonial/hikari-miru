@@ -5,6 +5,9 @@ import typing as t
 
 import hikari
 
+from miru.context.base import Context
+from miru.context.modal import ModalContext
+
 from .abc.item import ModalItem
 
 if t.TYPE_CHECKING:
@@ -121,6 +124,7 @@ class TextInput(ModalItem):
     def value(self) -> t.Optional[str]:
         """
         Pre-filled content that should be included in the text input.
+        After sending the modal, this field will be updated to the user's input.
         """
         return self._value
 
@@ -128,10 +132,10 @@ class TextInput(ModalItem):
     def value(self, value: t.Optional[str]) -> None:
         if value:
             if self.min_length is not None and self.min_length < len(value):
-                raise ValueError("Parameter value does not meet minimum length requirement.")
+                raise ValueError("Parameter 'value' does not meet minimum length requirement.")
 
             if self.max_length is not None and self.max_length > len(value):
-                raise ValueError("Parameter value does not meet maximum length requirement.")
+                raise ValueError("Parameter 'value' does not meet maximum length requirement.")
 
         self._value = str(value) if value else None
 
@@ -179,6 +183,10 @@ class TextInput(ModalItem):
             text_input.set_value(self.value)
 
         text_input.add_to_container()
+
+    async def _refresh_state(self, context: Context[hikari.ModalInteraction]) -> None:
+        assert isinstance(context, ModalContext)
+        self._value = context.values.get(self)
 
 
 # MIT License

@@ -24,10 +24,8 @@ Let's create our first modal:
 
         # The callback function is called after the user hits 'Submit'
         async def callback(self, ctx: miru.ModalContext) -> None:
-            # ModalContext.values is a mapping of {TextInput: value}
-            values = [value for value in ctx.values.values()]
-            await ctx.respond(f"Received the following input: ```{' | '.join(values)}```")
-        # You may also access the values the modal holds by using Modal.values
+            # You can also access the values using ctx.values, Modal.values, or use ctx.get_value_by_id()
+            await ctx.respond(f"Your name: `{self.name.value}`\nYour bio: ```{self.bio.value}```")
 
 There is also an alternative way to add items to a modal, through the :obj:`miru.Modal.add_item` method, similarly to views.
 
