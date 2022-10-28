@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import typing as t
 
+import hikari
+
 from .raw import RawComponentContext
 
 if t.TYPE_CHECKING:
-    from ..interaction import ComponentInteraction
     from ..view import View
 
 __all__ = ("ViewContext",)
@@ -16,7 +17,7 @@ class ViewContext(RawComponentContext):
 
     __slots__ = "_view"
 
-    def __init__(self, view: View, interaction: ComponentInteraction) -> None:
+    def __init__(self, view: View, interaction: hikari.ComponentInteraction) -> None:
         super().__init__(interaction)
         self._view = view
 

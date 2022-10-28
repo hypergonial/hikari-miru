@@ -1,7 +1,6 @@
 from .button import *
 from .context import *
 from .events import *
-from .interaction import *
 from .loader import *
 from .modal import *
 from .select import *

@@ -7,7 +7,6 @@ import typing as t
 import hikari
 
 from miru import Item
-from miru import interaction
 from miru.context import Context
 from miru.view import View
 

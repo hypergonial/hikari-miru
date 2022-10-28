@@ -14,7 +14,6 @@ from .abc.item import Item
 from .abc.item import ModalItem
 from .abc.item_handler import ItemHandler
 from .context.modal import ModalContext
-from .interaction import ModalInteraction
 
 ModalT = t.TypeVar("ModalT", bound="Modal")
 
@@ -239,7 +238,7 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder]):
 
     def get_context(
         self,
-        interaction: ModalInteraction,
+        interaction: hikari.ModalInteraction,
         values: t.Mapping[ModalItem, str],
         *,
         cls: t.Type[ModalContext] = ModalContext,
@@ -249,7 +248,7 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder]):
 
         Parameters
         ----------
-        interaction : ModalInteraction
+        interaction : hikari.ModalInteraction
             The interaction to construct the context from.
         cls : Optional[Type[ModalContext]], optional
             The class to use for the context, by default ModalContext.
@@ -270,7 +269,7 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder]):
             await self.callback(context)
             self._ctx = context
 
-            if not context.interaction._issued_response and self.autodefer:
+            if not context._issued_response and self.autodefer:
                 if (datetime.datetime.now() - now).total_seconds() <= 3:  # Avoid deferring if inter already timed out
                     await context.defer()
             self.stop()  # Modals can only receive one response
@@ -280,7 +279,7 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder]):
 
     async def _process_interactions(self, event: hikari.InteractionCreateEvent) -> None:
         """
-        Process incoming interactions and convert interaction to miru.ModalInteraction.
+        Process incoming interactions.
         """
 
         if isinstance(event.interaction, hikari.ModalInteraction):
@@ -298,9 +297,7 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder]):
 
             self._values = values
 
-            interaction: ModalInteraction = ModalInteraction.from_hikari(event.interaction)
-
-            context = self.get_context(interaction, values)
+            context = self.get_context(event.interaction, values)
             self._last_context = context
 
             passed = await self.modal_check(context)

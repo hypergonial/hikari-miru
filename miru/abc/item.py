@@ -7,8 +7,6 @@ from functools import partial
 
 import hikari
 
-from ..interaction import ComponentInteraction
-
 if t.TYPE_CHECKING:
     from ..context import ViewContext
     from ..modal import Modal
@@ -146,7 +144,7 @@ class ViewItem(Item[hikari.impl.ActionRowBuilder], abc.ABC):
         """
         ...
 
-    async def _refresh(self, interaction: ComponentInteraction) -> None:
+    async def _refresh(self, interaction: hikari.ComponentInteraction) -> None:
         """
         Called on an item to refresh it's internal data.
         """

@@ -10,11 +10,9 @@ import hikari
 from hikari.snowflakes import Snowflake
 
 from ..abc.item_handler import ItemHandler
-from ..interaction import ComponentInteraction
-from ..interaction import ModalInteraction
 from ..traits import MiruAware
 
-InteractionT = t.TypeVar("InteractionT", "ComponentInteraction", "ModalInteraction")
+InteractionT = t.TypeVar("InteractionT", "hikari.ComponentInteraction", "hikari.ModalInteraction")
 
 __all__ = ("Context", "InteractionResponse")
 
@@ -77,7 +75,7 @@ class InteractionResponse:
         if self._message:
             return self._message
 
-        assert isinstance(self._context.interaction, (ComponentInteraction, ModalInteraction))
+        assert isinstance(self._context.interaction, (hikari.ComponentInteraction, hikari.ModalInteraction))
         return await self._context.interaction.fetch_initial_response()
 
     async def delete(self) -> None:
@@ -179,6 +177,7 @@ class Context(abc.ABC, t.Generic[InteractionT]):
     def __init__(self, interaction: InteractionT) -> None:
         self._interaction: InteractionT = interaction
         self._responses: t.MutableSequence[InteractionResponse] = []
+        self._issued_response: bool = False
 
     @property
     def interaction(self) -> InteractionT:
@@ -340,7 +339,7 @@ class Context(abc.ABC, t.Generic[InteractionT]):
         InteractionResponse
             A proxy object representing the response to the interaction.
         """
-        if self.interaction._issued_response:
+        if self._issued_response:
             if replace_attachments:
                 logger.warning(
                     "Cannot replace attachments on an already issued response.\nThis is due to a bug in the modals branch of hikari."
@@ -369,7 +368,7 @@ class Context(abc.ABC, t.Generic[InteractionT]):
                 components=components,
                 attachment=attachment,
                 attachments=attachments,
-                # replace_attachments=replace_attachments, hikari borked
+                replace_attachments=replace_attachments,
                 embed=embed,
                 embeds=embeds,
                 mentions_everyone=mentions_everyone,
@@ -377,6 +376,7 @@ class Context(abc.ABC, t.Generic[InteractionT]):
                 role_mentions=role_mentions,
                 flags=flags,
             )
+            self._issued_response = True
             response = self._create_response()
         if delete_after:
             response.delete_after(delete_after)
@@ -388,12 +388,12 @@ class Context(abc.ABC, t.Generic[InteractionT]):
         *,
         flags: t.Union[int, hikari.MessageFlag, hikari.UndefinedType] = hikari.UNDEFINED,
         tts: hikari.UndefinedOr[bool] = hikari.UNDEFINED,
-        component: hikari.UndefinedNoneOr[hikari.api.ComponentBuilder] = hikari.UNDEFINED,
-        components: hikari.UndefinedNoneOr[t.Sequence[hikari.api.ComponentBuilder]] = hikari.UNDEFINED,
+        component: hikari.UndefinedOr[hikari.api.ComponentBuilder] = hikari.UNDEFINED,
+        components: hikari.UndefinedOr[t.Sequence[hikari.api.ComponentBuilder]] = hikari.UNDEFINED,
         attachment: hikari.UndefinedOr[hikari.Resourceish] = hikari.UNDEFINED,
         attachments: hikari.UndefinedOr[t.Sequence[hikari.Resourceish]] = hikari.UNDEFINED,
-        embed: hikari.UndefinedNoneOr[hikari.Embed] = hikari.UNDEFINED,
-        embeds: hikari.UndefinedNoneOr[t.Sequence[hikari.Embed]] = hikari.UNDEFINED,
+        embed: hikari.UndefinedOr[hikari.Embed] = hikari.UNDEFINED,
+        embeds: hikari.UndefinedOr[t.Sequence[hikari.Embed]] = hikari.UNDEFINED,
         replace_attachments: bool = False,
         mentions_everyone: hikari.UndefinedOr[bool] = hikari.UNDEFINED,
         user_mentions: hikari.UndefinedOr[
@@ -440,7 +440,7 @@ class Context(abc.ABC, t.Generic[InteractionT]):
         InteractionResponse
             A proxy object representing the response to the interaction.
         """
-        if self.interaction._issued_response:
+        if self._issued_response:
             message = await self.interaction.edit_initial_response(
                 content,
                 component=component,
@@ -449,7 +449,7 @@ class Context(abc.ABC, t.Generic[InteractionT]):
                 attachments=attachments,
                 embed=embed,
                 embeds=embeds,
-                # replace_attachments=replace_attachments,
+                replace_attachments=replace_attachments,
                 mentions_everyone=mentions_everyone,
                 user_mentions=user_mentions,
                 role_mentions=role_mentions,
@@ -457,6 +457,9 @@ class Context(abc.ABC, t.Generic[InteractionT]):
             return self._create_response(message)
 
         else:
+            if isinstance(self.interaction, hikari.ModalInteraction):
+                raise RuntimeError("Cannot edit a modal's initial response, as it does not yet exist.")
+
             await self.interaction.create_initial_response(
                 hikari.ResponseType.MESSAGE_UPDATE,
                 content,
@@ -467,12 +470,13 @@ class Context(abc.ABC, t.Generic[InteractionT]):
                 tts=tts,
                 embed=embed,
                 embeds=embeds,
-                # replace_attachments=replace_attachments,
+                replace_attachments=replace_attachments,
                 mentions_everyone=mentions_everyone,
                 user_mentions=user_mentions,
                 role_mentions=role_mentions,
                 flags=flags,
             )
+            self._issued_response = True
             return self._create_response()
 
     @t.overload
@@ -499,7 +503,7 @@ class Context(abc.ABC, t.Generic[InteractionT]):
         Parameters
         ----------
         response_type : hikari.ResponseType, optional
-            The response-type of this defer action. Defaults to DEFERRED_MESSAGE_UPDATE.
+            The response-type of this defer action. Defaults to DEFERRED_MESSAGE_UPDATE in the case of views, and DEFERRED_MESSAGE_CREATE in the case of modals.
         flags : t.Union[int, hikari.MessageFlag, None], optional
             Message flags that should be included with this defer request, by default None
 
@@ -510,7 +514,13 @@ class Context(abc.ABC, t.Generic[InteractionT]):
         ValueError
             response_type was not a deffered response type.
         """
-        response_type = args[0] if args else hikari.ResponseType.DEFERRED_MESSAGE_UPDATE
+        response_type = (
+            args[0]
+            if args
+            else hikari.ResponseType.DEFERRED_MESSAGE_UPDATE
+            if isinstance(self.interaction, hikari.ComponentInteraction)
+            else hikari.ResponseType.DEFERRED_MESSAGE_CREATE
+        )
 
         if response_type not in [
             hikari.ResponseType.DEFERRED_MESSAGE_CREATE,
@@ -520,10 +530,17 @@ class Context(abc.ABC, t.Generic[InteractionT]):
                 "Parameter response_type must be ResponseType.DEFERRED_MESSAGE_CREATE or ResponseType.DEFERRED_MESSAGE_UPDATE."
             )
 
-        if self.interaction._issued_response:
+        if (
+            isinstance(self.interaction, hikari.ModalInteraction)
+            and response_type == hikari.ResponseType.DEFERRED_MESSAGE_UPDATE
+        ):
+            raise ValueError("Modal interactions cannot be deferred with ResponseType.DEFERRED_MESSAGE_UPDATE.")
+
+        if self._issued_response:
             raise RuntimeError("Interaction was already responded to.")
 
-        await self.interaction.create_initial_response(hikari.ResponseType.DEFERRED_MESSAGE_UPDATE, flags=flags)
+        await self.interaction.create_initial_response(response_type, flags=flags)
+        self._issued_response = True
 
 
 # MIT License

@@ -16,7 +16,6 @@ from .abc.item import ViewItem
 from .abc.item_handler import ItemHandler
 from .button import Button
 from .context.view import ViewContext
-from .interaction import ComponentInteraction
 from .select import Select
 
 __all__ = ["View", "get_view"]
@@ -239,13 +238,15 @@ class View(ItemHandler[hikari.impl.ActionRowBuilder]):
 
         super().stop()
 
-    def get_context(self, interaction: ComponentInteraction, *, cls: t.Type[ViewContext] = ViewContext) -> ViewContext:
+    def get_context(
+        self, interaction: hikari.ComponentInteraction, *, cls: t.Type[ViewContext] = ViewContext
+    ) -> ViewContext:
         """
         Get the context for this view. Override this function to provide a custom context object.
 
         Parameters
         ----------
-        interaction : ComponentInteraction
+        interaction : hikari.ComponentInteraction
             The interaction to construct the context from.
         cls : Type[ViewContext], optional
             The class to use for the context, by default ViewContext.
@@ -269,7 +270,7 @@ class View(ItemHandler[hikari.impl.ActionRowBuilder]):
             await item._refresh(context.interaction)
             await item.callback(context)
 
-            if not context.interaction._issued_response and self.autodefer:
+            if not context._issued_response and self.autodefer:
                 if (datetime.datetime.now() - now).total_seconds() <= 3:  # Avoid deferring if inter already timed out
                     await context.defer()
 
@@ -278,17 +279,15 @@ class View(ItemHandler[hikari.impl.ActionRowBuilder]):
 
     async def _process_interactions(self, event: hikari.InteractionCreateEvent) -> None:
         """
-        Process incoming interactions and convert interaction to miru.ComponentInteraction
+        Process incoming interactions.
         """
 
         if isinstance(event.interaction, hikari.ComponentInteraction):
 
-            interaction: ComponentInteraction = ComponentInteraction.from_hikari(event.interaction)
-
-            items = [item for item in self.children if item.custom_id == interaction.custom_id]
+            items = [item for item in self.children if item.custom_id == event.interaction.custom_id]
             if len(items) > 0:
 
-                context = self.get_context(interaction)
+                context = self.get_context(event.interaction)
                 self._last_context = context
 
                 passed = await self.view_check(context)

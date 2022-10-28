@@ -8,7 +8,6 @@ from .raw import RawModalContext
 
 if t.TYPE_CHECKING:
     from ..abc.item import ModalItem
-    from ..interaction import ModalInteraction
     from ..modal import Modal
 
 __all__ = ("ModalContext",)
@@ -19,7 +18,7 @@ class ModalContext(RawModalContext):
 
     __slots__ = ("_modal", "_values")
 
-    def __init__(self, modal: Modal, interaction: ModalInteraction, values: t.Mapping[ModalItem, str]) -> None:
+    def __init__(self, modal: Modal, interaction: hikari.ModalInteraction, values: t.Mapping[ModalItem, str]) -> None:
         super().__init__(interaction)
         self._modal = modal
         self._values = values

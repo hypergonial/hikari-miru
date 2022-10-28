@@ -4,8 +4,6 @@ import typing as t
 
 import hikari
 
-from ..interaction import ComponentInteraction
-from ..interaction import ModalInteraction
 from .base import Context
 
 if t.TYPE_CHECKING:
@@ -14,7 +12,7 @@ if t.TYPE_CHECKING:
 __all__ = ("RawComponentContext", "RawModalContext")
 
 
-class RawComponentContext(Context[ComponentInteraction]):
+class RawComponentContext(Context[hikari.ComponentInteraction]):
     """Raw context proxying component interactions received directly over the gateway."""
 
     __slots__ = ()
@@ -27,14 +25,15 @@ class RawComponentContext(Context[ComponentInteraction]):
     async def respond_with_modal(self, modal: Modal) -> None:
         """Respond to this interaction with a modal."""
 
-        if self.interaction._issued_response:
+        if self._issued_response:
             raise RuntimeError("Interaction was already responded to.")
 
         await self.interaction.create_modal_response(modal.title, modal.custom_id, modal.build())
+        self._issued_response = True
         await modal.start()
 
 
-class RawModalContext(Context[ModalInteraction]):
+class RawModalContext(Context[hikari.ModalInteraction]):
     """Raw context object proxying a ModalInteraction received directly over the gateway."""
 
     __slots__ = ()

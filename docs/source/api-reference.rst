@@ -16,7 +16,6 @@ If you think anything is missing, feel free to open an issue or pull request.
    api_references/loader
    api_references/item
    api_references/item_handler
-   api_references/interaction
    api_references/traits
    api_references/context
    api_references/button

@@ -7,8 +7,6 @@ import hikari
 
 from .context.raw import RawComponentContext
 from .context.raw import RawModalContext
-from .interaction import ComponentInteraction
-from .interaction import ModalInteraction
 
 if t.TYPE_CHECKING:
     from .traits import MiruAware
@@ -31,7 +29,7 @@ class Event(hikari.Event):
 class InteractionCreateEvent(Event):
     """Event fired when a miru interaction is received. This may either be a modal or a component interaction."""
 
-    interaction: t.Union[ModalInteraction, ComponentInteraction] = attr.field()
+    interaction: t.Union[hikari.ModalInteraction, hikari.ComponentInteraction] = attr.field()
 
     @property
     def guild_id(self) -> t.Optional[hikari.Snowflake]:
@@ -81,7 +79,7 @@ class InteractionCreateEvent(Event):
 class ComponentInteractionCreateEvent(InteractionCreateEvent):
     """An event that is dispatched when a new component interaction is received."""
 
-    interaction: ComponentInteraction = attr.field()
+    interaction: hikari.ComponentInteraction = attr.field()
     context: RawComponentContext = attr.field()
 
 
@@ -89,7 +87,7 @@ class ComponentInteractionCreateEvent(InteractionCreateEvent):
 class ModalInteractionCreateEvent(InteractionCreateEvent):
     """An event that is dispatched when a new modal interaction is received."""
 
-    interaction: ModalInteraction = attr.field()
+    interaction: hikari.ModalInteraction = attr.field()
     context: RawModalContext = attr.field()
 
 
@@ -122,14 +120,12 @@ class _EventListener:
 
         # God why does mypy hate me so much for naming two variables the same in two if statement arms >_<
         if isinstance(event.interaction, hikari.ComponentInteraction):
-            comp_inter = ComponentInteraction.from_hikari(event.interaction)
-            comp_ctx = RawComponentContext(comp_inter)
-            self._app.event_manager.dispatch(ComponentInteractionCreateEvent(self._app, comp_inter, comp_ctx))
+            comp_ctx = RawComponentContext(event.interaction)
+            self._app.event_manager.dispatch(ComponentInteractionCreateEvent(self._app, event.interaction, comp_ctx))
 
         elif isinstance(event.interaction, hikari.ModalInteraction):
-            modal_inter = ModalInteraction.from_hikari(event.interaction)
-            modal_ctx = RawModalContext(modal_inter)
-            self._app.event_manager.dispatch(ModalInteractionCreateEvent(self._app, modal_inter, modal_ctx))
+            modal_ctx = RawModalContext(event.interaction)
+            self._app.event_manager.dispatch(ModalInteractionCreateEvent(self._app, event.interaction, modal_ctx))
 
 
 # MIT License
