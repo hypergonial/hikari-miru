@@ -31,7 +31,7 @@ class BasicView(miru.View):
 
 
 bot = hikari.GatewayBot("...")
-miru.load(bot)  # Start miru
+miru.install(bot)  # Start miru
 
 
 @bot.listen()

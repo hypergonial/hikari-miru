@@ -73,7 +73,7 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[T]):  # type: ignore[type-arg]
     ValueError
         Raised if the item handler has more than 25 components attached.
     RuntimeError
-        Raised if miru.load() was never called before instantiation.
+        Raised if miru.install() was never called before instantiation.
     """
 
     _app: t.ClassVar[t.Optional[MiruAware]] = None
@@ -98,7 +98,7 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[T]):  # type: ignore[type-arg]
             raise ValueError(f"{self.__class__.__name__} cannot have more than 25 components attached.")
 
         if self.app is None:
-            raise RuntimeError(f"miru.load() was never called before instantiation of {self.__class__.__name__}.")
+            raise RuntimeError(f"miru.install() was not called before instantiation of {self.__class__.__name__}.")
 
     @t.overload
     def __getitem__(self, value: int) -> T:

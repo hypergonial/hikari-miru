@@ -36,7 +36,7 @@ class View(ItemHandler[hikari.impl.ActionRowBuilder]):
     ValueError
         Raised if a view has more than 25 components attached.
     RuntimeError
-        Raised if miru.load() was never called before instantiation.
+        Raised if miru.install() was never called before instantiation.
     """
 
     _view_children: t.Sequence[DecoratedItem] = []  # Decorated callbacks that need to be turned into items
@@ -421,7 +421,7 @@ def get_view(message: hikari.SnowflakeishOr[hikari.PartialMessage]) -> t.Optiona
     """
 
     if View._app is None:
-        raise RuntimeError("miru is not yet loaded! Please call miru.load() first.")
+        raise RuntimeError("miru is not yet initialized! Please call miru.install() first.")
 
     message_id = hikari.Snowflake(message)
 

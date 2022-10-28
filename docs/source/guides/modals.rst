@@ -50,7 +50,7 @@ Now we will get an **interaction** through the use of a button so we can send th
         await ctx.respond_with_modal(modal)
 
     bot = hikari.GatewayBot("YOUR_TOKEN_HERE")
-    miru.load(bot)
+    miru.install(bot)
 
     @bot.listen()
     async def modals(event: hikari.GuildMessageCreateEvent) -> None:

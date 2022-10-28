@@ -24,7 +24,7 @@ class MyNavButton(nav.NavButton):
 
 
 bot = hikari.GatewayBot("...")
-miru.load(bot)
+miru.install(bot)
 
 
 @bot.listen()

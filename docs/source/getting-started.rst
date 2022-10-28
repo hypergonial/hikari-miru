@@ -50,7 +50,7 @@ This is what a basic component menu looks like with miru:
     # Create an instance of our bot. This doesn't need to be a GatewayBot,
     # but needs to implement RESTAware, CacheAware, and EventManagerAware.
     bot = hikari.GatewayBot("YOUR_TOKEN_HERE")
-    miru.load(bot) # Start miru
+    miru.install(bot) # Start miru
     # This function must be called on startup, otherwise you cannot instantiate views
 
 
@@ -117,7 +117,7 @@ Below you can see such an example:
 
 
     bot = hikari.GatewayBot("YOUR_TOKEN_HERE")
-    miru.load(bot)
+    miru.install(bot)
 
 
     @bot.listen()

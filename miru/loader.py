@@ -1,17 +1,20 @@
-import typing
+import logging
+import typing as t
 
 from .abc.item_handler import ItemHandler
 from .events import _EventListener
 from .traits import MiruAware
 from .view import View
 
-__all__ = ["load", "unload"]
+__all__ = ["install", "uninstall", "load", "unload"]
 
-_event_listener: typing.Optional[_EventListener] = None
+_event_listener: t.Optional[_EventListener] = None
+
+logger = logging.getLogger(__name__)
 
 
-def load(bot: MiruAware) -> None:
-    """Load miru and pass the current running application to it.
+def install(bot: MiruAware) -> None:
+    """Install miru and pass the current running application to it.
     Starts listeners for custom miru events.
 
     Parameters
@@ -38,8 +41,8 @@ def load(bot: MiruAware) -> None:
     _event_listener.start_listeners(bot)
 
 
-def unload() -> None:
-    """Unload miru and remove the current running application from it.
+def uninstall() -> None:
+    """Uninstall miru and remove the current running application from it.
     Stops listeners for custom miru events.
 
     .. warning::
@@ -51,6 +54,18 @@ def unload() -> None:
     ItemHandler._app = None
     if _event_listener:
         _event_listener.stop_listeners()
+
+
+def load(bot: MiruAware) -> None:
+    """DEPRECATED: Use miru.install instead."""
+    logger.warning("miru.load is deprecated, use miru.install instead.")
+    install(bot)
+
+
+def unload() -> None:
+    """DEPRECATED: Use miru.uninstall instead."""
+    logger.warning("miru.unload is deprecated, use miru.uninstall instead.")
+    uninstall()
 
 
 # MIT License

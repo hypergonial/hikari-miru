@@ -30,7 +30,7 @@ class Persistence(miru.View):
 
 
 bot = hikari.GatewayBot("...")
-miru.load(bot)
+miru.install(bot)
 
 
 @bot.listen()
@@ -41,7 +41,7 @@ async def startup_views(event: hikari.StartedEvent) -> None:
     # all interactions for every view of type 'Persistence'.
     # If you pass a message_id to start_listener(), it will only handle interactions for that message,
     # and will be considered a bound persistent view.
-    view.start_listener()
+    await view.start()
 
 
 @bot.listen()

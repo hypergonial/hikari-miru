@@ -29,7 +29,7 @@ class ModalView(miru.View):
 
 
 bot = hikari.GatewayBot("...")
-miru.load(bot)
+miru.install(bot)
 
 
 @bot.listen()

@@ -42,7 +42,7 @@ as unbound views have no concept of what message they are attached to.
 
 
     bot = hikari.GatewayBot("...")
-    miru.load(bot)
+    miru.install(bot)
 
     # Handle the restarting of our views on application startup
     @bot.listen()
@@ -108,7 +108,7 @@ simply pass a message ID to ``View.start()``. This also allows for the view to b
 
 
     bot = hikari.GatewayBot("...")
-    miru.load(bot)
+    miru.install(bot)
 
 
     @bot.listen()

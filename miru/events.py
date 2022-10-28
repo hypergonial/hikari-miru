@@ -97,14 +97,14 @@ class _EventListener:
     _app: t.Optional[MiruAware] = None
 
     def start_listeners(self, app: MiruAware) -> None:
-        """Start all custom event listeners, this is called during miru.load()"""
+        """Start all custom event listeners, this is called during miru.install()"""
         if self._app is not None:
             raise RuntimeError(f"miru is already loaded, cannot start listeners.")
         self._app = app
         self._app.event_manager.subscribe(hikari.InteractionCreateEvent, self._sort_interactions)
 
     def stop_listeners(self) -> None:
-        """Stop all custom event listeners for events, this is called during miru.unload()"""
+        """Stop all custom event listeners for events, this is called during miru.uninstall()"""
         if self._app is None:
             raise RuntimeError(f"miru was never loaded, cannot stop listeners.")
         self._app.event_manager.unsubscribe(hikari.InteractionCreateEvent, self._sort_interactions)

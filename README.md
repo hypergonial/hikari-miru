@@ -45,7 +45,7 @@ class MyView(miru.View):
 
 
 bot = hikari.GatewayBot(token="...")
-miru.load(bot) # Load miru and attach it to the bot instance.
+miru.install(bot) # Load miru and attach it to the bot instance.
 
 
 @bot.listen()

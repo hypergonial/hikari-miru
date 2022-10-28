@@ -33,7 +33,7 @@ class NoButton(miru.Button):
 
 
 bot = hikari.GatewayBot("...")
-miru.load(bot)
+miru.install(bot)
 
 
 @bot.listen()

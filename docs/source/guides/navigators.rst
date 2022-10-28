@@ -20,7 +20,7 @@ and using the ``send()`` method to send the navigator to a channel, or as a resp
     from miru.ext import nav
 
     bot = hikari.GatewayBot("...")
-    miru.load(bot)
+    miru.install(bot)
 
 
     @bot.listen()
@@ -83,7 +83,7 @@ You may use any mix of the built-in and custom navigation buttons in your naviga
 
 
     bot = hikari.GatewayBot("...")
-    miru.load(bot)
+    miru.install(bot)
 
 
     @bot.listen()

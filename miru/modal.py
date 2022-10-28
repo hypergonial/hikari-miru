@@ -37,7 +37,7 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder]):
     ValueError
         Raised if the modal has more than 25 components attached.
     RuntimeError
-        Raised if miru.load() was never called before instantiation.
+        Raised if miru.install() was never called before instantiation.
     """
 
     _modal_children: t.Mapping[str, ModalItem] = {}

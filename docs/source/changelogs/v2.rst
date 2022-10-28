@@ -68,3 +68,5 @@ Version 2.0.0
 - ``View.start()`` now accepts awaitables that return ``hikari.Message``, thus allowing it to function with custom objects that support this behaviour.
 
 - Fixed selectoption ``is_default`` fields being ignored.
+
+- Deprecate ``miru.load`` and ``miru.unload`` in favor of ``miru.install`` and ``miru.uninstall``.
