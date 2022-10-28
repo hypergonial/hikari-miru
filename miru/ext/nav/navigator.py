@@ -232,7 +232,7 @@ class NavigatorView(View):
 
     async def send(
         self,
-        channel_or_interaction: t.Union[
+        to: t.Union[
             hikari.SnowflakeishOr[hikari.TextableChannel], hikari.MessageResponseMixin[t.Any]
         ],
         *,
@@ -244,8 +244,8 @@ class NavigatorView(View):
 
         Parameters
         ----------
-        channel_or_interaction : Union[hikari.SnowflakeishOr[hikari.PartialChannel], hikari.MessageResponseMixin[Any]]
-            A channel or interaction to use to send the navigator.
+        to : Union[hikari.SnowflakeishOr[hikari.PartialChannel], hikari.MessageResponseMixin[Any]]
+            The channel or interaction to send the navigator to.
         start_at : int
             If provided, the page number to start the pagination at.
         ephemeral : bool
@@ -253,8 +253,8 @@ class NavigatorView(View):
         responded : bool
             If an interaction was provided, determines if the interaction was previously acknowledged or not.
         """
-        self._ephemeral = ephemeral if isinstance(channel_or_interaction, hikari.MessageResponseMixin) else False
-        self._using_inter = isinstance(channel_or_interaction, hikari.MessageResponseMixin)
+        self._ephemeral = ephemeral if isinstance(to, hikari.MessageResponseMixin) else False
+        self._using_inter = isinstance(to, hikari.MessageResponseMixin)
 
         for button in self.children:
             if isinstance(button, NavItem):
@@ -267,20 +267,20 @@ class NavigatorView(View):
 
         payload = self._get_page_payload(self.pages[start_at])
 
-        if isinstance(channel_or_interaction, (int, hikari.TextableChannel)):
-            channel = hikari.Snowflake(channel_or_interaction)
+        if isinstance(to, (int, hikari.TextableChannel)):
+            channel = hikari.Snowflake(to)
             message = await self.app.rest.create_message(channel, **payload)
 
         else:
-            self._inter = channel_or_interaction
+            self._inter = to
             if not responded:
-                await channel_or_interaction.create_initial_response(
+                await to.create_initial_response(
                     hikari.ResponseType.MESSAGE_CREATE,
                     **payload,
                 )
-                message = await channel_or_interaction.fetch_initial_response()
+                message = await to.fetch_initial_response()
             else:
-                message = await channel_or_interaction.execute(**payload)
+                message = await to.execute(**payload)
 
         if self.is_persistent and not self.is_bound:
             return  # Do not start the view if unbound persistent
