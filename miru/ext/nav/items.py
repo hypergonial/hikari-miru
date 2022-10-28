@@ -182,21 +182,24 @@ class IndicatorButton(NavButton):
 
     async def callback(self, context: ViewContext) -> None:
         modal = Modal(title="Jump to page")
-        modal.add_item(TextInput(label="Page Number", placeholder="Enter a page number to jump to it..."))
+        modal.add_item(
+            TextInput(label="Page Number", placeholder="Enter a page number to jump to it...", custom_id="pgnum")
+        )
         await context.respond_with_modal(modal)
         await modal.wait()
 
-        if not modal.values:
+        if not modal.last_context:
             return
 
         try:
-            page_number = int(list(modal.values.values())[0]) - 1
+            page_number = int(modal.last_context.get_value_by_id("pgnum")) - 1
         except (ValueError, TypeError):
-            self.view._inter = modal.get_response_context().interaction
-            return await modal.get_response_context().defer()
+            self.view._inter = modal.last_context.interaction
+            await modal.last_context.respond("Page number must be a number.", flags=hikari.MessageFlag.EPHEMERAL)
+            return
 
         self.view.current_page = page_number
-        await self.view.send_page(modal.get_response_context())
+        await self.view.send_page(modal.last_context)
 
 
 class StopButton(NavButton):

@@ -5,8 +5,11 @@ import typing as t
 import attr
 import hikari
 
+from .abc.item_handler import ItemHandler
 from .context.raw import RawComponentContext
 from .context.raw import RawModalContext
+from .modal import Modal
+from .view import View
 
 if t.TYPE_CHECKING:
     from .traits import MiruAware
@@ -91,32 +94,79 @@ class ModalInteractionCreateEvent(InteractionCreateEvent):
     context: RawModalContext = attr.field()
 
 
-class _EventListener:
+class EventHandler:
+    """Singleton class for handling events."""
 
-    # The currently running app instance that will be subscribed to the listener
     _app: t.Optional[MiruAware] = None
+    """The currently running app instance that will be subscribed to the listener."""
 
-    def start_listeners(self, app: MiruAware) -> None:
+    _bound_handlers: t.MutableMapping[hikari.Snowflakeish, ItemHandler[t.Any]] = {}
+    """A mapping of message_id to ItemHandler. This contains handlers that are bound to a message or custom_id."""
+
+    _handlers: t.MutableMapping[str, ItemHandler[t.Any]] = {}
+    """A mapping of custom_id to ItemHandler. This only contains handlers that are not bound to a message."""
+
+    def __new__(cls: type[EventHandler]) -> EventHandler:
+        if not hasattr(cls, "instance"):
+            cls.instance = super(EventHandler, cls).__new__(cls)
+        return cls.instance
+
+    def start(self, app: MiruAware) -> None:
         """Start all custom event listeners, this is called during miru.install()"""
         if self._app is not None:
-            raise RuntimeError(f"miru is already loaded, cannot start listeners.")
+            raise RuntimeError(f"miru is already installed, listeners are already running.")
         self._app = app
-        self._app.event_manager.subscribe(hikari.InteractionCreateEvent, self._sort_interactions)
+        self._app.event_manager.subscribe(hikari.InteractionCreateEvent, self._handle_events)
 
-    def stop_listeners(self) -> None:
+    def close(self) -> None:
         """Stop all custom event listeners for events, this is called during miru.uninstall()"""
         if self._app is None:
-            raise RuntimeError(f"miru was never loaded, cannot stop listeners.")
-        self._app.event_manager.unsubscribe(hikari.InteractionCreateEvent, self._sort_interactions)
+            raise RuntimeError(f"miru was never installed, cannot stop listeners.")
+        self._app.event_manager.unsubscribe(hikari.InteractionCreateEvent, self._handle_events)
+        self._bound_handlers.clear()
+        self._handlers.clear()
         self._app = None
 
-    async def _sort_interactions(self, event: hikari.InteractionCreateEvent) -> None:
+    def add_handler(self, handler: ItemHandler[t.Any]) -> None:
+        """Add a handler to the event handler."""
+        if isinstance(handler, View):
+            if handler.is_bound and handler._message_id is not None:
+                self._bound_handlers[handler._message_id] = handler
+            else:
+                for custom_id in (item.custom_id for item in handler.children):
+                    self._handlers[custom_id] = handler
+        elif isinstance(handler, Modal):
+            self._handlers[handler.custom_id] = handler
+
+    def remove_handler(self, handler: ItemHandler[t.Any]) -> None:
+        """Remove a handler from the event handler."""
+        if isinstance(handler, View):
+            if handler.is_bound and handler._message_id is not None:
+                self._bound_handlers.pop(handler._message_id, None)
+            else:
+                for custom_id in (item.custom_id for item in handler.children):
+                    self._handlers.pop(custom_id, None)
+        elif isinstance(handler, Modal):
+            self._handlers.pop(handler.custom_id, None)
+
+    async def _handle_events(self, event: hikari.InteractionCreateEvent) -> None:
         """Sort interaction create events and dispatch miru custom events."""
 
         assert self._app is not None
 
         if not isinstance(event.interaction, (hikari.ComponentInteraction, hikari.ModalInteraction)):
             return
+
+        if isinstance(event.interaction, hikari.ModalInteraction) and (
+            handler := self._handlers.get(event.interaction.custom_id)
+        ):
+            await handler._process_interactions(event)
+
+        elif event.interaction.message and (handler := self._bound_handlers.get(event.interaction.message.id)):
+            await handler._process_interactions(event)
+
+        elif handler := self._handlers.get(event.interaction.custom_id):
+            await handler._process_interactions(event)
 
         # God why does mypy hate me so much for naming two variables the same in two if statement arms >_<
         if isinstance(event.interaction, hikari.ComponentInteraction):

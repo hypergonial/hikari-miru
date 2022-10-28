@@ -104,11 +104,8 @@ class Select(ViewItem):
         disabled: bool = False,
         row: t.Optional[int] = None,
     ) -> None:
-        super().__init__()
+        super().__init__(custom_id, disabled)
         self._values: t.Sequence[str] = []
-        self._persistent: bool = True if custom_id else False
-        self._custom_id: str = os.urandom(16).hex() if not custom_id else custom_id
-        self._disabled: bool = disabled
         self._options: t.Sequence[t.Union[hikari.SelectMenuOption, SelectOption]] = options
         self._min_values: int = min_values
         self._max_values: int = max_values
@@ -197,7 +194,6 @@ class Select(ViewItem):
         """
         Called internally to build and append to an action row
         """
-        assert self.custom_id is not None
         select = action_row.add_select_menu(self.custom_id)
         if self.placeholder:
             select.set_placeholder(self.placeholder)
@@ -209,14 +205,14 @@ class Select(ViewItem):
             if isinstance(option, SelectOption):
                 option = option._convert()
 
-            _option = select.add_option(option.label, option.value)
-            _option.set_is_default(option.is_default)
+            option_builder = select.add_option(option.label, option.value)
+            option_builder.set_is_default(option.is_default)
             if option.description:
-                _option.set_description(option.description)
+                option_builder.set_description(option.description)
             if option.emoji:
-                _option.set_emoji(option.emoji)
+                option_builder.set_emoji(option.emoji)
 
-            _option.add_to_menu()
+            option_builder.add_to_menu()
 
         select.add_to_container()
 

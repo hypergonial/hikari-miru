@@ -57,26 +57,19 @@ class Button(ViewItem):
         emoji: t.Union[hikari.Emoji, str, None] = None,
         row: t.Optional[int] = None,
     ) -> None:
-        super().__init__()
+        super().__init__(custom_id, disabled)
 
         self._style: t.Union[hikari.ButtonStyle, int] = style
         self._label: t.Optional[str] = label
-        self._disabled: bool = disabled
         self._emoji: t.Union[str, hikari.Emoji, None] = emoji
-        self._custom_id: t.Optional[str] = custom_id
         self._row: t.Optional[int] = int(row) if row is not None else None
         self._url: t.Optional[str] = url
-
-        self._persistent: bool = True if custom_id else False
 
         if self._emoji is None and self._label is None:
             raise TypeError("Must provide at least one of emoji or label")
 
-        if self._custom_id and self._url:
+        if self._is_persistent and self._url:
             raise TypeError("Cannot provide both url and custom_id")
-
-        if self.url is None and self.custom_id is None:
-            self.custom_id = os.urandom(16).hex()
 
         if isinstance(self._emoji, str):
             self._emoji = hikari.Emoji.parse(self._emoji)
@@ -170,11 +163,9 @@ class Button(ViewItem):
             hikari.api.InteractiveButtonBuilder[hikari.api.ActionRowBuilder],
             hikari.api.LinkButtonBuilder[hikari.api.ActionRowBuilder],
         ]
-        if self.style is hikari.ButtonStyle.LINK:
-            assert self.url is not None
+        if self.url is not None:
             button = action_row.add_button(hikari.ButtonStyle.LINK, self.url)
         else:
-            assert self.custom_id is not None
             button = action_row.add_button(self.style, self.custom_id)
 
         if self.label:
@@ -182,6 +173,7 @@ class Button(ViewItem):
         if self.emoji:
             button.set_emoji(self.emoji)
         button.set_is_disabled(self.disabled)
+
         button.add_to_container()
 
 

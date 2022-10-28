@@ -15,6 +15,7 @@ from .item import Item
 
 if t.TYPE_CHECKING:
     from ..context import Context
+    from ..events import EventHandler
 
 __all__ = ["ItemHandler"]
 
@@ -77,6 +78,7 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT]):  # type: ignore[type-
     """
 
     _app: t.ClassVar[t.Optional[MiruAware]] = None
+    _events: t.ClassVar[t.Optional[EventHandler]] = None
 
     def __init__(self, *, timeout: t.Optional[t.Union[float, int, datetime.timedelta]] = 120.0) -> None:
         if isinstance(timeout, datetime.timedelta):
@@ -94,7 +96,7 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT]):  # type: ignore[type-
         if len(self.children) > 25:
             raise ValueError(f"{self.__class__.__name__} cannot have more than 25 components attached.")
 
-        if self.app is None:
+        if self.app is None or self._events is None:
             raise RuntimeError(f"miru.install() was not called before instantiation of {self.__class__.__name__}.")
 
     @t.overload
@@ -283,11 +285,9 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT]):  # type: ignore[type-
         Stop listening for interactions.
         """
         self._stopped.set()
-
-        if self._listener_task is not None:
-            self._listener_task.cancel()
-
-        self._listener_task = None
+        if not self._events:
+            return
+        self._events.remove_handler(self)
 
     @abc.abstractmethod
     async def _process_interactions(self, event: hikari.InteractionCreateEvent) -> None:
@@ -295,28 +295,21 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT]):  # type: ignore[type-
         Process incoming interactions.
         """
 
-    @abc.abstractmethod
-    async def _listen_for_events(self) -> None:
-        """
-        Listen for incoming interaction events through the gateway.
-        """
-
     async def _handle_timeout(self) -> None:
         """
-        Handle the timing out of the view.
+        Handle the timing out of the item handler.
         """
+        if not self.timeout:
+            return
+
+        await asyncio.sleep(self.timeout)
         try:
             await self.on_timeout()
         except Exception as error:
             if on_error := getattr(self, "on_error", None):
                 await on_error(error)
 
-        self._stopped.set()
-
-        if self._listener_task is not None:
-            self._listener_task.cancel()
-
-        self._listener_task = None
+        self.stop()
 
     def _create_task(self, coro: t.Awaitable[t.Any], *, name: t.Optional[str] = None) -> asyncio.Task[t.Any]:
         """

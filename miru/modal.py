@@ -68,7 +68,6 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder]):
         self._title: str = title
         self._custom_id: str = custom_id or os.urandom(16).hex()
         self._values: t.Optional[t.Mapping[ModalItem, str]] = None
-        self._ctx: t.Optional[ModalContext] = None
 
         if len(self._title) > 100:
             raise ValueError("Modal title is too long. Maximum 100 characters.")
@@ -125,7 +124,7 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder]):
     @property
     def last_context(self) -> t.Optional[ModalContext]:
         """
-        The last context that was received by the modal.
+        Context proxying the last interaction that was received by the modal.
         """
         assert isinstance(self._last_context, ModalContext)
         return self._last_context
@@ -218,23 +217,6 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder]):
         """
         pass
 
-    def get_response_context(self) -> ModalContext:
-        """Get the context object that was created after submitting the modal.
-
-        Returns
-        -------
-        ModalContext
-            The modal context that was created from the submit interaction.
-
-        Raises
-        ------
-        RuntimeError
-            The modal was not responded to.
-        """
-        if self._ctx is None:
-            raise RuntimeError("This modal was not responded to.")
-        return self._ctx
-
     def get_context(
         self,
         interaction: hikari.ModalInteraction,
@@ -265,68 +247,49 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder]):
         """
         try:
             await self.callback(context)
-            self._ctx = context
             self.stop()  # Modals can only receive one response
 
         except Exception as error:
             await self.on_error(error, context)
 
     async def _process_interactions(self, event: hikari.InteractionCreateEvent) -> None:
-        """
-        Process incoming interactions.
-        """
+        if not isinstance(event.interaction, hikari.ModalInteraction):
+            return
 
-        if isinstance(event.interaction, hikari.ModalInteraction):
+        children = {item.custom_id: item for item in self.children if isinstance(item, ModalItem)}
 
-            children = {item.custom_id: item for item in self.children if isinstance(item, ModalItem)}
+        values = {  # Check if any components match the provided custom_ids
+            children[component.custom_id]: component.value
+            for action_row in event.interaction.components
+            for component in action_row.components  # type: ignore[attr-defined]
+            if children.get(component.custom_id) is not None
+        }
+        if not values:
+            return
 
-            values = {  # Check if any components match the provided custom_ids
-                children[component.custom_id]: component.value
-                for action_row in event.interaction.components
-                for component in action_row.components  # type: ignore[attr-defined]
-                if children.get(component.custom_id) is not None
-            }
-            if not values:
-                return
+        self._values = values
 
-            self._values = values
+        context = self.get_context(event.interaction, values)
+        self._last_context = context
 
-            context = self.get_context(event.interaction, values)
-            self._last_context = context
+        passed = await self.modal_check(context)
+        if not passed:
+            return
 
-            for item in self.children:
-                await item._refresh_state(context)
+        for item in self.children:
+            await item._refresh_state(context)
 
-            passed = await self.modal_check(context)
-            if not passed:
-                return
-
-            # Create task here to ensure autodefer works even if callback stops view
-            self._create_task(self._handle_callback(context))
-
-    async def _listen_for_events(self) -> None:
-        """
-        Listen for incoming interaction events through the gateway.
-        """
-
-        predicate = (
-            lambda e: isinstance(e.interaction, hikari.ModalInteraction) and e.interaction.custom_id == self.custom_id
-        )
-        try:
-            event = await self.app.event_manager.wait_for(
-                hikari.InteractionCreateEvent,
-                timeout=self._timeout,
-                predicate=predicate,
-            )
-        except asyncio.TimeoutError:
-            await self._handle_timeout()
-        else:
-            await self._process_interactions(event)
+        # Create task here to ensure autodefer works even if callback stops view
+        self._create_task(self._handle_callback(context))
 
     async def start(self) -> None:
         """Start up the modal and begin listening for interactions.
         This should not be called manually, use `Modal.send()` instead."""
-        self._listener_task = self._create_task(self._listen_for_events())
+        if not self._events:
+            raise RuntimeError(f"Cannot start Modal {self.__class__.__name__} before calling miru.install() first.")
+
+        self._events.add_handler(self)
+        self._create_task(self._handle_timeout())
 
     async def send(self, interaction: hikari.ModalResponseMixin) -> None:
         """Send this modal as a response to the provided interaction."""

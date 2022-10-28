@@ -2,13 +2,10 @@ import logging
 import typing as t
 
 from .abc.item_handler import ItemHandler
-from .events import _EventListener
+from .events import EventHandler
 from .traits import MiruAware
-from .view import View
 
 __all__ = ["install", "uninstall", "load", "unload"]
-
-_event_listener: t.Optional[_EventListener] = None
 
 logger = logging.getLogger(__name__)
 
@@ -37,8 +34,8 @@ def install(bot: MiruAware) -> None:
         raise TypeError(f"Expected type with trait ViewsAware for parameter bot, not {type(bot)}")
 
     ItemHandler._app = bot
-    _event_listener = _EventListener()
-    _event_listener.start_listeners(bot)
+    ItemHandler._events = EventHandler()
+    ItemHandler._events.start(bot)
 
 
 def uninstall() -> None:
@@ -48,12 +45,10 @@ def uninstall() -> None:
     .. warning::
         Unbound persistent views should be stopped manually.
     """
-    for view in View._views.values():
-        view.stop()
-
     ItemHandler._app = None
-    if _event_listener:
-        _event_listener.stop_listeners()
+    if ItemHandler._events is not None:
+        ItemHandler._events.close()
+        ItemHandler._events = None
 
 
 def load(bot: MiruAware) -> None:

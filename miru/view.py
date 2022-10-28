@@ -4,6 +4,7 @@ import asyncio
 import copy
 import datetime
 import inspect
+import logging
 import sys
 import traceback
 import typing as t
@@ -17,6 +18,8 @@ from .abc.item_handler import ItemHandler
 from .button import Button
 from .context.view import ViewContext
 from .select import Select
+
+logger = logging.getLogger(__name__)
 
 __all__ = ["View", "get_view"]
 
@@ -292,58 +295,23 @@ class View(ItemHandler[hikari.impl.ActionRowBuilder]):
         Process incoming interactions.
         """
 
-        if isinstance(event.interaction, hikari.ComponentInteraction):
+        if not isinstance(event.interaction, hikari.ComponentInteraction):
+            return
 
-            items = [item for item in self.children if item.custom_id == event.interaction.custom_id]
-            if len(items) > 0:
+        items = [item for item in self.children if item.custom_id == event.interaction.custom_id]
+        if items:
 
-                context = self.get_context(event.interaction)
-                self._last_context = context
+            context = self.get_context(event.interaction)
+            self._last_context = context
 
-                passed = await self.view_check(context)
-                if not passed:
-                    return
+            passed = await self.view_check(context)
+            if not passed:
+                return
 
-                for item in items:
-                    assert isinstance(item, ViewItem)
-                    # Create task here to ensure autodefer works even if callback stops view
-                    self._create_task(self._handle_callback(item, context))
-
-    async def _listen_for_events(self, message_id: t.Optional[int] = None) -> None:
-        """
-        Listen for incoming interaction events through the gateway.
-        """
-
-        if message_id:
-            predicate = (
-                lambda e: isinstance(e.interaction, hikari.ComponentInteraction)
-                and e.interaction.message.id == message_id
-            )
-        else:
-            predicate = lambda e: isinstance(e.interaction, hikari.ComponentInteraction)
-
-        while True:
-            try:
-                event = await self.app.event_manager.wait_for(
-                    hikari.InteractionCreateEvent,
-                    timeout=self.timeout,
-                    predicate=predicate,
-                )
-            except asyncio.TimeoutError:
-                # Handle timeouts, stop listening
-                await self._handle_timeout()
-
-            else:
-                await self._process_interactions(event)
-
-    async def _handle_timeout(self) -> None:
-        """
-        Handle the timing out of the view.
-        """
-        if self._message_id:
-            View._views.pop(self._message_id, None)
-
-        await super()._handle_timeout()
+            for item in items:
+                assert isinstance(item, ViewItem)
+                # Create task here to ensure autodefer works even if callback stops view
+                self._create_task(self._handle_callback(item, context))
 
     async def wait_for_input(self, timeout: t.Optional[float] = None) -> None:
         """Wait for any input to be received.
@@ -377,9 +345,12 @@ class View(ItemHandler[hikari.impl.ActionRowBuilder]):
         TypeError
             Parameter 'message' cannot be resolved to an instance of 'hikari.Message'.
         """
+        if self._events is None:
+            raise RuntimeError(f"Cannot start View {self.__class__.__name__} before calling miru.install() first.")
 
-        # Optimize URL-button-only views by not starting listener
+        # Optimize URL-button-only views by not adding to listener
         if all((isinstance(item, Button) and item.url is not None) for item in self.children):
+            logger.warning(f"View {self.__class__.__name__} only contains link buttons. Ignoring 'View.start()' call.")
             return
 
         if message is None and not self.is_persistent:
@@ -388,7 +359,7 @@ class View(ItemHandler[hikari.impl.ActionRowBuilder]):
             )
 
         if message is None:
-            self._listener_task = self._create_task(self._listen_for_events())
+            self._events.add_handler(self)
             return
 
         result = (await message) if inspect.isawaitable(message) else message
@@ -400,13 +371,8 @@ class View(ItemHandler[hikari.impl.ActionRowBuilder]):
         if isinstance(result, hikari.Message):
             self._message = result
 
-        self._listener_task = self._create_task(self._listen_for_events(self._message_id))
-
-        # Handle replacement of view on message edit
-        if self._message_id in View._views.keys():
-            View._views[self._message_id].stop()
-
-        View._views[self._message_id] = self
+        self._events.add_handler(self)
+        self._create_task(self._handle_timeout())
 
 
 def get_view(message: hikari.SnowflakeishOr[hikari.PartialMessage]) -> t.Optional[View]:
@@ -428,13 +394,14 @@ def get_view(message: hikari.SnowflakeishOr[hikari.PartialMessage]) -> t.Optiona
         miru was not loaded before this call.
     """
 
-    if View._app is None:
+    if View._events is None:
         raise RuntimeError("miru is not yet initialized! Please call miru.install() first.")
 
     message_id = hikari.Snowflake(message)
 
-    if view := View._views.get(int(message_id)):
-        return view
+    if view := View._events._bound_handlers.get(message_id):
+        if isinstance(view, View):
+            return view
 
     return None
 

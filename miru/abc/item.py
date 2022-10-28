@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import abc
+import os
 import typing as t
 from abc import abstractmethod
 from functools import partial
@@ -25,12 +26,24 @@ class Item(abc.ABC, t.Generic[BuilderT]):
     An abstract base class for all components. Cannot be directly instantiated.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, custom_id: t.Optional[str] = None) -> None:
         self._row: t.Optional[int] = None
+        """The row the item should be placed at. None for auto-placement."""
+
         self._width: int = 1
-        self._rendered_row: t.Optional[int] = None  # Where it actually ends up when rendered by Discord
-        self._custom_id: t.Optional[str] = None
+        """The relative width of the item. 5 takes up a whole row."""
+
+        self._rendered_row: t.Optional[int] = None
+        """The row the item was placed at when rendered. None if this item was not sent to a message yet."""
+
+        self._custom_id: str = os.urandom(16).hex() if custom_id is None else custom_id
+        """The Discord custom_id of the item."""
+
+        self._is_persistent: bool = custom_id is not None
+        """If True, the custom_id was provided by the user, and not randomly generated."""
+
         self._handler: t.Optional[ItemHandler[BuilderT]] = None
+        """The handler the item was added to, if any."""
 
     @property
     def row(self) -> t.Optional[int]:
@@ -42,7 +55,7 @@ class Item(abc.ABC, t.Generic[BuilderT]):
     @row.setter
     def row(self, value: t.Optional[int]) -> None:
         if self._rendered_row is not None:
-            raise RuntimeError("Item is already attached to a view, row cannot be changed.")
+            raise RuntimeError("Item is already attached to an item handler, row cannot be changed.")
 
         if value is None:
             self._row = None
@@ -59,7 +72,7 @@ class Item(abc.ABC, t.Generic[BuilderT]):
         return self._width
 
     @property
-    def custom_id(self) -> t.Optional[str]:
+    def custom_id(self) -> str:
         """
         The item's custom identifier. This will be used to track the item through interactions and
         is required for persistent views.
@@ -73,7 +86,8 @@ class Item(abc.ABC, t.Generic[BuilderT]):
         if value and len(value) > 100:
             raise ValueError("custom_id has a max length of 100.")
 
-        self._custom_id = value
+        self._is_persistent = bool(value)
+        self._custom_id = value or os.urandom(16).hex()
 
     @abc.abstractmethod
     def _build(self, action_row: t.Any) -> None:
@@ -99,11 +113,10 @@ class ViewItem(Item[hikari.impl.ActionRowBuilder], abc.ABC):
     An abstract base class for view components. Cannot be directly instantiated.
     """
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, custom_id: t.Optional[str] = None, disabled: bool = False) -> None:
+        super().__init__(custom_id)
         self._handler: t.Optional[View] = None
-        self._is_persistent: bool = False
-        self._disabled: bool = False
+        self._disabled: bool = disabled
 
     @property
     def view(self) -> View:
@@ -163,10 +176,10 @@ class ModalItem(Item[hikari.impl.ModalActionRowBuilder], abc.ABC):
     An abstract base class for modal components. Cannot be directly instantiated.
     """
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, custom_id: t.Optional[str] = None, required: bool = False) -> None:
+        super().__init__(custom_id)
         self._handler: t.Optional[Modal] = None
-        self._required: bool = False
+        self._required: bool = required
 
     @property
     def modal(self) -> t.Optional[Modal]:

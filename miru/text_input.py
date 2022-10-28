@@ -56,20 +56,15 @@ class TextInput(ModalItem):
         custom_id: t.Optional[str] = None,
         row: t.Optional[int] = None,
     ) -> None:
-        super().__init__()
+        super().__init__(custom_id, required)
         self._width: int = 5
         self._style: t.Union[hikari.TextInputStyle, int] = style
         self._placeholder: t.Optional[str] = str(placeholder) if placeholder else None
         self._value: t.Optional[str] = str(value) if value else None
         self._label: str = str(label)
-        self._required: bool = required
-        self._custom_id: t.Optional[str] = custom_id
         self._max_length: t.Optional[int] = max_length
         self._min_length: t.Optional[int] = min_length
         self._row: t.Optional[int] = int(row) if row is not None else None
-
-        if self.custom_id is None:
-            self.custom_id = os.urandom(16).hex()
 
         if not self._value:
             return
@@ -94,7 +89,7 @@ class TextInput(ModalItem):
     @style.setter
     def style(self, value: t.Union[hikari.TextInputStyle, int]) -> None:
         if not isinstance(value, (hikari.TextInputStyle, int)):
-            raise TypeError("Expected type hikari.ButtonStyle or int for property style.")
+            raise TypeError("Expected type hikari.TextInputStyle or int for property style.")
 
         self._style = value
 
@@ -168,7 +163,6 @@ class TextInput(ModalItem):
         self._max_length = value
 
     def _build(self, action_row: hikari.api.ModalActionRowBuilder) -> None:
-        assert self.custom_id is not None
         text_input = action_row.add_text_input(custom_id=self.custom_id, label=self.label)
 
         text_input.set_required(self.required)
