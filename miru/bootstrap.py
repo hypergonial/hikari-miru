@@ -1,6 +1,8 @@
 import logging
 import typing as t
 
+from miru.exceptions import BootstrapFailureError
+
 from .abc.item_handler import ItemHandler
 from .events import EventHandler
 from .traits import MiruAware
@@ -22,16 +24,16 @@ def install(bot: MiruAware) -> None:
 
     Raises
     ------
-    RuntimeError
+    BootstrapFailureError
         miru is already loaded
     TypeError
         Parameter bot does not have traits specified in MiruAware
     """
     if ItemHandler._app is not None:
-        raise RuntimeError("miru is already loaded!")
+        raise BootstrapFailureError("miru is already loaded!")
 
     if not isinstance(bot, MiruAware):
-        raise TypeError(f"Expected type with trait ViewsAware for parameter bot, not {type(bot)}")
+        raise TypeError(f"Expected type with trait MiruAware for parameter bot, not {type(bot)}")
 
     ItemHandler._app = bot
     ItemHandler._events = EventHandler()

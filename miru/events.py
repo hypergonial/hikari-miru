@@ -107,21 +107,21 @@ class EventHandler:
     """A mapping of custom_id to ItemHandler. This only contains handlers that are not bound to a message."""
 
     def __new__(cls: type[EventHandler]) -> EventHandler:
-        if not hasattr(cls, "instance"):
+        if not hasattr(cls, "instance"):  # Ensure that class remains singleton
             cls.instance = super(EventHandler, cls).__new__(cls)
         return cls.instance
 
     def start(self, app: MiruAware) -> None:
         """Start all custom event listeners, this is called during miru.install()"""
         if self._app is not None:
-            raise RuntimeError(f"miru is already installed, listeners are already running.")
+            self.close()
         self._app = app
         self._app.event_manager.subscribe(hikari.InteractionCreateEvent, self._handle_events)
 
     def close(self) -> None:
         """Stop all custom event listeners for events, this is called during miru.uninstall()"""
         if self._app is None:
-            raise RuntimeError(f"miru was never installed, cannot stop listeners.")
+            raise RuntimeError(f"miru was never installed, cannot close listener.")
         self._app.event_manager.unsubscribe(hikari.InteractionCreateEvent, self._handle_events)
         self._bound_handlers.clear()
         self._handlers.clear()

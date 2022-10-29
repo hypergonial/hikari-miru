@@ -8,6 +8,8 @@ from functools import partial
 
 import hikari
 
+from miru.exceptions import ItemAlreadyAttachedError
+
 if t.TYPE_CHECKING:
     from ..context import Context
     from ..context import ViewContext
@@ -55,7 +57,7 @@ class Item(abc.ABC, t.Generic[BuilderT]):
     @row.setter
     def row(self, value: t.Optional[int]) -> None:
         if self._rendered_row is not None:
-            raise RuntimeError("Item is already attached to an item handler, row cannot be changed.")
+            raise ItemAlreadyAttachedError("Item is already attached to an item handler, row cannot be changed.")
 
         if value is None:
             self._row = None
@@ -138,7 +140,7 @@ class ViewItem(Item[hikari.impl.ActionRowBuilder], abc.ABC):
     @disabled.setter
     def disabled(self, value: bool) -> None:
         if not isinstance(value, bool):
-            raise TypeError("Expected type bool for property disabled.")
+            raise TypeError("Expected type 'bool' for property 'disabled'.")
         self._disabled = value
 
     @property
@@ -201,7 +203,7 @@ class ModalItem(Item[hikari.impl.ModalActionRowBuilder], abc.ABC):
     @required.setter
     def required(self, value: bool) -> None:
         if not isinstance(value, bool):
-            raise TypeError("Expected type bool for property required.")
+            raise TypeError("Expected type 'bool' for property 'required'.")
         self._required = value
 
     @property

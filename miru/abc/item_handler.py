@@ -10,6 +10,10 @@ from collections.abc import Sequence
 
 import hikari
 
+from ..exceptions import BootstrapFailureError
+from ..exceptions import HandlerFullError
+from ..exceptions import ItemAlreadyAttachedError
+from ..exceptions import RowFullError
 from ..traits import MiruAware
 from .item import Item
 
@@ -37,7 +41,7 @@ class _Weights:
     def add_item(self, item: Item[BuilderT]) -> None:
         if item.row is not None:
             if item.width + self._weights[item.row] > 5:
-                raise ValueError(f"Item does not fit on row {item.row}!")
+                raise RowFullError(f"Item does not fit on row {item.row}!")
 
             self._weights[item.row] += item.width
             item._rendered_row = item.row
@@ -47,7 +51,7 @@ class _Weights:
                     self._weights[row] += item.width
                     item._rendered_row = row
                     return
-            raise ValueError("Item does not fit on this item handler.")
+            raise HandlerFullError("Item does not fit on this item handler.")
 
     def remove_item(self, item: Item[BuilderT]) -> None:
         if item._rendered_row is not None:
@@ -71,9 +75,9 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT]):  # type: ignore[type-
 
     Raises
     ------
-    ValueError
+    HandlerFullError
         Raised if the item handler has more than 25 components attached.
-    RuntimeError
+    BootStrapFailureError
         Raised if miru.install() was never called before instantiation.
     """
 
@@ -94,10 +98,12 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT]):  # type: ignore[type-
         self._last_context: t.Optional[Context[t.Any]] = None
 
         if len(self.children) > 25:
-            raise ValueError(f"{self.__class__.__name__} cannot have more than 25 components attached.")
+            raise HandlerFullError(f"{self.__class__.__name__} cannot have more than 25 components attached.")
 
         if self.app is None or self._events is None:
-            raise RuntimeError(f"miru.install() was not called before instantiation of {self.__class__.__name__}.")
+            raise BootstrapFailureError(
+                f"miru.install() was not called before instantiation of {self.__class__.__name__}."
+            )
 
     @t.overload
     def __getitem__(self, value: int) -> BuilderT:
@@ -192,16 +198,18 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT]):  # type: ignore[type-
         """
 
         if len(self.children) > 25:
-            raise ValueError("View cannot have more than 25 components attached.")
+            raise HandlerFullError("Item Handler cannot have more than 25 components attached.")
 
         if not isinstance(item, Item):
-            raise TypeError(f"Expected Item not {type(item)} for parameter item.")
+            raise TypeError(f"Expected Item not {item.__class__.__name__} for parameter item.")
 
         if item in self.children:
-            raise RuntimeError("Item is already attached to this item handler.")
+            raise ItemAlreadyAttachedError(f"Item {item.__class__.__name__} is already attached to this item handler.")
 
-        if hasattr(item, "_handler") and item._handler is not None:
-            raise RuntimeError("Item is already attached to an item handler-")
+        if item._handler is not None:
+            raise ItemAlreadyAttachedError(
+                f"Item {item.__class__.__name__} is already attached to another item handler: {item._handler.__class__.__name__}."
+            )
 
         self._weights.add_item(item)
 

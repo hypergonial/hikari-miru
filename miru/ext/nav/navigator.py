@@ -71,10 +71,6 @@ class NavigatorView(View):
             for default_button in default_buttons:
                 self.add_item(default_button)
 
-        for page in pages:
-            if not isinstance(page, (str, hikari.Embed)):
-                raise TypeError("Expected type List[str, hikari.Embed] for parameter pages.")
-
     @property
     def pages(self) -> t.Sequence[t.Union[str, hikari.Embed]]:
         """
@@ -147,7 +143,7 @@ class NavigatorView(View):
             The item handler the item was added to.
         """
         if not isinstance(item, NavItem):
-            raise TypeError("Expected type NavItem for parameter item.")
+            raise TypeError(f"Expected type 'NavItem' for parameter item, not '{item.__class__.__name__}'.")
 
         return super().add_item(item)  # type: ignore[return-value]
 
@@ -164,7 +160,7 @@ class NavigatorView(View):
         embeds = [page] if isinstance(page, hikari.Embed) else []
 
         if not content and not embeds:
-            raise TypeError("Expected type str or hikari.Embed to send as page.")
+            raise TypeError(f"Expected type 'str' or 'hikari.Embed' to send as page, not '{page.__class__.__name__}'.")
 
         if self.ephemeral:
             return dict(

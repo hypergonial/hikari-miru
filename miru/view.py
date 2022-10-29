@@ -11,6 +11,9 @@ import typing as t
 
 import hikari
 
+from miru.exceptions import BootstrapFailureError
+from miru.exceptions import HandlerFullError
+
 from .abc.item import DecoratedItem
 from .abc.item import Item
 from .abc.item import ViewItem
@@ -59,7 +62,7 @@ class View(ItemHandler[hikari.impl.ActionRowBuilder]):
                     children.append(value)
 
         if len(children) > 25:
-            raise ValueError("View cannot have more than 25 components attached.")
+            raise HandlerFullError("View cannot have more than 25 components attached.")
 
         cls._view_children = children
 
@@ -344,9 +347,13 @@ class View(ItemHandler[hikari.impl.ActionRowBuilder]):
         ------
         TypeError
             Parameter 'message' cannot be resolved to an instance of 'hikari.Message'.
+        BootstrapFailureError
+            miru.install() was not called before starting a view.
         """
         if self._events is None:
-            raise RuntimeError(f"Cannot start View {self.__class__.__name__} before calling miru.install() first.")
+            raise BootstrapFailureError(
+                f"Cannot start View {self.__class__.__name__} before calling miru.install() first."
+            )
 
         # Optimize URL-button-only views by not adding to listener
         if all((isinstance(item, Button) and item.url is not None) for item in self.children):
@@ -390,12 +397,12 @@ def get_view(message: hikari.SnowflakeishOr[hikari.PartialMessage]) -> t.Optiona
 
     Raises
     ------
-    RuntimeError
-        miru was not loaded before this call.
+    BootstrapFailureError
+        miru.install() was not called before this operation.
     """
 
     if View._events is None:
-        raise RuntimeError("miru is not yet initialized! Please call miru.install() first.")
+        raise BootstrapFailureError("miru is not yet initialized! Please call miru.install() first.")
 
     message_id = hikari.Snowflake(message)
 

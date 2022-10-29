@@ -9,12 +9,13 @@ import typing as t
 
 import hikari
 
+from miru.exceptions import BootstrapFailureError
+from miru.exceptions import HandlerFullError
+
 from .abc.item import Item
 from .abc.item import ModalItem
 from .abc.item_handler import ItemHandler
 from .context.modal import ModalContext
-
-ModalT = t.TypeVar("ModalT", bound="Modal")
 
 
 class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder]):
@@ -33,9 +34,9 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder]):
 
     Raises
     ------
-    ValueError
+    HandlerFullError
         Raised if the modal has more than 25 components attached.
-    RuntimeError
+    BootstrapFailureError
         Raised if miru.install() was never called before instantiation.
     """
 
@@ -52,7 +53,7 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder]):
                     children[name] = value
 
         if len(children) > 25:
-            raise ValueError("Modal cannot have more than 25 components attached.")
+            raise HandlerFullError("Modal cannot have more than 25 components attached.")
         cls._modal_children = children
 
     def __init__(
@@ -285,7 +286,9 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder]):
         """Start up the modal and begin listening for interactions.
         This should not be called manually, use `Modal.send()` instead."""
         if not self._events:
-            raise RuntimeError(f"Cannot start Modal {self.__class__.__name__} before calling miru.install() first.")
+            raise BootstrapFailureError(
+                f"Cannot start Modal {self.__class__.__name__} before calling miru.install() first."
+            )
 
         self._events.add_handler(self)
         self._create_task(self._handle_timeout())

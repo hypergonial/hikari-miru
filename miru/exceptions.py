@@ -1,15 +1,27 @@
-from .bootstrap import *
-from .button import *
-from .context import *
-from .events import *
-from .exceptions import *
-from .modal import *
-from .select import *
-from .text_input import *
-from .traits import *
-from .view import *
+import typing as t
 
-__version__ = "2.0.0"
+__all__ = ("MiruException", "BootstrapFailureError", "RowFullError", "HandlerFullError", "ItemAlreadyAttachedError")
+
+
+class MiruException(Exception):
+    """Base class for all miru exceptions."""
+
+
+class BootstrapFailureError(MiruException):
+    """Raised when the requested operation requires calling miru.install() beforehand, but was ommitted."""
+
+
+class RowFullError(MiruException):
+    """Raised when a row of components is full and cannot be added to."""
+
+
+class HandlerFullError(MiruException):
+    """Raised when an ItemHandler instance is full and cannot fit more components."""
+
+
+class ItemAlreadyAttachedError(MiruException):
+    """Raised when an item is already attached to a handler and the requested operation is not possible because of it."""
+
 
 # MIT License
 #

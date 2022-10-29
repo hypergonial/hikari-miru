@@ -9,6 +9,8 @@ import typing as t
 import hikari
 from hikari.snowflakes import Snowflake
 
+from miru.exceptions import BootstrapFailureError
+
 from ..abc.item_handler import ItemHandler
 from ..traits import MiruAware
 
@@ -198,7 +200,7 @@ class Context(abc.ABC, t.Generic[InteractionT]):
     def app(self) -> MiruAware:
         """The application that loaded miru."""
         if not ItemHandler._app:
-            raise AttributeError(f"miru was not loaded, {self.__class__.__name__} has no property app.")
+            raise BootstrapFailureError(f"miru was not loaded, {self.__class__.__name__} has no property app.")
 
         return ItemHandler._app
 
