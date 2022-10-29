@@ -10,10 +10,10 @@ import miru
 # scope of this example.
 
 # Tip: It is recommended to subclass components to have the ability to pass
-# custom_id variables. See the subclassed example on how to do this.
+# variable custom_ids. See the subclassed example on how to do this.
 
 # Tip 2: To check if your view can be persistent or not, use the View.is_persistent
-# boolean property.
+# boolean property. If this is false, calling view.start() without a message will fail.
 
 
 class Persistence(miru.View):
@@ -37,9 +37,9 @@ miru.install(bot)
 async def startup_views(event: hikari.StartedEvent) -> None:
     # You must reinstantiate the view in the same state it was before shutdown (e.g. same custom_ids)
     view = Persistence()
-    # Restart the listener for the view, if you do not pass a message_id, this will handle
-    # all interactions for every view of type 'Persistence'.
-    # If you pass a message_id to start_listener(), it will only handle interactions for that message,
+    # Restart the listener for the view, if you do not pass a message (id), this will handle
+    # all interactions for every view of type 'Persistence' globally.
+    # If you do pass a message_id to start(), it will only handle interactions for that message,
     # and will be considered a bound persistent view.
     await view.start()
 
