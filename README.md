@@ -12,6 +12,7 @@ To install miru, run the following command:
 ```sh
 python3 -m pip install -U hikari-miru
 ```
+
 To check if miru has successfully installed or not, run the following:
 
 ```sh
@@ -76,4 +77,4 @@ For general usage help or questions, see the `#miru` channel in the [hikari disc
 
 ## Contributing
 
-If you wish to contribute, be sure to first enable the formatting pre-commit hook via `git config core.hooksPath .githooks`, then make your changes. Also make sure to run [nox](https://nox.thea.codes/en/stable/) before pushing your changes, and ensure all pipelines pass.
+If you wish to contribute, make sure to run [nox](https://nox.thea.codes/en/stable/) before pushing your changes, and ensure all pipelines pass. This will format and typecheck your code to ensure it passes the CI.
