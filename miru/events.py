@@ -161,12 +161,15 @@ class EventHandler:
             handler := self._handlers.get(event.interaction.custom_id)
         ):
             await handler._process_interactions(event)
+            return
 
-        elif event.interaction.message and (handler := self._bound_handlers.get(event.interaction.message.id)):
+        if event.interaction.message and (handler := self._bound_handlers.get(event.interaction.message.id)):
             await handler._process_interactions(event)
+            return
 
-        elif handler := self._handlers.get(event.interaction.custom_id):
+        if handler := self._handlers.get(event.interaction.custom_id):
             await handler._process_interactions(event)
+            return
 
         # God why does mypy hate me so much for naming two variables the same in two if statement arms >_<
         if isinstance(event.interaction, hikari.ComponentInteraction):
