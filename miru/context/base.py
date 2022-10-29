@@ -457,11 +457,8 @@ class Context(abc.ABC, t.Generic[InteractionT]):
             return self._create_response(message)
 
         else:
-            if isinstance(self.interaction, hikari.ModalInteraction):
-                raise RuntimeError("Cannot edit a modal's initial response, as it does not yet exist.")
-
             await self.interaction.create_initial_response(
-                hikari.ResponseType.MESSAGE_UPDATE,
+                hikari.ResponseType.MESSAGE_UPDATE,  # type: ignore [arg-type]
                 content,
                 component=component,
                 components=components,
@@ -503,7 +500,7 @@ class Context(abc.ABC, t.Generic[InteractionT]):
         Parameters
         ----------
         response_type : hikari.ResponseType, optional
-            The response-type of this defer action. Defaults to DEFERRED_MESSAGE_UPDATE in the case of views, and DEFERRED_MESSAGE_CREATE in the case of modals.
+            The response-type of this defer action. Defaults to DEFERRED_MESSAGE_UPDATE.
         flags : t.Union[int, hikari.MessageFlag, None], optional
             Message flags that should be included with this defer request, by default None
 
@@ -514,13 +511,7 @@ class Context(abc.ABC, t.Generic[InteractionT]):
         ValueError
             response_type was not a deffered response type.
         """
-        response_type = (
-            args[0]
-            if args
-            else hikari.ResponseType.DEFERRED_MESSAGE_UPDATE
-            if isinstance(self.interaction, hikari.ComponentInteraction)
-            else hikari.ResponseType.DEFERRED_MESSAGE_CREATE
-        )
+        response_type = args[0] if args else hikari.ResponseType.DEFERRED_MESSAGE_UPDATE
 
         if response_type not in [
             hikari.ResponseType.DEFERRED_MESSAGE_CREATE,
@@ -529,12 +520,6 @@ class Context(abc.ABC, t.Generic[InteractionT]):
             raise ValueError(
                 "Parameter response_type must be ResponseType.DEFERRED_MESSAGE_CREATE or ResponseType.DEFERRED_MESSAGE_UPDATE."
             )
-
-        if (
-            isinstance(self.interaction, hikari.ModalInteraction)
-            and response_type == hikari.ResponseType.DEFERRED_MESSAGE_UPDATE
-        ):
-            raise ValueError("Modal interactions cannot be deferred with ResponseType.DEFERRED_MESSAGE_UPDATE.")
 
         if self._issued_response:
             raise RuntimeError("Interaction was already responded to.")

@@ -195,7 +195,7 @@ class IndicatorButton(NavButton):
             page_number = int(modal.last_context.get_value_by_id("pgnum")) - 1
         except (ValueError, TypeError):
             self.view._inter = modal.last_context.interaction
-            await modal.last_context.respond("Page number must be a number.", flags=hikari.MessageFlag.EPHEMERAL)
+            await modal.last_context.defer()
             return
 
         self.view.current_page = page_number
