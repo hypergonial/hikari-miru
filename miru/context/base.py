@@ -174,7 +174,7 @@ class Context(abc.ABC, t.Generic[InteractionT]):
     """An abstract base class for context
     objects that proxying a Discord interaction."""
 
-    __slots__ = ("_interaction", "_responses")
+    __slots__ = ("_interaction", "_responses", "_issued_response")
 
     def __init__(self, interaction: InteractionT) -> None:
         self._interaction: InteractionT = interaction
