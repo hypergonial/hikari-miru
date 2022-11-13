@@ -8,10 +8,10 @@ import hikari
 
 from .abc.item import DecoratedItem
 from .abc.item import ViewItem
+from .context.view import ViewContext
 
 if t.TYPE_CHECKING:
     from .context.base import Context
-    from .context.view import ViewContext
     from .view import View
 
     ViewT = t.TypeVar("ViewT", bound="View")
