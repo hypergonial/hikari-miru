@@ -158,10 +158,10 @@ class Button(ViewItem):
             row=row,
         )
 
-    def _build(self, action_row: hikari.api.ActionRowBuilder) -> None:
+    def _build(self, action_row: hikari.api.MessageActionRowBuilder) -> None:
         button: t.Union[
-            hikari.api.InteractiveButtonBuilder[hikari.api.ActionRowBuilder],
-            hikari.api.LinkButtonBuilder[hikari.api.ActionRowBuilder],
+            hikari.api.InteractiveButtonBuilder[hikari.api.MessageActionRowBuilder],
+            hikari.api.LinkButtonBuilder[hikari.api.MessageActionRowBuilder],
         ]
         if self.url is not None:
             button = action_row.add_button(hikari.ButtonStyle.LINK, self.url)

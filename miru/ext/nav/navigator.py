@@ -124,7 +124,7 @@ class NavigatorView(View):
         """
         return [FirstButton(), PrevButton(), IndicatorButton(), NextButton(), LastButton()]
 
-    def add_item(self, item: Item[hikari.impl.ActionRowBuilder]) -> NavigatorView:
+    def add_item(self, item: Item[hikari.impl.MessageActionRowBuilder]) -> NavigatorView:
         """Adds a new item to the navigator. Item must be of type NavButton.
 
         Parameters
@@ -147,7 +147,7 @@ class NavigatorView(View):
 
         return super().add_item(item)  # type: ignore[return-value]
 
-    def remove_item(self, item: Item[hikari.impl.ActionRowBuilder]) -> NavigatorView:
+    def remove_item(self, item: Item[hikari.impl.MessageActionRowBuilder]) -> NavigatorView:
         return super().remove_item(item)  # type: ignore[return-value]
 
     def clear_items(self) -> NavigatorView:

@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 __all__ = ["View", "get_view"]
 
 
-class View(ItemHandler[hikari.impl.ActionRowBuilder]):
+class View(ItemHandler[hikari.impl.MessageActionRowBuilder]):
     """Represents a set of Discord UI components attached to a message.
 
     Parameters
@@ -125,8 +125,8 @@ class View(ItemHandler[hikari.impl.ActionRowBuilder]):
         return self._last_context
 
     @property
-    def _builder(self) -> type[hikari.impl.ActionRowBuilder]:
-        return hikari.impl.ActionRowBuilder
+    def _builder(self) -> type[hikari.impl.MessageActionRowBuilder]:
+        return hikari.impl.MessageActionRowBuilder
 
     @classmethod
     def from_message(cls, message: hikari.Message, *, timeout: t.Optional[float] = 120, autodefer: bool = True) -> View:
@@ -167,7 +167,7 @@ class View(ItemHandler[hikari.impl.ActionRowBuilder]):
 
         return view
 
-    def add_item(self: View, item: Item[hikari.impl.ActionRowBuilder]) -> View:
+    def add_item(self: View, item: Item[hikari.impl.MessageActionRowBuilder]) -> View:
         """Adds a new item to the view.
 
         Parameters
@@ -198,7 +198,7 @@ class View(ItemHandler[hikari.impl.ActionRowBuilder]):
         return super().add_item(item)  # type: ignore[return-value]
 
     # typing.Self please save me
-    def remove_item(self, item: Item[hikari.impl.ActionRowBuilder]) -> View:
+    def remove_item(self, item: Item[hikari.impl.MessageActionRowBuilder]) -> View:
         return super().remove_item(item)  # type: ignore[return-value]
 
     def clear_items(self) -> View:

@@ -190,7 +190,7 @@ class Select(ViewItem):
             row=row,
         )
 
-    def _build(self, action_row: hikari.api.ActionRowBuilder) -> None:
+    def _build(self, action_row: hikari.api.MessageActionRowBuilder) -> None:
         """
         Called internally to build and append to an action row
         """

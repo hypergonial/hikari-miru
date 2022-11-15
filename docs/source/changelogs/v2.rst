@@ -37,7 +37,7 @@ Version 2.0.0
 
 - Added ``miru.abc.ItemHandler.last_context`` to access the last received context & interaction by the item handler.
 
-- ``miru.abc.ItemHandler`` now implements ``Sequence[hikari.api.ActionRowBuilder]``, and thus can be treated as a sequence of action rows. This means that calling ``.build()`` on item handlers is no longer required.
+- ``miru.abc.ItemHandler`` now implements ``Sequence[hikari.api.MessageActionRowBuilder]``, and thus can be treated as a sequence of action rows. This means that calling ``.build()`` on item handlers is no longer required.
 
 - Removed ``miru.Interaction``.
 

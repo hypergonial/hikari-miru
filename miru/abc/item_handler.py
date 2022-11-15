@@ -62,7 +62,7 @@ class _Weights:
         self._weights = [0, 0, 0, 0, 0]
 
 
-# Add Sequence[hikari.api.ActionRowBuilder] here when dropping 3.8 support
+# Add Sequence[hikari.api.MessageActionRowBuilder] here when dropping 3.8 support
 class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT]):  # type: ignore[type-arg]
     """Abstract base class all item-handlers (e.g. views, modals) inherit from.
 
@@ -263,7 +263,7 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT]):  # type: ignore[type-
 
         Returns
         -------
-        List[hikari.impl.ActionRowBuilder]
+        List[hikari.impl.MessageActionRowBuilder]
             A list of action rows containing all items attached to this item handler,
             converted to hikari component objects. If the item handler has no items attached,
             this returns an empty list.

@@ -76,8 +76,8 @@ class TextInput(ModalItem):
             raise ValueError("Parameter value does not meet maximum length requirement.")
 
     @property
-    def type(self) -> hikari.ModalComponentType:
-        return hikari.ModalComponentType.TEXT_INPUT
+    def type(self) -> hikari.ComponentType:
+        return hikari.ComponentType.TEXT_INPUT
 
     @property
     def style(self) -> t.Union[hikari.TextInputStyle, int]:
