@@ -34,9 +34,6 @@ class NavigatorView(View):
         The duration after which the view times out, in seconds, by default 120.0
     autodefer : bool, optional
         If unhandled interactions should be automatically deferred or not, by default True
-    replace_attachments : bool, optional
-        If True, replace all attachments when editing the message. This must be `True` if
-        you are using different images on each page.
 
     Raises
     ------
@@ -51,10 +48,8 @@ class NavigatorView(View):
         buttons: t.Optional[t.Sequence[NavButton]] = None,
         timeout: t.Optional[t.Union[float, int, datetime.timedelta]] = 120.0,
         autodefer: bool = True,
-        replace_attachments: bool = False,
     ) -> None:
         self._pages: t.Sequence[t.Union[str, hikari.Embed]] = pages
-        self._replace_attachments = replace_attachments
         self._current_page: int = 0
         self._ephemeral: bool = False
         # If the nav is using interaction-based handling or not
@@ -168,10 +163,9 @@ class NavigatorView(View):
                 embeds=embeds,
                 components=self,
                 flags=hikari.MessageFlag.EPHEMERAL,
-                replace_attachments=self._replace_attachments,
             )
         else:
-            return dict(content=content, embeds=embeds, components=self, replace_attachments=self._replace_attachments)
+            return dict(content=content, embeds=embeds, components=self)
 
     @property
     def is_persistent(self) -> bool:
