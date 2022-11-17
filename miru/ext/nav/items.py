@@ -19,8 +19,8 @@ if t.TYPE_CHECKING:
 class NavItem(ViewItem, abc.ABC):
     """A baseclass for all navigation items. NavigatorView requires instances of this class as it's items."""
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, custom_id: t.Optional[str] = None, disabled: bool = False) -> None:
+        super().__init__(custom_id=custom_id, disabled=disabled)
         self._handler: t.Optional[NavigatorView] = None
 
     async def before_page_change(self) -> None:
