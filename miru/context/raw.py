@@ -28,9 +28,8 @@ class RawComponentContext(Context[hikari.ComponentInteraction]):
         if self._issued_response:
             raise RuntimeError("Interaction was already responded to.")
 
-        await self.interaction.create_modal_response(modal.title, modal.custom_id, modal.build())  # type: ignore[arg-type]
+        await modal.send(self.interaction)
         self._issued_response = True
-        await modal.start()
 
 
 class RawModalContext(Context[hikari.ModalInteraction]):

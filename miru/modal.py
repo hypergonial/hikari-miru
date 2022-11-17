@@ -284,7 +284,7 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder]):
 
     async def start(self) -> None:
         """Start up the modal and begin listening for interactions.
-        This should not be called manually, use `Modal.send()` instead."""
+        This should not be called manually, use `Modal.send()` or `Context.respond_with_modal()` instead."""
         if not self._events:
             raise BootstrapFailureError(
                 f"Cannot start Modal {self.__class__.__name__} before calling miru.install() first."
