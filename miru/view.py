@@ -241,13 +241,6 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder]):
 
         traceback.print_exception(error.__class__, error, error.__traceback__, file=sys.stderr)
 
-    def stop(self) -> None:
-        """
-        Stop listening for interactions.
-        """
-
-        super().stop()
-
     def get_context(
         self, interaction: hikari.ComponentInteraction, *, cls: t.Type[ViewContext] = ViewContext
     ) -> ViewContext:
