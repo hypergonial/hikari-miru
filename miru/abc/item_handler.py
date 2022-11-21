@@ -93,7 +93,7 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT]):  # type: ignore[type-
 
         self._weights: _Weights = _Weights()
         self._stopped: asyncio.Event = asyncio.Event()
-        self._listener_task: t.Optional[asyncio.Task[None]] = None
+        self._timeout_task: t.Optional[asyncio.Task[None]] = None
         self._running_tasks: t.MutableSequence[asyncio.Task[t.Any]] = []
         self._last_context: t.Optional[Context[t.Any]] = None
 
@@ -302,6 +302,14 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT]):  # type: ignore[type-
         """
         Process incoming interactions.
         """
+
+    def _reset_timeout(self) -> None:
+        """
+        Reset the timeout counter.
+        """
+        if self.timeout is not None and self._timeout_task:
+            self._timeout_task.cancel()
+            self._timeout_task = self._create_task(self._handle_timeout())
 
     async def _handle_timeout(self) -> None:
         """

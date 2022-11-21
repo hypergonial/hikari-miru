@@ -247,10 +247,11 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder]):
         """
         try:
             await self.callback(context)
-            self.stop()  # Modals can only receive one response
 
         except Exception as error:
             await self.on_error(error, context)
+
+        self.stop()  # Modals can only receive one response
 
     async def _process_interactions(self, event: hikari.InteractionCreateEvent) -> None:
         if not isinstance(event.interaction, hikari.ModalInteraction):
@@ -279,7 +280,6 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder]):
         for item in self.children:
             await item._refresh_state(context)
 
-        # Create task here to ensure autodefer works even if callback stops view
         self._create_task(self._handle_callback(context))
 
     async def start(self) -> None:
@@ -291,7 +291,7 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder]):
             )
 
         self._events.add_handler(self)
-        self._create_task(self._handle_timeout())
+        self._timeout_task = self._create_task(self._handle_timeout())
 
     async def send(self, interaction: hikari.ModalResponseMixin) -> None:
         """Send this modal as a response to the provided interaction."""

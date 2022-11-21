@@ -297,6 +297,7 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder]):
 
         items = [item for item in self.children if item.custom_id == event.interaction.custom_id]
         if items:
+            self._reset_timeout()
 
             context = self.get_context(event.interaction)
             self._last_context = context
@@ -373,7 +374,7 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder]):
             self._message = result
 
         self._events.add_handler(self)
-        self._create_task(self._handle_timeout())
+        self._timeout_task = self._create_task(self._handle_timeout())
 
 
 def get_view(message: hikari.SnowflakeishOr[hikari.PartialMessage]) -> t.Optional[View]:
