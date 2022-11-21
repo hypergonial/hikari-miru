@@ -130,7 +130,7 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT]):  # type: ignore[type-
         return self.build().__reversed__()
 
     @property
-    def children(self) -> t.List[Item[BuilderT]]:
+    def children(self) -> t.Sequence[Item[BuilderT]]:
         """
         A list of all items attached to the item handler.
         """
@@ -214,7 +214,7 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT]):  # type: ignore[type-
         self._weights.add_item(item)
 
         item._handler = self
-        self.children.append(item)
+        self._children.append(item)
 
         return self
 
@@ -232,7 +232,7 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT]):  # type: ignore[type-
             The item handler the item was removed from.
         """
         try:
-            self.children.remove(item)
+            self._children.remove(item)
         except ValueError:
             pass
         else:
@@ -253,7 +253,7 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT]):  # type: ignore[type-
             item._handler = None
             item._rendered_row = None
 
-        self.children.clear()
+        self._children.clear()
         self._weights.clear()
 
         return self
@@ -271,7 +271,7 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT]):  # type: ignore[type-
         if not self.children:
             return []
 
-        self.children.sort(key=lambda i: i._rendered_row if i._rendered_row is not None else sys.maxsize)
+        self._children.sort(key=lambda i: i._rendered_row if i._rendered_row is not None else sys.maxsize)
 
         action_rows = []
 

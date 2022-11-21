@@ -117,12 +117,15 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder]):
         """
         The last context that was received by the view.
         """
-        assert isinstance(self._last_context, ViewContext)
-        return self._last_context
+        return t.cast(ViewContext, self._last_context)
 
     @property
     def _builder(self) -> type[hikari.impl.MessageActionRowBuilder]:
         return hikari.impl.MessageActionRowBuilder
+
+    @property
+    def children(self) -> t.Sequence[ViewItem]:
+        return t.cast(t.Sequence[ViewItem], super().children)
 
     @classmethod
     def from_message(cls, message: hikari.Message, *, timeout: t.Optional[float] = 120, autodefer: bool = True) -> View:

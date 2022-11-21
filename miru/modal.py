@@ -126,12 +126,15 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder]):
         """
         Context proxying the last interaction that was received by the modal.
         """
-        assert isinstance(self._last_context, ModalContext)
-        return self._last_context
+        return t.cast(ModalContext, self._last_context)
 
     @property
     def _builder(self) -> type[hikari.impl.ModalActionRowBuilder]:
         return hikari.impl.ModalActionRowBuilder
+
+    @property
+    def children(self) -> t.Sequence[ModalItem]:
+        return t.cast(t.Sequence[ModalItem], super().children)
 
     def add_item(self, item: Item[hikari.impl.ModalActionRowBuilder]) -> Modal:
         """Adds a new item to the modal.

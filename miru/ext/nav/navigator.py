@@ -96,6 +96,10 @@ class NavigatorView(View):
         """
         return self._ephemeral
 
+    @property
+    def children(self) -> t.Sequence[NavItem]:
+        return t.cast(t.Sequence[NavItem], super().children)
+
     async def on_timeout(self) -> None:
         if (self.message is None) or (self._using_inter and self._inter is None):
             return
@@ -120,17 +124,17 @@ class NavigatorView(View):
         return [FirstButton(), PrevButton(), IndicatorButton(), NextButton(), LastButton()]
 
     def add_item(self, item: Item[hikari.impl.MessageActionRowBuilder]) -> NavigatorView:
-        """Adds a new item to the navigator. Item must be of type NavButton.
+        """Adds a new item to the navigator. Item must be of type NavItem.
 
         Parameters
         ----------
-        item : Item[NavigatorViewT]
+        item : Item[MessageActionRowBuilder]
             An instance of NavItem
 
         Raises
         ------
         TypeError
-            Parameter item was not an instance of NavButton
+            Parameter item was not an instance of NavItem
 
         Returns
         -------
