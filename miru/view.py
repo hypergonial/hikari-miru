@@ -47,9 +47,6 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder]):
 
     _view_children: t.Sequence[DecoratedItem] = []  # Decorated callbacks that need to be turned into items
     # Mapping of message_id: View
-    _views: t.MutableMapping[
-        int, View
-    ] = {}  # List of all currently active BOUND views, unbound persistent are not listed here
 
     def __init_subclass__(cls) -> None:
         """
@@ -249,8 +246,6 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder]):
         """
         Stop listening for interactions.
         """
-        if self._message_id:
-            View._views.pop(self._message_id, None)
 
         super().stop()
 
