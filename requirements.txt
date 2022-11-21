@@ -1,1 +1,1 @@
-hikari @ git+https://github.com/thesadru/hikari/@86efe0ace21815222997fbeb1cbc6c7a30101de3
+hikari @ git+https://github.com/thesadru/hikari/@a118854617cfc2ac4c9a629881d95da16556f2aa
