@@ -80,7 +80,10 @@ class InteractionCreateEvent(Event):
 
 @attr.define()
 class ComponentInteractionCreateEvent(InteractionCreateEvent):
-    """An event that is dispatched when a new component interaction is received."""
+    """
+    An event that is dispatched when a new component interaction is received.
+    This event is only dispatched if the interaction was not handled by a miru view.
+    """
 
     interaction: hikari.ComponentInteraction = attr.field()
     context: RawComponentContext = attr.field()
@@ -88,7 +91,10 @@ class ComponentInteractionCreateEvent(InteractionCreateEvent):
 
 @attr.define()
 class ModalInteractionCreateEvent(InteractionCreateEvent):
-    """An event that is dispatched when a new modal interaction is received."""
+    """
+    An event that is dispatched when a new modal interaction is received.
+    This event is only dispatched if the interaction was not handled by a miru modal.
+    """
 
     interaction: hikari.ModalInteraction = attr.field()
     context: RawModalContext = attr.field()
