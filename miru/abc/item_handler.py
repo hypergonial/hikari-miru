@@ -293,8 +293,13 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT]):  # type: ignore[type-
         Stop listening for interactions.
         """
         self._stopped.set()
+
+        if self._timeout_task:
+            self._timeout_task.cancel()
+
         if not self._events:
             return
+
         self._events.remove_handler(self)
 
     @abc.abstractmethod
