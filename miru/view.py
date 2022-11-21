@@ -46,7 +46,6 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder]):
     """
 
     _view_children: t.Sequence[DecoratedItem] = []  # Decorated callbacks that need to be turned into items
-    # Mapping of message_id: View
 
     def __init_subclass__(cls) -> None:
         """
