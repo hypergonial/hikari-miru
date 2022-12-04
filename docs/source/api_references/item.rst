@@ -2,5 +2,5 @@
 Item API Reference
 ==================
 
-.. automodule:: miru.item
+.. automodule:: miru.abc.item
    :members:

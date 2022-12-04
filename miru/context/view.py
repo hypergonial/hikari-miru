@@ -1,45 +1,30 @@
-import os
+from __future__ import annotations
 
-import nox
-from nox import options
+import typing as t
 
-PATH_TO_PROJECT = os.path.join(".", "miru")
-SCRIPT_PATHS = [
-    PATH_TO_PROJECT,
-    "noxfile.py",
-    "docs/source/conf.py",
-]
+import hikari
 
-options.sessions = ["format_fix", "mypy", "sphinx"]
+from .raw import RawComponentContext
 
+if t.TYPE_CHECKING:
+    from ..view import View
 
-@nox.session()
-def format_fix(session: nox.Session):
-    session.install("black")
-    session.install("isort")
-    session.run("python", "-m", "black", *SCRIPT_PATHS)
-    session.run("python", "-m", "isort", *SCRIPT_PATHS)
+__all__ = ("ViewContext",)
 
 
-# noinspection PyShadowingBuiltins
-@nox.session()
-def format(session: nox.Session):
-    session.install("-U", "black")
-    session.run("python", "-m", "black", *SCRIPT_PATHS, "--check")
+class ViewContext(RawComponentContext):
+    """A context object proxying a ComponentInteraction for a view item."""
 
+    __slots__ = "_view"
 
-@nox.session()
-def mypy(session: nox.Session):
-    session.install("-Ur", "requirements.txt")
-    session.install("-U", "mypy")
-    session.run("python", "-m", "mypy", PATH_TO_PROJECT)
+    def __init__(self, view: View, interaction: hikari.ComponentInteraction) -> None:
+        super().__init__(interaction)
+        self._view = view
 
-
-@nox.session(reuse_venv=True)
-def sphinx(session):
-    session.install("-Ur", "doc_requirements.txt")
-    session.install("-Ur", "requirements.txt")
-    session.run("python", "-m", "sphinx.cmd.build", "docs/source", "docs/build", "-b", "html")
+    @property
+    def view(self) -> View:
+        """The view this context originates from."""
+        return self._view
 
 
 # MIT License

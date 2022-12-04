@@ -1,1 +1,1 @@
-hikari>=2.0.0.dev110
+hikari @ git+https://github.com/hikari-py/hikari

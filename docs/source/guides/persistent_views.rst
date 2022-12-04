@@ -33,16 +33,16 @@ as unbound views have no concept of what message they are attached to.
 
         # Providing custom IDs to all items
         @miru.button(label="Button 1", custom_id="my_unique_custom_id_1")
-        async def button_one(self, button: miru.Button, ctx: miru.Context) -> None:
+        async def button_one(self, button: miru.Button, ctx: miru.ViewContext) -> None:
             await ctx.respond("You pressed button 1.")
 
         @miru.button(label="Button 2", custom_id="my_unique_custom_id_2")
-        async def button_two(self, button: miru.Button, ctx: miru.Context) -> None:
+        async def button_two(self, button: miru.Button, ctx: miru.ViewContext) -> None:
             await ctx.respond("You pressed button 2.")
 
 
     bot = hikari.GatewayBot("...")
-    miru.load(bot)
+    miru.install(bot)
 
     # Handle the restarting of our views on application startup
     @bot.listen()
@@ -50,24 +50,26 @@ as unbound views have no concept of what message they are attached to.
         # You must reinstantiate the view in the same state it was before shutdown (e.g. same custom_ids)
         view = Persistence()
         # Restart the listener for the view after application startup
-        view.start_listener()
+        await view.start()
 
 
     @bot.listen()
     async def buttons(event: hikari.GuildMessageCreateEvent) -> None:
 
-        # Do not process messages from bots or empty messages
-        if event.is_bot or not event.content:
+        if not event.is_human:
             return
 
-        if event.content.startswith("miru"):
+        me = bot.get_me()
+
+        if me.id in event.message.user_mentions_ids:
             view = Persistence()
             message = await event.message.respond(
                 "This is a persistent view, and works after bot restarts!",
-                components=view.build(),
+                components=view,
             )
 
-            view.start(message)
+            # You do not need to start unbound persistent views, as a single listener handles
+            # all views of the same type.
 
 
     bot.run()
@@ -83,7 +85,11 @@ Bound
 
 Bound views are different in the sense that they are bound to a specific message instead of globally handling
 interactions for every view of the same type. To create a bound view, instead of an unbound one,
-simply pass a message ID to ``start_listener()``. This also allows for the view to be edited during runtime.
+simply pass a message ID to ``View.start()``. This also allows for the view to be edited during runtime.
+
+.. warning::
+    If you pass a message ID instead of a message object to ``View.start()``, ``View.message`` will be set to ``None``.
+    If you want to avoid this, you can try fetching the message before passing it instead.
 
 ::
 
@@ -93,16 +99,16 @@ simply pass a message ID to ``start_listener()``. This also allows for the view 
 
         # Providing custom IDs to all items
         @miru.button(label="Button 1", custom_id="my_unique_custom_id_1")
-        async def button_one(self, button: miru.Button, ctx: miru.Context) -> None:
+        async def button_one(self, button: miru.Button, ctx: miru.ViewContext) -> None:
             await ctx.respond("You pressed button 1.")
 
         @miru.button(label="Button 2", custom_id="my_unique_custom_id_2")
-        async def button_two(self, button: miru.Button, ctx: miru.Context) -> None:
+        async def button_two(self, button: miru.Button, ctx: miru.ViewContext) -> None:
             await ctx.respond("You pressed button 2.")
 
 
     bot = hikari.GatewayBot("...")
-    miru.load(bot)
+    miru.install(bot)
 
 
     @bot.listen()
@@ -116,24 +122,25 @@ simply pass a message ID to ``start_listener()``. This also allows for the view 
 
         # Restart the listener for the view after application startup
         # This view will only accept interactions coming from this specific message.
-        view.start_listener(message_id)
+        await view.start(message_id)
 
 
     @bot.listen()
     async def buttons(event: hikari.GuildMessageCreateEvent) -> None:
 
-        # Do not process messages from bots or empty messages
-        if event.is_bot or not event.content:
+        if not event.is_human:
             return
 
-        if event.content.startswith("miru"):
+        me = bot.get_me()
+
+        if me.id in event.message.user_mentions_ids:
             view = Persistence()
             message = await event.message.respond(
                 "This is a persistent component menu, and works after bot restarts!",
-                components=view.build(),
+                components=view,
             )
-
-            view.start(message)
+            # Bound persistent views however need to be started for every message.
+            await view.start(message)
 
 
     bot.run()

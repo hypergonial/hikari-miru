@@ -1,45 +1,26 @@
-import os
+import typing as t
 
-import nox
-from nox import options
-
-PATH_TO_PROJECT = os.path.join(".", "miru")
-SCRIPT_PATHS = [
-    PATH_TO_PROJECT,
-    "noxfile.py",
-    "docs/source/conf.py",
-]
-
-options.sessions = ["format_fix", "mypy", "sphinx"]
+__all__ = ("MiruException", "BootstrapFailureError", "RowFullError", "HandlerFullError", "ItemAlreadyAttachedError")
 
 
-@nox.session()
-def format_fix(session: nox.Session):
-    session.install("black")
-    session.install("isort")
-    session.run("python", "-m", "black", *SCRIPT_PATHS)
-    session.run("python", "-m", "isort", *SCRIPT_PATHS)
+class MiruException(Exception):
+    """Base class for all miru exceptions."""
 
 
-# noinspection PyShadowingBuiltins
-@nox.session()
-def format(session: nox.Session):
-    session.install("-U", "black")
-    session.run("python", "-m", "black", *SCRIPT_PATHS, "--check")
+class BootstrapFailureError(MiruException):
+    """Raised when the requested operation requires calling miru.install() beforehand, but was ommitted."""
 
 
-@nox.session()
-def mypy(session: nox.Session):
-    session.install("-Ur", "requirements.txt")
-    session.install("-U", "mypy")
-    session.run("python", "-m", "mypy", PATH_TO_PROJECT)
+class RowFullError(MiruException):
+    """Raised when a row of components is full and cannot be added to."""
 
 
-@nox.session(reuse_venv=True)
-def sphinx(session):
-    session.install("-Ur", "doc_requirements.txt")
-    session.install("-Ur", "requirements.txt")
-    session.run("python", "-m", "sphinx.cmd.build", "docs/source", "docs/build", "-b", "html")
+class HandlerFullError(MiruException):
+    """Raised when an ItemHandler instance is full and cannot fit more components."""
+
+
+class ItemAlreadyAttachedError(MiruException):
+    """Raised when an item is already attached to a handler and the requested operation is not possible because of it."""
 
 
 # MIT License

@@ -1,49 +1,22 @@
-# MIT License
-#
-# Copyright (c) 2022-present HyperGH
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-
 from __future__ import annotations
 
 import inspect
 import os
-from typing import TYPE_CHECKING
-from typing import Any
-from typing import Callable
-from typing import Optional
-from typing import Sequence
-from typing import TypeVar
-from typing import Union
+import typing as t
 
 import hikari
 
-from .item import DecoratedItem
-from .item import Item
+from .abc.item import DecoratedItem
+from .abc.item import ViewItem
+from .context.view import ViewContext
 
-if TYPE_CHECKING:
-    from .context import Context
+if t.TYPE_CHECKING:
+    from .context.base import Context
     from .view import View
 
-ViewT = TypeVar("ViewT", bound="View")
+    ViewT = t.TypeVar("ViewT", bound="View")
 
-__all__ = ["SelectOption", "Select", "select"]
+__all__ = ("SelectOption", "Select", "select")
 
 
 class SelectOption:
@@ -51,12 +24,14 @@ class SelectOption:
     A more lenient way to instantiate select options.
     """
 
+    __slots__ = ("label", "value", "description", "emoji", "is_default")
+
     def __init__(
         self,
         label: str,
-        value: Optional[str] = None,
-        description: Optional[str] = None,
-        emoji: Optional[Union[str, hikari.Emoji]] = None,
+        value: t.Optional[str] = None,
+        description: t.Optional[str] = None,
+        emoji: t.Optional[t.Union[str, hikari.Emoji]] = None,
         is_default: bool = False,
     ) -> None:
         """A more lenient way to instantiate select options.
@@ -76,10 +51,10 @@ class SelectOption:
         """
         self.label: str = label
         self.value: str = value or label
-        self.description: Optional[str] = description
+        self.description: t.Optional[str] = description
         if isinstance(emoji, str):
             emoji = hikari.Emoji.parse(emoji)
-        self.emoji: Optional[hikari.Emoji] = emoji
+        self.emoji: t.Optional[hikari.Emoji] = emoji
         self.is_default: bool = is_default
 
     def _convert(self) -> hikari.SelectMenuOption:
@@ -92,7 +67,7 @@ class SelectOption:
         )
 
 
-class Select(Item[ViewT]):
+class Select(ViewItem):
     """A view component representing a select menu.
 
     Parameters
@@ -121,24 +96,21 @@ class Select(Item[ViewT]):
     def __init__(
         self,
         *,
-        options: Sequence[Union[hikari.SelectMenuOption, SelectOption]],
-        custom_id: Optional[str] = None,
-        placeholder: Optional[str] = None,
+        options: t.Sequence[t.Union[hikari.SelectMenuOption, SelectOption]],
+        custom_id: t.Optional[str] = None,
+        placeholder: t.Optional[str] = None,
         min_values: int = 1,
         max_values: int = 1,
         disabled: bool = False,
-        row: Optional[int] = None,
+        row: t.Optional[int] = None,
     ) -> None:
-        super().__init__()
-        self._values: Sequence[str] = []
-        self._persistent: bool = True if custom_id else False
-        self._custom_id: str = os.urandom(16).hex() if not custom_id else custom_id
-        self._disabled: bool = disabled
-        self._options: Sequence[Union[hikari.SelectMenuOption, SelectOption]] = options
+        super().__init__(custom_id, disabled)
+        self._values: t.Sequence[str] = []
+        self._options: t.Sequence[t.Union[hikari.SelectMenuOption, SelectOption]] = options
         self._min_values: int = min_values
         self._max_values: int = max_values
-        self._placeholder: Optional[str] = placeholder
-        self._row: Optional[int] = row if row is not None else None
+        self._placeholder: t.Optional[str] = placeholder
+        self._row: t.Optional[int] = row if row is not None else None
 
         if len(self._options) > 25:
             raise ValueError("A select can have a maximum of 25 options.")
@@ -148,27 +120,27 @@ class Select(Item[ViewT]):
         return hikari.ComponentType.SELECT_MENU
 
     @property
-    def placeholder(self) -> Optional[str]:
+    def placeholder(self) -> t.Optional[str]:
         """
         The placeholder text that appears before the select menu is clicked.
         """
         return self._placeholder
 
     @placeholder.setter
-    def placeholder(self, value: Optional[str]) -> None:
+    def placeholder(self, value: t.Optional[str]) -> None:
         if value and not isinstance(value, str):
             raise TypeError("Expected type str for property placeholder.")
 
     @property
-    def options(self) -> Sequence[Union[hikari.SelectMenuOption, SelectOption]]:
+    def options(self) -> t.Sequence[t.Union[hikari.SelectMenuOption, SelectOption]]:
         """
         The select menu's options.
         """
         return self._options
 
     @options.setter
-    def options(self, value: Sequence[Union[hikari.SelectMenuOption, SelectOption]]) -> None:
-        if not isinstance(value, Sequence) or not isinstance(value[0], (hikari.SelectMenuOption, SelectOption)):
+    def options(self, value: t.Sequence[t.Union[hikari.SelectMenuOption, SelectOption]]) -> None:
+        if not isinstance(value, t.Sequence) or not isinstance(value[0], (hikari.SelectMenuOption, SelectOption)):
             raise TypeError(
                 "Expected type Sequence[Union[hikari.SelectMenuOption, SelectOption]] for property options."
             )
@@ -204,11 +176,24 @@ class Select(Item[ViewT]):
             raise TypeError("Expected type int for property max_values.")
         self._max_values = value
 
-    def _build(self, action_row: hikari.api.ActionRowBuilder) -> None:
+    @classmethod
+    def _from_component(cls, component: hikari.PartialComponent, row: t.Optional[int] = None) -> ViewItem:
+        assert isinstance(component, hikari.SelectMenuComponent)
+
+        return cls(
+            options=component.options,
+            custom_id=component.custom_id,
+            placeholder=component.placeholder,
+            min_values=component.min_values,
+            max_values=component.max_values,
+            disabled=component.is_disabled,
+            row=row,
+        )
+
+    def _build(self, action_row: hikari.api.MessageActionRowBuilder) -> None:
         """
         Called internally to build and append to an action row
         """
-        assert self.custom_id is not None
         select = action_row.add_select_menu(self.custom_id)
         if self.placeholder:
             select.set_placeholder(self.placeholder)
@@ -219,46 +204,50 @@ class Select(Item[ViewT]):
         for option in self.options:
             if isinstance(option, SelectOption):
                 option = option._convert()
-            _option = select.add_option(option.label, option.value)
+
+            option_builder = select.add_option(option.label, option.value)
+            option_builder.set_is_default(option.is_default)
             if option.description:
-                _option.set_description(option.description)
+                option_builder.set_description(option.description)
             if option.emoji:
-                _option.set_emoji(option.emoji)
-            _option.add_to_menu()
+                option_builder.set_emoji(option.emoji)
+
+            option_builder.add_to_menu()
 
         select.add_to_container()
 
     @property
-    def values(self) -> Sequence[str]:
+    def values(self) -> t.Sequence[str]:
         return self._values
 
     @property
     def width(self) -> int:
         return 5
 
-    async def _refresh(self, interaction: hikari.ComponentInteraction) -> None:
-        self._values = interaction.values
+    async def _refresh_state(self, context: Context[hikari.ComponentInteraction]) -> None:
+        assert isinstance(context, ViewContext)
+        self._values = context.interaction.values
 
 
 def select(
     *,
-    options: Sequence[Union[hikari.SelectMenuOption, SelectOption]],
-    custom_id: Optional[str] = None,
-    placeholder: Optional[str] = None,
+    options: t.Sequence[t.Union[hikari.SelectMenuOption, SelectOption]],
+    custom_id: t.Optional[str] = None,
+    placeholder: t.Optional[str] = None,
     min_values: int = 1,
     max_values: int = 1,
     disabled: bool = False,
-    row: Optional[int] = None,
-) -> Callable[[Callable[[ViewT, Select[ViewT], Context], Any]], Select[ViewT]]:
+    row: t.Optional[int] = None,
+) -> t.Callable[[t.Callable[[ViewT, Select, ViewContext], t.Any]], Select]:
     """
     A decorator to transform a function into a Discord UI SelectMenu's callback. This must be inside a subclass of View.
     """
 
-    def decorator(func: Callable[..., Any]) -> Any:
+    def decorator(func: t.Callable[..., t.Any]) -> t.Any:
         if not inspect.iscoroutinefunction(func):
             raise TypeError("select must decorate coroutine function.")
 
-        item: Select[Any] = Select(
+        item = Select(
             options=options,
             custom_id=custom_id,
             placeholder=placeholder,
@@ -270,3 +259,26 @@ def select(
         return DecoratedItem(item, func)
 
     return decorator
+
+
+# MIT License
+#
+# Copyright (c) 2022-present HyperGH
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.

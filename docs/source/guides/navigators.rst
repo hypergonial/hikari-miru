@@ -20,17 +20,20 @@ and using the ``send()`` method to send the navigator to a channel, or as a resp
     from miru.ext import nav
 
     bot = hikari.GatewayBot("...")
-    miru.load(bot)
+    miru.install(bot)
 
 
     @bot.listen()
     async def navigator(event: hikari.GuildMessageCreateEvent) -> None:
 
-        # Do not process messages from bots or empty messages
-        if event.is_bot or not event.content:
+        # Do not process messages from bots or webhooks
+        if not event.is_human:
             return
 
-        if event.content.startswith("mirunav"):
+        me = bot.get_me()
+
+        # If the bot is mentioned
+        if me.id in event.message.user_mentions_ids:
             embed = hikari.Embed(title="I'm the second page!", description="Also an embed!")
             # The list of pages this navigator should paginate through
             pages = ["I'm the first page!", embed, "I'm the last page!"]
@@ -70,7 +73,7 @@ You may use any mix of the built-in and custom navigation buttons in your naviga
         def __init__(self):
             super().__init__(label="Page: 1", row=1)
 
-        async def callback(self, ctx: miru.Context) -> None:
+        async def callback(self, ctx: miru.ViewContext) -> None:
             await ctx.respond("You clicked me!", flags=hikari.MessageFlag.EPHEMERAL)
 
         async def before_page_change(self) -> None:
@@ -80,16 +83,18 @@ You may use any mix of the built-in and custom navigation buttons in your naviga
 
 
     bot = hikari.GatewayBot("...")
-    miru.load(bot)
+    miru.install(bot)
 
 
     @bot.listen()
     async def navigator(event: hikari.GuildMessageCreateEvent) -> None:
 
-        if event.is_bot or not event.content:
+        if not event.is_human:
             return
 
-        if event.content.startswith("mirucustom"):
+        me = bot.get_me()
+
+        if me.id in event.message.user_mentions_ids:
             embed = hikari.Embed(title="I'm the second page!", description="Also an embed!")
             pages = ["I'm a customized navigator!", embed, "I'm the last page!"]
             # Define our custom buttons for this navigator, keep in mind the order

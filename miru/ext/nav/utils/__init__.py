@@ -1,46 +1,4 @@
-import os
-
-import nox
-from nox import options
-
-PATH_TO_PROJECT = os.path.join(".", "miru")
-SCRIPT_PATHS = [
-    PATH_TO_PROJECT,
-    "noxfile.py",
-    "docs/source/conf.py",
-]
-
-options.sessions = ["format_fix", "mypy", "sphinx"]
-
-
-@nox.session()
-def format_fix(session: nox.Session):
-    session.install("black")
-    session.install("isort")
-    session.run("python", "-m", "black", *SCRIPT_PATHS)
-    session.run("python", "-m", "isort", *SCRIPT_PATHS)
-
-
-# noinspection PyShadowingBuiltins
-@nox.session()
-def format(session: nox.Session):
-    session.install("-U", "black")
-    session.run("python", "-m", "black", *SCRIPT_PATHS, "--check")
-
-
-@nox.session()
-def mypy(session: nox.Session):
-    session.install("-Ur", "requirements.txt")
-    session.install("-U", "mypy")
-    session.run("python", "-m", "mypy", PATH_TO_PROJECT)
-
-
-@nox.session(reuse_venv=True)
-def sphinx(session):
-    session.install("-Ur", "doc_requirements.txt")
-    session.install("-Ur", "requirements.txt")
-    session.run("python", "-m", "sphinx.cmd.build", "docs/source", "docs/build", "-b", "html")
-
+from .paginator import *
 
 # MIT License
 #

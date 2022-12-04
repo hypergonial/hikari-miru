@@ -1,0 +1,74 @@
+=======================
+Versions 2.0+ Changelog
+=======================
+
+These are all the changelogs for stable releases of hikari-miru (version 2.0.0 to present).
+
+----
+
+Version 2.0.0
+=============
+
+- BREAKING: ``View.start()`` is now asynchronous and needs to be awaited.
+
+- BREAKING: ``View.start_listener()`` has been removed. Use ``View.start()`` instead.
+
+- Added support for modals via ``miru.Modal``.
+
+- Added support for text input fields via ``miru.TextInput``.
+
+- Added ``RawComponentContext``, ``RawModalContext``, ``ViewContext``, and ``ModalContext`` that inherit from ``Context``.
+
+- Added ``miru.InteractionResponse``, an object representing responses sent out by the application to interactions.
+
+- ``Context.respond()`` and ``Context.edit_response()`` now return an ``InteractionResponse`` object.
+
+- Added ``Context.bot`` and ``Context.author`` as aliases for ``Context.app`` and ``Context.user`` respectively.
+
+- Added overloads to ``Context.defer()`` to allow use of different deffered response-types.
+
+- Added ``miru.abc.ViewItem`` and ``miru.abc.ModalItem`` that inherit from ``miru.abc.Item``.
+
+- Views now expect items of type ``ViewItem`` and provide ``ViewContext``.
+
+- ``Button`` and ``Select`` are now subclasses of ``ViewItem``.
+
+- Added ``miru.abc.ItemHandler``. ``View`` and ``Modal`` are subclasses of this object.
+
+- Added ``miru.abc.ItemHandler.last_context`` to access the last received context & interaction by the item handler.
+
+- ``miru.abc.ItemHandler`` now implements ``Sequence[hikari.api.MessageActionRowBuilder]``, and thus can be treated as a sequence of action rows. This means that calling ``.build()`` on item handlers is no longer required.
+
+- Removed ``miru.Interaction``.
+
+- Added ``View.from_message()`` classmethod to allow creation of views from message components.
+
+- Added ``View.wait_for_input()`` to wait for any component interaction relating to the view.
+
+- Added ``timeout`` parameter to ``ItemHandler.wait()``.
+
+- Added ``View.get_context()`` and ``Modal.get_context()`` for custom context support.
+
+- Added two new event types ``ModalInteractionCreateEvent`` and ``ComponentInteractionCreateEvent``.
+
+- These listeners include the corresponding raw context with the event object, along with every field from ``hikari.InteractionCreateEvent``.
+
+- ``ItemHandler.add_item()``, ``ItemHandler.remove_item()``, and ``ItemHandler.clear_items()`` now return the ``ItemHandler`` object to allow for method chaining.
+
+- Added ``responded`` kwarg to ``NavigatorView`` to have the ability to send navigators on acknowledged interactions.
+
+- Added ``start_at`` kwarg to ``NavigatorView`` to define what the first page should be.
+
+- Added a "Jump to page" modal to built-in ``ext.nav.IndicatorButton`` when pressed.
+
+- Allow passing ``datetime.timedelta`` to ``ItemHandler.timeout`` upon instantiation.
+
+- Add ``delete_after`` to ``Context.respond()`` as a kwarg, and as a method to ``InteractionResponse``.
+
+- Added ``miru.ext.nav.utils.Paginator`` to help pagination of long strings.
+
+- ``View.start()`` now accepts awaitables that return ``hikari.Message``, thus allowing it to function with custom objects that support this behaviour.
+
+- Fixed selectoption ``is_default`` fields being ignored.
+
+- Deprecate ``miru.load`` and ``miru.unload`` in favor of ``miru.install`` and ``miru.uninstall``.

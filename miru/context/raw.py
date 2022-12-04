@@ -1,45 +1,43 @@
-import os
+from __future__ import annotations
 
-import nox
-from nox import options
+import typing as t
 
-PATH_TO_PROJECT = os.path.join(".", "miru")
-SCRIPT_PATHS = [
-    PATH_TO_PROJECT,
-    "noxfile.py",
-    "docs/source/conf.py",
-]
+import hikari
 
-options.sessions = ["format_fix", "mypy", "sphinx"]
+from .base import Context
 
+if t.TYPE_CHECKING:
+    from ..modal import Modal
 
-@nox.session()
-def format_fix(session: nox.Session):
-    session.install("black")
-    session.install("isort")
-    session.run("python", "-m", "black", *SCRIPT_PATHS)
-    session.run("python", "-m", "isort", *SCRIPT_PATHS)
+__all__ = ("RawComponentContext", "RawModalContext")
 
 
-# noinspection PyShadowingBuiltins
-@nox.session()
-def format(session: nox.Session):
-    session.install("-U", "black")
-    session.run("python", "-m", "black", *SCRIPT_PATHS, "--check")
+class RawComponentContext(Context[hikari.ComponentInteraction]):
+    """Raw context proxying component interactions received directly over the gateway."""
+
+    __slots__ = ()
+
+    @property
+    def message(self) -> hikari.Message:
+        """The message object for the view this context is proxying."""
+        return self._interaction.message
+
+    async def respond_with_modal(self, modal: Modal) -> None:
+        """Respond to this interaction with a modal."""
+
+        if self._issued_response:
+            raise RuntimeError("Interaction was already responded to.")
+
+        await modal.send(self.interaction)
+        self._issued_response = True
 
 
-@nox.session()
-def mypy(session: nox.Session):
-    session.install("-Ur", "requirements.txt")
-    session.install("-U", "mypy")
-    session.run("python", "-m", "mypy", PATH_TO_PROJECT)
+class RawModalContext(Context[hikari.ModalInteraction]):
+    """Raw context object proxying a ModalInteraction received directly over the gateway."""
 
+    __slots__ = ()
 
-@nox.session(reuse_venv=True)
-def sphinx(session):
-    session.install("-Ur", "doc_requirements.txt")
-    session.install("-Ur", "requirements.txt")
-    session.run("python", "-m", "sphinx.cmd.build", "docs/source", "docs/build", "-b", "html")
+    ...
 
 
 # MIT License

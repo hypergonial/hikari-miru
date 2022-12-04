@@ -33,53 +33,48 @@ This is what a basic component menu looks like with miru:
                 miru.SelectOption(label="Option 2"),
             ],
         )
-        async def basic_select(self, select: miru.Select, ctx: miru.Context) -> None:
+        async def basic_select(self, select: miru.Select, ctx: miru.ViewContext) -> None:
             await ctx.respond(f"You've chosen {select.values[0]}!")
 
         # Define a new Button with the Style of success (Green)
         @miru.button(label="Click me!", style=hikari.ButtonStyle.SUCCESS)
-        async def basic_button(self, button: miru.Button, ctx: miru.Context) -> None:
+        async def basic_button(self, button: miru.Button, ctx: miru.ViewContext) -> None:
             await ctx.respond("You clicked me!")
 
         # Define a new Button that when pressed will stop the view & invalidate all the buttons in this view
         @miru.button(label="Stop me!", style=hikari.ButtonStyle.DANGER)
-        async def stop_button(self, button: miru.Button, ctx: miru.Context) -> None:
+        async def stop_button(self, button: miru.Button, ctx: miru.ViewContext) -> None:
             self.stop()  # Called to stop the view
 
 
     # Create an instance of our bot. This doesn't need to be a GatewayBot,
     # but needs to implement RESTAware, CacheAware, and EventManagerAware.
     bot = hikari.GatewayBot("YOUR_TOKEN_HERE")
-    miru.load(bot) # Start miru
+    miru.install(bot) # Start miru
     # This function must be called on startup, otherwise you cannot instantiate views
 
 
-    @bot.listen() # Create a hikari message listener
+    @bot.listen()
     async def buttons(event: hikari.GuildMessageCreateEvent) -> None:
 
-        # Do not process messages from bots or empty messages
-        if event.is_bot or not event.content:
+        # Ignore bots or webhooks pinging us
+        if not event.is_human:
             return
 
-        if event.content.startswith("miru"):
-            view = BasicView()  # Create an instance of our newly created BasicView
-            # Build the components defined in the view and attach them to our message
-            # View.build() returns a list of the built action-rows, ready to be sent in a message
-            message = await event.message.respond(
-                "This is a basic component menu built with miru!", components=view.build()
-            )
+        me = bot.get_me()
 
-            view.start(message)  # Start listening for interactions
+        # If the bot is mentioned
+        if me.id in event.message.user_mentions_ids:
+            view = MyView(timeout=60)  # Create a new view
+            message = await event.message.respond("Rock Paper Scissors!", components=view)
+            await view.start(message)  # Start listening for interactions
+            await view.wait() # Wait until the view times out or gets stopped
+            await event.message.respond("Thank you for playing!")
 
-            await view.wait()  # Wait until the view is stopped or times out
-
-            print("View stopped or timed out!")
-
-
-    bot.run() # Run the bot
+    bot.run()
 
 If you run this code, you should see some basic logging information, and your bot will be online!
-Typing ``miru`` in any channel should make the bot send the component menu defined above!
+Mentioning the bot in any channel should make the bot send the component menu defined above!
 
 Subclassing
 -----------
@@ -102,7 +97,7 @@ Below you can see such an example:
 
         # The callback is the function that gets called when the button is pressed
         # If you are subclassing, you must use the name "callback" when defining it.
-        async def callback(self, ctx: miru.Context) -> None:
+        async def callback(self, ctx: miru.ViewContext) -> None:
             # You can specify the ephemeral message flag to make your response ephemeral
             await ctx.respond("I'm sorry but this is unacceptable.", flags=hikari.MessageFlag.EPHEMERAL)
             # You can access the view an item is attached to by accessing it's view property
@@ -115,29 +110,31 @@ Below you can see such an example:
         def __init__(self, *args, **kwargs) -> None:
             super().__init__(*args, **kwargs)
 
-        async def callback(self, ctx: miru.Context) -> None:
+        async def callback(self, ctx: miru.ViewContext) -> None:
             await ctx.respond("This is the only correct answer.", flags=hikari.MessageFlag.EPHEMERAL)
             self.view.answer = False
             self.view.stop()
 
 
     bot = hikari.GatewayBot("YOUR_TOKEN_HERE")
-    miru.load(bot)
+    miru.install(bot)
 
 
     @bot.listen()
     async def buttons(event: hikari.GuildMessageCreateEvent) -> None:
 
-        if event.is_bot or not event.content:
+        if not event.is_human:
             return
+        
+        me = bot.get_me()
 
-        if event.content.startswith("miru"):
+        if me.id in event.message.user_mentions_ids:
             view = miru.View()  # Create a new view
             view.add_item(YesButton())  # Add our custom buttons to it
             view.add_item(NoButton(style=hikari.ButtonStyle.DANGER, label="No"))  # Pass arguments to NoButton
-            message = await event.message.respond("Do you put pineapple on your pizza?", components=view.build())
+            message = await event.message.respond("Do you put pineapple on your pizza?", components=view)
 
-            view.start(message)  # Start listening for interactions
+            await view.start(message)  # Start listening for interactions
 
             await view.wait()  # Wait until the view is stopped or times out
 
@@ -149,6 +146,6 @@ Below you can see such an example:
 
     bot.run()
 
-Running this code and typing ``miru`` in a channel the bot can see should similarly yield a component menu.
+Running this code and mentioning the bot in a channel it can see should similarly yield a component menu.
 The benefits of this approach are that you can define custom methods for your individual components,
 and create template items for re-use later, reducing the need to paste the same code over and over again.
