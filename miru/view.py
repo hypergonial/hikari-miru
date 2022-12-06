@@ -307,8 +307,13 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder]):
                 # Create task here to ensure autodefer works even if callback stops view
                 self._create_task(self._handle_callback(item, context))
 
+    def stop(self) -> None:
+        self._input_event.set()
+        return super().stop()
+
     async def wait_for_input(self, timeout: t.Optional[float] = None) -> None:
-        """Wait for any input to be received.
+        """Wait for any input to be received. This will also unblock if the view was stopped, thus
+        it is recommended to check for the presence of a value after this function returns.
 
         Parameters
         ----------
