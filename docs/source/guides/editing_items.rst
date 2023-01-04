@@ -24,14 +24,14 @@ Example:
         async def counter_button(self, button: miru.Button, ctx: miru.ViewContext) -> None:
             self.counter += 1
             button.label = f"Counter: {self.counter}" # Change the property we want to edit
-            await ctx.edit_response(components=view) # Re-send the view components
+            await ctx.edit_response(components=self) # Re-send the view components
         
         @miru.button(label="Disable Menu", style=hikari.ButtonStyle.DANGER)
         async def disable_button(self, button: miru.Button, ctx: miru.ViewContext) -> None:
             for item in self.children:
                 item.disabled = True # Disable all items attached to the view
-            await ctx.edit_response(components=view)
-            view.stop()
+            await ctx.edit_response(components=self)
+            self.stop()
 
     ...
 
