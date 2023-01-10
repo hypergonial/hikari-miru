@@ -198,7 +198,7 @@ class NavigatorView(View):
 
         self._inter = context.interaction  # Update latest inter
 
-        await context.edit_response(**payload)
+        await context.edit_response(**payload, attachment=None)
 
     async def start(
         self,

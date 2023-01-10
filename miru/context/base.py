@@ -379,12 +379,12 @@ class Context(abc.ABC, t.Generic[InteractionT]):
         *,
         flags: t.Union[int, hikari.MessageFlag, hikari.UndefinedType] = hikari.UNDEFINED,
         tts: hikari.UndefinedOr[bool] = hikari.UNDEFINED,
-        component: hikari.UndefinedOr[hikari.api.ComponentBuilder] = hikari.UNDEFINED,
-        components: hikari.UndefinedOr[t.Sequence[hikari.api.ComponentBuilder]] = hikari.UNDEFINED,
-        attachment: hikari.UndefinedOr[hikari.Resourceish] = hikari.UNDEFINED,
-        attachments: hikari.UndefinedOr[t.Sequence[hikari.Resourceish]] = hikari.UNDEFINED,
-        embed: hikari.UndefinedOr[hikari.Embed] = hikari.UNDEFINED,
-        embeds: hikari.UndefinedOr[t.Sequence[hikari.Embed]] = hikari.UNDEFINED,
+        component: hikari.UndefinedNoneOr[hikari.api.ComponentBuilder] = hikari.UNDEFINED,
+        components: hikari.UndefinedNoneOr[t.Sequence[hikari.api.ComponentBuilder]] = hikari.UNDEFINED,
+        attachment: hikari.UndefinedNoneOr[hikari.Resourceish] = hikari.UNDEFINED,
+        attachments: hikari.UndefinedNoneOr[t.Sequence[hikari.Resourceish]] = hikari.UNDEFINED,
+        embed: hikari.UndefinedNoneOr[hikari.Embed] = hikari.UNDEFINED,
+        embeds: hikari.UndefinedNoneOr[t.Sequence[hikari.Embed]] = hikari.UNDEFINED,
         mentions_everyone: hikari.UndefinedOr[bool] = hikari.UNDEFINED,
         user_mentions: hikari.UndefinedOr[
             t.Union[hikari.SnowflakeishSequence[hikari.PartialUser], bool]
@@ -402,17 +402,17 @@ class Context(abc.ABC, t.Generic[InteractionT]):
             The content of the message. Anything passed here will be cast to str.
         tts : undefined.UndefinedOr[bool], optional
             If the message should be tts or not.
-        attachment : undefined.UndefinedOr[hikari.Resourceish], optional
+        attachment : undefined.UndefinedNoneOr[hikari.Resourceish], optional
             An attachment to add to this message.
-        attachments : undefined.UndefinedOr[t.Sequence[hikari.Resourceish]], optional
+        attachments : undefined.UndefinedNoneOr[t.Sequence[hikari.Resourceish]], optional
             A sequence of attachments to add to this message.
-        component : undefined.UndefinedOr[hikari.api.special_endpoints.ComponentBuilder], optional
+        component : undefined.UndefinedNoneOr[hikari.api.special_endpoints.ComponentBuilder], optional
             A component to add to this message.
-        components : undefined.UndefinedOr[t.Sequence[hikari.api.special_endpoints.ComponentBuilder]], optional
+        components : undefined.UndefinedNoneOr[t.Sequence[hikari.api.special_endpoints.ComponentBuilder]], optional
             A sequence of components to add to this message.
-        embed : undefined.UndefinedOr[hikari.Embed], optional
+        embed : undefined.UndefinedNoneOr[hikari.Embed], optional
             An embed to add to this message.
-        embeds : undefined.UndefinedOr[t.Sequence[hikari.Embed]], optional
+        embeds : undefined.UndefinedNoneOr[t.Sequence[hikari.Embed]], optional
             A sequence of embeds to add to this message.
         mentions_everyone : undefined.UndefinedOr[bool], optional
             If True, mentioning @everyone will be allowed.
