@@ -29,11 +29,11 @@ import miru
 class MyView(miru.View):
 
     @miru.button(label="Rock", emoji="\N{ROCK}", style=hikari.ButtonStyle.PRIMARY)
-    async def rock_button(self, button: miru.Button, ctx: miru.Context) -> None:
+    async def rock_button(self, button: miru.Button, ctx: miru.ViewContext) -> None:
         await ctx.respond("Paper!")
 
     @miru.button(label="Paper", emoji="\N{SCROLL}", style=hikari.ButtonStyle.PRIMARY)
-    async def paper_button(self, button: miru.Button, ctx: miru.Context) -> None:
+    async def paper_button(self, button: miru.Button, ctx: miru.ViewContext) -> None:
         await ctx.respond("Scissors!")
 
     @miru.button(label="Scissors", emoji="\N{BLACK SCISSORS}", style=hikari.ButtonStyle.PRIMARY)
