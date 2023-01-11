@@ -1,5 +1,3 @@
-import typing as t
-
 __all__ = ("MiruException", "BootstrapFailureError", "RowFullError", "HandlerFullError", "ItemAlreadyAttachedError")
 
 

@@ -74,7 +74,7 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder]):
         super().__init__(timeout=timeout)
         self._autodefer: bool = autodefer
         self._message: t.Optional[hikari.Message] = None
-        self._message_id: t.Optional[hikari.Snowflake] = None  # Only for bound persistent views
+        self._message_id: t.Optional[hikari.Snowflake] = None
         self._input_event: asyncio.Event = asyncio.Event()
 
         for decorated_item in self._view_children:  # Sort and instantiate decorated callbacks
@@ -139,7 +139,7 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder]):
 
     @classmethod
     def from_message(cls, message: hikari.Message, *, timeout: t.Optional[float] = 120, autodefer: bool = True) -> View:
-        """Create a new from the components included in the passed message. Returns an empty view if the message has no components attached.
+        """Create a new view from the components included in the passed message. Returns an empty view if the message has no components attached.
 
         Parameters
         ----------
@@ -156,6 +156,7 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder]):
             The view that represents the components attached to this message.
 
         .. warning::
+            This function constructs a completely new view based on the information available in the message object.
             Any custom behaviour (such as callbacks) will not be re-created, if you want to access an already running view that is bound to a message, use :obj:`miru.view.get_view` instead.
         """
 
