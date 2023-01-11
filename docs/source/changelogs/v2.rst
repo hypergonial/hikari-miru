@@ -6,6 +6,12 @@ These are all the changelogs for stable releases of hikari-miru (version 2.0.0 t
 
 ----
 
+Version 2.0.3
+=============
+
+- Make usage of ``__all__`` consistent across the library.
+- Minor documentation fixes.
+
 Version 2.0.2
 =============
 
