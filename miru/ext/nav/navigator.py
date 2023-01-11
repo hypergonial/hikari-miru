@@ -146,13 +146,13 @@ class NavigatorView(View):
         if not isinstance(item, NavItem):
             raise TypeError(f"Expected type 'NavItem' for parameter item, not '{item.__class__.__name__}'.")
 
-        return super().add_item(item)  # type: ignore[return-value]
+        return t.cast(NavigatorView, super().add_item(item))
 
     def remove_item(self, item: Item[hikari.impl.MessageActionRowBuilder]) -> NavigatorView:
-        return super().remove_item(item)  # type: ignore[return-value]
+        return t.cast(NavigatorView, super().remove_item(item))
 
     def clear_items(self) -> NavigatorView:
-        return super().clear_items()  # type: ignore[return-value]
+        return t.cast(NavigatorView, super().clear_items())
 
     def _get_page_payload(self, page: t.Union[str, hikari.Embed]) -> t.MutableMapping[str, t.Any]:
         """Get the page content that is to be sent."""

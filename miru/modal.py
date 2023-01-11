@@ -167,13 +167,13 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder]):
         if not isinstance(item, ModalItem):
             raise TypeError(f"Expected type ModalItem for parameter item, not {item.__class__.__name__}.")
 
-        return super().add_item(item)  # type: ignore[return-value]
+        return t.cast(Modal, super().add_item(item))
 
     def remove_item(self, item: Item[hikari.impl.ModalActionRowBuilder]) -> Modal:
-        return super().remove_item(item)  # type: ignore[return-value]
+        return t.cast(Modal, super().remove_item(item))
 
     def clear_items(self) -> Modal:
-        return super().clear_items()  # type: ignore[return-value]
+        return t.cast(Modal, super().clear_items())
 
     async def modal_check(self, context: ModalContext) -> bool:
         """Called before any callback in the modal is called. Must evaluate to a truthy value to pass.
