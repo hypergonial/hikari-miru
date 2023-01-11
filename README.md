@@ -37,7 +37,7 @@ class MyView(miru.View):
         await ctx.respond("Scissors!")
 
     @miru.button(label="Scissors", emoji="\N{BLACK SCISSORS}", style=hikari.ButtonStyle.PRIMARY)
-    async def scissors_button(self, button: miru.Button, ctx: miru.Context):
+    async def scissors_button(self, button: miru.Button, ctx: miru.ViewContext):
         await ctx.respond("Rock!")
 
     @miru.button(emoji="\N{BLACK SQUARE FOR STOP}", style=hikari.ButtonStyle.DANGER, row=2)
