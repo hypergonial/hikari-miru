@@ -37,15 +37,14 @@ Now we will get an **interaction** through the use of a button so we can send th
 ::
 
     class ModalView(miru.View):
+        # Create a new button that will invoke our modal
+        @miru.button(label="Click me!", style=hikari.ButtonStyle.PRIMARY)
+        async def modal_button(self, button: miru.Button, ctx: miru.ViewContext) -> None:
+            modal = MyModal(title="Example Title")
 
-    # Create a new button that will invoke our modal
-    @miru.button(label="Click me!", style=hikari.ButtonStyle.PRIMARY)
-    async def modal_button(self, button: miru.Button, ctx: miru.ViewContext) -> None:
-        modal = MyModal(title="Example Title")
-
-        # You may also use Modal.send(interaction) if not working with a miru context object.
-        # (e.g. slash commands)
-        await ctx.respond_with_modal(modal)
+            # You may also use Modal.send(interaction) if not working with a miru context object.
+            # (e.g. slash commands)
+            await ctx.respond_with_modal(modal)
 
     bot = hikari.GatewayBot("YOUR_TOKEN_HERE")
     miru.install(bot)
