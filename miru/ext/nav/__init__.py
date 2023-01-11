@@ -21,6 +21,7 @@ __all__ = (
     "IndicatorButton",
     "StopButton",
     "NavigatorView",
+    "Paginator",
 )
 
 # MIT License

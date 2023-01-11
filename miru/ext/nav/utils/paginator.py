@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import typing as t
 
+__all__ = ("Paginator",)
+
 
 class Paginator:
     """A paginator that can be used to paginate long strings to ensure a consistent character count per page.
