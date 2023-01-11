@@ -74,7 +74,7 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder]):
         super().__init__(timeout=timeout)
         self._autodefer: bool = autodefer
         self._message: t.Optional[hikari.Message] = None
-        self._message_id: t.Optional[int] = None  # Only for bound persistent views
+        self._message_id: t.Optional[hikari.Snowflake] = None  # Only for bound persistent views
         self._input_event: asyncio.Event = asyncio.Event()
 
         for decorated_item in self._view_children:  # Sort and instantiate decorated callbacks
@@ -100,6 +100,13 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder]):
         The message this view is bound to. Will be None if the view is not bound, or if a message_id was passed to view.start().
         """
         return self._message
+
+    @property
+    def message_id(self) -> t.Optional[hikari.Snowflake]:
+        """
+        The message ID this view is bound to. Will be None if the view is an unbound persistent view.
+        """
+        return self._message_id
 
     @property
     def is_bound(self) -> bool:
