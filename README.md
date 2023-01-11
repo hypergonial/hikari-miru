@@ -63,7 +63,7 @@ async def buttons(event: hikari.GuildMessageCreateEvent) -> None:
         view = MyView(timeout=60)  # Create a new view
         message = await event.message.respond("Rock Paper Scissors!", components=view)
         await view.start(message)  # Start listening for interactions
-        await view.wait() # Wait until the view times out or gets stopped
+        await view.wait() # Optionally, wait until the view times out or gets stopped
         await event.message.respond("Thank you for playing!")
 
 bot.run()

@@ -89,7 +89,7 @@ simply pass a message ID to ``View.start()``. This also allows for the view to b
 
 .. warning::
     If you pass a message ID instead of a message object to ``View.start()``, ``View.message`` will be set to ``None``.
-    If you want to avoid this, you can try fetching the message before passing it instead.
+    If this is undesirable, try fetching the message before passing it instead.
 
 ::
 

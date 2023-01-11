@@ -66,10 +66,10 @@ This is what a basic component menu looks like with miru:
         # If the bot is mentioned
         if me.id in event.message.user_mentions_ids:
             view = BasicView(timeout=60)  # Create a new view
-            message = await event.message.respond("Rock Paper Scissors!", components=view)
+            message = await event.message.respond("Hello miru!", components=view)
             await view.start(message)  # Start listening for interactions
-            await view.wait() # Wait until the view times out or gets stopped
-            await event.message.respond("Thank you for playing!")
+            await view.wait() # Optionally, wait until the view times out or gets stopped
+            await event.message.respond("Goodbye!")
 
     bot.run()
 
