@@ -78,3 +78,9 @@ For general usage help or questions, see the `#miru` channel in the [hikari disc
 ## Contributing
 
 If you wish to contribute, make sure to run [nox](https://nox.thea.codes/en/stable/) before pushing your changes, and ensure all pipelines pass. This will format and typecheck your code to ensure it passes the CI.
+
+## Links
+
+- [**Documentation**](https://hikari-miru.readthedocs.io/en/latest/index.html)
+- [**Examples**](https://github.com/HyperGH/hikari-miru/tree/main/examples)
+- [**License**](https://github.com/HyperGH/hikari-miru/blob/main/LICENSE)
