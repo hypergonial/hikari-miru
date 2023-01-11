@@ -15,7 +15,7 @@ if t.TYPE_CHECKING:
 
     ViewT = t.TypeVar("ViewT", bound="View")
 
-__all__ = ["Button", "button"]
+__all__ = ("Button", "button")
 
 
 class Button(ViewItem):

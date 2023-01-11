@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 import typing as t
 
 import hikari
@@ -15,7 +14,7 @@ if t.TYPE_CHECKING:
 
 ModalT = t.TypeVar("ModalT", bound="Modal")
 
-__all__ = ["TextInput"]
+__all__ = ("TextInput",)
 
 
 class TextInput(ModalItem):

@@ -14,11 +14,11 @@ from .view import View
 if t.TYPE_CHECKING:
     from .traits import MiruAware
 
-__all__ = [
+__all__ = (
     "Event",
     "ComponentInteractionCreateEvent",
     "ModalInteractionCreateEvent",
-]
+)
 
 
 @attr.define()

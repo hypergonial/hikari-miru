@@ -2,7 +2,7 @@ import typing
 
 import hikari
 
-__all__ = ["MiruAware"]
+__all__ = ("MiruAware",)
 
 
 @typing.runtime_checkable

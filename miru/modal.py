@@ -17,6 +17,8 @@ from .abc.item import ModalItem
 from .abc.item_handler import ItemHandler
 from .context.modal import ModalContext
 
+__all__ = ("Modal",)
+
 
 class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder]):
     """Represents a Discord Modal.

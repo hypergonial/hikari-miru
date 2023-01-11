@@ -24,7 +24,10 @@ from .select import Select
 
 logger = logging.getLogger(__name__)
 
-__all__ = ["View", "get_view"]
+__all__ = (
+    "View",
+    "get_view",
+)
 
 
 class View(ItemHandler[hikari.impl.MessageActionRowBuilder]):

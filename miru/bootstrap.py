@@ -7,7 +7,7 @@ from .abc.item_handler import ItemHandler
 from .events import EventHandler
 from .traits import MiruAware
 
-__all__ = ["install", "uninstall", "load", "unload"]
+__all__ = ("install", "uninstall", "load", "unload")
 
 logger = logging.getLogger(__name__)
 

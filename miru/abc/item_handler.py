@@ -21,7 +21,7 @@ if t.TYPE_CHECKING:
     from ..context import Context
     from ..events import EventHandler
 
-__all__ = ["ItemHandler"]
+__all__ = ("ItemHandler",)
 
 
 BuilderT = t.TypeVar("BuilderT", bound=hikari.api.ComponentBuilder)
@@ -77,7 +77,7 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT]):  # type: ignore[type-
     ------
     HandlerFullError
         Raised if the item handler has more than 25 components attached.
-    BootStrapFailureError
+    BootstrapFailureError
         Raised if miru.install() was never called before instantiation.
     """
 

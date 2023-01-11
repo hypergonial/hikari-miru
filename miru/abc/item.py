@@ -18,7 +18,7 @@ if t.TYPE_CHECKING:
     from .item_handler import ItemHandler
 
 
-__all__ = ["Item", "DecoratedItem", "ViewItem", "ModalItem"]
+__all__ = ("Item", "DecoratedItem", "ViewItem", "ModalItem")
 
 BuilderT = t.TypeVar("BuilderT", bound=hikari.api.ComponentBuilder)
 

@@ -6,7 +6,7 @@ import typing as t
 
 import hikari
 
-from miru import Item
+from miru.abc import Item
 from miru.context import Context
 from miru.view import View
 
@@ -19,6 +19,8 @@ from .items import NextButton
 from .items import PrevButton
 
 logger = logging.getLogger(__name__)
+
+__all__ = ("NavigatorView",)
 
 
 class NavigatorView(View):

@@ -10,7 +10,7 @@ from .items import StopButton
 from .navigator import NavigatorView
 from .utils import *
 
-__all__ = [
+__all__ = (
     "NavItem",
     "NavButton",
     "NavSelect",
@@ -21,7 +21,7 @@ __all__ = [
     "IndicatorButton",
     "StopButton",
     "NavigatorView",
-]
+)
 
 # MIT License
 #
