@@ -125,10 +125,10 @@ class TextInput(ModalItem):
     @value.setter
     def value(self, value: t.Optional[str]) -> None:
         if value:
-            if self.min_length is not None and self.min_length < len(value):
+            if self.min_length is not None and self.min_length > len(value):
                 raise ValueError("Parameter 'value' does not meet minimum length requirement.")
 
-            if self.max_length is not None and self.max_length > len(value):
+            if self.max_length is not None and self.max_length < len(value):
                 raise ValueError("Parameter 'value' does not meet maximum length requirement.")
 
         self._value = str(value) if value else None
