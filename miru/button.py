@@ -108,7 +108,7 @@ class Button(ViewItem):
     @label.setter
     def label(self, value: t.Optional[str]) -> None:
         if value is not None and len(value) > 80:
-            raise ValueError(f"Parameter 'label' must be 80 or fewer in length. (Found {len(value)})"
+            raise ValueError(f"Parameter 'label' must be 80 or fewer in length. (Found {len(value)})")
         self._label = str(value) if value else None
 
     @property
