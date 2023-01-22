@@ -102,7 +102,7 @@ class TextInput(ModalItem):
     @label.setter
     def label(self, value: str) -> None:
         if len(value) > 45:
-            raise ValueError("Parameter 'label' value contains too many characters (45 max)")
+            raise ValueError(f"Parameter 'label' must be 45 or fewer in length. (Found length {len(value)})")
         self._label = str(value)
 
     @property
