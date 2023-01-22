@@ -129,6 +129,8 @@ class Select(ViewItem):
     def placeholder(self, value: t.Optional[str]) -> None:
         if value and not isinstance(value, str):
             raise TypeError("Expected type str for property placeholder.")
+        if value is not None and len(value) > 150:
+            raise ValueError("Parameter 'placeholder' value contains too many characters (150 max)")
 
     @property
     def options(self) -> t.Sequence[t.Union[hikari.SelectMenuOption, SelectOption]]:
