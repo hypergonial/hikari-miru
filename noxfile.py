@@ -32,7 +32,9 @@ def format(session: nox.Session):
 def mypy(session: nox.Session):
     session.install("-Ur", "requirements.txt")
     session.install("-U", "mypy")
-    session.run("python", "-m", "mypy", PATH_TO_PROJECT)
+    session.run(
+        "python", "-m", "mypy", "--install-types", "--non-interactive", "--cache-dir=.mypy_cache/", PATH_TO_PROJECT
+    )
 
 
 @nox.session(reuse_venv=True)
