@@ -108,7 +108,7 @@ class Button(ViewItem):
     @label.setter
     def label(self, value: t.Optional[str]) -> None:
         if value is not None and len(value) > 80:
-            raise ValueError("Parameter 'labal' value contains too many characters (80 max)"
+            raise ValueError("Parameter 'label' value contains too many characters (80 max)"
         self._label = str(value) if value else None
 
     @property
