@@ -115,7 +115,7 @@ class TextInput(ModalItem):
     @placeholder.setter
     def placeholder(self, value: t.Optional[str]) -> None:
         if value is not None and len(value) > 100:
-            raise ValueError("Parameter 'placeholder' value contains too many characters (100 max)") 
+            raise ValueError(f"Parameter 'placeholder' must be 100 or fewer in length. (Found length {len(value)})") 
         self._placeholder = str(value) if value else None
 
     @property
