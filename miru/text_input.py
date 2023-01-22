@@ -101,6 +101,8 @@ class TextInput(ModalItem):
 
     @label.setter
     def label(self, value: str) -> None:
+        if len(value) > 45:
+            raise ValueError(f"Parameter 'label' must be 45 or fewer in length. (Found length {len(value)})")
         self._label = str(value)
 
     @property
@@ -112,6 +114,8 @@ class TextInput(ModalItem):
 
     @placeholder.setter
     def placeholder(self, value: t.Optional[str]) -> None:
+        if value is not None and len(value) > 100:
+            raise ValueError(f"Parameter 'placeholder' must be 100 or fewer in length. (Found length {len(value)})") 
         self._placeholder = str(value) if value else None
 
     @property
