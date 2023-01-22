@@ -101,6 +101,8 @@ class TextInput(ModalItem):
 
     @label.setter
     def label(self, value: str) -> None:
+        if len(value) > 45:
+            raise ValueError("Parameter 'label' value contains too many characters (45 max)")
         self._label = str(value)
 
     @property
@@ -112,6 +114,8 @@ class TextInput(ModalItem):
 
     @placeholder.setter
     def placeholder(self, value: t.Optional[str]) -> None:
+        if value is not None and len(value) > 100:
+            raise ValueError("Parameter 'placeholder' value contains too many characters (100 max)") 
         self._placeholder = str(value) if value else None
 
     @property
