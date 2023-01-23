@@ -59,7 +59,7 @@ class Button(ViewItem):
         super().__init__(custom_id, disabled)
 
         self._style: t.Union[hikari.ButtonStyle, int] = style
-        self._label: t.Optional[str] = label
+        self.label: t.Optional[str] = label
         self._emoji: t.Union[str, hikari.Emoji, None] = emoji
         self._row: t.Optional[int] = int(row) if row is not None else None
         self._url: t.Optional[str] = url
@@ -76,6 +76,9 @@ class Button(ViewItem):
         if self.url is not None:
             # Assign underlying style
             self._style = hikari.ButtonStyle.LINK
+
+        if label is not None and len(label) > 80:
+            raise ValueError(f"Parameter 'label' must be 80 or fewer in length. (Found {len(label)})")
 
     @property
     def type(self) -> hikari.ComponentType:
