@@ -111,14 +111,6 @@ class Select(ViewItem):
         self.placeholder: t.Optional[str] = placeholder
         self._row: t.Optional[int] = row if row is not None else None
 
-        if len(self._options) > 25:
-            raise ValueError("A select can have a maximum of 25 options.")
-
-        if placeholder is not None and len(placeholder) > 150:
-            raise ValueError(
-                f"Parameter 'placeholder' must be 150 or fewer in length. (Found length {len(placeholder)})"
-            )
-
     @property
     def type(self) -> hikari.ComponentType:
         return hikari.ComponentType.SELECT_MENU

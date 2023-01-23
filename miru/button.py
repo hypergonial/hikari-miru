@@ -77,9 +77,6 @@ class Button(ViewItem):
             # Assign underlying style
             self._style = hikari.ButtonStyle.LINK
 
-        if label is not None and len(label) > 80:
-            raise ValueError(f"Parameter 'label' must be 80 or fewer in length. (Found {len(label)})")
-
     @property
     def type(self) -> hikari.ComponentType:
         return hikari.ComponentType.BUTTON

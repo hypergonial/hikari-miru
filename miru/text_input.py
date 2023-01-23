@@ -74,14 +74,6 @@ class TextInput(ModalItem):
         if self.max_length is not None and self.max_length < len(self._value):
             raise ValueError("Parameter value does not meet maximum length requirement.")
 
-        if len(label) > 45:
-            raise ValueError(f"Parameter 'label' must be 45 or fewer in length. (Found length {len(label)})")
-
-        if placeholder is not None and len(placeholder) > 100:
-            raise ValueError(
-                f"Parameter 'placeholder' must be 100 or fewer in length. (Found length {len(placeholder)})"
-            )
-
     @property
     def type(self) -> hikari.ComponentType:
         return hikari.ComponentType.TEXT_INPUT
