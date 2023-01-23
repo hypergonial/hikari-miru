@@ -4,11 +4,12 @@ import types
 
 from setuptools import find_namespace_packages
 from setuptools import setup
+import typing as t
 
 name = "miru"
 
 
-def parse_meta():
+def parse_meta() -> types.SimpleNamespace:
     with open(os.path.join(name, "__init__.py")) as fp:
         code = fp.read()
 
@@ -23,12 +24,12 @@ def parse_meta():
     return types.SimpleNamespace(**groups)
 
 
-def long_description():
+def long_description() -> str:
     with open("README.md") as fp:
         return fp.read()
 
 
-def parse_requirements_file(path):
+def parse_requirements_file(path: str) -> t.List[str]:
     with open(path) as fp:
         dependencies = (d.strip() for d in fp.read().split("\n") if d.strip())
         return [d for d in dependencies if not d.startswith("#")]

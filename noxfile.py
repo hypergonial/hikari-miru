@@ -14,7 +14,7 @@ options.sessions = ["format_fix", "mypy", "sphinx"]
 
 
 @nox.session()
-def format_fix(session: nox.Session):
+def format_fix(session: nox.Session) -> None:
     session.install("black")
     session.install("isort")
     session.run("python", "-m", "black", *SCRIPT_PATHS)
@@ -23,13 +23,13 @@ def format_fix(session: nox.Session):
 
 # noinspection PyShadowingBuiltins
 @nox.session()
-def format(session: nox.Session):
+def format(session: nox.Session) -> None:
     session.install("-U", "black")
     session.run("python", "-m", "black", *SCRIPT_PATHS, "--check")
 
 
 @nox.session()
-def mypy(session: nox.Session):
+def mypy(session: nox.Session) -> None:
     session.install("-Ur", "requirements.txt")
     session.install("-U", "mypy")
     session.run(
@@ -38,7 +38,7 @@ def mypy(session: nox.Session):
 
 
 @nox.session(reuse_venv=True)
-def sphinx(session):
+def sphinx(session: nox.Session) -> None:
     session.install("-Ur", "doc_requirements.txt")
     session.install("-Ur", "requirements.txt")
     session.run("python", "-m", "sphinx.cmd.build", "docs/source", "docs/build", "-b", "html")

@@ -9,7 +9,7 @@ force_single_line = true
 
 [tool.mypy]
 strict = true
-exclude = ["examples"]
+exclude = ["examples", "docs"]
 
 check_untyped_defs = true
 incremental = true
