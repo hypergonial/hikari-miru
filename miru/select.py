@@ -114,7 +114,6 @@ class Select(ViewItem):
         if len(self._options) > 25:
             raise ValueError("A select can have a maximum of 25 options.")
 
-
     @property
     def type(self) -> hikari.ComponentType:
         return hikari.ComponentType.SELECT_MENU
