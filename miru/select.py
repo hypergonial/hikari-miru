@@ -108,7 +108,7 @@ class Select(ViewItem):
         self._options: t.Sequence[t.Union[hikari.SelectMenuOption, SelectOption]] = options
         self._min_values: int = min_values
         self._max_values: int = max_values
-        self._placeholder: t.Optional[str] = placeholder
+        self.placeholder: t.Optional[str] = placeholder
         self._row: t.Optional[int] = row if row is not None else None
 
         if len(self._options) > 25:
@@ -129,6 +129,9 @@ class Select(ViewItem):
     def placeholder(self, value: t.Optional[str]) -> None:
         if value and not isinstance(value, str):
             raise TypeError("Expected type str for property placeholder.")
+        if value is not None and len(value) > 150:
+            raise ValueError(f"Parameter 'placeholder' must be 150 or fewer in length. (Found length {len(value)})")
+        self._placeholder = str(value) if value else None
 
     @property
     def options(self) -> t.Sequence[t.Union[hikari.SelectMenuOption, SelectOption]]:

@@ -58,9 +58,9 @@ class TextInput(ModalItem):
         super().__init__(custom_id, required)
         self._width: int = 5
         self._style: t.Union[hikari.TextInputStyle, int] = style
-        self._placeholder: t.Optional[str] = str(placeholder) if placeholder else None
+        self.placeholder: t.Optional[str] = str(placeholder) if placeholder else None
         self._value: t.Optional[str] = str(value) if value else None
-        self._label: str = str(label)
+        self.label: str = str(label)
         self._max_length: t.Optional[int] = max_length
         self._min_length: t.Optional[int] = min_length
         self._row: t.Optional[int] = int(row) if row is not None else None
@@ -101,6 +101,8 @@ class TextInput(ModalItem):
 
     @label.setter
     def label(self, value: str) -> None:
+        if len(value) > 45:
+            raise ValueError(f"Parameter 'label' must be 45 or fewer in length. (Found length {len(value)})")
         self._label = str(value)
 
     @property
@@ -112,6 +114,8 @@ class TextInput(ModalItem):
 
     @placeholder.setter
     def placeholder(self, value: t.Optional[str]) -> None:
+        if value is not None and len(value) > 100:
+            raise ValueError(f"Parameter 'placeholder' must be 100 or fewer in length. (Found length {len(value)})")
         self._placeholder = str(value) if value else None
 
     @property
