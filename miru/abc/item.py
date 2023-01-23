@@ -28,9 +28,9 @@ class Item(abc.ABC, t.Generic[BuilderT]):
     An abstract base class for all components. Cannot be directly instantiated.
     """
 
-    def __init__(self, custom_id: t.Optional[str] = None) -> None:
-        self._row: t.Optional[int] = None
-        """The row the item should be placed at. None for auto-placement."""
+    def __init__(self, custom_id: t.Optional[str] = None, row: t.Optional[int] = None) -> None:
+        self.row = row
+        """The row the item should occupy. Leave as None for automatic placement."""
 
         self._width: int = 1
         """The relative width of the item. 5 takes up a whole row."""
@@ -38,10 +38,10 @@ class Item(abc.ABC, t.Generic[BuilderT]):
         self._rendered_row: t.Optional[int] = None
         """The row the item was placed at when rendered. None if this item was not sent to a message yet."""
 
-        self._custom_id: str = os.urandom(16).hex() if custom_id is None else custom_id
+        self.custom_id = custom_id  # type: ignore[assignment]
         """The Discord custom_id of the item."""
 
-        self._is_persistent: bool = custom_id is not None
+        self._is_persistent: bool = bool(custom_id)
         """If True, the custom_id was provided by the user, and not randomly generated."""
 
         self._handler: t.Optional[ItemHandler[BuilderT]] = None
@@ -59,9 +59,7 @@ class Item(abc.ABC, t.Generic[BuilderT]):
         if self._rendered_row is not None:
             raise ItemAlreadyAttachedError("Item is already attached to an item handler, row cannot be changed.")
 
-        if value is None:
-            self._row = None
-        elif 5 > value >= 0:
+        if value is None or 5 > value >= 0:
             self._row = value
         else:
             raise ValueError("Row must be between 0 and 4.")
@@ -115,8 +113,8 @@ class ViewItem(Item[hikari.impl.MessageActionRowBuilder], abc.ABC):
     An abstract base class for view components. Cannot be directly instantiated.
     """
 
-    def __init__(self, custom_id: t.Optional[str] = None, disabled: bool = False) -> None:
-        super().__init__(custom_id)
+    def __init__(self, custom_id: t.Optional[str] = None, row: t.Optional[int] = None, disabled: bool = False) -> None:
+        super().__init__(custom_id, row)
         self._handler: t.Optional[View] = None
         self._disabled: bool = disabled
 
@@ -126,7 +124,7 @@ class ViewItem(Item[hikari.impl.MessageActionRowBuilder], abc.ABC):
         The view this item is attached to.
         """
         if not self._handler:
-            raise AttributeError(f"{self.__class__.__name__} hasn't been attached to a view yet")
+            raise AttributeError(f"{self.__class__.__name__} hasn't been attached to a view yet.")
 
         return self._handler
 
@@ -170,8 +168,8 @@ class ModalItem(Item[hikari.impl.ModalActionRowBuilder], abc.ABC):
     An abstract base class for modal components. Cannot be directly instantiated.
     """
 
-    def __init__(self, custom_id: t.Optional[str] = None, required: bool = False) -> None:
-        super().__init__(custom_id)
+    def __init__(self, custom_id: t.Optional[str] = None, row: t.Optional[int] = None, required: bool = False) -> None:
+        super().__init__(custom_id, row)
         self._handler: t.Optional[Modal] = None
         self._required: bool = required
 

@@ -56,26 +56,18 @@ class Button(ViewItem):
         emoji: t.Union[hikari.Emoji, str, None] = None,
         row: t.Optional[int] = None,
     ) -> None:
-        super().__init__(custom_id, disabled)
+        super().__init__(custom_id, row, disabled)
 
-        self._style: t.Union[hikari.ButtonStyle, int] = style
+        self.style = self._style = style  # mypy likes this better than my sanity
         self.label: t.Optional[str] = label
-        self._emoji: t.Union[str, hikari.Emoji, None] = emoji
-        self._row: t.Optional[int] = int(row) if row is not None else None
-        self._url: t.Optional[str] = url
+        self.emoji = emoji
+        self.url = url
 
-        if self._emoji is None and self._label is None:
+        if self.emoji is None and self.label is None:
             raise TypeError("Must provide at least one of emoji or label")
 
-        if self._is_persistent and self._url:
+        if self._is_persistent and self.url:
             raise TypeError("Cannot provide both url and custom_id")
-
-        if isinstance(self._emoji, str):
-            self._emoji = hikari.Emoji.parse(self._emoji)
-
-        if self.url is not None:
-            # Assign underlying style
-            self._style = hikari.ButtonStyle.LINK
 
     @property
     def type(self) -> hikari.ComponentType:

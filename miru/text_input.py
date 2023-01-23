@@ -55,24 +55,14 @@ class TextInput(ModalItem):
         custom_id: t.Optional[str] = None,
         row: t.Optional[int] = None,
     ) -> None:
-        super().__init__(custom_id, required)
+        super().__init__(custom_id, row, required)
         self._width: int = 5
-        self._style: t.Union[hikari.TextInputStyle, int] = style
-        self.placeholder: t.Optional[str] = str(placeholder) if placeholder else None
-        self._value: t.Optional[str] = str(value) if value else None
+        self.style = style
+        self.placeholder = str(placeholder) if placeholder else None
+        self.value = self._value = value
         self.label: str = str(label)
-        self._max_length: t.Optional[int] = max_length
-        self._min_length: t.Optional[int] = min_length
-        self._row: t.Optional[int] = int(row) if row is not None else None
-
-        if not self._value:
-            return
-
-        if self.min_length is not None and self.min_length > len(self._value):
-            raise ValueError("Parameter value does not meet minimum length requirement.")
-
-        if self.max_length is not None and self.max_length < len(self._value):
-            raise ValueError("Parameter value does not meet maximum length requirement.")
+        self.max_length: t.Optional[int] = max_length
+        self.min_length: t.Optional[int] = min_length
 
     @property
     def type(self) -> hikari.ComponentType:

@@ -103,16 +103,12 @@ class Select(ViewItem):
         disabled: bool = False,
         row: t.Optional[int] = None,
     ) -> None:
-        super().__init__(custom_id, disabled)
+        super().__init__(custom_id, row, disabled)
         self._values: t.Sequence[str] = []
-        self._options: t.Sequence[t.Union[hikari.SelectMenuOption, SelectOption]] = options
-        self._min_values: int = min_values
-        self._max_values: int = max_values
-        self.placeholder: t.Optional[str] = placeholder
-        self._row: t.Optional[int] = row if row is not None else None
-
-        if len(self._options) > 25:
-            raise ValueError("A select can have a maximum of 25 options.")
+        self.options = options
+        self.min_values = min_values
+        self.max_values = max_values
+        self.placeholder = placeholder
 
     @property
     def type(self) -> hikari.ComponentType:
