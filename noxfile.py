@@ -10,7 +10,7 @@ SCRIPT_PATHS = [
     "docs/source/conf.py",
 ]
 
-options.sessions = ["format_fix", "mypy", "sphinx"]
+options.sessions = ["format_fix", "mypy", "pytest", "sphinx"]
 
 
 @nox.session()
@@ -35,6 +35,13 @@ def mypy(session: nox.Session) -> None:
     session.run(
         "python", "-m", "mypy", "--install-types", "--non-interactive", "--cache-dir=.mypy_cache/", PATH_TO_PROJECT
     )
+
+
+@nox.session()
+def pytest(session: nox.Session) -> None:
+    session.install(".")
+    session.install("-U", "pytest")
+    session.run("pytest", "tests")
 
 
 @nox.session(reuse_venv=True)
