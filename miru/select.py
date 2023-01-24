@@ -140,7 +140,7 @@ class Select(ViewItem):
     def options(self, value: t.Sequence[t.Union[hikari.SelectMenuOption, SelectOption]]) -> None:
         if not isinstance(value, t.Sequence) or not isinstance(value[0], (hikari.SelectMenuOption, SelectOption)):
             raise TypeError(
-                "Expected type Sequence[Union[hikari.SelectMenuOption, SelectOption]] for property options."
+                "Expected type 'Sequence[Union[hikari.SelectMenuOption, SelectOption]]' for property 'options'."
             )
 
         if len(value) > 25:
@@ -158,7 +158,7 @@ class Select(ViewItem):
     @min_values.setter
     def min_values(self, value: int) -> None:
         if not isinstance(value, int):
-            raise TypeError("Expected type int for property min_values.")
+            raise TypeError("Expected type 'int' for property 'min_values'.")
         self._min_values = value
 
     @property
@@ -171,7 +171,7 @@ class Select(ViewItem):
     @max_values.setter
     def max_values(self, value: int) -> None:
         if not isinstance(value, int):
-            raise TypeError("Expected type int for property max_values.")
+            raise TypeError("Expected type 'int' for property 'max_values'.")
         self._max_values = value
 
     @classmethod
