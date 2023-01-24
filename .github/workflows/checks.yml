@@ -5,6 +5,7 @@ on: [push, pull_request]
 jobs:
   formatting:
     runs-on: ubuntu-latest
+    name: "Run isort and black on Python 3.10"
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python 3.10
@@ -19,6 +20,7 @@ jobs:
   
   mypy:
     runs-on: ubuntu-latest
+    name: "Run mypy via nox on Python 3.10"
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python 3.10
@@ -38,7 +40,7 @@ jobs:
         python-version: ['3.8', '3.9', '3.10', '3.11']
       fail-fast: false
 
-    name: Run pytest via nox on python ${{ matrix.python-version }}
+    name: Run pytest via nox on Python ${{ matrix.python-version }}
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
