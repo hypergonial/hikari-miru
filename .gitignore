@@ -130,3 +130,6 @@ dmypy.json
 
 # Jetbrains is annoying
 .idea/
+
+# And so is VS Code
+.vscode/
