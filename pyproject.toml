@@ -9,7 +9,7 @@ force_single_line = true
 
 [tool.mypy]
 strict = true
-exclude = ["examples", "docs"]
+exclude = ["examples", "docs", "build"]
 
 check_untyped_defs = true
 incremental = true
@@ -17,7 +17,7 @@ namespace_packages = true
 no_implicit_optional = true
 implicit_reexport = true
 pretty = true
-python_version = 3.8
+python_version = "3.10"
 show_column_numbers = true
 show_error_codes = true
 show_error_context = true

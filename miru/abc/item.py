@@ -29,14 +29,15 @@ class Item(abc.ABC, t.Generic[BuilderT]):
     """
 
     def __init__(self, custom_id: t.Optional[str] = None, row: t.Optional[int] = None) -> None:
+
+        self._rendered_row: t.Optional[int] = None
+        """The row the item was placed at when rendered. None if this item was not sent to a message yet."""
+
         self.row = row
         """The row the item should occupy. Leave as None for automatic placement."""
 
         self._width: int = 1
         """The relative width of the item. 5 takes up a whole row."""
-
-        self._rendered_row: t.Optional[int] = None
-        """The row the item was placed at when rendered. None if this item was not sent to a message yet."""
 
         self.custom_id = custom_id  # type: ignore[assignment]
         """The Discord custom_id of the item."""

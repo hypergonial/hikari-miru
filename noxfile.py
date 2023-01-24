@@ -7,7 +7,8 @@ PATH_TO_PROJECT = os.path.join(".", "miru")
 SCRIPT_PATHS = [
     PATH_TO_PROJECT,
     "noxfile.py",
-    "docs/source/conf.py",
+    os.path.join("docs", "source", "conf.py"),
+    os.path.join(".", "tests"),
 ]
 
 options.sessions = ["format_fix", "mypy", "pytest", "sphinx"]

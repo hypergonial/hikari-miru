@@ -57,17 +57,13 @@ class Button(ViewItem):
         row: t.Optional[int] = None,
     ) -> None:
         super().__init__(custom_id, row, disabled)
-
-        self.style = self._style = style  # mypy likes this better than my sanity
-        self.label: t.Optional[str] = label
-        self.emoji = emoji
-        self.url = url
-
-        if self.emoji is None and self.label is None:
-            raise TypeError("Must provide at least one of emoji or label")
+        self._emoji: t.Optional[hikari.Emoji] = (hikari.Emoji.parse(emoji) if isinstance(emoji, str) else emoji) or None
+        self.label = label
+        self.url = self._url = url
+        self.style = self._style = style if self._url is None else hikari.ButtonStyle.LINK
 
         if self._is_persistent and self.url:
-            raise TypeError("Cannot provide both url and custom_id")
+            raise TypeError("Cannot provide both 'url' and 'custom_id'.")
 
     @property
     def type(self) -> hikari.ComponentType:
@@ -83,10 +79,10 @@ class Button(ViewItem):
     @style.setter
     def style(self, value: t.Union[hikari.ButtonStyle, int]) -> None:
         if not isinstance(value, (hikari.ButtonStyle, int)):
-            raise TypeError("Expected type hikari.ButtonStyle or int for property style.")
+            raise TypeError("Expected type 'hikari.ButtonStyle' or 'int' for property 'style'.")
 
-        if self.url is not None:
-            raise ValueError("A link button cannot have it's style changed. Remove the url first.")
+        if self._url is not None and value != hikari.ButtonStyle.LINK:
+            raise ValueError("A link button cannot have it's style changed. Set 'url' to 'None' to change the style.")
 
         self._style = value
 
@@ -104,7 +100,7 @@ class Button(ViewItem):
         self._label = str(value) if value else None
 
     @property
-    def emoji(self) -> t.Union[str, hikari.Emoji, None]:
+    def emoji(self) -> t.Optional[hikari.Emoji]:
         """
         The emoji that should be visible on the button.
         """
@@ -115,9 +111,7 @@ class Button(ViewItem):
         if value and isinstance(value, str):
             value = hikari.Emoji.parse(value)
 
-        if value and not isinstance(value, hikari.Emoji):
-            raise TypeError("Expected types str or hikari.Emoji for property emoji.")
-        self._emoji = value
+        self._emoji = value  # type: ignore [assignment]
 
     @property
     def url(self) -> t.Optional[str]:
@@ -129,16 +123,16 @@ class Button(ViewItem):
 
     @url.setter
     def url(self, value: str) -> None:
-        if not isinstance(value, str):
-            raise TypeError("Expected type str for property url.")
+        if value and not isinstance(value, str):
+            raise TypeError("Expected type 'str' for property 'url'.")
 
         if value:
-            self.style = hikari.ButtonStyle.LINK
+            self._style = hikari.ButtonStyle.LINK
 
         self._url = value
 
     @classmethod
-    def _from_component(cls, component: hikari.PartialComponent, row: t.Optional[int] = None) -> ViewItem:
+    def _from_component(cls, component: hikari.PartialComponent, row: t.Optional[int] = None) -> Button:
         assert isinstance(component, hikari.ButtonComponent)
 
         return cls(
@@ -156,6 +150,9 @@ class Button(ViewItem):
             hikari.api.InteractiveButtonBuilder[hikari.api.MessageActionRowBuilder],
             hikari.api.LinkButtonBuilder[hikari.api.MessageActionRowBuilder],
         ]
+        if self.emoji is None and self.label is None:
+            raise TypeError("Must provide at least one of 'emoji' or 'label' when building Button.")
+
         if self.url is not None:
             button = action_row.add_button(hikari.ButtonStyle.LINK, self.url)
         else:

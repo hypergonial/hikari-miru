@@ -175,7 +175,7 @@ class Select(ViewItem):
         self._max_values = value
 
     @classmethod
-    def _from_component(cls, component: hikari.PartialComponent, row: t.Optional[int] = None) -> ViewItem:
+    def _from_component(cls, component: hikari.PartialComponent, row: t.Optional[int] = None) -> Select:
         assert isinstance(component, hikari.SelectMenuComponent)
 
         return cls(

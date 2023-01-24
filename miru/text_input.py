@@ -57,12 +57,13 @@ class TextInput(ModalItem):
     ) -> None:
         super().__init__(custom_id, row, required)
         self._width: int = 5
+        # Set value directly to avoid validation with missing values
+        self._value: t.Optional[str] = str(value) if value else None
         self.style = style
-        self.placeholder = str(placeholder) if placeholder else None
-        self.value = self._value = value
-        self.label: str = str(label)
-        self.max_length: t.Optional[int] = max_length
-        self.min_length: t.Optional[int] = min_length
+        self.placeholder = placeholder
+        self.label = label
+        self.max_length = max_length
+        self.min_length = min_length
 
     @property
     def type(self) -> hikari.ComponentType:
