@@ -15,17 +15,18 @@ options.sessions = ["format_fix", "mypy", "pytest", "sphinx"]
 
 @nox.session()
 def format_fix(session: nox.Session) -> None:
-    session.install("black")
-    session.install("isort")
+    session.install("-U", "black")
+    session.install("-U", "isort")
     session.run("python", "-m", "black", *SCRIPT_PATHS)
     session.run("python", "-m", "isort", *SCRIPT_PATHS)
 
 
-# noinspection PyShadowingBuiltins
 @nox.session()
 def format(session: nox.Session) -> None:
     session.install("-U", "black")
+    session.install("-U", "isort")
     session.run("python", "-m", "black", *SCRIPT_PATHS, "--check")
+    session.run("python", "-m", "isort", *SCRIPT_PATHS, "--check")
 
 
 @nox.session()
