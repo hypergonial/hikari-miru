@@ -67,6 +67,9 @@ class NavigatorView(View):
             default_buttons = self.get_default_buttons()
             for default_button in default_buttons:
                 self.add_item(default_button)
+        
+        if not pages:
+            raise ValueError(f"Expected at least one page to be passed to {self.__class___.__name__}.")
 
     @property
     def pages(self) -> t.Sequence[t.Union[str, hikari.Embed]]:
@@ -201,6 +204,27 @@ class NavigatorView(View):
         self._inter = context.interaction  # Update latest inter
 
         await context.edit_response(**payload, attachment=None)
+
+    async def swap_pages(
+        self, context: Context[t.Any], new_pages: t.Sequence[t.Union[str, hikari.Embed]], start_at: int = 0
+    ) -> None:
+        """Swap out the pages of the navigator to the newly provided pages.
+        By default, the navigator will reset to the first page.
+
+        Parameters
+        ----------
+        context : Context
+            The context object that should be used to send the updated pages
+        new_pages : Sequence[Union[str, Embed]]
+            The new pages to swap to
+        start_at : int, optional
+            The page to start at, by default 0
+        """
+        if not new_pages:
+            raise ValueError(f"Expected at least one page to be passed to {self.__class___.__name__}.")
+
+        self._pages = new_pages
+        await self.send_page(context, page_index=start_at)
 
     async def start(
         self,
