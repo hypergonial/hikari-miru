@@ -54,13 +54,13 @@ def uninstall() -> None:
 
 def load(bot: MiruAware) -> None:
     """DEPRECATED: Use miru.install instead."""
-    logger.warning("miru.load is deprecated, use miru.install instead.")
+    logger.warning("miru.load is deprecated, use miru.install instead. miru.load will be removed in 2.2.0!")
     install(bot)
 
 
 def unload() -> None:
     """DEPRECATED: Use miru.uninstall instead."""
-    logger.warning("miru.unload is deprecated, use miru.uninstall instead.")
+    logger.warning("miru.unload is deprecated, use miru.uninstall instead. miru.unload will be removed in 2.2.0!")
     uninstall()
 
 

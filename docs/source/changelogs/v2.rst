@@ -13,6 +13,7 @@ Version 2.1.0
 - Added initial framework and CI for unit testing in the library.
 - Improved the validation of item properties.
 - Minor documentation and other fixes.
+- Added note about ``miru.load`` and ``miru.unload`` being removed in 2.2.0 to deprecation warning.
 
 Version 2.0.4
 =============
