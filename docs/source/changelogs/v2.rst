@@ -6,28 +6,36 @@ These are all the changelogs for stable releases of hikari-miru (version 2.0.0 t
 
 ----
 
+Version 2.1.0
+=============
+
+- Added ``miru.ext.nav.NavigatorView.swap_pages()`` to allow mutating the pages of a navigator after instantiation.
+- Added initial framework and CI for unit testing in the library.
+- Improved the validation of item properties.
+- Minor documentation and other fixes.
+
 Version 2.0.4
 =============
 
-- Fix setter of ``TextInput.value`` incorrectly rejecting strings of proper length. 
+- Fixed setter of ``TextInput.value`` incorrectly rejecting strings of proper length. 
 
 Version 2.0.3
 =============
 
-- Add ``View.message_id``.
+- Added ``View.message_id``.
 - Make usage of ``__all__`` consistent across the library.
 - Minor documentation fixes.
 
 Version 2.0.2
 =============
 
-- Fix ``Context.edit_response()`` typehints.
-- Fix navigator attachments being kept between page changes.
+- Fixed ``Context.edit_response()`` typehints.
+- Fixed navigator attachments being kept between page changes.
 
 Version 2.0.1
 =============
 
-- Unblock ``View.wait_for_input()`` when ``View.stop()`` is called.
+- Unblocked ``View.wait_for_input()`` when ``View.stop()`` is called.
 
 Version 2.0.0
 =============
