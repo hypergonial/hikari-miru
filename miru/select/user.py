@@ -97,7 +97,13 @@ class UserSelect(SelectBase):
         select.add_to_container()
 
     async def _refresh_state(self, context: Context[t.Any]) -> None:
-        self._values = context.interaction.resolved.users.values() + context.interaction.resolved.members.values()
+        values = []
+        for user in context.interaction.resolved.users.values():
+            if member := context.interaction.resolved.members.get(user.id):
+                values.append(member)
+            else:
+                values.append(user)
+        self._values = values
 
 
 def user_select(

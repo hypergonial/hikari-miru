@@ -184,7 +184,7 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder]):
 
             for component in action_row.components:
                 if not isinstance(component.type, hikari.ComponentType):
-                    continue # Unrecognized component types are ignored
+                    continue  # Unrecognized component types are ignored
                 comp_cls = COMPONENT_VIEW_ITEM_MAPPING[component.type]
                 view.add_item(comp_cls._from_component(component, row))
 
