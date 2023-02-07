@@ -135,7 +135,7 @@ class TextInput(ModalItem):
 
     @min_length.setter
     def min_length(self, value: t.Optional[int]) -> None:
-        if not isinstance(value, int):
+        if value and not isinstance(value, int):
             raise TypeError("Expected type int for property min_length.")
         if self.value:
             if value is not None and value > len(self.value):
@@ -149,7 +149,7 @@ class TextInput(ModalItem):
 
     @max_length.setter
     def max_length(self, value: t.Optional[int]) -> None:
-        if not isinstance(value, int):
+        if value and not isinstance(value, int):
             raise TypeError("Expected type int for property max_length.")
         if self.value:
             if value is not None and value < len(self.value):
