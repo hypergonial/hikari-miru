@@ -15,5 +15,5 @@ Version 3.0.0
 - Added initial framework and CI for unit testing in the library.
 - Improved the validation of item properties.
 - Added note about ``miru.load`` and ``miru.unload`` being removed in 3.1.0 to deprecation warning.
-- Fix ``TextInput.min_length`` and ``TextInput.max_length`` not being able to be set to ``None``.
+- Fixed ``TextInput.min_length`` and ``TextInput.max_length`` not being able to be set to ``None``.
 - Minor documentation and other fixes.
