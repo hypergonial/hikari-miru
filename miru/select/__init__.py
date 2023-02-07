@@ -17,4 +17,5 @@ __all__ = (
     "role_select",
     "channel_select",
     "mentionable_select",
+    "text_select",
 )
