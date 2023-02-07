@@ -5,17 +5,18 @@ import typing as t
 
 import hikari
 
-from .abc.item import DecoratedItem
-from .abc.item import ViewItem
-from .context.view import ViewContext
+from ..abc.item import DecoratedItem
+from ..abc.item import ViewItem
+from ..context.view import ViewContext
+from .base import SelectBase
 
 if t.TYPE_CHECKING:
-    from .context.base import Context
-    from .view import View
+    from ..context.base import Context
+    from ..view import View
 
     ViewT = t.TypeVar("ViewT", bound="View")
 
-__all__ = ("SelectOption", "Select", "select")
+__all__ = ("SelectOption", "TextSelect", "text_select")
 
 
 class SelectOption:
@@ -66,8 +67,8 @@ class SelectOption:
         )
 
 
-class Select(ViewItem):
-    """A view component representing a select menu.
+class TextSelect(SelectBase):
+    """A view component representing a text select menu.
 
     Parameters
     ----------
@@ -103,16 +104,20 @@ class Select(ViewItem):
         disabled: bool = False,
         row: t.Optional[int] = None,
     ) -> None:
-        super().__init__(custom_id, row, disabled)
+        super().__init__(
+            custom_id=custom_id,
+            placeholder=placeholder,
+            min_values=min_values,
+            max_values=max_values,
+            disabled=disabled,
+            row=row,
+        )
         self._values: t.Sequence[str] = []
         self.options = options
-        self.min_values = min_values
-        self.max_values = max_values
-        self.placeholder = placeholder
 
     @property
     def type(self) -> hikari.ComponentType:
-        return hikari.ComponentType.SELECT_MENU
+        return hikari.ComponentType.TEXT_SELECT_MENU
 
     @property
     def placeholder(self) -> t.Optional[str]:
@@ -148,35 +153,9 @@ class Select(ViewItem):
 
         self._options = value
 
-    @property
-    def min_values(self) -> int:
-        """
-        The minimum amount of options a user has to select.
-        """
-        return self._min_values
-
-    @min_values.setter
-    def min_values(self, value: int) -> None:
-        if not isinstance(value, int):
-            raise TypeError("Expected type 'int' for property 'min_values'.")
-        self._min_values = value
-
-    @property
-    def max_values(self) -> int:
-        """
-        The maximum amount of options a user is allowed to select.
-        """
-        return self._max_values
-
-    @max_values.setter
-    def max_values(self, value: int) -> None:
-        if not isinstance(value, int):
-            raise TypeError("Expected type 'int' for property 'max_values'.")
-        self._max_values = value
-
     @classmethod
-    def _from_component(cls, component: hikari.PartialComponent, row: t.Optional[int] = None) -> Select:
-        assert isinstance(component, hikari.SelectMenuComponent)
+    def _from_component(cls, component: hikari.PartialComponent, row: t.Optional[int] = None) -> TextSelect:
+        assert isinstance(component, hikari.components.TextSelectMenuComponent)
 
         return cls(
             options=component.options,
@@ -192,7 +171,7 @@ class Select(ViewItem):
         """
         Called internally to build and append to an action row
         """
-        select = action_row.add_select_menu(self.custom_id)
+        select = action_row.add_select_menu(hikari.ComponentType.TEXT_SELECT_MENU, self.custom_id)
         if self.placeholder:
             select.set_placeholder(self.placeholder)
         select.set_min_values(self.min_values)
@@ -227,7 +206,7 @@ class Select(ViewItem):
         self._values = context.interaction.values
 
 
-def select(
+def text_select(
     *,
     options: t.Sequence[t.Union[hikari.SelectMenuOption, SelectOption]],
     custom_id: t.Optional[str] = None,
@@ -236,16 +215,16 @@ def select(
     max_values: int = 1,
     disabled: bool = False,
     row: t.Optional[int] = None,
-) -> t.Callable[[t.Callable[[ViewT, Select, ViewContext], t.Any]], Select]:
+) -> t.Callable[[t.Callable[[ViewT, TextSelect, ViewContext], t.Any]], TextSelect]:
     """
-    A decorator to transform a function into a Discord UI SelectMenu's callback. This must be inside a subclass of View.
+    A decorator to transform a function into a Discord UI TextSelectMenu's callback. This must be inside a subclass of View.
     """
 
     def decorator(func: t.Callable[..., t.Any]) -> t.Any:
         if not inspect.iscoroutinefunction(func):
-            raise TypeError("select must decorate coroutine function.")
+            raise TypeError("text_select must decorate coroutine function.")
 
-        item = Select(
+        item = TextSelect(
             options=options,
             custom_id=custom_id,
             placeholder=placeholder,
@@ -257,26 +236,3 @@ def select(
         return DecoratedItem(item, func)
 
     return decorator
-
-
-# MIT License
-#
-# Copyright (c) 2022-present HyperGH
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.

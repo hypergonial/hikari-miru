@@ -9,7 +9,11 @@ from miru.abc.item import ViewItem
 from miru.button import Button
 from miru.context import ViewContext
 from miru.modal import Modal
-from miru.select import Select
+from miru.select import ChannelSelect
+from miru.select import MentionableSelect
+from miru.select import RoleSelect
+from miru.select import TextSelect
+from miru.select import UserSelect
 from miru.text_input import TextInput
 
 if t.TYPE_CHECKING:
@@ -47,20 +51,32 @@ class NavItem(ViewItem, abc.ABC):
         The view this item is attached to.
         """
         if not self._handler:
-            raise AttributeError(f"{self.__class__.__name__} hasn't been attached to a view yet")
+            raise AttributeError(f"{type(self).__name__} hasn't been attached to a view yet")
         return self._handler
 
 
 class NavButton(Button, NavItem):
     """A base class for all navigation buttons."""
 
-    ...
+
+class NavTextSelect(TextSelect, NavItem):
+    """A base class for all navigation text selects."""
 
 
-class NavSelect(Select, NavItem):
-    """A base class for all navigation selects."""
+class NavUserSelect(UserSelect, NavItem):
+    """A base class for all navigation user selects."""
 
-    ...
+
+class NavRoleSelect(RoleSelect, NavItem):
+    """A base class for all navigation role selects."""
+
+
+class NavChannelSelect(ChannelSelect, NavItem):
+    """A base class for all navigation channel selects."""
+
+
+class NavMentionableSelect(MentionableSelect, NavItem):
+    """A base class for all navigation mentionable selects."""
 
 
 class NextButton(NavButton):
@@ -235,7 +251,7 @@ class StopButton(NavButton):
             return
 
         for item in self.view.children:
-            if isinstance(item, (NavButton, NavSelect)):
+            if isinstance(item, (NavItem)):
                 item.disabled = True
 
         if self.view._using_inter and self.view._inter:

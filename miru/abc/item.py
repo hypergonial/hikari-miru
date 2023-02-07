@@ -29,7 +29,6 @@ class Item(abc.ABC, t.Generic[BuilderT]):
     """
 
     def __init__(self, custom_id: t.Optional[str] = None, row: t.Optional[int] = None) -> None:
-
         self._rendered_row: t.Optional[int] = None
         """The row the item was placed at when rendered. None if this item was not sent to a message yet."""
 
@@ -125,7 +124,7 @@ class ViewItem(Item[hikari.impl.MessageActionRowBuilder], abc.ABC):
         The view this item is attached to.
         """
         if not self._handler:
-            raise AttributeError(f"{self.__class__.__name__} hasn't been attached to a view yet.")
+            raise AttributeError(f"{type(self).__name__} hasn't been attached to a view yet.")
 
         return self._handler
 
@@ -180,7 +179,7 @@ class ModalItem(Item[hikari.impl.ModalActionRowBuilder], abc.ABC):
         The modal this item is attached to.
         """
         if not self._handler:
-            raise AttributeError(f"{self.__class__.__name__} hasn't been attached to a modal yet.")
+            raise AttributeError(f"{type(self).__name__} hasn't been attached to a modal yet.")
 
         return self._handler
 

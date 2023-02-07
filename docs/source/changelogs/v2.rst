@@ -2,18 +2,9 @@
 Versions 2.0+ Changelog
 =======================
 
-These are all the changelogs for stable releases of hikari-miru (version 2.0.0 to present).
+These are all the changelogs for stable releases of hikari-miru (version 2.0.0 to 2.0.4).
 
 ----
-
-Version 2.1.0
-=============
-
-- Added ``miru.ext.nav.NavigatorView.swap_pages()`` to allow mutating the pages of a navigator after instantiation.
-- Added initial framework and CI for unit testing in the library.
-- Improved the validation of item properties.
-- Minor documentation and other fixes.
-- Added note about ``miru.load`` and ``miru.unload`` being removed in 2.2.0 to deprecation warning.
 
 Version 2.0.4
 =============

@@ -7,18 +7,18 @@ import miru
 def test_placeholder_length() -> None:
     """Test that the select handles placeholders that are too long."""
     with pytest.raises(ValueError):
-        miru.Select(options=[miru.SelectOption(label="amongus")], placeholder="a" * 151)
+        miru.TextSelect(options=[miru.SelectOption(label="amongus")], placeholder="a" * 151)
 
 
 def test_select_option_length() -> None:
     """Test that the select handles having too many options."""
     with pytest.raises(ValueError):
-        miru.Select(options=[miru.SelectOption(label="amongus")] * 26)
+        miru.TextSelect(options=[miru.SelectOption(label="amongus")] * 26)
 
 
 def test_select_build() -> None:
     """Test that the select is built correctly."""
-    select = miru.Select(
+    select = miru.TextSelect(
         options=[miru.SelectOption(label="amongus")],
         custom_id="test",
         placeholder="test",
@@ -32,7 +32,7 @@ def test_select_build() -> None:
         "type": hikari.ComponentType.ACTION_ROW,
         "components": [
             {
-                "type": hikari.ComponentType.SELECT_MENU,
+                "type": hikari.ComponentType.TEXT_SELECT_MENU,
                 "custom_id": "test",
                 "placeholder": "test",
                 "min_values": 1,
@@ -46,9 +46,9 @@ def test_select_build() -> None:
 
 def test_select_from_hikari() -> None:
     """Test that the select is built correctly from a hikari component."""
-    select = miru.Select._from_component(
-        hikari.SelectMenuComponent(
-            type=hikari.ComponentType.SELECT_MENU,
+    select = miru.TextSelect._from_component(
+        hikari.components.TextSelectMenuComponent(
+            type=hikari.ComponentType.TEXT_SELECT_MENU,
             custom_id="test",
             placeholder="test",
             min_values=1,

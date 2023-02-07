@@ -67,9 +67,9 @@ class NavigatorView(View):
             default_buttons = self.get_default_buttons()
             for default_button in default_buttons:
                 self.add_item(default_button)
-        
+
         if not pages:
-            raise ValueError(f"Expected at least one page to be passed to {self.__class___.__name__}.")
+            raise ValueError(f"Expected at least one page to be passed to {type(self).__name__}.")
 
     @property
     def pages(self) -> t.Sequence[t.Union[str, hikari.Embed]]:
@@ -221,7 +221,7 @@ class NavigatorView(View):
             The page to start at, by default 0
         """
         if not new_pages:
-            raise ValueError(f"Expected at least one page to be passed to {self.__class___.__name__}.")
+            raise ValueError(f"Expected at least one page to be passed to {type(self).__name__}.")
 
         self._pages = new_pages
         await self.send_page(context, page_index=start_at)
@@ -280,7 +280,7 @@ class NavigatorView(View):
 
         if self.ephemeral and self.timeout and self.timeout > 900:
             logger.warning(
-                f"Using a timeout value longer than 900 seconds (Used {self.timeout}) in ephemeral navigator {self.__class__.__name__} may cause on_timeout to fail."
+                f"Using a timeout value longer than 900 seconds (Used {self.timeout}) in ephemeral navigator {type(self).__name__} may cause on_timeout to fail."
             )
 
         payload = self._get_page_payload(self.pages[start_at])

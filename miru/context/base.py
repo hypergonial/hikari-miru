@@ -197,7 +197,7 @@ class Context(abc.ABC, t.Generic[InteractionT]):
     def app(self) -> MiruAware:
         """The application that loaded miru."""
         if not ItemHandler._app:
-            raise BootstrapFailureError(f"miru was not loaded, {self.__class__.__name__} has no property app.")
+            raise BootstrapFailureError(f"miru was not loaded, {type(self).__name__} has no property app.")
 
         return ItemHandler._app
 

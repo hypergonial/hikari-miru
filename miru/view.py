@@ -20,7 +20,11 @@ from .abc.item import ViewItem
 from .abc.item_handler import ItemHandler
 from .button import Button
 from .context.view import ViewContext
-from .select import Select
+from .select import ChannelSelect
+from .select import MentionableSelect
+from .select import RoleSelect
+from .select import TextSelect
+from .select import UserSelect
 
 logger = logging.getLogger(__name__)
 
@@ -173,7 +177,17 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder]):
                     view.add_item(Button._from_component(component, row))
 
                 elif isinstance(component, hikari.SelectMenuComponent):
-                    view.add_item(Select._from_component(component, row))
+                    # Refactor using match when 3.8 & 3.9 support is dropped
+                    if component.type == hikari.ComponentType.CHANNEL_SELECT_MENU:
+                        view.add_item(ChannelSelect._from_component(component, row))
+                    elif component.type == hikari.ComponentType.ROLE_SELECT_MENU:
+                        view.add_item(RoleSelect._from_component(component, row))
+                    elif component.type == hikari.ComponentType.USER_SELECT_MENU:
+                        view.add_item(UserSelect._from_component(component, row))
+                    elif component.type == hikari.ComponentType.TEXT_SELECT_MENU:
+                        view.add_item(TextSelect._from_component(component, row))
+                    elif component.type == hikari.ComponentType.MENTIONABLE_SELECT_MENU:
+                        view.add_item(MentionableSelect._from_component(component, row))
 
         return view
 
@@ -357,19 +371,15 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder]):
             miru.install() was not called before starting a view.
         """
         if self._events is None:
-            raise BootstrapFailureError(
-                f"Cannot start View {self.__class__.__name__} before calling miru.install() first."
-            )
+            raise BootstrapFailureError(f"Cannot start View {type(self).__name__} before calling miru.install() first.")
 
         # Optimize URL-button-only views by not adding to listener
         if all((isinstance(item, Button) and item.url is not None) for item in self.children):
-            logger.warning(f"View {self.__class__.__name__} only contains link buttons. Ignoring 'View.start()' call.")
+            logger.warning(f"View {type(self).__name__} only contains link buttons. Ignoring 'View.start()' call.")
             return
 
         if message is None and not self.is_persistent:
-            raise ValueError(
-                f"View '{self.__class__.__name__}' is not persistent, parameter 'message' must be provided."
-            )
+            raise ValueError(f"View '{type(self).__name__}' is not persistent, parameter 'message' must be provided.")
 
         if message is None:
             self._events.add_handler(self)

@@ -25,15 +25,15 @@ This is what a basic component menu looks like with miru:
     # Define a new custom View that contains 3 items
     class BasicView(miru.View):
 
-        # Define a new Select menu with two options
-        @miru.select(
+        # Define a new TextSelect menu with two options
+        @miru.text_select(
             placeholder="Select me!",
             options=[
                 miru.SelectOption(label="Option 1"),
                 miru.SelectOption(label="Option 2"),
             ],
         )
-        async def basic_select(self, select: miru.Select, ctx: miru.ViewContext) -> None:
+        async def basic_select(self, select: miru.TextSelect, ctx: miru.ViewContext) -> None:
             await ctx.respond(f"You've chosen {select.values[0]}!")
 
         # Define a new Button with the Style of success (Green)

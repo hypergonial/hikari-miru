@@ -292,7 +292,7 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder]):
         This should not be called manually, use `Modal.send()` or `Context.respond_with_modal()` instead."""
         if not self._events:
             raise BootstrapFailureError(
-                f"Cannot start Modal {self.__class__.__name__} before calling miru.install() first."
+                f"Cannot start Modal {type(self).__name__} before calling miru.install() first."
             )
 
         self._events.add_handler(self)

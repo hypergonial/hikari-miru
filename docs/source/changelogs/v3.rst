@@ -1,0 +1,18 @@
+=======================
+Versions 3.0+ Changelog
+=======================
+
+These are all the changelogs for stable releases of hikari-miru (version 3.0.0 to present).
+
+Version 3.0.0
+=============
+
+- BREAKING: ``miru.Select`` has been renamed to ``miru.TextSelect`` along with the decorator ``miru.select`` to ``miru.text_select``.
+- BREAKING: ``miru.ext.nav.NavSelect`` has been renamed to ``miru.NavTextSelect``.
+- Added ``miru.UserSelect``, ``miru.RoleSelect``, ``miru.ChannelSelect``, ``miru.MentionableSelect`` along with their respective decorators.
+- Added ``Nav`` variants of all new selects to ``miru.ext.nav``.
+- Added ``miru.ext.nav.NavigatorView.swap_pages()`` to allow mutating the pages of a navigator after instantiation.
+- Added initial framework and CI for unit testing in the library.
+- Improved the validation of item properties.
+- Minor documentation and other fixes.
+- Added note about ``miru.load`` and ``miru.unload`` being removed in 3.1.0 to deprecation warning.

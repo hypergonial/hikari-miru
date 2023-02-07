@@ -35,7 +35,6 @@ class _Weights:
     __slots__ = ("_weights",)
 
     def __init__(self) -> None:
-
         self._weights = [0, 0, 0, 0, 0]
 
     def add_item(self, item: Item[BuilderT]) -> None:
@@ -98,12 +97,10 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT]):  # type: ignore[type-
         self._last_context: t.Optional[Context[t.Any]] = None
 
         if len(self.children) > 25:
-            raise HandlerFullError(f"{self.__class__.__name__} cannot have more than 25 components attached.")
+            raise HandlerFullError(f"{type(self).__name__} cannot have more than 25 components attached.")
 
         if self.app is None or self._events is None:
-            raise BootstrapFailureError(
-                f"miru.install() was not called before instantiation of {self.__class__.__name__}."
-            )
+            raise BootstrapFailureError(f"miru.install() was not called before instantiation of {type(self).__name__}.")
 
     @t.overload
     def __getitem__(self, value: int) -> BuilderT:
@@ -149,7 +146,7 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT]):  # type: ignore[type-
         The application that loaded the miru extension.
         """
         if not self._app:
-            raise AttributeError(f"miru was not loaded, {self.__class__.__name__} has no attribute app.")
+            raise AttributeError(f"miru was not loaded, {type(self).__name__} has no attribute app.")
 
         return self._app
 
