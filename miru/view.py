@@ -33,6 +33,16 @@ __all__ = (
     "get_view",
 )
 
+COMPONENT_VIEW_ITEM_MAPPING: t.Mapping[hikari.ComponentType, t.Type[ViewItem]] = {
+    hikari.ComponentType.BUTTON: Button,
+    hikari.ComponentType.TEXT_SELECT_MENU: TextSelect,
+    hikari.ComponentType.CHANNEL_SELECT_MENU: ChannelSelect,
+    hikari.ComponentType.ROLE_SELECT_MENU: RoleSelect,
+    hikari.ComponentType.USER_SELECT_MENU: UserSelect,
+    hikari.ComponentType.MENTIONABLE_SELECT_MENU: MentionableSelect,
+}
+"""A mapping of all message component types to their respective item classes."""
+
 
 class View(ItemHandler[hikari.impl.MessageActionRowBuilder]):
     """Represents a set of Discord UI components attached to a message.
@@ -173,21 +183,10 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder]):
             assert isinstance(action_row, hikari.ActionRowComponent)
 
             for component in action_row.components:
-                if isinstance(component, hikari.ButtonComponent):
-                    view.add_item(Button._from_component(component, row))
-
-                elif isinstance(component, hikari.SelectMenuComponent):
-                    # Refactor using match when 3.8 & 3.9 support is dropped
-                    if component.type == hikari.ComponentType.CHANNEL_SELECT_MENU:
-                        view.add_item(ChannelSelect._from_component(component, row))
-                    elif component.type == hikari.ComponentType.ROLE_SELECT_MENU:
-                        view.add_item(RoleSelect._from_component(component, row))
-                    elif component.type == hikari.ComponentType.USER_SELECT_MENU:
-                        view.add_item(UserSelect._from_component(component, row))
-                    elif component.type == hikari.ComponentType.TEXT_SELECT_MENU:
-                        view.add_item(TextSelect._from_component(component, row))
-                    elif component.type == hikari.ComponentType.MENTIONABLE_SELECT_MENU:
-                        view.add_item(MentionableSelect._from_component(component, row))
+                if not isinstance(component.type, hikari.ComponentType):
+                    continue # Unrecognized component types are ignored
+                comp_cls = COMPONENT_VIEW_ITEM_MAPPING[component.type]
+                view.add_item(comp_cls._from_component(component, row))
 
         return view
 
