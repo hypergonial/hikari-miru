@@ -52,7 +52,7 @@ __all__ = (
     "get_view",
 )
 
-__version__ = "3.0.0"
+__version__ = "3.0.1"
 
 # MIT License
 #

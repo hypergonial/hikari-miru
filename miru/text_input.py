@@ -55,7 +55,7 @@ class TextInput(ModalItem):
         custom_id: t.Optional[str] = None,
         row: t.Optional[int] = None,
     ) -> None:
-        super().__init__(custom_id, row, required)
+        super().__init__(custom_id=custom_id, row=row, required=required)
         self._width: int = 5
         # Set value directly to avoid validation with missing values
         self._value: t.Optional[str] = str(value) if value else None

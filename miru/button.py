@@ -56,7 +56,7 @@ class Button(ViewItem):
         emoji: t.Union[hikari.Emoji, str, None] = None,
         row: t.Optional[int] = None,
     ) -> None:
-        super().__init__(custom_id, row, disabled)
+        super().__init__(custom_id=custom_id, row=row, disabled=disabled)
         self._emoji: t.Optional[hikari.Emoji] = (hikari.Emoji.parse(emoji) if isinstance(emoji, str) else emoji) or None
         self.label = label
         self.url = self._url = url

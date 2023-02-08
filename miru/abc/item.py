@@ -28,7 +28,7 @@ class Item(abc.ABC, t.Generic[BuilderT]):
     An abstract base class for all components. Cannot be directly instantiated.
     """
 
-    def __init__(self, custom_id: t.Optional[str] = None, row: t.Optional[int] = None) -> None:
+    def __init__(self, *, custom_id: t.Optional[str] = None, row: t.Optional[int] = None) -> None:
         self._rendered_row: t.Optional[int] = None
         """The row the item was placed at when rendered. None if this item was not sent to a message yet."""
 
@@ -113,8 +113,10 @@ class ViewItem(Item[hikari.impl.MessageActionRowBuilder], abc.ABC):
     An abstract base class for view components. Cannot be directly instantiated.
     """
 
-    def __init__(self, custom_id: t.Optional[str] = None, row: t.Optional[int] = None, disabled: bool = False) -> None:
-        super().__init__(custom_id, row)
+    def __init__(
+        self, *, custom_id: t.Optional[str] = None, row: t.Optional[int] = None, disabled: bool = False
+    ) -> None:
+        super().__init__(custom_id=custom_id, row=row)
         self._handler: t.Optional[View] = None
         self._disabled: bool = disabled
 
@@ -168,8 +170,10 @@ class ModalItem(Item[hikari.impl.ModalActionRowBuilder], abc.ABC):
     An abstract base class for modal components. Cannot be directly instantiated.
     """
 
-    def __init__(self, custom_id: t.Optional[str] = None, row: t.Optional[int] = None, required: bool = False) -> None:
-        super().__init__(custom_id, row)
+    def __init__(
+        self, *, custom_id: t.Optional[str] = None, row: t.Optional[int] = None, required: bool = False
+    ) -> None:
+        super().__init__(custom_id=custom_id, row=row)
         self._handler: t.Optional[Modal] = None
         self._required: bool = required
 

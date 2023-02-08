@@ -4,6 +4,11 @@ Versions 3.0+ Changelog
 
 These are all the changelogs for stable releases of hikari-miru (version 3.0.0 to present).
 
+Version 3.0.1
+=============
+
+- Fixed not being able to instantiate items that derive from ``miru.ext.nav.NavItem``.
+
 Version 3.0.0
 =============
 
