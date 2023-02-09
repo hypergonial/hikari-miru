@@ -4,6 +4,11 @@ Versions 3.0+ Changelog
 
 These are all the changelogs for stable releases of hikari-miru (version 3.0.0 to present).
 
+Version 3.0.2
+=============
+
+- Fixed new select variants throwing errors if no options were selected.
+
 Version 3.0.1
 =============
 
