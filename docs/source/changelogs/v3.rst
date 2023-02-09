@@ -8,6 +8,7 @@ Version 3.0.2
 =============
 
 - Fixed new select variants throwing errors if no options were selected.
+- Fixed an issue with new select variant values not being subscriptable.
 
 Version 3.0.1
 =============
