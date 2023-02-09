@@ -96,7 +96,10 @@ class RoleSelect(SelectBase):
         select.add_to_container()
 
     async def _refresh_state(self, context: Context[t.Any]) -> None:
-        self._values = context.interaction.resolved.roles.values()
+        if context.interaction.resolved is None:
+            self._values = ()
+            return
+        self._values = tuple(context.interaction.resolved.roles.values())
 
 
 def role_select(

@@ -1,5 +1,3 @@
-import hikari
-
 from .bootstrap import *
 from .button import *
 from .context import *

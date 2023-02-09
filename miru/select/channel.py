@@ -111,7 +111,11 @@ class ChannelSelect(SelectBase):
         select.add_to_container()
 
     async def _refresh_state(self, context: Context[t.Any]) -> None:
-        self._values = context.interaction.resolved.channels.values()
+        hikari.ComponentInteraction
+        if context.interaction.resolved is None:
+            self._values = ()
+            return
+        self._values = tuple(context.interaction.resolved.channels.values())
 
 
 def channel_select(

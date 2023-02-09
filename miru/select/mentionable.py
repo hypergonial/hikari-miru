@@ -64,7 +64,7 @@ class MentionableSelect(SelectBase):
         return hikari.ComponentType.MENTIONABLE_SELECT_MENU
 
     @property
-    def values(self) -> hikari.ResolvedOptionData:
+    def values(self) -> t.Optional[hikari.ResolvedOptionData]:
         """The currently selected mentionable objects.
 
         This is returned as a `hikari.ResolvedOptionData` object. You can access each type of mentionable object by using the following attributes:

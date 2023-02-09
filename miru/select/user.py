@@ -97,13 +97,17 @@ class UserSelect(SelectBase):
         select.add_to_container()
 
     async def _refresh_state(self, context: Context[t.Any]) -> None:
+        if context.interaction.resolved is None:
+            self._values = ()
+            return
+
         values = []
         for user in context.interaction.resolved.users.values():
             if member := context.interaction.resolved.members.get(user.id):
                 values.append(member)
             else:
                 values.append(user)
-        self._values = values
+        self._values = tuple(values)
 
 
 def user_select(
