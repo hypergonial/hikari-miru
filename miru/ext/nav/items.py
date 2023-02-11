@@ -9,11 +9,7 @@ from miru.abc.item import ViewItem
 from miru.button import Button
 from miru.context import ViewContext
 from miru.modal import Modal
-from miru.select import ChannelSelect
-from miru.select import MentionableSelect
-from miru.select import RoleSelect
-from miru.select import TextSelect
-from miru.select import UserSelect
+from miru.select import ChannelSelect, MentionableSelect, RoleSelect, TextSelect, UserSelect
 from miru.text_input import TextInput
 
 if t.TYPE_CHECKING:
@@ -22,7 +18,11 @@ if t.TYPE_CHECKING:
 __all__ = (
     "NavItem",
     "NavButton",
-    "NavSelect",
+    "NavTextSelect",
+    "NavUserSelect",
+    "NavRoleSelect",
+    "NavChannelSelect",
+    "NavMentionableSelect",
     "NextButton",
     "PrevButton",
     "FirstButton",

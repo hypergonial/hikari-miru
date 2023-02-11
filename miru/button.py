@@ -5,8 +5,7 @@ import typing as t
 
 import hikari
 
-from .abc.item import DecoratedItem
-from .abc.item import ViewItem
+from .abc.item import DecoratedItem, ViewItem
 
 if t.TYPE_CHECKING:
     from .context import ViewContext

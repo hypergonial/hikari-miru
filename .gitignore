@@ -133,3 +133,6 @@ dmypy.json
 
 # And so is VS Code
 .vscode/
+
+# Ruff
+.ruff_cache/

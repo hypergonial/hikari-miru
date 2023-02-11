@@ -67,7 +67,8 @@ class MentionableSelect(SelectBase):
     def values(self) -> t.Optional[hikari.ResolvedOptionData]:
         """The currently selected mentionable objects.
 
-        This is returned as a `hikari.ResolvedOptionData` object. You can access each type of mentionable object by using the following attributes:
+        This is returned as a `hikari.ResolvedOptionData` object.
+        You can access each type of mentionable object by using the following attributes:
 
         - `values.users` - All user objects selected
         - `values.roles` - All role objects selected
@@ -119,7 +120,8 @@ def mentionable_select(
     row: t.Optional[int] = None,
 ) -> t.Callable[[t.Callable[[ViewT, MentionableSelect, ViewContext], t.Any]], MentionableSelect]:
     """
-    A decorator to transform a function into a Discord UI MentionableSelectMenu's callback. This must be inside a subclass of View.
+    A decorator to transform a function into a Discord UI MentionableSelectMenu's callback.
+    This must be inside a subclass of View.
     """
 
     def decorator(func: t.Callable[..., t.Any]) -> t.Any:

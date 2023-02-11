@@ -10,10 +10,7 @@ from collections.abc import Sequence
 
 import hikari
 
-from ..exceptions import BootstrapFailureError
-from ..exceptions import HandlerFullError
-from ..exceptions import ItemAlreadyAttachedError
-from ..exceptions import RowFullError
+from ..exceptions import BootstrapFailureError, HandlerFullError, ItemAlreadyAttachedError, RowFullError
 from ..traits import MiruAware
 from .item import Item
 

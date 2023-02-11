@@ -11,8 +11,7 @@ import hikari
 from miru.exceptions import ItemAlreadyAttachedError
 
 if t.TYPE_CHECKING:
-    from ..context import Context
-    from ..context import ViewContext
+    from ..context import Context, ViewContext
     from ..modal import Modal
     from ..view import View
     from .item_handler import ItemHandler

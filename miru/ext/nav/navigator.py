@@ -10,13 +10,7 @@ from miru.abc import Item
 from miru.context import Context
 from miru.view import View
 
-from .items import FirstButton
-from .items import IndicatorButton
-from .items import LastButton
-from .items import NavButton
-from .items import NavItem
-from .items import NextButton
-from .items import PrevButton
+from .items import FirstButton, IndicatorButton, LastButton, NavButton, NavItem, NextButton, PrevButton
 
 logger = logging.getLogger(__name__)
 

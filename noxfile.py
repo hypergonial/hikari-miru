@@ -17,17 +17,17 @@ options.sessions = ["format_fix", "mypy", "pytest", "sphinx"]
 @nox.session()
 def format_fix(session: nox.Session) -> None:
     session.install("-U", "black")
-    session.install("-U", "isort")
+    session.install("-U", "ruff")
     session.run("python", "-m", "black", *SCRIPT_PATHS)
-    session.run("python", "-m", "isort", *SCRIPT_PATHS)
+    session.run("python", "-m", "ruff", *SCRIPT_PATHS, "--fix")
 
 
 @nox.session()
 def format(session: nox.Session) -> None:
     session.install("-U", "black")
-    session.install("-U", "isort")
+    session.install("-U", "ruff")
     session.run("python", "-m", "black", *SCRIPT_PATHS, "--check")
-    session.run("python", "-m", "isort", *SCRIPT_PATHS, "--check")
+    session.run("python", "-m", "ruff", *SCRIPT_PATHS)
 
 
 @nox.session()

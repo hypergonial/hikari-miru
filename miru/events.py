@@ -6,8 +6,7 @@ import attr
 import hikari
 
 from .abc.item_handler import ItemHandler
-from .context.raw import RawComponentContext
-from .context.raw import RawModalContext
+from .context.raw import RawComponentContext, RawModalContext
 from .modal import Modal
 from .view import View
 
@@ -127,7 +126,7 @@ class EventHandler:
     def close(self) -> None:
         """Stop all custom event listeners for events, this is called during miru.uninstall()"""
         if self._app is None:
-            raise RuntimeError(f"miru was never installed, cannot close listener.")
+            raise RuntimeError("miru was never installed, cannot close listener.")
         self._app.event_manager.unsubscribe(hikari.InteractionCreateEvent, self._handle_events)
         self._bound_handlers.clear()
         self._handlers.clear()

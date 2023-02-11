@@ -9,11 +9,9 @@ import typing as t
 
 import hikari
 
-from miru.exceptions import BootstrapFailureError
-from miru.exceptions import HandlerFullError
+from miru.exceptions import BootstrapFailureError, HandlerFullError
 
-from .abc.item import Item
-from .abc.item import ModalItem
+from .abc.item import Item, ModalItem
 from .abc.item_handler import ItemHandler
 from .context.modal import ModalContext
 

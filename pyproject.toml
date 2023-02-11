@@ -1,11 +1,15 @@
 [tool.black]
-line-length     = 120
-target-version  = ["py38"]
-include         = ".*py$"
+line-length = 120
+target-version = ["py38"]
+include = ".*py$"
 
-[tool.isort]
-profile = "black"
-force_single_line = true
+[tool.ruff]
+exclude = ["examples", "docs", "build"]
+select = ["E", "F", "I"]
+ignore = ["F405", "F403", "E501"]
+fixable = ["I"]
+line-length = 120
+target-version = "py310"
 
 [tool.mypy]
 strict = true
@@ -43,6 +47,3 @@ warn_unused_ignores = true
 install_types = true
 non_interactive = true
 ignore_missing_imports = true
-
-[tool.pyright]
-exclude = ["examples"]

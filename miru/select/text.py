@@ -6,7 +6,6 @@ import typing as t
 import hikari
 
 from ..abc.item import DecoratedItem
-from ..abc.item import ViewItem
 from ..context.view import ViewContext
 from .base import SelectBase
 

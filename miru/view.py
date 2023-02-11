@@ -11,20 +11,13 @@ import typing as t
 
 import hikari
 
-from miru.exceptions import BootstrapFailureError
-from miru.exceptions import HandlerFullError
+from miru.exceptions import BootstrapFailureError, HandlerFullError
 
-from .abc.item import DecoratedItem
-from .abc.item import Item
-from .abc.item import ViewItem
+from .abc.item import DecoratedItem, Item, ViewItem
 from .abc.item_handler import ItemHandler
 from .button import Button
 from .context.view import ViewContext
-from .select import ChannelSelect
-from .select import MentionableSelect
-from .select import RoleSelect
-from .select import TextSelect
-from .select import UserSelect
+from .select import ChannelSelect, MentionableSelect, RoleSelect, TextSelect, UserSelect
 
 logger = logging.getLogger(__name__)
 
@@ -153,7 +146,8 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder]):
 
     @classmethod
     def from_message(cls, message: hikari.Message, *, timeout: t.Optional[float] = 120, autodefer: bool = True) -> View:
-        """Create a new view from the components included in the passed message. Returns an empty view if the message has no components attached.
+        """Create a new view from the components included in the passed message.
+        Returns an empty view if the message has no components attached.
 
         Parameters
         ----------
@@ -171,7 +165,8 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder]):
 
         .. warning::
             This function constructs a completely new view based on the information available in the message object.
-            Any custom behaviour (such as callbacks) will not be re-created, if you want to access an already running view that is bound to a message, use :obj:`miru.view.get_view` instead.
+            Any custom behaviour (such as callbacks) will not be re-created,
+            if you want to access an already running view that is bound to a message, use :obj:`miru.view.get_view` instead.
         """
 
         view = cls(timeout=timeout, autodefer=autodefer)
