@@ -5,7 +5,7 @@ on: [push, pull_request]
 jobs:
   formatting:
     runs-on: ubuntu-latest
-    name: "Run isort and black on Python 3.10"
+    name: "Run ruff and black on Python 3.10"
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python 3.10
