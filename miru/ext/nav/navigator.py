@@ -197,7 +197,17 @@ class NavigatorView(View):
 
         self._inter = context.interaction  # Update latest inter
 
-        await context.edit_response(**payload, attachment=None)
+        if not (payload.get("attachment") or payload.get("attachments")):
+            # Ensure that payload does not have attachments as a key
+            # even if it is a Falsey value
+            payload.pop("attachments", None)
+            # Set payload attachment to None if no attachments are returned
+            # from _get_page_payload to make sure discord clears all atachments
+            # in view.
+            # Note: attachments=[] does not clear attachments.
+            payload = {"attachment": None, **payload}
+
+        await context.edit_response(**payload)
 
     async def swap_pages(
         self, context: Context[t.Any], new_pages: t.Sequence[t.Union[str, hikari.Embed]], start_at: int = 0
