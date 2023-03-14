@@ -151,8 +151,25 @@ class NavigatorView(View):
     def clear_items(self) -> NavigatorView:
         return t.cast(NavigatorView, super().clear_items())
 
-    def _get_page_payload(self, page: t.Union[str, hikari.Embed]) -> t.MutableMapping[str, t.Any]:
-        """Get the page content that is to be sent."""
+    def get_page_payload(self, page: t.Union[str, hikari.Embed]) -> t.MutableMapping[str, t.Any]:
+        """Get the page content that is to be sent.
+        
+        Parameters
+        ----------
+        page : Union[str, hikari.Embed]
+            Either an str or embed instance to use as a page
+
+        Raises
+        ------
+        TypeError
+            Parameter item was not an instance of str or hikari.Embed
+
+        Returns
+        -------
+        Dict
+            A dict to be passed to interaction.create_initial_response
+            or to interaction.edit_response
+        """
 
         content = page if isinstance(page, str) else ""
         embeds = [page] if isinstance(page, hikari.Embed) else []
@@ -193,7 +210,7 @@ class NavigatorView(View):
             if isinstance(button, NavItem):
                 await button.before_page_change()
 
-        payload = self._get_page_payload(page)
+        payload = self.get_page_payload(page)
 
         self._inter = context.interaction  # Update latest inter
 
@@ -287,7 +304,7 @@ class NavigatorView(View):
                 f"Using a timeout value longer than 900 seconds (Used {self.timeout}) in ephemeral navigator {type(self).__name__} may cause on_timeout to fail."
             )
 
-        payload = self._get_page_payload(self.pages[start_at])
+        payload = self.get_page_payload(self.pages[start_at])
 
         if isinstance(to, (int, hikari.TextableChannel)):
             channel = hikari.Snowflake(to)
