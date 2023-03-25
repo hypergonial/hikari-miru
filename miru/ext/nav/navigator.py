@@ -9,6 +9,7 @@ import hikari
 from miru.abc import Item
 from miru.context import Context
 from miru.view import View
+
 from .items import FirstButton, IndicatorButton, LastButton, NavButton, NavItem, NextButton, PrevButton
 
 logger = logging.getLogger(__name__)
@@ -204,7 +205,10 @@ class NavigatorView(View):
         await context.edit_response(**payload, attachment=None)
 
     async def swap_pages(
-        self, context: Context[t.Any], new_pages: t.Sequence[t.Union[str, hikari.Embed]], start_at: int = 0
+        self,
+        context: Context[t.Any],
+        new_pages: t.Sequence[t.Union[str, hikari.Embed, t.Sequence[hikari.Embed]]],
+        start_at: int = 0,
     ) -> None:
         """Swap out the pages of the navigator to the newly provided pages.
         By default, the navigator will reset to the first page.
