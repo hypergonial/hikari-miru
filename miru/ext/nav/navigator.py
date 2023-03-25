@@ -3,7 +3,6 @@ from __future__ import annotations
 import datetime
 import logging
 import typing as t
-from collections.abc import Sequence
 
 import hikari
 
@@ -22,7 +21,7 @@ class NavigatorView(View):
 
     Parameters
     ----------
-    pages : List[Union[str, hikari.Embed]]
+    pages : List[Union[str, hikari.Embed, Sequence[hikari.Embed]]]
         A list of strings or embeds that this navigator should paginate.
     buttons : Optional[List[NavButton[NavigatorViewT]]], optional
         A list of navigation buttons to override the default ones with, by default None
@@ -40,7 +39,7 @@ class NavigatorView(View):
     def __init__(
         self,
         *,
-        pages: t.Sequence[t.Union[str, hikari.Embed]],
+        pages: t.Sequence[t.Union[str, hikari.Embed, t.Sequence[hikari.Embed]]],
         buttons: t.Optional[t.Sequence[NavButton]] = None,
         timeout: t.Optional[t.Union[float, int, datetime.timedelta]] = 120.0,
         autodefer: bool = True,
@@ -157,7 +156,7 @@ class NavigatorView(View):
         """Get the page content that is to be sent."""
 
         content = page if isinstance(page, str) else ""
-        if isinstance(page, Sequence):
+        if isinstance(page, t.Sequence):
             embeds = page
         else:
             embeds = [page] if isinstance(page, hikari.Embed) else []
@@ -214,7 +213,7 @@ class NavigatorView(View):
         ----------
         context : Context
             The context object that should be used to send the updated pages
-        new_pages : Sequence[Union[str, Embed]]
+        new_pages : Sequence[Union[str, Embed, Sequence[Embed]]]
             The new pages to swap to
         start_at : int, optional
             The page to start at, by default 0
