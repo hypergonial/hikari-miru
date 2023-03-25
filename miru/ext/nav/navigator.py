@@ -3,13 +3,13 @@ from __future__ import annotations
 import datetime
 import logging
 import typing as t
+from collections.abc import Sequence
 
 import hikari
 
 from miru.abc import Item
 from miru.context import Context
 from miru.view import View
-
 from .items import FirstButton, IndicatorButton, LastButton, NavButton, NavItem, NextButton, PrevButton
 
 logger = logging.getLogger(__name__)
@@ -45,7 +45,7 @@ class NavigatorView(View):
         timeout: t.Optional[t.Union[float, int, datetime.timedelta]] = 120.0,
         autodefer: bool = True,
     ) -> None:
-        self._pages: t.Sequence[t.Union[str, hikari.Embed]] = pages
+        self._pages: t.Sequence[t.Union[str, hikari.Embed, t.Sequence[hikari.Embed]]] = pages
         self._current_page: int = 0
         self._ephemeral: bool = False
         # If the nav is using interaction-based handling or not
@@ -66,7 +66,7 @@ class NavigatorView(View):
             raise ValueError(f"Expected at least one page to be passed to {type(self).__name__}.")
 
     @property
-    def pages(self) -> t.Sequence[t.Union[str, hikari.Embed]]:
+    def pages(self) -> t.Sequence[t.Union[str, hikari.Embed, t.Sequence[hikari.Embed]]]:
         """
         The pages the navigator is iterating through.
         """
@@ -151,11 +151,16 @@ class NavigatorView(View):
     def clear_items(self) -> NavigatorView:
         return t.cast(NavigatorView, super().clear_items())
 
-    def _get_page_payload(self, page: t.Union[str, hikari.Embed]) -> t.MutableMapping[str, t.Any]:
+    def _get_page_payload(
+        self, page: t.Union[str, hikari.Embed, t.Sequence[hikari.Embed]]
+    ) -> t.MutableMapping[str, t.Any]:
         """Get the page content that is to be sent."""
 
         content = page if isinstance(page, str) else ""
-        embeds = [page] if isinstance(page, hikari.Embed) else []
+        if isinstance(page, Sequence):
+            embeds = page
+        else:
+            embeds = [page] if isinstance(page, hikari.Embed) else []
 
         if not content and not embeds:
             raise TypeError(f"Expected type 'str' or 'hikari.Embed' to send as page, not '{page.__class__.__name__}'.")
