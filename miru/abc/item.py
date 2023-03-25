@@ -229,7 +229,7 @@ class DecoratedItem:
         ViewItem[ViewT]
             The converted item.
         """
-        self.item.callback = partial(self.callback, view, self.item)  # type: ignore[assignment]
+        self.item.callback = partial(self.callback, view, self.item)  # type: ignore[method-assign]
 
         return self.item
 
