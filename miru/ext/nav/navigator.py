@@ -22,7 +22,7 @@ class NavigatorView(View):
 
     Parameters
     ----------
-    pages : List[Union[str, hikari.Embed]]
+    pages : List[Union[str, hikari.Embed, Sequence[hikari.Embed]]]
         A list of strings or embeds that this navigator should paginate.
     buttons : Optional[List[NavButton[NavigatorViewT]]], optional
         A list of navigation buttons to override the default ones with, by default None
@@ -40,12 +40,12 @@ class NavigatorView(View):
     def __init__(
         self,
         *,
-        pages: t.Sequence[t.Union[str, hikari.Embed]],
+        pages: t.Sequence[t.Union[str, hikari.Embed, t.Sequence[hikari.Embed]]],
         buttons: t.Optional[t.Sequence[NavButton]] = None,
         timeout: t.Optional[t.Union[float, int, datetime.timedelta]] = 120.0,
         autodefer: bool = True,
     ) -> None:
-        self._pages: t.Sequence[t.Union[str, hikari.Embed]] = pages
+        self._pages: t.Sequence[t.Union[str, hikari.Embed, t.Sequence[hikari.Embed]]] = pages
         self._current_page: int = 0
         self._ephemeral: bool = False
         # If the nav is using interaction-based handling or not
@@ -66,7 +66,7 @@ class NavigatorView(View):
             raise ValueError(f"Expected at least one page to be passed to {type(self).__name__}.")
 
     @property
-    def pages(self) -> t.Sequence[t.Union[str, hikari.Embed]]:
+    def pages(self) -> t.Sequence[t.Union[str, hikari.Embed, t.Sequence[hikari.Embed]]]:
         """
         The pages the navigator is iterating through.
         """
@@ -151,11 +151,16 @@ class NavigatorView(View):
     def clear_items(self) -> NavigatorView:
         return t.cast(NavigatorView, super().clear_items())
 
-    def _get_page_payload(self, page: t.Union[str, hikari.Embed]) -> t.MutableMapping[str, t.Any]:
+    def _get_page_payload(
+        self, page: t.Union[str, hikari.Embed, t.Sequence[hikari.Embed]]
+    ) -> t.MutableMapping[str, t.Any]:
         """Get the page content that is to be sent."""
 
         content = page if isinstance(page, str) else ""
-        embeds = [page] if isinstance(page, hikari.Embed) else []
+        if isinstance(page, t.Sequence):
+            embeds = page
+        else:
+            embeds = [page] if isinstance(page, hikari.Embed) else []
 
         if not content and not embeds:
             raise TypeError(f"Expected type 'str' or 'hikari.Embed' to send as page, not '{page.__class__.__name__}'.")
@@ -200,7 +205,10 @@ class NavigatorView(View):
         await context.edit_response(**payload, attachment=None)
 
     async def swap_pages(
-        self, context: Context[t.Any], new_pages: t.Sequence[t.Union[str, hikari.Embed]], start_at: int = 0
+        self,
+        context: Context[t.Any],
+        new_pages: t.Sequence[t.Union[str, hikari.Embed, t.Sequence[hikari.Embed]]],
+        start_at: int = 0,
     ) -> None:
         """Swap out the pages of the navigator to the newly provided pages.
         By default, the navigator will reset to the first page.
@@ -209,7 +217,7 @@ class NavigatorView(View):
         ----------
         context : Context
             The context object that should be used to send the updated pages
-        new_pages : Sequence[Union[str, Embed]]
+        new_pages : Sequence[Union[str, Embed, Sequence[Embed]]]
             The new pages to swap to
         start_at : int, optional
             The page to start at, by default 0
