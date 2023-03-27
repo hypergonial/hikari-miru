@@ -4,13 +4,13 @@ Selects
 One of the most versatile message components provided by Discord are select menus. Users can select from channels, roles, users, or even custom options you provided!
 To get started, you first need to decide which type of select menu would best suit your needs.
 
-- `miru.TextSelect` and it's decorator `@miru.text_select` - for creating selects with custom options
-- `miru.UserSelect` and it's decorator `@miru.user_select` - for selecting Discord users of a server
-- `miru.ChannelSelect` and it's decorator `@miru.channel_select` - for selecting specific channels
-- `miru.RoleSelect` and it's decorator `@miru.role_select` - for selecting roles of a given server
-- `miru.MentionableSelect` and it's decorator `@miru.mentionable_select` - for selecting any mentionable Discord object
+- ``miru.TextSelect`` and it's decorator ``@miru.text_select`` - for creating selects with custom options
+- ``miru.UserSelect`` and it's decorator ``@miru.user_select`` - for selecting Discord users of a server
+- ``miru.ChannelSelect`` and it's decorator ``@miru.channel_select`` - for selecting specific channels
+- ``miru.RoleSelect`` and it's decorator ``@miru.role_select`` - for selecting roles of a given server
+- ``miru.MentionableSelect`` and it's decorator ``@miru.mentionable_select`` - for selecting any mentionable Discord object
 
-To add a select menu to your view, you can use the decorator, or call the `.add_item()` method on a view and pass an instance of a select, similarly to buttons and other items.
+To add a select menu to your view, you can use the decorator, or call the ``.add_item()`` method on a view and pass an instance of a select, similarly to buttons and other items.
 
 ::
 
