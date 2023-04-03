@@ -30,7 +30,7 @@ class Button(ViewItem):
     custom_id : Optional[str], optional
         The custom identifier of the button, by default None
     url : Optional[str], optional
-        The URL of the button, by default None
+        The URL of the button, by default None,if set, the button will be a link button.
     emoji : Union[hikari.Emoji, str, None], optional
         The emoji present on the button, by default None
     row : Optional[int], optional
@@ -125,9 +125,6 @@ class Button(ViewItem):
         if value and not isinstance(value, str):
             raise TypeError("Expected type 'str' for property 'url'.")
 
-        if value:
-            self._style = hikari.ButtonStyle.LINK
-
         self._url = value
 
     @classmethod
@@ -145,30 +142,24 @@ class Button(ViewItem):
         )
 
     def _build(self, action_row: hikari.api.MessageActionRowBuilder) -> None:
-        button: t.Union[
-            hikari.api.InteractiveButtonBuilder[hikari.api.MessageActionRowBuilder],
-            hikari.api.LinkButtonBuilder[hikari.api.MessageActionRowBuilder],
-        ]
-        if self.emoji is None and self.label is None:
-            raise TypeError("Must provide at least one of 'emoji' or 'label' when building Button.")
+        config = {}
+        if self.label:
+            config["label"] = self.label
+        if self.emoji:
+            config["emoji"] = self.emoji
+
+        config["is_disabled"] = self.disabled
 
         if self.url is not None:
-            button = action_row.add_button(hikari.ButtonStyle.LINK, self.url)
+            action_row.add_link_button(self.url, **config)
         else:
-            button = action_row.add_button(self.style, self.custom_id)
-
-        if self.label:
-            button.set_label(self.label)
-        if self.emoji:
-            button.set_emoji(self.emoji)
-        button.set_is_disabled(self.disabled)
-
-        button.add_to_container()
+            action_row.add_interactive_button(self.style, self.custom_id, **config)
 
 
 def button(
     *,
     label: t.Optional[str] = None,
+    url: t.Optional[str] = None,
     custom_id: t.Optional[str] = None,
     style: hikari.ButtonStyle = hikari.ButtonStyle.PRIMARY,
     emoji: t.Optional[t.Union[str, hikari.Emoji]] = None,
@@ -182,6 +173,8 @@ def button(
     ----------
     label : Optional[str], optional
         The button's label, by default None
+    url : Optional[str], optional
+        The button's URL, by default None, if set, the button will be a link button.
     custom_id : Optional[str], optional
         The button's custom identifier, by default None
     style : hikari.ButtonStyle, optional
@@ -209,7 +202,7 @@ def button(
             emoji=emoji,
             row=row,
             disabled=disabled,
-            url=None,
+            url=url,
         )
 
         return DecoratedItem(item, func)
