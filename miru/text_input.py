@@ -157,20 +157,16 @@ class TextInput(ModalItem):
         self._max_length = value
 
     def _build(self, action_row: hikari.api.ModalActionRowBuilder) -> None:
-        text_input = action_row.add_text_input(custom_id=self.custom_id, label=self.label)
-
-        text_input.set_required(self.required)
-        text_input.set_style(self.style)
-        if self.max_length:
-            text_input.set_max_length(self.max_length)
-        if self.min_length:
-            text_input.set_min_length(self.min_length)
-        if self.placeholder:
-            text_input.set_placeholder(self.placeholder)
-        if self.value:
-            text_input.set_value(self.value)
-
-        text_input.add_to_container()
+        action_row.add_text_input(
+            self.custom_id,
+            self.label,
+            style=self.style,
+            placeholder=self.placeholder,
+            value=self.value,
+            required=self.required,
+            min_length=self.min_length,
+            max_length=self.max_length,
+        )
 
     async def _refresh_state(self, context: Context[hikari.ModalInteraction]) -> None:
         assert isinstance(context, ModalContext)
