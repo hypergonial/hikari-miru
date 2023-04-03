@@ -94,17 +94,14 @@ class MentionableSelect(SelectBase):
         )
 
     def _build(self, action_row: hikari.api.MessageActionRowBuilder) -> None:
-        """
-        Called internally to build and append to an action row
-        """
-        select = action_row.add_select_menu(hikari.ComponentType.MENTIONABLE_SELECT_MENU, self.custom_id)
-        if self.placeholder:
-            select.set_placeholder(self.placeholder)
-        select.set_min_values(self.min_values)
-        select.set_max_values(self.max_values)
-        select.set_is_disabled(self.disabled)
-
-        select.add_to_container()
+        action_row.add_select_menu(
+            hikari.ComponentType.MENTIONABLE_SELECT_MENU,
+            self.custom_id,
+            placeholder=self.placeholder or hikari.UNDEFINED,
+            min_values=self.min_values,
+            max_values=self.max_values,
+            is_disabled=self.disabled,
+        )
 
     async def _refresh_state(self, context: Context[t.Any]) -> None:
         self._values = context.interaction.resolved

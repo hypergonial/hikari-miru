@@ -24,7 +24,7 @@ class TextInput(ModalItem):
     ----------
     label : str
         The label above the text input field.
-    style : Union[hikari.TextInputStyle, int], optional
+    style : hikari.TextInputStyle, optional
         The style of the text input, by default hikari.TextInputStyle.SHORT
     placeholder : Optional[str], optional
         Placeholder content in the text input, by default None
@@ -46,7 +46,7 @@ class TextInput(ModalItem):
         self,
         *,
         label: str,
-        style: t.Union[hikari.TextInputStyle, int] = hikari.TextInputStyle.SHORT,
+        style: hikari.TextInputStyle = hikari.TextInputStyle.SHORT,
         placeholder: t.Optional[str] = None,
         value: t.Optional[str] = None,
         required: bool = False,
@@ -70,15 +70,15 @@ class TextInput(ModalItem):
         return hikari.ComponentType.TEXT_INPUT
 
     @property
-    def style(self) -> t.Union[hikari.TextInputStyle, int]:
+    def style(self) -> hikari.TextInputStyle:
         """
         The text input's style.
         """
         return self._style
 
     @style.setter
-    def style(self, value: t.Union[hikari.TextInputStyle, int]) -> None:
-        if not isinstance(value, (hikari.TextInputStyle, int)):
+    def style(self, value: hikari.TextInputStyle) -> None:
+        if not isinstance(value, hikari.TextInputStyle):
             raise TypeError("Expected type hikari.TextInputStyle or int for property style.")
 
         self._style = value
@@ -157,20 +157,16 @@ class TextInput(ModalItem):
         self._max_length = value
 
     def _build(self, action_row: hikari.api.ModalActionRowBuilder) -> None:
-        text_input = action_row.add_text_input(custom_id=self.custom_id, label=self.label)
-
-        text_input.set_required(self.required)
-        text_input.set_style(self.style)
-        if self.max_length:
-            text_input.set_max_length(self.max_length)
-        if self.min_length:
-            text_input.set_min_length(self.min_length)
-        if self.placeholder:
-            text_input.set_placeholder(self.placeholder)
-        if self.value:
-            text_input.set_value(self.value)
-
-        text_input.add_to_container()
+        action_row.add_text_input(
+            self.custom_id,
+            self.label,
+            style=self.style,
+            placeholder=self.placeholder or hikari.UNDEFINED,
+            value=self.value or hikari.UNDEFINED,
+            required=self.required,
+            min_length=self.min_length or 0,
+            max_length=self.max_length or 4000,
+        )
 
     async def _refresh_state(self, context: Context[hikari.ModalInteraction]) -> None:
         assert isinstance(context, ModalContext)

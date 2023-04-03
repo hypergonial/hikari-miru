@@ -21,7 +21,7 @@ class Button(ViewItem):
 
     Parameters
     ----------
-    style : Union[hikari.ButtonStyle, int], optional
+    style : hikari.ButtonStyle, optional
         The button's style, by default hikari.ButtonStyle.PRIMARY
     label : Optional[str], optional
         The button's label, by default None
@@ -47,7 +47,7 @@ class Button(ViewItem):
     def __init__(
         self,
         *,
-        style: t.Union[hikari.ButtonStyle, int] = hikari.ButtonStyle.PRIMARY,
+        style: hikari.ButtonStyle = hikari.ButtonStyle.PRIMARY,
         label: t.Optional[str] = None,
         disabled: bool = False,
         custom_id: t.Optional[str] = None,
@@ -56,7 +56,7 @@ class Button(ViewItem):
         row: t.Optional[int] = None,
     ) -> None:
         super().__init__(custom_id=custom_id, row=row, disabled=disabled)
-        self._emoji: t.Optional[hikari.Emoji] = (hikari.Emoji.parse(emoji) if isinstance(emoji, str) else emoji) or None
+        self._emoji: t.Optional[hikari.Emoji] = hikari.Emoji.parse(emoji) if isinstance(emoji, str) else emoji
         self.label = label
         self.url = self._url = url
         self.style = self._style = style if self._url is None else hikari.ButtonStyle.LINK
@@ -69,15 +69,15 @@ class Button(ViewItem):
         return hikari.ComponentType.BUTTON
 
     @property
-    def style(self) -> t.Union[hikari.ButtonStyle, int]:
+    def style(self) -> hikari.ButtonStyle:
         """
         The button's style.
         """
         return self._style
 
     @style.setter
-    def style(self, value: t.Union[hikari.ButtonStyle, int]) -> None:
-        if not isinstance(value, (hikari.ButtonStyle, int)):
+    def style(self, value: hikari.ButtonStyle) -> None:
+        if not isinstance(value, hikari.ButtonStyle):
             raise TypeError("Expected type 'hikari.ButtonStyle' or 'int' for property 'style'.")
 
         if self._url is not None and value != hikari.ButtonStyle.LINK:
@@ -135,7 +135,7 @@ class Button(ViewItem):
         assert isinstance(component, hikari.ButtonComponent)
 
         return cls(
-            style=component.style,
+            style=hikari.ButtonStyle(component.style),
             label=component.label,
             disabled=component.is_disabled,
             custom_id=component.custom_id,
@@ -145,25 +145,21 @@ class Button(ViewItem):
         )
 
     def _build(self, action_row: hikari.api.MessageActionRowBuilder) -> None:
-        button: t.Union[
-            hikari.api.InteractiveButtonBuilder[hikari.api.MessageActionRowBuilder],
-            hikari.api.LinkButtonBuilder[hikari.api.MessageActionRowBuilder],
-        ]
         if self.emoji is None and self.label is None:
             raise TypeError("Must provide at least one of 'emoji' or 'label' when building Button.")
 
         if self.url is not None:
-            button = action_row.add_button(hikari.ButtonStyle.LINK, self.url)
+            action_row.add_link_button(
+                self.url, emoji=self.emoji or hikari.UNDEFINED, label=self.label or hikari.UNDEFINED
+            )
         else:
-            button = action_row.add_button(self.style, self.custom_id)
-
-        if self.label:
-            button.set_label(self.label)
-        if self.emoji:
-            button.set_emoji(self.emoji)
-        button.set_is_disabled(self.disabled)
-
-        button.add_to_container()
+            action_row.add_interactive_button(
+                self.style if self.style is not hikari.ButtonStyle.LINK else hikari.ButtonStyle.PRIMARY,
+                self.custom_id,
+                emoji=self.emoji or hikari.UNDEFINED,
+                label=self.label or hikari.UNDEFINED,
+                is_disabled=self.disabled,
+            )
 
 
 def button(

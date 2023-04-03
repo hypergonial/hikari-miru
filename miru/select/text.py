@@ -51,9 +51,7 @@ class SelectOption:
         self.label: str = label
         self.value: str = value or label
         self.description: t.Optional[str] = description
-        if isinstance(emoji, str):
-            emoji = hikari.Emoji.parse(emoji)
-        self.emoji: t.Optional[hikari.Emoji] = emoji
+        self.emoji: t.Optional[hikari.Emoji] = hikari.Emoji.parse(emoji) if isinstance(emoji, str) else emoji
         self.is_default: bool = is_default
 
     def _convert(self) -> hikari.SelectMenuOption:
@@ -167,30 +165,25 @@ class TextSelect(SelectBase):
         )
 
     def _build(self, action_row: hikari.api.MessageActionRowBuilder) -> None:
-        """
-        Called internally to build and append to an action row
-        """
-        select = action_row.add_select_menu(hikari.ComponentType.TEXT_SELECT_MENU, self.custom_id)
-        if self.placeholder:
-            select.set_placeholder(self.placeholder)
-        select.set_min_values(self.min_values)
-        select.set_max_values(self.max_values)
-        select.set_is_disabled(self.disabled)
+        select = action_row.add_text_menu(
+            self.custom_id,
+            placeholder=self.placeholder or hikari.UNDEFINED,
+            min_values=self.min_values,
+            max_values=self.max_values,
+            is_disabled=self.disabled,
+        )
 
         for option in self.options:
             if isinstance(option, SelectOption):
                 option = option._convert()
 
-            option_builder = select.add_option(option.label, option.value)
-            option_builder.set_is_default(option.is_default)
-            if option.description:
-                option_builder.set_description(option.description)
-            if option.emoji:
-                option_builder.set_emoji(option.emoji)
-
-            option_builder.add_to_menu()
-
-        select.add_to_container()
+            select.add_option(
+                option.label,
+                option.value,
+                is_default=option.is_default,
+                description=option.description or hikari.UNDEFINED,
+                emoji=option.emoji or hikari.UNDEFINED,
+            )
 
     @property
     def values(self) -> t.Sequence[str]:

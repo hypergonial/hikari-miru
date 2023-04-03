@@ -17,7 +17,7 @@ def test_label_and_emoji() -> None:
     """Test that both label and emoji cannot be empty."""
     with pytest.raises(TypeError):
         row = hikari.impl.MessageActionRowBuilder()
-        miru.Button(label="", emoji="")._build(row)
+        miru.Button(label=None, emoji=None)._build(row)
 
 
 def test_url_style_override() -> None:

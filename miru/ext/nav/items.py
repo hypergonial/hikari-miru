@@ -89,7 +89,7 @@ class NextButton(NavButton):
     def __init__(
         self,
         *,
-        style: t.Union[hikari.ButtonStyle, int] = hikari.ButtonStyle.PRIMARY,
+        style: hikari.ButtonStyle = hikari.ButtonStyle.PRIMARY,
         label: t.Optional[str] = None,
         custom_id: t.Optional[str] = None,
         emoji: t.Union[hikari.Emoji, str, None] = chr(9654),
@@ -116,7 +116,7 @@ class PrevButton(NavButton):
     def __init__(
         self,
         *,
-        style: t.Union[hikari.ButtonStyle, int] = hikari.ButtonStyle.PRIMARY,
+        style: hikari.ButtonStyle = hikari.ButtonStyle.PRIMARY,
         label: t.Optional[str] = None,
         custom_id: t.Optional[str] = None,
         emoji: t.Union[hikari.Emoji, str, None] = chr(9664),
@@ -143,7 +143,7 @@ class FirstButton(NavButton):
     def __init__(
         self,
         *,
-        style: t.Union[hikari.ButtonStyle, int] = hikari.ButtonStyle.PRIMARY,
+        style: hikari.ButtonStyle = hikari.ButtonStyle.PRIMARY,
         label: t.Optional[str] = None,
         custom_id: t.Optional[str] = None,
         emoji: t.Union[hikari.Emoji, str, None] = chr(9194),
@@ -170,7 +170,7 @@ class LastButton(NavButton):
     def __init__(
         self,
         *,
-        style: t.Union[hikari.ButtonStyle, int] = hikari.ButtonStyle.PRIMARY,
+        style: hikari.ButtonStyle = hikari.ButtonStyle.PRIMARY,
         label: t.Optional[str] = None,
         custom_id: t.Optional[str] = None,
         emoji: t.Union[hikari.Emoji, str, None] = chr(9193),
@@ -197,7 +197,7 @@ class IndicatorButton(NavButton):
     def __init__(
         self,
         *,
-        style: t.Union[hikari.ButtonStyle, int] = hikari.ButtonStyle.SECONDARY,
+        style: hikari.ButtonStyle = hikari.ButtonStyle.SECONDARY,
         custom_id: t.Optional[str] = None,
         emoji: t.Union[hikari.Emoji, str, None] = None,
         disabled: bool = False,
@@ -240,7 +240,7 @@ class StopButton(NavButton):
     def __init__(
         self,
         *,
-        style: t.Union[hikari.ButtonStyle, int] = hikari.ButtonStyle.DANGER,
+        style: hikari.ButtonStyle = hikari.ButtonStyle.DANGER,
         label: t.Optional[str] = None,
         custom_id: t.Optional[str] = None,
         emoji: t.Union[hikari.Emoji, str, None] = chr(9209),
