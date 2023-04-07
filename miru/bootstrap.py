@@ -6,7 +6,7 @@ from .abc.item_handler import ItemHandler
 from .events import EventHandler
 from .traits import MiruAware
 
-__all__ = ("install", "uninstall", "load", "unload")
+__all__ = ("install", "uninstall")
 
 logger = logging.getLogger(__name__)
 
@@ -50,18 +50,6 @@ def uninstall() -> None:
     if ItemHandler._events is not None:
         ItemHandler._events.close()
         ItemHandler._events = None
-
-
-def load(bot: MiruAware) -> None:
-    """DEPRECATED: Use miru.install instead."""
-    logger.warning("miru.load is deprecated, use miru.install instead. miru.load will be removed in 3.1.0!")
-    install(bot)
-
-
-def unload() -> None:
-    """DEPRECATED: Use miru.uninstall instead."""
-    logger.warning("miru.unload is deprecated, use miru.uninstall instead. miru.unload will be removed in 3.1.0!")
-    uninstall()
 
 
 # MIT License
