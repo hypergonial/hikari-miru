@@ -36,9 +36,14 @@ class NavItem(ViewItem, abc.ABC):
     """A baseclass for all navigation items. NavigatorView requires instances of this class as it's items."""
 
     def __init__(
-        self, *, custom_id: t.Optional[str] = None, row: t.Optional[int] = None, disabled: bool = False
+        self,
+        *,
+        custom_id: t.Optional[str] = None,
+        row: t.Optional[int] = None,
+        position: t.Optional[int] = None,
+        disabled: bool = False,
     ) -> None:
-        super().__init__(custom_id=custom_id, row=row, disabled=disabled)
+        super().__init__(custom_id=custom_id, row=row, position=position, disabled=disabled)
         self._handler: t.Optional[NavigatorView] = None
 
     async def before_page_change(self) -> None:
@@ -94,8 +99,9 @@ class NextButton(NavButton):
         custom_id: t.Optional[str] = None,
         emoji: t.Union[hikari.Emoji, str, None] = chr(9654),
         row: t.Optional[int] = None,
+        position: t.Optional[int] = None,
     ):
-        super().__init__(style=style, label=label, custom_id=custom_id, emoji=emoji, row=row)
+        super().__init__(style=style, label=label, custom_id=custom_id, emoji=emoji, row=row, position=position)
 
     async def callback(self, context: ViewContext) -> None:
         self.view.current_page += 1
@@ -121,8 +127,9 @@ class PrevButton(NavButton):
         custom_id: t.Optional[str] = None,
         emoji: t.Union[hikari.Emoji, str, None] = chr(9664),
         row: t.Optional[int] = None,
+        position: t.Optional[int] = None,
     ):
-        super().__init__(style=style, label=label, custom_id=custom_id, emoji=emoji, row=row)
+        super().__init__(style=style, label=label, custom_id=custom_id, emoji=emoji, row=row, position=position)
 
     async def callback(self, context: ViewContext) -> None:
         self.view.current_page -= 1
@@ -148,8 +155,9 @@ class FirstButton(NavButton):
         custom_id: t.Optional[str] = None,
         emoji: t.Union[hikari.Emoji, str, None] = chr(9194),
         row: t.Optional[int] = None,
+        position: t.Optional[int] = None,
     ):
-        super().__init__(style=style, label=label, custom_id=custom_id, emoji=emoji, row=row)
+        super().__init__(style=style, label=label, custom_id=custom_id, emoji=emoji, row=row, position=position)
 
     async def callback(self, context: ViewContext) -> None:
         self.view.current_page = 0
@@ -175,8 +183,9 @@ class LastButton(NavButton):
         custom_id: t.Optional[str] = None,
         emoji: t.Union[hikari.Emoji, str, None] = chr(9193),
         row: t.Optional[int] = None,
+        position: t.Optional[int] = None,
     ):
-        super().__init__(style=style, label=label, custom_id=custom_id, emoji=emoji, row=row)
+        super().__init__(style=style, label=label, custom_id=custom_id, emoji=emoji, row=row, position=position)
 
     async def callback(self, context: ViewContext) -> None:
         self.view.current_page = len(self.view.pages) - 1
@@ -202,9 +211,12 @@ class IndicatorButton(NavButton):
         emoji: t.Union[hikari.Emoji, str, None] = None,
         disabled: bool = False,
         row: t.Optional[int] = None,
+        position: t.Optional[int] = None,
     ):
         # Either label or emoji is required, so we pass a placeholder
-        super().__init__(style=style, label="0/0", custom_id=custom_id, emoji=emoji, disabled=disabled, row=row)
+        super().__init__(
+            style=style, label="0/0", custom_id=custom_id, emoji=emoji, disabled=disabled, row=row, position=position
+        )
 
     async def before_page_change(self) -> None:
         self.label = f"{self.view.current_page+1}/{len(self.view.pages)}"
@@ -245,8 +257,9 @@ class StopButton(NavButton):
         custom_id: t.Optional[str] = None,
         emoji: t.Union[hikari.Emoji, str, None] = chr(9209),
         row: t.Optional[int] = None,
+        position: t.Optional[int] = None,
     ):
-        super().__init__(style=style, label=label, custom_id=custom_id, emoji=emoji, row=row)
+        super().__init__(style=style, label=label, custom_id=custom_id, emoji=emoji, row=row, position=position)
 
     async def callback(self, context: ViewContext) -> None:
         if not self.view.message and not self.view._inter:
