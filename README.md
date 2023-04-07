@@ -40,7 +40,7 @@ class MyView(miru.View):
     async def scissors_button(self, button: miru.Button, ctx: miru.ViewContext) -> None:
         await ctx.respond("Rock!")
 
-    @miru.button(emoji="\N{BLACK SQUARE FOR STOP}", style=hikari.ButtonStyle.DANGER, row=2)
+    @miru.button(emoji="\N{BLACK SQUARE FOR STOP}", style=hikari.ButtonStyle.DANGER, row=1)
     async def stop_button(self, button: miru.Button, ctx: miru.ViewContext) -> None:
         self.stop() # Stop listening for interactions
 
