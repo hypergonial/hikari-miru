@@ -45,7 +45,7 @@ class SelectBase(ViewItem, abc.ABC):
         disabled: bool = False,
         row: t.Optional[int] = None,
     ) -> None:
-        super().__init__(custom_id=custom_id, row=row, disabled=disabled)
+        super().__init__(custom_id=custom_id, row=row, position=0, disabled=disabled)
         self.placeholder = placeholder
         self.min_values = min_values
         self.max_values = max_values

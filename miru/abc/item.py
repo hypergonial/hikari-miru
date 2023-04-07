@@ -27,12 +27,17 @@ class Item(abc.ABC, t.Generic[BuilderT]):
     An abstract base class for all components. Cannot be directly instantiated.
     """
 
-    def __init__(self, *, custom_id: t.Optional[str] = None, row: t.Optional[int] = None) -> None:
+    def __init__(
+        self, *, custom_id: t.Optional[str] = None, row: t.Optional[int] = None, position: t.Optional[int] = None
+    ) -> None:
         self._rendered_row: t.Optional[int] = None
         """The row the item was placed at when rendered. None if this item was not sent to a message yet."""
 
         self.row = row
         """The row the item should occupy. Leave as None for automatic placement."""
+
+        self.position = position
+        """The position of the item within the row it occupies. Leave as None for automatic placement."""
 
         self._width: int = 1
         """The relative width of the item. 5 takes up a whole row."""
@@ -45,6 +50,20 @@ class Item(abc.ABC, t.Generic[BuilderT]):
 
         self._handler: t.Optional[ItemHandler[BuilderT]] = None
         """The handler the item was added to, if any."""
+
+    @property
+    def position(self) -> t.Optional[int]:
+        """
+        The position of the item within the row it occupies.
+        """
+        return self._position
+
+    @position.setter
+    def position(self, value: t.Optional[int]) -> None:
+        if value is None or (self.width - 1) >= value >= 0:
+            self._position = value
+        else:
+            raise ValueError(f"Position of item {type(self).__name__} must be between 0 and {self.width-1}.")
 
     @property
     def row(self) -> t.Optional[int]:
@@ -113,9 +132,14 @@ class ViewItem(Item[hikari.impl.MessageActionRowBuilder], abc.ABC):
     """
 
     def __init__(
-        self, *, custom_id: t.Optional[str] = None, row: t.Optional[int] = None, disabled: bool = False
+        self,
+        *,
+        custom_id: t.Optional[str] = None,
+        row: t.Optional[int] = None,
+        position: t.Optional[int] = None,
+        disabled: bool = False,
     ) -> None:
-        super().__init__(custom_id=custom_id, row=row)
+        super().__init__(custom_id=custom_id, row=row, position=position)
         self._handler: t.Optional[View] = None
         self._disabled: bool = disabled
 
@@ -170,9 +194,14 @@ class ModalItem(Item[hikari.impl.ModalActionRowBuilder], abc.ABC):
     """
 
     def __init__(
-        self, *, custom_id: t.Optional[str] = None, row: t.Optional[int] = None, required: bool = False
+        self,
+        *,
+        custom_id: t.Optional[str] = None,
+        row: t.Optional[int] = None,
+        position: t.Optional[int] = None,
+        required: bool = False,
     ) -> None:
-        super().__init__(custom_id=custom_id, row=row)
+        super().__init__(custom_id=custom_id, row=row, position=position)
         self._handler: t.Optional[Modal] = None
         self._required: bool = required
 

@@ -35,6 +35,8 @@ class Button(ViewItem):
         The emoji present on the button, by default None
     row : Optional[int], optional
         The row the button should be in, leave as None for auto-placement.
+    position : Optional[int], optional
+        The position the button should be in within a row, leave as None for auto-placement.
 
     Raises
     ------
@@ -54,8 +56,9 @@ class Button(ViewItem):
         url: t.Optional[str] = None,
         emoji: t.Union[hikari.Emoji, str, None] = None,
         row: t.Optional[int] = None,
+        position: t.Optional[int] = None,
     ) -> None:
-        super().__init__(custom_id=custom_id, row=row, disabled=disabled)
+        super().__init__(custom_id=custom_id, row=row, position=position, disabled=disabled)
         self._emoji: t.Optional[hikari.Emoji] = hikari.Emoji.parse(emoji) if isinstance(emoji, str) else emoji
         self.label = label
         self.url = self._url = url

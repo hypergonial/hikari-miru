@@ -270,8 +270,9 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT]):  # type: ignore[type-
         action_rows = []
 
         for _, items in itertools.groupby(self.children, lambda i: i._rendered_row):
+            s_items = sorted(list(items), key=lambda i: i.position if i.position is not None else sys.maxsize)
             action_row = self._builder()
-            for item in items:
+            for item in s_items:
                 item._build(action_row)
             action_rows.append(action_row)
         return action_rows
