@@ -157,7 +157,7 @@ class NavigatorView(View):
         """Get the page content that is to be sent."""
 
         content = page if isinstance(page, str) else ""
-        if isinstance(page, t.Sequence):
+        if isinstance(page, t.Sequence) and isinstance(page[0], hikari.Embed):
             embeds = page
         else:
             embeds = [page] if isinstance(page, hikari.Embed) else []
