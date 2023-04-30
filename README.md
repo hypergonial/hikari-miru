@@ -27,7 +27,6 @@ import miru
 
 
 class MyView(miru.View):
-
     @miru.button(label="Rock", emoji="\N{ROCK}", style=hikari.ButtonStyle.PRIMARY)
     async def rock_button(self, button: miru.Button, ctx: miru.ViewContext) -> None:
         await ctx.respond("Paper!")
@@ -51,7 +50,6 @@ miru.install(bot) # Load miru and attach it to the bot instance.
 
 @bot.listen()
 async def buttons(event: hikari.GuildMessageCreateEvent) -> None:
-
     # Ignore bots or webhooks pinging us
     if not event.is_human:
         return
