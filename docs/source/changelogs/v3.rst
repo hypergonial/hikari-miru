@@ -9,6 +9,7 @@ Version 3.1.0
 
 - Added ``miru.Button.position`` attribute, setting it will determine the ordering of buttons within a row.
 - Remove deprecated functions ``miru.load()`` and ``miru.unload()``, please use ``miru.install()`` and ``miru.uninstall()`` instead.
+- Fixed multiple embed support for navigators.
 
 Version 3.0.3
 =============
