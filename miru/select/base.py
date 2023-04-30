@@ -45,7 +45,7 @@ class SelectBase(ViewItem, abc.ABC):
         disabled: bool = False,
         row: t.Optional[int] = None,
     ) -> None:
-        super().__init__(custom_id=custom_id, row=row, position=0, disabled=disabled)
+        super().__init__(custom_id=custom_id, row=row, position=0, width=5, disabled=disabled)
         self.placeholder = placeholder
         self.min_values = min_values
         self.max_values = max_values
@@ -103,7 +103,3 @@ class SelectBase(ViewItem, abc.ABC):
         """
         Called internally to build and append to an action row
         """
-
-    @property
-    def width(self) -> int:
-        return 5

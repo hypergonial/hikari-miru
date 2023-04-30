@@ -28,7 +28,12 @@ class Item(abc.ABC, t.Generic[BuilderT]):
     """
 
     def __init__(
-        self, *, custom_id: t.Optional[str] = None, row: t.Optional[int] = None, position: t.Optional[int] = None
+        self,
+        *,
+        custom_id: t.Optional[str] = None,
+        row: t.Optional[int] = None,
+        position: t.Optional[int] = None,
+        width: int = 1,
     ) -> None:
         self._rendered_row: t.Optional[int] = None
         """The row the item was placed at when rendered. None if this item was not sent to a message yet."""
@@ -36,11 +41,11 @@ class Item(abc.ABC, t.Generic[BuilderT]):
         self.row = row
         """The row the item should occupy. Leave as None for automatic placement."""
 
+        self._width: int = width
+        """The relative width of the item. 5 takes up a whole row."""
+
         self.position = position
         """The position of the item within the row it occupies. Leave as None for automatic placement."""
-
-        self._width: int = 1
-        """The relative width of the item. 5 takes up a whole row."""
 
         self.custom_id = custom_id  # type: ignore[assignment]
         """The Discord custom_id of the item."""
@@ -137,9 +142,10 @@ class ViewItem(Item[hikari.impl.MessageActionRowBuilder], abc.ABC):
         custom_id: t.Optional[str] = None,
         row: t.Optional[int] = None,
         position: t.Optional[int] = None,
+        width: int = 1,
         disabled: bool = False,
     ) -> None:
-        super().__init__(custom_id=custom_id, row=row, position=position)
+        super().__init__(custom_id=custom_id, row=row, position=position, width=width)
         self._handler: t.Optional[View] = None
         self._disabled: bool = disabled
 
@@ -199,9 +205,10 @@ class ModalItem(Item[hikari.impl.ModalActionRowBuilder], abc.ABC):
         custom_id: t.Optional[str] = None,
         row: t.Optional[int] = None,
         position: t.Optional[int] = None,
+        width: int = 1,
         required: bool = False,
     ) -> None:
-        super().__init__(custom_id=custom_id, row=row, position=position)
+        super().__init__(custom_id=custom_id, row=row, position=position, width=width)
         self._handler: t.Optional[Modal] = None
         self._required: bool = required
 
