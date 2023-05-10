@@ -46,7 +46,7 @@ def pytest(session: nox.Session) -> None:
     session.run("pytest", "tests")
 
 
-@nox.session(reuse_venv=True)
+@nox.session()
 def sphinx(session: nox.Session) -> None:
     session.install("-Ur", "doc_requirements.txt")
     session.install("-Ur", "requirements.txt")
