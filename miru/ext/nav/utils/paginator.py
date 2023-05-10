@@ -38,7 +38,7 @@ class Paginator:
             )
 
         if not self._pages:
-            self._pages[0] = self._prefix
+            self._pages.append(self._prefix)
 
         # If content fits on page
         if not len(self._pages[-1]) + len(f"{line}{self._line_separator}{self._suffix}") >= self._max_len:
