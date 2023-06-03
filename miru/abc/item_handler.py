@@ -163,7 +163,7 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT]):  # type: ignore[type-
 
     @property
     @abc.abstractmethod
-    def _builder(self) -> type[BuilderT]:
+    def _builder(self) -> t.Type[BuilderT]:
         ...
 
     def add_item(self, item: Item[BuilderT]) -> ItemHandler[BuilderT]:

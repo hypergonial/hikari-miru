@@ -111,7 +111,7 @@ class EventHandler:
     _handlers: t.MutableMapping[str, ItemHandler[t.Any]] = {}
     """A mapping of custom_id to ItemHandler. This only contains handlers that are not bound to a message."""
 
-    def __new__(cls: type[EventHandler]) -> EventHandler:
+    def __new__(cls: t.Type[EventHandler]) -> EventHandler:
         if not hasattr(cls, "instance"):  # Ensure that class remains singleton
             cls.instance = super(EventHandler, cls).__new__(cls)
         return cls.instance

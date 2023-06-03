@@ -137,7 +137,7 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder]):
         return t.cast(ViewContext, self._last_context)
 
     @property
-    def _builder(self) -> type[hikari.impl.MessageActionRowBuilder]:
+    def _builder(self) -> t.Type[hikari.impl.MessageActionRowBuilder]:
         return hikari.impl.MessageActionRowBuilder
 
     @property

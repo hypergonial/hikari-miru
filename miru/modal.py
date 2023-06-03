@@ -129,7 +129,7 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder]):
         return t.cast(ModalContext, self._last_context)
 
     @property
-    def _builder(self) -> type[hikari.impl.ModalActionRowBuilder]:
+    def _builder(self) -> t.Type[hikari.impl.ModalActionRowBuilder]:
         return hikari.impl.ModalActionRowBuilder
 
     @property
