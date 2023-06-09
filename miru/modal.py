@@ -260,7 +260,7 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder]):
         if not isinstance(event.interaction, hikari.ModalInteraction):
             return
 
-        children = {item.custom_id: item for item in self.children if isinstance(item, ModalItem)}
+        children = {item.custom_id: item for item in self.children}
 
         values = {  # Check if any components match the provided custom_ids
             children[component.custom_id]: component.value

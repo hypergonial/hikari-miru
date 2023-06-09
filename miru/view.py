@@ -287,6 +287,9 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder]):
         Handle the callback of a view item. Seperate task in case the view is stopped in the callback.
         """
         try:
+            if self._message_id == context.message.id:
+                self._message = context.message
+
             now = datetime.datetime.now()
             self._input_event.set()
             self._input_event.clear()

@@ -7,6 +7,7 @@ These are all the changelogs for stable releases of hikari-miru (version 3.0.0 t
 Version 3.1.2
 =============
 
+- Update ``miru.View.message`` in bound views when receiveing an interaction.
 - Fix ``IndexError`` being raised when trying to add pages to a ``miru.ext.nav.utils.Paginator``. 
 
 Version 3.1.1
