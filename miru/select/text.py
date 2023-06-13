@@ -189,10 +189,6 @@ class TextSelect(SelectBase):
     def values(self) -> t.Sequence[str]:
         return self._values
 
-    @property
-    def width(self) -> int:
-        return 5
-
     async def _refresh_state(self, context: Context[hikari.ComponentInteraction]) -> None:
         assert isinstance(context, ViewContext)
         self._values = context.interaction.values
