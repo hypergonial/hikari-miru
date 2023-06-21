@@ -42,8 +42,9 @@ class NavItem(ViewItem, abc.ABC):
         row: t.Optional[int] = None,
         position: t.Optional[int] = None,
         disabled: bool = False,
+        width: int = 1,
     ) -> None:
-        super().__init__(custom_id=custom_id, row=row, position=position, disabled=disabled)
+        super().__init__(custom_id=custom_id, row=row, width=width, position=position, disabled=disabled)
         self._handler: t.Optional[NavigatorView] = None
 
     async def before_page_change(self) -> None:
