@@ -8,7 +8,8 @@ Version 3.1.2
 =============
 
 - Update ``miru.View.message`` in bound views when receiveing an interaction.
-- Fix ``IndexError`` being raised when trying to add pages to a ``miru.ext.nav.utils.Paginator``. 
+- Fix ``IndexError`` being raised when trying to add pages to a ``miru.ext.nav.utils.Paginator``.
+- Fix ``miru.ext.nav.NavItem`` missing ``width`` from it's ``__init__``.
 
 Version 3.1.1
 =============
