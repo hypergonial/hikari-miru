@@ -42,9 +42,9 @@ setup(
     description="An alternative component handler for hikari, inspired by discord.py's views.",
     long_description=long_description(),
     long_description_content_type="text/markdown",
-    author="HyperGH",
+    author="hypergonial",
     author_email="46067571+HyperGH@users.noreply.github.com",
-    url="https://github.com/HyperGH/hikari-miru",
+    url="https://github.com/hypergonial/hikari-miru",
     packages=find_namespace_packages(include=[name + "*"]),
     package_data={"miru": ["py.typed"], "miru.ext.nav": ["py.typed"]},
     license="MIT",
@@ -76,7 +76,7 @@ setup(
 
 # MIT License
 #
-# Copyright (c) 2022-present HyperGH
+# Copyright (c) 2022-present hypergonial
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
