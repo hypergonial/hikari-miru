@@ -19,8 +19,8 @@ sys.path.insert(0, os.path.abspath(os.path.join("..", "..")))
 # -- Project information -----------------------------------------------------
 
 project = "hikari-miru"
-copyright = "2022, HyperGH"
-author = "HyperGH"
+copyright = "2022, hypergonial"
+author = "hypergonial"
 
 with open("../../miru/__init__.py") as fp:
     file = fp.read()

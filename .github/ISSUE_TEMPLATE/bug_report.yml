@@ -2,7 +2,7 @@ name: Bug report
 description: Found a bug with the library? Report it here!
 labels: ["bug"]
 assignees:
-  - HyperGH
+  - hypergonial
 
 body:
   - type: textarea

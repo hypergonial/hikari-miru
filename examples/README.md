@@ -10,4 +10,4 @@ To run and test the examples, simply insert your bot token in into the construct
 python example_name.py
 ```
 
-If you have any questions, or found an issue with one of the examples, feel free to [open an issue](https://github.com/HyperGH/hikari-miru/issues/new), or join the [hikari discord](https://discord.gg/Jx4cNGG)!
+If you have any questions, or found an issue with one of the examples, feel free to [open an issue](https://github.com/hypergonial/hikari-miru/issues/new), or join the [hikari discord](https://discord.gg/Jx4cNGG)!

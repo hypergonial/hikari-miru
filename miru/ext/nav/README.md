@@ -26,4 +26,4 @@ async def navigator(event: hikari.GuildMessageCreateEvent) -> None:
         await navigator.send(event.channel_id)
 ```
 
-For more examples see the [detailed example](https://github.com/HyperGH/hikari-miru/tree/main/examples/navigator.py), or refer to the [documentation](https://hikari-miru.readthedocs.io/en/latest/guides/navigators.html).
+For more examples see the [detailed example](https://github.com/hypergonial/hikari-miru/tree/main/examples/navigator.py), or refer to the [documentation](https://hikari-miru.readthedocs.io/en/latest/guides/navigators.html).

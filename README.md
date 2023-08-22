@@ -69,11 +69,11 @@ async def buttons(event: hikari.GuildMessageCreateEvent) -> None:
 bot.run()
 ```
 
-For more examples see [examples](https://github.com/HyperGH/hikari-miru/tree/main/examples), or refer to the [documentation](https://hikari-miru.readthedocs.io/en/latest/).
+For more examples see [examples](https://github.com/hypergonial/hikari-miru/tree/main/examples), or refer to the [documentation](https://hikari-miru.readthedocs.io/en/latest/).
 
 ## Issues and support
 
-For general usage help or questions, see the `#miru` channel in the [hikari discord](https://discord.gg/Jx4cNGG), if you have found a bug or have a feature request, feel free to [open an issue](https://github.com/HyperGH/hikari-miru/issues/new)!
+For general usage help or questions, see the `#miru` channel in the [hikari discord](https://discord.gg/Jx4cNGG), if you have found a bug or have a feature request, feel free to [open an issue](https://github.com/hypergonial/hikari-miru/issues/new)!
 
 ## Contributing
 
@@ -82,5 +82,5 @@ If you wish to contribute, make sure to run [nox](https://nox.thea.codes/en/stab
 ## Links
 
 - [**Documentation**](https://hikari-miru.readthedocs.io/en/latest/index.html)
-- [**Examples**](https://github.com/HyperGH/hikari-miru/tree/main/examples)
-- [**License**](https://github.com/HyperGH/hikari-miru/blob/main/LICENSE)
+- [**Examples**](https://github.com/hypergonial/hikari-miru/tree/main/examples)
+- [**License**](https://github.com/hypergonial/hikari-miru/blob/main/LICENSE)
