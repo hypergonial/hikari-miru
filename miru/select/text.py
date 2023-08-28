@@ -225,6 +225,7 @@ def text_select(
 
     return decorator
 
+
 # MIT License
 #
 # Copyright (c) 2022-present hypergonial
