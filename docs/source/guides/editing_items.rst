@@ -10,8 +10,6 @@ Example:
 
 ::
 
-    import random
-
     import hikari
     import miru
 
