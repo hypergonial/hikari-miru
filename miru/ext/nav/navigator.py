@@ -104,11 +104,10 @@ class NavigatorView(View):
             return
 
         for button in self.children:
-            assert isinstance(button, NavItem)
             button.disabled = True
 
         if self._using_inter and self._inter:
-            await self._inter.edit_initial_response(components=self)
+            await self._inter.edit_message(self.message, components=self)
         else:
             await self.message.edit(components=self)
 
