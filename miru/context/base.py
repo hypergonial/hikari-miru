@@ -85,8 +85,8 @@ class InteractionResponse:
 
         if self._message:
             await self._context.interaction.delete_message(self._message)
-
-        await self._context.interaction.delete_initial_response()
+        else:
+            await self._context.interaction.delete_initial_response()
 
     async def edit(
         self,
