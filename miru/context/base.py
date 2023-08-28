@@ -150,21 +150,20 @@ class InteractionResponse:
                 user_mentions=user_mentions,
                 role_mentions=role_mentions,
             )
-            return self._context._create_response(message)
-
-        message = await self._context.interaction.edit_initial_response(
-            content,
-            component=component,
-            components=components,
-            attachment=attachment,
-            attachments=attachments,
-            embed=embed,
-            embeds=embeds,
-            mentions_everyone=mentions_everyone,
-            user_mentions=user_mentions,
-            role_mentions=role_mentions,
-        )
-        return self._context._create_response()
+        else:
+            message = await self._context.interaction.edit_initial_response(
+                content,
+                component=component,
+                components=components,
+                attachment=attachment,
+                attachments=attachments,
+                embed=embed,
+                embeds=embeds,
+                mentions_everyone=mentions_everyone,
+                user_mentions=user_mentions,
+                role_mentions=role_mentions,
+            )
+        return self._context._create_response(message)
 
 
 class Context(abc.ABC, t.Generic[InteractionT]):
@@ -393,7 +392,8 @@ class Context(abc.ABC, t.Generic[InteractionT]):
             t.Union[hikari.SnowflakeishSequence[hikari.PartialRole], bool]
         ] = hikari.UNDEFINED,
     ) -> InteractionResponse:
-        """A short-hand method to edit the last message belonging to this interaction.
+        """A short-hand method to edit the initial response belonging to this interaction.
+        If no initial response was issued yet, this will create one of type ``MESSAGE_UPDATE``.
         In the case of modals, this will be the component's message that triggered the modal.
 
         Parameters
