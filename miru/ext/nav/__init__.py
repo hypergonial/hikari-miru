@@ -10,11 +10,10 @@ from .items import (
     NavTextSelect,
     NavUserSelect,
     NextButton,
-    Page,
     PrevButton,
     StopButton,
 )
-from .navigator import NavigatorView
+from .navigator import NavigatorView, Page
 from .utils import *
 
 __all__ = (
