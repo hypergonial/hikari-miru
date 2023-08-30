@@ -156,28 +156,8 @@ class NavigatorView(View):
         """Get the page content that is to be sent."""
 
         if isinstance(page, Page):
-            d: dict[str, t.Any] = dict(
-                content=page.content or None,
-                mentions_everyone=page.mentions_everyone or False,
-                user_mentions=page.user_mentions or False,
-                role_mentions=page.role_mentions or False,
-                components=self,
-            )
-            if page.attachment and not page.attachments:
-                d["attachment"] = page.attachment
-            elif page.attachments and not page.attachment:
-                d["attachments"] = page.attachments
-            elif not page.attachment and not page.attachments:
-                d["attachment"] = None
-
-            if page.embed and not page.embeds:
-                d["embed"] = page.embed
-            elif page.embeds and not page.embed:
-                d["embeds"] = page.embeds
-            elif not page.embed and not page.embeds:
-                d["embed"] = None
-
-
+            d = page._build_payload()
+            d["components"] = self
             if self.ephemeral:
                 d["flags"] = hikari.MessageFlag.EPHEMERAL
             return d

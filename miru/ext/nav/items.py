@@ -293,6 +293,23 @@ class Page:
         t.Union[hikari.SnowflakeishSequence[hikari.PartialRole], bool]
     ] = hikari.UNDEFINED
 
+    def _build_payload(self) -> dict[str, t.Any]:
+        d: dict[str, t.Any] = dict(
+            content=self.content or None,
+            attachments=self.attachments or None,
+            embeds=self.embeds or None,
+            mentions_everyone=self.mentions_everyone or False,
+            user_mentions=self.user_mentions or False,
+            role_mentions=self.role_mentions or False,
+        )
+        if not d["attachments"] and self.attachment:
+            d["attachments"] = [self.attachment]
+
+        if not d["embeds"] and self.embed:
+            d["embeds"] = [self.embed]
+        
+        return d
+
 
 # MIT License
 #
