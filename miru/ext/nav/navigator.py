@@ -170,7 +170,10 @@ class NavigatorView(View):
             embeds = [page] if isinstance(page, hikari.Embed) else []
 
         if not content and not embeds:
-            raise TypeError(f"Expected type 'str' or 'hikari.Embed' to send as page, not '{page.__class__.__name__}'.")
+            raise TypeError(
+                "Expected type 'str', 'hikari.Embed', 'Sequence[hikari.Embed]' or 'ext.nav.Page' "
+                f"to send as page, not '{page.__class__.__name__}'."
+            )
 
         d = dict(
             content=content,
