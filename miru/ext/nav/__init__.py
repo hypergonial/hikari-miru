@@ -10,6 +10,7 @@ from .items import (
     NavTextSelect,
     NavUserSelect,
     NextButton,
+    Page,
     PrevButton,
     StopButton,
 )
@@ -30,6 +31,7 @@ __all__ = (
     "LastButton",
     "IndicatorButton",
     "StopButton",
+    "Page",
     "NavigatorView",
     "Paginator",
 )

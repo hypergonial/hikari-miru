@@ -10,7 +10,7 @@ from miru.abc import Item
 from miru.context import Context
 from miru.view import View
 
-from .items import FirstButton, IndicatorButton, LastButton, NavButton, NavItem, NextButton, PrevButton
+from .items import FirstButton, IndicatorButton, LastButton, NavButton, NavItem, NextButton, Page, PrevButton
 
 logger = logging.getLogger(__name__)
 
@@ -40,12 +40,12 @@ class NavigatorView(View):
     def __init__(
         self,
         *,
-        pages: t.Sequence[t.Union[str, hikari.Embed, t.Sequence[hikari.Embed]]],
+        pages: t.Sequence[t.Union[str, hikari.Embed, t.Sequence[hikari.Embed], Page]],
         buttons: t.Optional[t.Sequence[NavButton]] = None,
         timeout: t.Optional[t.Union[float, int, datetime.timedelta]] = 120.0,
         autodefer: bool = True,
     ) -> None:
-        self._pages: t.Sequence[t.Union[str, hikari.Embed, t.Sequence[hikari.Embed]]] = pages
+        self._pages: t.Sequence[t.Union[str, hikari.Embed, t.Sequence[hikari.Embed], Page]] = pages
         self._current_page: int = 0
         self._ephemeral: bool = False
         # If the nav is using interaction-based handling or not
@@ -66,7 +66,7 @@ class NavigatorView(View):
             raise ValueError(f"Expected at least one page to be passed to {type(self).__name__}.")
 
     @property
-    def pages(self) -> t.Sequence[t.Union[str, hikari.Embed, t.Sequence[hikari.Embed]]]:
+    def pages(self) -> t.Sequence[t.Union[str, hikari.Embed, t.Sequence[hikari.Embed], Page]]:
         """
         The pages the navigator is iterating through.
         """
@@ -151,9 +151,36 @@ class NavigatorView(View):
         return t.cast(NavigatorView, super().clear_items())
 
     def _get_page_payload(
-        self, page: t.Union[str, hikari.Embed, t.Sequence[hikari.Embed]]
+        self, page: t.Union[str, hikari.Embed, t.Sequence[hikari.Embed], Page]
     ) -> t.MutableMapping[str, t.Any]:
         """Get the page content that is to be sent."""
+
+        if isinstance(page, Page):
+            d: dict[str, t.Any] = dict(
+                content=page.content or None,
+                mentions_everyone=page.mentions_everyone or False,
+                user_mentions=page.user_mentions or False,
+                role_mentions=page.role_mentions or False,
+                components=self,
+            )
+            if page.attachment and not page.attachments:
+                d["attachment"] = page.attachment
+            elif page.attachments and not page.attachment:
+                d["attachments"] = page.attachments
+            elif not page.attachment and not page.attachments:
+                d["attachment"] = None
+
+            if page.embed and not page.embeds:
+                d["embed"] = page.embed
+            elif page.embeds and not page.embed:
+                d["embeds"] = page.embeds
+            elif not page.embed and not page.embeds:
+                d["embed"] = None
+
+
+            if self.ephemeral:
+                d["flags"] = hikari.MessageFlag.EPHEMERAL
+            return d
 
         content = page if isinstance(page, str) else ""
         if page and isinstance(page, t.Sequence) and isinstance(page[0], hikari.Embed):
@@ -164,16 +191,21 @@ class NavigatorView(View):
         if not content and not embeds:
             raise TypeError(f"Expected type 'str' or 'hikari.Embed' to send as page, not '{page.__class__.__name__}'.")
 
+        d = dict(
+            content=content,
+            embeds=embeds,
+            attachments=None,
+            mentions_everyone=False,
+            user_mentions=False,
+            role_mentions=False,
+            components=self,
+            flags=hikari.MessageFlag.EPHEMERAL,
+        )
         if self.ephemeral:
-            return dict(
-                content=content,
-                embeds=embeds,
-                components=self,
-                flags=hikari.MessageFlag.EPHEMERAL,
-            )
-        else:
-            return dict(content=content, embeds=embeds, components=self)
+            d["flags"] = hikari.MessageFlag.EPHEMERAL
 
+        return d
+        
     @property
     def is_persistent(self) -> bool:
         return super().is_persistent and not self.ephemeral
@@ -201,7 +233,7 @@ class NavigatorView(View):
 
         self._inter = context.interaction  # Update latest inter
 
-        await context.edit_response(**payload, attachment=None)
+        await context.edit_response(**payload)
 
     async def swap_pages(
         self,

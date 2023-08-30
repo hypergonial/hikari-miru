@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import abc
+import attr
 import typing as t
 
 import hikari
@@ -275,6 +276,22 @@ class StopButton(NavButton):
         elif self.view.message:
             await self.view.message.edit(components=self.view)
         self.view.stop()
+
+
+@attr.define()
+class Page:
+    content: hikari.UndefinedOr[t.Any] = hikari.UNDEFINED
+    attachment: hikari.UndefinedOr[hikari.Resourceish] = hikari.UNDEFINED
+    attachments: hikari.UndefinedOr[t.Sequence[hikari.Resourceish]] = hikari.UNDEFINED
+    embed: hikari.UndefinedOr[hikari.Embed] = hikari.UNDEFINED
+    embeds: hikari.UndefinedOr[t.Sequence[hikari.Embed]] = hikari.UNDEFINED
+    mentions_everyone: hikari.UndefinedOr[bool] = hikari.UNDEFINED
+    user_mentions: hikari.UndefinedOr[
+        t.Union[hikari.SnowflakeishSequence[hikari.PartialUser], bool]
+    ] = hikari.UNDEFINED
+    role_mentions: hikari.UndefinedOr[
+        t.Union[hikari.SnowflakeishSequence[hikari.PartialRole], bool]
+    ] = hikari.UNDEFINED
 
 
 # MIT License
