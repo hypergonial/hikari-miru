@@ -246,7 +246,7 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder]):
 
     async def _handle_callback(self, context: ModalContext) -> None:
         """
-        Handle the callback of the modal. Seperate task in case the modal is stopped in the callback.
+        Handle the callback of the modal. Separate task in case the modal is stopped in the callback.
         """
         try:
             await self.callback(context)

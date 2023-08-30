@@ -55,7 +55,7 @@ class Paginator:
         Parameters
         ----------
         line : str
-            The string to add to the paginator. If it contains the line seperator, the text will be split into multiple lines.
+            The string to add to the paginator. If it contains the line separator, the text will be split into multiple lines.
         Raises
         ------
         ValueError

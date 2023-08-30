@@ -495,7 +495,7 @@ class Context(abc.ABC, t.Generic[InteractionT]):
         RuntimeError
             The interaction was already responded to.
         ValueError
-            response_type was not a deffered response type.
+            response_type was not a deferred response type.
         """
         response_type = args[0] if args else hikari.ResponseType.DEFERRED_MESSAGE_UPDATE
 

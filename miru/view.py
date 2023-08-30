@@ -284,7 +284,7 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder]):
 
     async def _handle_callback(self, item: ViewItem, context: ViewContext) -> None:
         """
-        Handle the callback of a view item. Seperate task in case the view is stopped in the callback.
+        Handle the callback of a view item. Separate task in case the view is stopped in the callback.
         """
         try:
             if self._message_id == context.message.id:

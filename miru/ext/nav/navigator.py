@@ -198,7 +198,7 @@ class NavigatorView(View):
         context : Context
             The context object that should be used to send this page
         page_index : Optional[int], optional
-            The index of the page to send, if not specifed, sends the current page, by default None
+            The index of the page to send, if not specified, sends the current page, by default None
         """
         if page_index is not None:
             self.current_page = page_index
