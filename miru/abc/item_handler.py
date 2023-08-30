@@ -329,7 +329,7 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT]):  # type: ignore[type-
 
     def _create_task(self, coro: t.Awaitable[t.Any], *, name: t.Optional[str] = None) -> asyncio.Task[t.Any]:
         """
-        Run tasks inside the itemhandler internally while keeping a reference to the provided task.
+        Run tasks inside the item handler internally while keeping a reference to the provided task.
         """
         task = asyncio.create_task(coro, name=name)  # type: ignore
         self._running_tasks.append(task)
@@ -337,7 +337,7 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT]):  # type: ignore[type-
         return task
 
     async def wait(self, timeout: t.Optional[float] = None) -> None:
-        """Wait until the item handler has stopped receiveing interactions.
+        """Wait until the item handler has stopped receiving interactions.
 
         Parameters
         ----------

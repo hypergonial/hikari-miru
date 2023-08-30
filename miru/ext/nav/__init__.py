@@ -13,7 +13,7 @@ from .items import (
     PrevButton,
     StopButton,
 )
-from .navigator import NavigatorView
+from .navigator import NavigatorView, Page
 from .utils import *
 
 __all__ = (
@@ -30,6 +30,7 @@ __all__ = (
     "LastButton",
     "IndicatorButton",
     "StopButton",
+    "Page",
     "NavigatorView",
     "Paginator",
 )

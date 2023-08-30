@@ -4,6 +4,7 @@ import datetime
 import logging
 import typing as t
 
+import attr
 import hikari
 
 from miru.abc import Item
@@ -14,7 +15,7 @@ from .items import FirstButton, IndicatorButton, LastButton, NavButton, NavItem,
 
 logger = logging.getLogger(__name__)
 
-__all__ = ("NavigatorView",)
+__all__ = ("NavigatorView", "Page")
 
 
 class NavigatorView(View):
@@ -22,7 +23,7 @@ class NavigatorView(View):
 
     Parameters
     ----------
-    pages : List[Union[str, hikari.Embed, Sequence[hikari.Embed]]]
+    pages : List[Union[str, hikari.Embed, Sequence[hikari.Embed], Page]]
         A list of strings or embeds that this navigator should paginate.
     buttons : Optional[List[NavButton[NavigatorViewT]]], optional
         A list of navigation buttons to override the default ones with, by default None
@@ -40,12 +41,12 @@ class NavigatorView(View):
     def __init__(
         self,
         *,
-        pages: t.Sequence[t.Union[str, hikari.Embed, t.Sequence[hikari.Embed]]],
+        pages: t.Sequence[t.Union[str, hikari.Embed, t.Sequence[hikari.Embed], Page]],
         buttons: t.Optional[t.Sequence[NavButton]] = None,
         timeout: t.Optional[t.Union[float, int, datetime.timedelta]] = 120.0,
         autodefer: bool = True,
     ) -> None:
-        self._pages: t.Sequence[t.Union[str, hikari.Embed, t.Sequence[hikari.Embed]]] = pages
+        self._pages: t.Sequence[t.Union[str, hikari.Embed, t.Sequence[hikari.Embed], Page]] = pages
         self._current_page: int = 0
         self._ephemeral: bool = False
         # If the nav is using interaction-based handling or not
@@ -66,7 +67,7 @@ class NavigatorView(View):
             raise ValueError(f"Expected at least one page to be passed to {type(self).__name__}.")
 
     @property
-    def pages(self) -> t.Sequence[t.Union[str, hikari.Embed, t.Sequence[hikari.Embed]]]:
+    def pages(self) -> t.Sequence[t.Union[str, hikari.Embed, t.Sequence[hikari.Embed], Page]]:
         """
         The pages the navigator is iterating through.
         """
@@ -151,9 +152,16 @@ class NavigatorView(View):
         return t.cast(NavigatorView, super().clear_items())
 
     def _get_page_payload(
-        self, page: t.Union[str, hikari.Embed, t.Sequence[hikari.Embed]]
+        self, page: t.Union[str, hikari.Embed, t.Sequence[hikari.Embed], Page]
     ) -> t.MutableMapping[str, t.Any]:
         """Get the page content that is to be sent."""
+
+        if isinstance(page, Page):
+            d = page._build_payload()
+            d["components"] = self
+            if self.ephemeral:
+                d["flags"] = hikari.MessageFlag.EPHEMERAL
+            return d
 
         content = page if isinstance(page, str) else ""
         if page and isinstance(page, t.Sequence) and isinstance(page[0], hikari.Embed):
@@ -162,17 +170,25 @@ class NavigatorView(View):
             embeds = [page] if isinstance(page, hikari.Embed) else []
 
         if not content and not embeds:
-            raise TypeError(f"Expected type 'str' or 'hikari.Embed' to send as page, not '{page.__class__.__name__}'.")
-
-        if self.ephemeral:
-            return dict(
-                content=content,
-                embeds=embeds,
-                components=self,
-                flags=hikari.MessageFlag.EPHEMERAL,
+            raise TypeError(
+                "Expected type 'str', 'hikari.Embed', 'Sequence[hikari.Embed]' or 'ext.nav.Page' "
+                f"to send as page, not '{page.__class__.__name__}'."
             )
-        else:
-            return dict(content=content, embeds=embeds, components=self)
+
+        d = dict(
+            content=content,
+            embeds=embeds,
+            attachments=None,
+            mentions_everyone=False,
+            user_mentions=False,
+            role_mentions=False,
+            components=self,
+            flags=hikari.MessageFlag.EPHEMERAL,
+        )
+        if self.ephemeral:
+            d["flags"] = hikari.MessageFlag.EPHEMERAL
+
+        return d
 
     @property
     def is_persistent(self) -> bool:
@@ -186,7 +202,7 @@ class NavigatorView(View):
         context : Context
             The context object that should be used to send this page
         page_index : Optional[int], optional
-            The index of the page to send, if not specifed, sends the current page, by default None
+            The index of the page to send, if not specified, sends the current page, by default None
         """
         if page_index is not None:
             self.current_page = page_index
@@ -201,12 +217,12 @@ class NavigatorView(View):
 
         self._inter = context.interaction  # Update latest inter
 
-        await context.edit_response(**payload, attachment=None)
+        await context.edit_response(**payload)
 
     async def swap_pages(
         self,
         context: Context[t.Any],
-        new_pages: t.Sequence[t.Union[str, hikari.Embed, t.Sequence[hikari.Embed]]],
+        new_pages: t.Sequence[t.Union[str, hikari.Embed, t.Sequence[hikari.Embed], Page]],
         start_at: int = 0,
     ) -> None:
         """Swap out the pages of the navigator to the newly provided pages.
@@ -216,7 +232,7 @@ class NavigatorView(View):
         ----------
         context : Context
             The context object that should be used to send the updated pages
-        new_pages : Sequence[Union[str, Embed, Sequence[Embed]]]
+        new_pages : Sequence[Union[str, Embed, Sequence[Embed] | Page]]
             The new pages to swap to
         start_at : int, optional
             The page to start at, by default 0
@@ -305,6 +321,45 @@ class NavigatorView(View):
             return  # Do not start the view if unbound persistent
 
         await self.start(message, start_at=start_at)
+
+
+@attr.define(slots=True)
+class Page:
+    """Allows for the building of more complex pages for use with NavigatorView."""
+
+    content: hikari.UndefinedOr[t.Any] = hikari.UNDEFINED
+    """The content of the message. Anything passed here will be cast to str."""
+    attachment: hikari.UndefinedOr[hikari.Resourceish] = hikari.UNDEFINED
+    """An attachment to add to this page."""
+    attachments: hikari.UndefinedOr[t.Sequence[hikari.Resourceish]] = hikari.UNDEFINED
+    """A sequence of attachments to add to this page."""
+    embed: hikari.UndefinedOr[hikari.Embed] = hikari.UNDEFINED
+    """An embed to add to this page."""
+    embeds: hikari.UndefinedOr[t.Sequence[hikari.Embed]] = hikari.UNDEFINED
+    """A sequence of embeds to add to this page."""
+    mentions_everyone: hikari.UndefinedOr[bool] = hikari.UNDEFINED
+    """If True, mentioning @everyone will be allowed in this page's message."""
+    user_mentions: hikari.UndefinedOr[t.Union[hikari.SnowflakeishSequence[hikari.PartialUser], bool]] = hikari.UNDEFINED
+    """The set of allowed user mentions in this page's message. Set to True to allow all."""
+    role_mentions: hikari.UndefinedOr[t.Union[hikari.SnowflakeishSequence[hikari.PartialRole], bool]] = hikari.UNDEFINED
+    """The set of allowed role mentions in this page's message. Set to True to allow all."""
+
+    def _build_payload(self) -> dict[str, t.Any]:
+        d: dict[str, t.Any] = dict(
+            content=self.content or None,
+            attachments=self.attachments or None,
+            embeds=self.embeds or None,
+            mentions_everyone=self.mentions_everyone or False,
+            user_mentions=self.user_mentions or False,
+            role_mentions=self.role_mentions or False,
+        )
+        if not d["attachments"] and self.attachment:
+            d["attachments"] = [self.attachment]
+
+        if not d["embeds"] and self.embed:
+            d["embeds"] = [self.embed]
+
+        return d
 
 
 # MIT License

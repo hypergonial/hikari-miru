@@ -6,7 +6,7 @@ class MiruException(Exception):
 
 
 class BootstrapFailureError(MiruException):
-    """Raised when the requested operation requires calling miru.install() beforehand, but was ommitted."""
+    """Raised when the requested operation requires calling miru.install() beforehand, but was omitted."""
 
 
 class RowFullError(MiruException):
