@@ -278,20 +278,30 @@ class StopButton(NavButton):
         self.view.stop()
 
 
-@attr.define()
+@attr.define(slots=True)
 class Page:
+    """Allows for the building of more complex pages for use with NavigatorView."""
+    
     content: hikari.UndefinedOr[t.Any] = hikari.UNDEFINED
+    """The content of the message. Anything passed here will be cast to str."""
     attachment: hikari.UndefinedOr[hikari.Resourceish] = hikari.UNDEFINED
+    """An attachment to add to this page."""
     attachments: hikari.UndefinedOr[t.Sequence[hikari.Resourceish]] = hikari.UNDEFINED
+    """A sequence of attachments to add to this page."""
     embed: hikari.UndefinedOr[hikari.Embed] = hikari.UNDEFINED
+    """An embed to add to this page."""
     embeds: hikari.UndefinedOr[t.Sequence[hikari.Embed]] = hikari.UNDEFINED
+    """A sequence of embeds to add to this page."""
     mentions_everyone: hikari.UndefinedOr[bool] = hikari.UNDEFINED
+    """If True, mentioning @everyone will be allowed in this page's message."""
     user_mentions: hikari.UndefinedOr[
         t.Union[hikari.SnowflakeishSequence[hikari.PartialUser], bool]
     ] = hikari.UNDEFINED
+    """The set of allowed user mentions in this page's message. Set to True to allow all."""
     role_mentions: hikari.UndefinedOr[
         t.Union[hikari.SnowflakeishSequence[hikari.PartialRole], bool]
     ] = hikari.UNDEFINED
+    """The set of allowed role mentions in this page's message. Set to True to allow all."""
 
     def _build_payload(self) -> dict[str, t.Any]:
         d: dict[str, t.Any] = dict(

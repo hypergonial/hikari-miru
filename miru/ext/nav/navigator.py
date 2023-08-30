@@ -22,7 +22,7 @@ class NavigatorView(View):
 
     Parameters
     ----------
-    pages : List[Union[str, hikari.Embed, Sequence[hikari.Embed]]]
+    pages : List[Union[str, hikari.Embed, Sequence[hikari.Embed] | Page]]
         A list of strings or embeds that this navigator should paginate.
     buttons : Optional[List[NavButton[NavigatorViewT]]], optional
         A list of navigation buttons to override the default ones with, by default None
@@ -218,7 +218,7 @@ class NavigatorView(View):
     async def swap_pages(
         self,
         context: Context[t.Any],
-        new_pages: t.Sequence[t.Union[str, hikari.Embed, t.Sequence[hikari.Embed]]],
+        new_pages: t.Sequence[t.Union[str, hikari.Embed, t.Sequence[hikari.Embed] | Page]],
         start_at: int = 0,
     ) -> None:
         """Swap out the pages of the navigator to the newly provided pages.
@@ -228,7 +228,7 @@ class NavigatorView(View):
         ----------
         context : Context
             The context object that should be used to send the updated pages
-        new_pages : Sequence[Union[str, Embed, Sequence[Embed]]]
+        new_pages : Sequence[Union[str, Embed, Sequence[Embed] | Page]]
             The new pages to swap to
         start_at : int, optional
             The page to start at, by default 0
