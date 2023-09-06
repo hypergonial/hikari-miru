@@ -35,11 +35,18 @@ and using the ``send()`` method to send the navigator to a channel, or as a resp
         # If the bot is mentioned
         if me.id in event.message.user_mentions_ids:
             embed = hikari.Embed(title="I'm the second page!", description="Also an embed!")
+
+            # A Page object can be used to further customize the page payload if a single embed or str is not enough.
+            page = nav.Page(content="I'm the last page!", embed=hikari.Embed(title="I also have an embed!"))
+
             # The list of pages this navigator should paginate through
-            pages = ["I'm the first page!", embed, "I'm the last page!"]
+            # This should be a list that contains 'str', 'hikari.Embed', and 'nav.Page' objects.
+            pages = ["I'm the first page!", embed, page]
+
             # Define our navigator and pass in our list of pages
             navigator = nav.NavigatorView(pages=pages)
-            # You may also pass an interaction object to this function
+
+            # You may also pass an interaction or miru context to this function
             await navigator.send(event.channel_id)
 
 
@@ -97,9 +104,11 @@ You may use any mix of the built-in and custom navigation buttons in your naviga
         if me.id in event.message.user_mentions_ids:
             embed = hikari.Embed(title="I'm the second page!", description="Also an embed!")
             pages = ["I'm a customized navigator!", embed, "I'm the last page!"]
+
             # Define our custom buttons for this navigator, keep in mind the order
             # All navigator buttons MUST subclass nav.NavButton
             buttons = [nav.PrevButton(), nav.StopButton(), nav.NextButton(), MyNavButton()]
+
             # Pass our list of NavButton to the navigator
             navigator = nav.NavigatorView(pages=pages, buttons=buttons)
 

@@ -39,10 +39,17 @@ async def navigator(event: hikari.GuildMessageCreateEvent) -> None:
     # If the bot is mentioned
     if me.id in event.message.user_mentions_ids:
         embed = hikari.Embed(title="I'm the second page!", description="Also an embed!")
-        pages = ["I'm the first page!", embed, "I'm the last page!"]
+
+        # You can also pass a Page object to the navigator to create customized page payloads.
+        page = nav.Page(content="I'm the last page!", embed=hikari.Embed(title="I also have an embed!"))
+
+        # 'pages' should be a list that contains 'str', 'hikari.Embed', and 'nav.Page' objects.
+        pages = ["I'm the first page!", embed, page]
+
         # Define our navigator and pass in our list of pages
         navigator = nav.NavigatorView(pages=pages)
-        # You may also pass an interaction object to this function
+
+        # You may also pass an interaction or miru context to this function
         await navigator.send(event.channel_id)
 
     # Otherwise we annoy everyone with our custom navigator instead

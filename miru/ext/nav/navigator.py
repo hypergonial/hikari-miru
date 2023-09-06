@@ -24,7 +24,7 @@ class NavigatorView(View):
     Parameters
     ----------
     pages : List[Union[str, hikari.Embed, Sequence[hikari.Embed], Page]]
-        A list of strings or embeds that this navigator should paginate.
+        A list of strings, embeds or page objects that this navigator should paginate.
     buttons : Optional[List[NavButton[NavigatorViewT]]], optional
         A list of navigation buttons to override the default ones with, by default None
     timeout : Optional[float], optional
@@ -231,7 +231,7 @@ class NavigatorView(View):
         context : Context
             The context object that should be used to send the updated pages
         new_pages : Sequence[Union[str, Embed, Sequence[Embed] | Page]]
-            The new pages to swap to
+            The new sequence of pages to swap to
         start_at : int, optional
             The page to start at, by default 0
         """
