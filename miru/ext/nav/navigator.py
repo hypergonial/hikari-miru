@@ -8,7 +8,7 @@ import attr
 import hikari
 
 from miru.abc import Item
-from miru.context import Context
+from miru.context import Context, ViewContext
 from miru.view import View
 
 from .items import FirstButton, IndicatorButton, LastButton, NavButton, NavItem, NextButton, PrevButton
@@ -49,8 +49,6 @@ class NavigatorView(View):
         self._pages: t.Sequence[t.Union[str, hikari.Embed, t.Sequence[hikari.Embed], Page]] = pages
         self._current_page: int = 0
         self._ephemeral: bool = False
-        # If the nav is using interaction-based handling or not
-        self._using_inter: bool = False
         # The last interaction received, used for inter-based handling
         self._inter: t.Optional[hikari.MessageResponseMixin[t.Any]] = None
         super().__init__(timeout=timeout, autodefer=autodefer)
@@ -101,13 +99,13 @@ class NavigatorView(View):
         return t.cast(t.Sequence[NavItem], super().children)
 
     async def on_timeout(self) -> None:
-        if (self.message is None) or (self._using_inter and self._inter is None):
+        if self.message is None:
             return
 
         for button in self.children:
             button.disabled = True
 
-        if self._using_inter and self._inter:
+        if self._inter is not None:
             await self._inter.edit_message(self.message, components=self)
         else:
             await self.message.edit(components=self)
@@ -209,9 +207,9 @@ class NavigatorView(View):
 
         page = self.pages[self.current_page]
 
-        for button in self.children:
-            if isinstance(button, NavItem):
-                await button.before_page_change()
+        for item in self.children:
+            if isinstance(item, NavItem):
+                await item.before_page_change()
 
         payload = self._get_page_payload(page)
 
@@ -269,7 +267,7 @@ class NavigatorView(View):
 
     async def send(
         self,
-        to: t.Union[hikari.SnowflakeishOr[hikari.TextableChannel], hikari.MessageResponseMixin[t.Any]],
+        to: t.Union[hikari.SnowflakeishOr[hikari.TextableChannel], hikari.MessageResponseMixin[t.Any], ViewContext],
         *,
         start_at: int = 0,
         ephemeral: bool = False,
@@ -279,21 +277,22 @@ class NavigatorView(View):
 
         Parameters
         ----------
-        to : Union[hikari.SnowflakeishOr[hikari.PartialChannel], hikari.MessageResponseMixin[Any]]
-            The channel or interaction to send the navigator to.
+        to : Union[hikari.SnowflakeishOr[hikari.PartialChannel], hikari.MessageResponseMixin[Any], miru.ViewContext]
+            The channel, interaction, or miru context to send the navigator to.
         start_at : int
             If provided, the page number to start the pagination at.
         ephemeral : bool
-            If an interaction was provided, determines if the navigator will be sent ephemerally or not.
+            If an interaction or context was provided, determines if the navigator will be sent ephemerally or not.
+            This is ignored if a channel was provided, as regular messages cannot be ephemeral.
         responded : bool
             If an interaction was provided, determines if the interaction was previously acknowledged or not.
+            This is ignored if a channel or context was provided.
         """
-        self._ephemeral = ephemeral if isinstance(to, hikari.MessageResponseMixin) else False
-        self._using_inter = isinstance(to, hikari.MessageResponseMixin)
+        self._ephemeral = ephemeral if isinstance(to, (hikari.MessageResponseMixin, ViewContext)) else False
 
-        for button in self.children:
-            if isinstance(button, NavItem):
-                await button.before_page_change()
+        for item in self.children:
+            if isinstance(item, NavItem):
+                await item.before_page_change()
 
         if self.ephemeral and self.timeout and self.timeout > 900:
             logger.warning(
@@ -305,7 +304,10 @@ class NavigatorView(View):
         if isinstance(to, (int, hikari.TextableChannel)):
             channel = hikari.Snowflake(to)
             message = await self.app.rest.create_message(channel, **payload)
-
+        elif isinstance(to, ViewContext):
+            self._inter = to.interaction
+            resp = await to.respond(**payload)
+            message = await resp.retrieve_message()
         else:
             self._inter = to
             if not responded:
