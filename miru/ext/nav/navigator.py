@@ -139,7 +139,7 @@ class NavigatorView(View):
             The item handler the item was added to.
         """
         if not isinstance(item, NavItem):
-            raise TypeError(f"Expected type 'NavItem' for parameter item, not '{item.__class__.__name__}'.")
+            raise TypeError(f"Expected type 'NavItem' for parameter item, not '{type(item).__name__}'.")
 
         return t.cast(NavigatorView, super().add_item(item))
 
@@ -170,7 +170,7 @@ class NavigatorView(View):
         if not content and not embeds:
             raise TypeError(
                 "Expected type 'str', 'hikari.Embed', 'Sequence[hikari.Embed]' or 'ext.nav.Page' "
-                f"to send as page, not '{page.__class__.__name__}'."
+                f"to send as page, not '{type(page).__name__}'."
             )
 
         d = dict(

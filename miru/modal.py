@@ -163,7 +163,7 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder]):
             The item handler the item was added to.
         """
         if not isinstance(item, ModalItem):
-            raise TypeError(f"Expected type ModalItem for parameter item, not {item.__class__.__name__}.")
+            raise TypeError(f"Expected type ModalItem for parameter item, not {type(item).__name__}.")
 
         return t.cast(Modal, super().add_item(item))
 
@@ -208,7 +208,7 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder]):
         """
         print(f"Ignoring exception in modal {self}:", file=sys.stderr)
 
-        traceback.print_exception(error.__class__, error, error.__traceback__, file=sys.stderr)
+        traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
 
     async def callback(self, context: ModalContext) -> None:
         """Called when the modal is submitted.

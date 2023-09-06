@@ -195,14 +195,14 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT]):  # type: ignore[type-
             raise HandlerFullError("Item Handler cannot have more than 25 components attached.")
 
         if not isinstance(item, Item):
-            raise TypeError(f"Expected Item not {item.__class__.__name__} for parameter item.")
+            raise TypeError(f"Expected Item not {type(item).__name__} for parameter item.")
 
         if item in self.children:
-            raise ItemAlreadyAttachedError(f"Item {item.__class__.__name__} is already attached to this item handler.")
+            raise ItemAlreadyAttachedError(f"Item {type(item).__name__} is already attached to this item handler.")
 
         if item._handler is not None:
             raise ItemAlreadyAttachedError(
-                f"Item {item.__class__.__name__} is already attached to another item handler: {item._handler.__class__.__name__}."
+                f"Item {type(item).__name__} is already attached to another item handler: {type(item._handler).__name__}."
             )
 
         self._weights.add_item(item)

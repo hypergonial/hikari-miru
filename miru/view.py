@@ -211,7 +211,7 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder]):
         """
 
         if not isinstance(item, ViewItem):
-            raise TypeError(f"Expected type ViewItem for parameter item, not {item.__class__.__name__}.")
+            raise TypeError(f"Expected type ViewItem for parameter item, not {type(item).__name__}.")
 
         return t.cast(View, super().add_item(item))
 
@@ -260,7 +260,7 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder]):
         else:
             print(f"Ignoring exception in view {self}:", file=sys.stderr)
 
-        traceback.print_exception(error.__class__, error, error.__traceback__, file=sys.stderr)
+        traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
 
     def get_context(
         self, interaction: hikari.ComponentInteraction, *, cls: t.Type[ViewContext] = ViewContext
