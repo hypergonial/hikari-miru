@@ -8,7 +8,7 @@ import attr
 import hikari
 
 from miru.abc import Item
-from miru.context import Context, ViewContext
+from miru.context import Context
 from miru.view import View
 
 from .items import FirstButton, IndicatorButton, LastButton, NavButton, NavItem, NextButton, PrevButton
@@ -267,7 +267,7 @@ class NavigatorView(View):
 
     async def send(
         self,
-        to: t.Union[hikari.SnowflakeishOr[hikari.TextableChannel], hikari.MessageResponseMixin[t.Any], ViewContext],
+        to: t.Union[hikari.SnowflakeishOr[hikari.TextableChannel], hikari.MessageResponseMixin[t.Any], Context[t.Any]],
         *,
         start_at: int = 0,
         ephemeral: bool = False,
@@ -277,7 +277,7 @@ class NavigatorView(View):
 
         Parameters
         ----------
-        to : Union[hikari.SnowflakeishOr[hikari.PartialChannel], hikari.MessageResponseMixin[Any], miru.ViewContext]
+        to : Union[hikari.SnowflakeishOr[hikari.PartialChannel], hikari.MessageResponseMixin[Any], miru.Context]
             The channel, interaction, or miru context to send the navigator to.
         start_at : int
             If provided, the page number to start the pagination at.
@@ -288,7 +288,7 @@ class NavigatorView(View):
             If an interaction was provided, determines if the interaction was previously acknowledged or not.
             This is ignored if a channel or context was provided.
         """
-        self._ephemeral = ephemeral if isinstance(to, (hikari.MessageResponseMixin, ViewContext)) else False
+        self._ephemeral = ephemeral if isinstance(to, (hikari.MessageResponseMixin, Context)) else False
 
         for item in self.children:
             if isinstance(item, NavItem):
@@ -304,7 +304,7 @@ class NavigatorView(View):
         if isinstance(to, (int, hikari.TextableChannel)):
             channel = hikari.Snowflake(to)
             message = await self.app.rest.create_message(channel, **payload)
-        elif isinstance(to, ViewContext):
+        elif isinstance(to, Context):
             self._inter = to.interaction
             resp = await to.respond(**payload)
             message = await resp.retrieve_message()
