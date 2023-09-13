@@ -181,7 +181,6 @@ class NavigatorView(View):
             user_mentions=False,
             role_mentions=False,
             components=self,
-            flags=hikari.MessageFlag.EPHEMERAL,
         )
         if self.ephemeral:
             d["flags"] = hikari.MessageFlag.EPHEMERAL
