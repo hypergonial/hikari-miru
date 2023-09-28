@@ -65,10 +65,10 @@ class Item(abc.ABC, t.Generic[BuilderT]):
 
     @position.setter
     def position(self, value: t.Optional[int]) -> None:
-        if value is None or (self.width - 1) >= value >= 0:
+        if value is None or 4 >= value >= 0:
             self._position = value
         else:
-            raise ValueError(f"Position of item {type(self).__name__} must be between 0 and {self.width-1}.")
+            raise ValueError(f"Position of item {type(self).__name__} must be between 0 and 4.")
 
     @property
     def row(self) -> t.Optional[int]:

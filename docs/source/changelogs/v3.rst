@@ -4,6 +4,11 @@ Versions 3.0+ Changelog
 
 These are all the changelogs for stable releases of hikari-miru (version 3.0.0 to present).
 
+Version 3.2.2
+=============
+
+- Fix ``miru.abc.Item.position`` setter max value being it's width instead of row width.
+
 Version 3.2.1
 =============
 
