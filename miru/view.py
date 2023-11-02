@@ -21,6 +21,8 @@ from .select import ChannelSelect, MentionableSelect, RoleSelect, TextSelect, Us
 
 logger = logging.getLogger(__name__)
 
+ViewContextT = t.TypeVar("ViewContextT", bound=ViewContext)
+
 __all__ = (
     "View",
     "get_view",
@@ -130,11 +132,11 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder]):
         return self._autodefer
 
     @property
-    def last_context(self) -> t.Optional[ViewContext]:
+    def last_context(self) -> t.Optional[ViewContextT]:
         """
         The last context that was received by the view.
         """
-        return t.cast(ViewContext, self._last_context)
+        return t.cast(ViewContextT, self._last_context)
 
     @property
     def _builder(self) -> t.Type[hikari.impl.MessageActionRowBuilder]:
@@ -221,7 +223,7 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder]):
     def clear_items(self) -> View:
         return t.cast(View, super().clear_items())
 
-    async def view_check(self, context: ViewContext) -> bool:
+    async def view_check(self, context: ViewContextT) -> bool:
         """Called before any callback in the view is called. Must evaluate to a truthy value to pass.
         Override for custom check logic.
 
@@ -241,7 +243,7 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder]):
         self,
         error: Exception,
         item: t.Optional[ViewItem] = None,
-        context: t.Optional[ViewContext] = None,
+        context: t.Optional[ViewContextT] = None,
     ) -> None:
         """Called when an error occurs in a callback function or the built-in timeout function.
         Override for custom error-handling logic.
@@ -282,7 +284,7 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder]):
         """
         return cls(self, interaction)
 
-    async def _handle_callback(self, item: ViewItem, context: ViewContext) -> None:
+    async def _handle_callback(self, item: ViewItem, context: ViewContextT) -> None:
         """
         Handle the callback of a view item. Separate task in case the view is stopped in the callback.
         """
