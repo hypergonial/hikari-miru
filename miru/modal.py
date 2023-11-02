@@ -15,6 +15,9 @@ from .abc.item import Item, ModalItem
 from .abc.item_handler import ItemHandler
 from .context.modal import ModalContext
 
+if t.TYPE_CHECKING:
+    ModalContextT = t.TypeVar("ModalContextT", bound=ModalContext)
+
 __all__ = ("Modal",)
 
 
@@ -122,11 +125,11 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder]):
         return self._values
 
     @property
-    def last_context(self) -> t.Optional[ModalContext]:
+    def last_context(self) -> t.Optional[ModalContextT]:
         """
         Context proxying the last interaction that was received by the modal.
         """
-        return t.cast(ModalContext, self._last_context)
+        return t.cast(ModalContextT, self._last_context)
 
     @property
     def _builder(self) -> t.Type[hikari.impl.ModalActionRowBuilder]:
@@ -173,7 +176,7 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder]):
     def clear_items(self) -> Modal:
         return t.cast(Modal, super().clear_items())
 
-    async def modal_check(self, context: ModalContext) -> bool:
+    async def modal_check(self, context: ModalContextT) -> bool:
         """Called before any callback in the modal is called. Must evaluate to a truthy value to pass.
         Override for custom check logic.
 
@@ -192,7 +195,7 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder]):
     async def on_error(
         self,
         error: Exception,
-        context: t.Optional[ModalContext] = None,
+        context: t.Optional[ModalContextT] = None,
     ) -> None:
         """Called when an error occurs in a callback function.
         Override for custom error-handling logic.
@@ -210,7 +213,7 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder]):
 
         traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
 
-    async def callback(self, context: ModalContext) -> None:
+    async def callback(self, context: ModalContextT) -> None:
         """Called when the modal is submitted.
 
         Parameters
@@ -244,7 +247,7 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder]):
         """
         return cls(self, interaction, values)
 
-    async def _handle_callback(self, context: ModalContext) -> None:
+    async def _handle_callback(self, context: ModalContextT) -> None:
         """
         Handle the callback of the modal. Separate task in case the modal is stopped in the callback.
         """
