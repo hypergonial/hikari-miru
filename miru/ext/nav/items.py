@@ -15,6 +15,8 @@ from miru.text_input import TextInput
 if t.TYPE_CHECKING:
     from .navigator import NavigatorView
 
+    ViewContextT = t.TypeVar("ViewContextT", bound=ViewContext)
+
 __all__ = (
     "NavItem",
     "NavButton",
@@ -104,7 +106,7 @@ class NextButton(NavButton):
     ):
         super().__init__(style=style, label=label, custom_id=custom_id, emoji=emoji, row=row, position=position)
 
-    async def callback(self, context: ViewContext) -> None:
+    async def callback(self, context: ViewContextT) -> None:
         self.view.current_page += 1
         await self.view.send_page(context)
 
@@ -132,7 +134,7 @@ class PrevButton(NavButton):
     ):
         super().__init__(style=style, label=label, custom_id=custom_id, emoji=emoji, row=row, position=position)
 
-    async def callback(self, context: ViewContext) -> None:
+    async def callback(self, context: ViewContextT) -> None:
         self.view.current_page -= 1
         await self.view.send_page(context)
 
@@ -160,7 +162,7 @@ class FirstButton(NavButton):
     ):
         super().__init__(style=style, label=label, custom_id=custom_id, emoji=emoji, row=row, position=position)
 
-    async def callback(self, context: ViewContext) -> None:
+    async def callback(self, context: ViewContextT) -> None:
         self.view.current_page = 0
         await self.view.send_page(context)
 
@@ -188,7 +190,7 @@ class LastButton(NavButton):
     ):
         super().__init__(style=style, label=label, custom_id=custom_id, emoji=emoji, row=row, position=position)
 
-    async def callback(self, context: ViewContext) -> None:
+    async def callback(self, context: ViewContextT) -> None:
         self.view.current_page = len(self.view.pages) - 1
         await self.view.send_page(context)
 
@@ -223,7 +225,7 @@ class IndicatorButton(NavButton):
         self.label = f"{self.view.current_page+1}/{len(self.view.pages)}"
         self.disabled = self.disabled if len(self.view.pages) != 1 else True
 
-    async def callback(self, context: ViewContext) -> None:
+    async def callback(self, context: ViewContextT) -> None:
         modal = Modal(title="Jump to page")
         modal.add_item(
             TextInput(label="Page Number", placeholder="Enter a page number to jump to it...", custom_id="pgnum")
@@ -262,7 +264,7 @@ class StopButton(NavButton):
     ):
         super().__init__(style=style, label=label, custom_id=custom_id, emoji=emoji, row=row, position=position)
 
-    async def callback(self, context: ViewContext) -> None:
+    async def callback(self, context: ViewContextT) -> None:
         if not self.view.message and not self.view._inter:
             return
 

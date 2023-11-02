@@ -14,6 +14,7 @@ if t.TYPE_CHECKING:
     from ..view import View
 
     ViewT = t.TypeVar("ViewT", bound="View")
+    ViewContextT = t.TypeVar("ViewContextT", bound=ViewContext)
 
 __all__ = ("UserSelect", "user_select")
 
@@ -115,7 +116,7 @@ def user_select(
     max_values: int = 1,
     disabled: bool = False,
     row: t.Optional[int] = None,
-) -> t.Callable[[t.Callable[[ViewT, UserSelect, ViewContext], t.Any]], UserSelect]:
+) -> t.Callable[[t.Callable[[ViewT, UserSelect, ViewContextT], t.Any]], UserSelect]:
     """
     A decorator to transform a function into a Discord UI UserSelectMenu's callback. This must be inside a subclass of View.
     """

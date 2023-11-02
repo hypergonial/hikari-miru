@@ -14,6 +14,7 @@ if t.TYPE_CHECKING:
     from ..view import View
 
     ViewT = t.TypeVar("ViewT", bound="View")
+    ViewContextT = t.TypeVar("ViewContextT", bound=ViewContext)
 
 __all__ = ("MentionableSelect", "mentionable_select")
 
@@ -115,7 +116,7 @@ def mentionable_select(
     max_values: int = 1,
     disabled: bool = False,
     row: t.Optional[int] = None,
-) -> t.Callable[[t.Callable[[ViewT, MentionableSelect, ViewContext], t.Any]], MentionableSelect]:
+) -> t.Callable[[t.Callable[[ViewT, MentionableSelect, ViewContextT], t.Any]], MentionableSelect]:
     """
     A decorator to transform a function into a Discord UI MentionableSelectMenu's callback.
     This must be inside a subclass of View.

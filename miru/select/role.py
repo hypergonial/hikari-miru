@@ -14,6 +14,7 @@ if t.TYPE_CHECKING:
     from ..view import View
 
     ViewT = t.TypeVar("ViewT", bound="View")
+    ViewContextT = t.TypeVar("ViewContextT", bound=ViewContext)
 
 __all__ = ("RoleSelect", "role_select")
 
@@ -107,7 +108,7 @@ def role_select(
     max_values: int = 1,
     disabled: bool = False,
     row: t.Optional[int] = None,
-) -> t.Callable[[t.Callable[[ViewT, RoleSelect, ViewContext], t.Any]], RoleSelect]:
+) -> t.Callable[[t.Callable[[ViewT, RoleSelect, ViewContextT], t.Any]], RoleSelect]:
     """
     A decorator to transform a function into a Discord UI RoleSelectMenu's callback. This must be inside a subclass of View.
     """

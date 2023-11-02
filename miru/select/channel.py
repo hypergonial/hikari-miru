@@ -14,6 +14,7 @@ if t.TYPE_CHECKING:
     from ..view import View
 
     ViewT = t.TypeVar("ViewT", bound="View")
+    ViewContextT = t.TypeVar("ViewContextT", bound=ViewContext)
 
 __all__ = ("ChannelSelect", "channel_select")
 
@@ -123,7 +124,7 @@ def channel_select(
     max_values: int = 1,
     disabled: bool = False,
     row: t.Optional[int] = None,
-) -> t.Callable[[t.Callable[[ViewT, ChannelSelect, ViewContext], t.Any]], ChannelSelect]:
+) -> t.Callable[[t.Callable[[ViewT, ChannelSelect, ViewContextT], t.Any]], ChannelSelect]:
     """
     A decorator to transform a function into a Discord UI ChannelSelectMenu's callback. This must be inside a subclass of View.
     """
