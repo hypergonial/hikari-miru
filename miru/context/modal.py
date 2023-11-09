@@ -14,6 +14,7 @@ __all__ = ("ModalContext",)
 
 T = t.TypeVar("T")
 
+
 class ModalContext(RawModalContext):
     """A context object proxying a ModalInteraction received by a miru modal."""
 
