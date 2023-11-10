@@ -16,6 +16,8 @@ if t.TYPE_CHECKING:
     from ..view import View
     from .item_handler import ItemHandler
 
+    ViewContextT = t.TypeVar("ViewContextT", bound="ViewContext")
+
 
 __all__ = ("Item", "DecoratedItem", "ViewItem", "ModalItem")
 
@@ -187,7 +189,7 @@ class ViewItem(Item[hikari.impl.MessageActionRowBuilder], abc.ABC):
         """
         ...
 
-    async def callback(self, context: ViewContext) -> None:
+    async def callback(self, context: ViewContextT) -> None:
         """
         The component's callback, gets called when the component receives an interaction.
         """
