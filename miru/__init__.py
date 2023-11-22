@@ -19,8 +19,6 @@ __all__ = (
     "RawModalContext",
     "install",
     "uninstall",
-    "load",
-    "unload",
     "Button",
     "button",
     "Event",
@@ -50,7 +48,7 @@ __all__ = (
     "get_view",
 )
 
-__version__ = "3.2.2"
+__version__ = "3.3.0"
 
 # MIT License
 #

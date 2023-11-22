@@ -55,7 +55,7 @@ setup(
         ':sys_platform=="win32"': ["colorama"],
         "docs": parse_requirements_file("doc_requirements.txt"),
     },
-    python_requires=">=3.8.0,<3.12",
+    python_requires=">=3.8.0,<3.13",
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Framework :: AsyncIO",

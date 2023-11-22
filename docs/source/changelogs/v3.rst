@@ -4,6 +4,13 @@ Versions 3.0+ Changelog
 
 These are all the changelogs for stable releases of hikari-miru (version 3.0.0 to present).
 
+Version 3.3.0
+=============
+
+- Add support for Python 3.12
+- Improve Context typing in callbacks for better typechecking experience when using custom contexts.
+- Minor changes to the type signature of ``ModalContext.get_value_by_id()`` and ``ModalContext.get_value_by_predicate()``
+
 Version 3.2.2
 =============
 
