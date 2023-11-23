@@ -21,8 +21,7 @@ from .select import ChannelSelect, MentionableSelect, RoleSelect, TextSelect, Us
 
 logger = logging.getLogger(__name__)
 
-if t.TYPE_CHECKING:
-    ViewContextT = t.TypeVar("ViewContextT", bound=ViewContext)
+ViewContextT = t.TypeVar("ViewContextT", bound=ViewContext)
 
 __all__ = (
     "View",

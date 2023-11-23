@@ -15,8 +15,7 @@ from .abc.item import Item, ModalItem
 from .abc.item_handler import ItemHandler
 from .context.modal import ModalContext
 
-if t.TYPE_CHECKING:
-    ModalContextT = t.TypeVar("ModalContextT", bound=ModalContext)
+ModalContextT = t.TypeVar("ModalContextT", bound=ModalContext)
 
 __all__ = ("Modal",)
 
