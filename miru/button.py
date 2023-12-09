@@ -125,7 +125,7 @@ class Button(ViewItem):
         return self._url
 
     @url.setter
-    def url(self, value: str) -> None:
+    def url(self, value: t.Optional[str]) -> None:
         if value and not isinstance(value, str):
             raise TypeError("Expected type 'str' for property 'url'.")
 
@@ -174,7 +174,7 @@ def button(
     emoji: t.Optional[t.Union[str, hikari.Emoji]] = None,
     row: t.Optional[int] = None,
     disabled: bool = False,
-) -> t.Callable[[t.Callable[[ViewT, Button, ViewContextT], t.Any]], Button]:
+) -> t.Callable[[t.Callable[[ViewT, Button, ViewContextT], t.Awaitable[None]]], DecoratedItem]:
     """A decorator to transform a coroutine function into a Discord UI Button's callback.
     This must be inside a subclass of View.
 
@@ -199,7 +199,7 @@ def button(
         The decorated callback coroutine function.
     """
 
-    def decorator(func: t.Callable[..., t.Any]) -> t.Any:
+    def decorator(func: t.Callable[[ViewT, Button, ViewContextT], t.Awaitable[None]]) -> DecoratedItem:
         if not inspect.iscoroutinefunction(func):
             raise TypeError("button must decorate coroutine function.")
         item = Button(
