@@ -153,7 +153,7 @@ class TextSelect(SelectBase):
 
     @classmethod
     def _from_component(cls, component: hikari.PartialComponent, row: t.Optional[int] = None) -> TextSelect:
-        assert isinstance(component, hikari.components.TextSelectMenuComponent)
+        assert isinstance(component, hikari.TextSelectMenuComponent)
 
         return cls(
             options=component.options,

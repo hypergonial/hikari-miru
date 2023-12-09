@@ -70,7 +70,7 @@ class RoleSelect(SelectBase):
     @classmethod
     def _from_component(cls, component: hikari.PartialComponent, row: t.Optional[int] = None) -> RoleSelect:
         assert (
-            isinstance(component, hikari.components.SelectMenuComponent)
+            isinstance(component, hikari.SelectMenuComponent)
             and component.type == hikari.ComponentType.ROLE_SELECT_MENU
         )
 

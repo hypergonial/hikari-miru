@@ -71,7 +71,7 @@ class UserSelect(SelectBase):
     @classmethod
     def _from_component(cls, component: hikari.PartialComponent, row: t.Optional[int] = None) -> UserSelect:
         assert (
-            isinstance(component, hikari.components.SelectMenuComponent)
+            isinstance(component, hikari.SelectMenuComponent)
             and component.type == hikari.ComponentType.USER_SELECT_MENU
         )
 

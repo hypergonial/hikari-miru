@@ -81,7 +81,7 @@ class MentionableSelect(SelectBase):
     @classmethod
     def _from_component(cls, component: hikari.PartialComponent, row: t.Optional[int] = None) -> MentionableSelect:
         assert (
-            isinstance(component, hikari.components.ChannelSelectMenuComponent)
+            isinstance(component, hikari.ChannelSelectMenuComponent)
             and component.type == hikari.ComponentType.MENTIONABLE_SELECT_MENU
         )
 

@@ -82,7 +82,7 @@ class ChannelSelect(SelectBase):
 
     @classmethod
     def _from_component(cls, component: hikari.PartialComponent, row: t.Optional[int] = None) -> ChannelSelect:
-        assert isinstance(component, hikari.components.ChannelSelectMenuComponent)
+        assert isinstance(component, hikari.ChannelSelectMenuComponent)
 
         # Filter out unrecognized channel types
         channel_types = [item for item in component.channel_types if isinstance(item, hikari.ChannelType)]
