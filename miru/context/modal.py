@@ -36,9 +36,7 @@ class ModalContext(RawModalContext):
         return self._values
 
     def get_value_by_predicate(
-        self,
-        predicate: t.Callable[[ModalItem], bool],
-        default: hikari.UndefinedOr[T] = hikari.UNDEFINED,
+        self, predicate: t.Callable[[ModalItem], bool], default: hikari.UndefinedOr[T] = hikari.UNDEFINED
     ) -> T | str:
         """Get the value for the first modal item that matches the given predicate.
 

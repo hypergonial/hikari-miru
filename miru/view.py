@@ -13,20 +13,20 @@ import hikari
 
 from miru.exceptions import BootstrapFailureError, HandlerFullError
 
-from .abc.item import DecoratedItem, Item, ViewItem
+from .abc.item import DecoratedItem, ViewItem
 from .abc.item_handler import ItemHandler
 from .button import Button
 from .context.view import ViewContext
 from .select import ChannelSelect, MentionableSelect, RoleSelect, TextSelect, UserSelect
 
+if t.TYPE_CHECKING:
+    import typing_extensions as te
+
 logger = logging.getLogger(__name__)
 
 ViewContextT = t.TypeVar("ViewContextT", bound=ViewContext)
 
-__all__ = (
-    "View",
-    "get_view",
-)
+__all__ = ("View", "get_view")
 
 COMPONENT_VIEW_ITEM_MAPPING: t.Mapping[hikari.ComponentType, t.Type[ViewItem]] = {
     hikari.ComponentType.BUTTON: Button,
@@ -39,7 +39,7 @@ COMPONENT_VIEW_ITEM_MAPPING: t.Mapping[hikari.ComponentType, t.Type[ViewItem]] =
 """A mapping of all message component types to their respective item classes."""
 
 
-class View(ItemHandler[hikari.impl.MessageActionRowBuilder]):
+class View(ItemHandler[hikari.impl.MessageActionRowBuilder, ViewContext, ViewItem]):
     """Represents a set of Discord UI components attached to a message.
 
     Parameters
@@ -75,10 +75,7 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder]):
         cls._view_children = children
 
     def __init__(
-        self,
-        *,
-        timeout: t.Optional[t.Union[float, int, datetime.timedelta]] = 120.0,
-        autodefer: bool = True,
+        self, *, timeout: t.Optional[t.Union[float, int, datetime.timedelta]] = 120.0, autodefer: bool = True
     ) -> None:
         super().__init__(timeout=timeout)
         self._autodefer: bool = autodefer
@@ -132,19 +129,8 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder]):
         return self._autodefer
 
     @property
-    def last_context(self) -> t.Optional[ViewContextT]:
-        """
-        The last context that was received by the view.
-        """
-        return t.cast(ViewContextT, self._last_context)
-
-    @property
     def _builder(self) -> t.Type[hikari.impl.MessageActionRowBuilder]:
         return hikari.impl.MessageActionRowBuilder
-
-    @property
-    def children(self) -> t.Sequence[ViewItem]:
-        return t.cast(t.Sequence[ViewItem], super().children)
 
     @classmethod
     def from_message(cls, message: hikari.Message, *, timeout: t.Optional[float] = 120, autodefer: bool = True) -> View:
@@ -187,7 +173,7 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder]):
 
         return view
 
-    def add_item(self: View, item: Item[hikari.impl.MessageActionRowBuilder]) -> View:
+    def add_item(self, item: ViewItem) -> te.Self:
         """Adds a new item to the view.
 
         Parameters
@@ -215,13 +201,7 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder]):
         if not isinstance(item, ViewItem):
             raise TypeError(f"Expected type ViewItem for parameter item, not {type(item).__name__}.")
 
-        return t.cast(View, super().add_item(item))
-
-    def remove_item(self, item: Item[hikari.impl.MessageActionRowBuilder]) -> View:
-        return t.cast(View, super().remove_item(item))
-
-    def clear_items(self) -> View:
-        return t.cast(View, super().clear_items())
+        return super().add_item(item)
 
     async def view_check(self, context: ViewContextT) -> bool:
         """Called before any callback in the view is called. Must evaluate to a truthy value to pass.
@@ -229,7 +209,7 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder]):
 
         Parameters
         ----------
-        context : Context
+        context : ViewContextT
             The context for this check.
 
         Returns
@@ -240,10 +220,7 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder]):
         return True
 
     async def on_error(
-        self,
-        error: Exception,
-        item: t.Optional[ViewItem] = None,
-        context: t.Optional[ViewContextT] = None,
+        self, error: Exception, item: t.Optional[ViewItem] = None, context: t.Optional[ViewContextT] = None
     ) -> None:
         """Called when an error occurs in a callback function or the built-in timeout function.
         Override for custom error-handling logic.

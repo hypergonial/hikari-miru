@@ -15,6 +15,8 @@ from ..traits import MiruAware
 from .item import Item
 
 if t.TYPE_CHECKING:
+    import typing_extensions as te
+
     from ..context import Context
     from ..events import EventHandler
 
@@ -22,9 +24,11 @@ __all__ = ("ItemHandler",)
 
 
 BuilderT = t.TypeVar("BuilderT", bound=hikari.api.ComponentBuilder)
+ContextT = t.TypeVar("ContextT", bound="Context[t.Any]")
+ItemT = t.TypeVar("ItemT", bound="Item[t.Any]")
 
 
-class _Weights:
+class _Weights(t.Generic[ItemT]):
     """
     Calculate the position of an item based on it's width, and keep track of item positions
     """
@@ -34,7 +38,7 @@ class _Weights:
     def __init__(self) -> None:
         self._weights = [0, 0, 0, 0, 0]
 
-    def add_item(self, item: Item[BuilderT]) -> None:
+    def add_item(self, item: ItemT) -> None:
         if item.row is not None:
             if item.width + self._weights[item.row] > 5:
                 raise RowFullError(f"Item does not fit on row {item.row}!")
@@ -49,7 +53,7 @@ class _Weights:
                     return
             raise HandlerFullError("Item does not fit on this item handler.")
 
-    def remove_item(self, item: Item[BuilderT]) -> None:
+    def remove_item(self, item: ItemT) -> None:
         if item._rendered_row is not None:
             self._weights[item._rendered_row] -= item.width
             item._rendered_row = None
@@ -58,8 +62,7 @@ class _Weights:
         self._weights = [0, 0, 0, 0, 0]
 
 
-# Add Sequence[hikari.api.MessageActionRowBuilder] here when dropping 3.8 support
-class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT]):  # type: ignore[type-arg]
+class ItemHandler(Sequence[BuilderT], abc.ABC, t.Generic[BuilderT, ContextT, ItemT]):
     """Abstract base class all item-handlers (e.g. views, modals) inherit from.
 
     Parameters
@@ -85,13 +88,13 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT]):  # type: ignore[type-
             timeout = timeout.total_seconds()
 
         self._timeout: t.Optional[float] = float(timeout) if timeout else None
-        self._children: t.List[Item[BuilderT]] = []
+        self._children: t.List[ItemT] = []
 
-        self._weights: _Weights = _Weights()
+        self._weights: _Weights[ItemT] = _Weights()
         self._stopped: asyncio.Event = asyncio.Event()
         self._timeout_task: t.Optional[asyncio.Task[None]] = None
         self._running_tasks: t.MutableSequence[asyncio.Task[t.Any]] = []
-        self._last_context: t.Optional[Context[t.Any]] = None
+        self._last_context: t.Optional[ContextT] = None
 
         if len(self.children) > 25:
             raise HandlerFullError(f"{type(self).__name__} cannot have more than 25 components attached.")
@@ -124,7 +127,7 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT]):  # type: ignore[type-
         return self.build().__reversed__()
 
     @property
-    def children(self) -> t.Sequence[Item[BuilderT]]:
+    def children(self) -> t.Sequence[ItemT]:
         """
         A list of all items attached to the item handler.
         """
@@ -155,7 +158,7 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT]):  # type: ignore[type-
         return self.app
 
     @property
-    def last_context(self) -> t.Optional[Context[t.Any]]:
+    def last_context(self) -> t.Optional[ContextT]:
         """
         The last context that was received by the item handler.
         """
@@ -166,7 +169,7 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT]):  # type: ignore[type-
     def _builder(self) -> t.Type[BuilderT]:
         ...
 
-    def add_item(self, item: Item[BuilderT]) -> ItemHandler[BuilderT]:
+    def add_item(self, item: ItemT) -> te.Self:
         """Adds a new item to the item handler.
 
         Parameters
@@ -212,7 +215,7 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT]):  # type: ignore[type-
 
         return self
 
-    def remove_item(self, item: Item[BuilderT]) -> ItemHandler[BuilderT]:
+    def remove_item(self, item: ItemT) -> te.Self:
         """Removes the specified item from the item handler.
 
         Parameters
@@ -235,7 +238,7 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT]):  # type: ignore[type-
 
         return self
 
-    def clear_items(self) -> ItemHandler[BuilderT]:
+    def clear_items(self) -> te.Self:
         """Removes all items from this item handler.
 
         Returns

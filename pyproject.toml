@@ -1,40 +1,37 @@
-[tool.black]
-line-length = 120
-target-version = ["py38"]
-include = ".*py$"
-
 [tool.ruff]
 exclude = ["examples", "docs", "build"]
 select = ["E", "F", "I"]
 ignore = ["F405", "F403", "E501"]
 fixable = ["I"]
 line-length = 120
-target-version = "py310"
+target-version = "py38"
+
+[tool.ruff.format]
+skip-magic-trailing-comma = true
+
+[tool.ruff.lint.isort]
+split-on-trailing-comma = false
 
 [tool.mypy]
 strict = true
 exclude = ["examples", "docs", "build"]
-
 check_untyped_defs = true
 incremental = true
 namespace_packages = true
 no_implicit_optional = true
 implicit_reexport = true
 pretty = true
-python_version = "3.10"
+python_version = "3.8"
 show_column_numbers = true
 show_error_codes = true
 show_error_context = true
-
 # stuff to allow
 allow_untyped_globals = false
 allow_redefinition = true
-
 # stuff to disallow
 disallow_untyped_decorators = true
 disallow_incomplete_defs = true
 disallow_untyped_defs = true
-
 # warnings
 warn_no_return = true
 warn_redundant_casts = true
@@ -42,8 +39,12 @@ warn_return_any = true
 warn_unreachable = true
 warn_unused_configs = true
 warn_unused_ignores = true
-
 # dependency management (install stubs or fallback to Any)
 install_types = true
 non_interactive = true
 ignore_missing_imports = true
+
+[tool.pyright]
+pythonVersion = "3.8"
+typeCheckingMode = "basic"
+reportInvalidTypeVarUse = false

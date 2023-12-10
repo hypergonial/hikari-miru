@@ -4,29 +4,22 @@ import nox
 from nox import options
 
 PATH_TO_PROJECT = os.path.join(".", "miru")
-SCRIPT_PATHS = [
-    PATH_TO_PROJECT,
-    "noxfile.py",
-    os.path.join("docs", "source", "conf.py"),
-    os.path.join(".", "tests"),
-]
+SCRIPT_PATHS = [PATH_TO_PROJECT, "noxfile.py", os.path.join("docs", "source", "conf.py"), os.path.join(".", "tests")]
 
 options.sessions = ["format_fix", "mypy", "pytest", "sphinx"]
 
 
 @nox.session()
 def format_fix(session: nox.Session) -> None:
-    session.install("-U", "black")
     session.install("-U", "ruff")
-    session.run("python", "-m", "black", *SCRIPT_PATHS)
+    session.run("python", "-m", "ruff", "format", *SCRIPT_PATHS)
     session.run("python", "-m", "ruff", *SCRIPT_PATHS, "--fix")
 
 
 @nox.session()
 def format(session: nox.Session) -> None:
-    session.install("-U", "black")
     session.install("-U", "ruff")
-    session.run("python", "-m", "black", *SCRIPT_PATHS, "--check")
+    session.run("python", "-m", "ruff", "format", *SCRIPT_PATHS, "--check")
     session.run("python", "-m", "ruff", *SCRIPT_PATHS)
 
 

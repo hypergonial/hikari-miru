@@ -13,11 +13,7 @@ from .view import View
 if t.TYPE_CHECKING:
     from .traits import MiruAware
 
-__all__ = (
-    "Event",
-    "ComponentInteractionCreateEvent",
-    "ModalInteractionCreateEvent",
-)
+__all__ = ("Event", "ComponentInteractionCreateEvent", "ModalInteractionCreateEvent")
 
 
 @attr.define()
@@ -105,10 +101,10 @@ class EventHandler:
     _app: t.Optional[MiruAware] = None
     """The currently running app instance that will be subscribed to the listener."""
 
-    _bound_handlers: t.MutableMapping[hikari.Snowflakeish, ItemHandler[t.Any]] = {}
+    _bound_handlers: t.MutableMapping[hikari.Snowflakeish, ItemHandler[t.Any, t.Any, t.Any]] = {}
     """A mapping of message_id to ItemHandler. This contains handlers that are bound to a message or custom_id."""
 
-    _handlers: t.MutableMapping[str, ItemHandler[t.Any]] = {}
+    _handlers: t.MutableMapping[str, ItemHandler[t.Any, t.Any, t.Any]] = {}
     """A mapping of custom_id to ItemHandler. This only contains handlers that are not bound to a message."""
 
     def __new__(cls: t.Type[EventHandler]) -> EventHandler:
@@ -132,7 +128,7 @@ class EventHandler:
         self._handlers.clear()
         self._app = None
 
-    def add_handler(self, handler: ItemHandler[t.Any]) -> None:
+    def add_handler(self, handler: ItemHandler[t.Any, t.Any, t.Any]) -> None:
         """Add a handler to the event handler."""
         if isinstance(handler, View):
             if handler.is_bound and handler._message_id is not None:
@@ -143,7 +139,7 @@ class EventHandler:
         elif isinstance(handler, Modal):
             self._handlers[handler.custom_id] = handler
 
-    def remove_handler(self, handler: ItemHandler[t.Any]) -> None:
+    def remove_handler(self, handler: ItemHandler[t.Any, t.Any, t.Any]) -> None:
         """Remove a handler from the event handler."""
         if isinstance(handler, View):
             if handler.is_bound and handler._message_id is not None:

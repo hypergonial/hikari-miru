@@ -55,7 +55,7 @@ class Item(abc.ABC, t.Generic[BuilderT]):
         self._is_persistent: bool = bool(custom_id)
         """If True, the custom_id was provided by the user, and not randomly generated."""
 
-        self._handler: t.Optional[ItemHandler[BuilderT]] = None
+        self._handler: t.Optional[ItemHandler[BuilderT, t.Any, t.Any]] = None
         """The handler the item was added to, if any."""
 
     @property

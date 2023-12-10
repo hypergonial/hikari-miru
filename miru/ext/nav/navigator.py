@@ -13,6 +13,9 @@ from miru.view import View
 
 from .items import FirstButton, IndicatorButton, LastButton, NavButton, NavItem, NextButton, PrevButton
 
+if t.TYPE_CHECKING:
+    import typing_extensions as te
+
 logger = logging.getLogger(__name__)
 
 __all__ = ("NavigatorView", "Page")
@@ -120,7 +123,7 @@ class NavigatorView(View):
         """
         return [FirstButton(), PrevButton(), IndicatorButton(), NextButton(), LastButton()]
 
-    def add_item(self, item: Item[hikari.impl.MessageActionRowBuilder]) -> NavigatorView:
+    def add_item(self, item: Item[hikari.impl.MessageActionRowBuilder]) -> te.Self:
         """Adds a new item to the navigator. Item must be of type NavItem.
 
         Parameters
@@ -141,13 +144,7 @@ class NavigatorView(View):
         if not isinstance(item, NavItem):
             raise TypeError(f"Expected type 'NavItem' for parameter item, not '{type(item).__name__}'.")
 
-        return t.cast(NavigatorView, super().add_item(item))
-
-    def remove_item(self, item: Item[hikari.impl.MessageActionRowBuilder]) -> NavigatorView:
-        return t.cast(NavigatorView, super().remove_item(item))
-
-    def clear_items(self) -> NavigatorView:
-        return t.cast(NavigatorView, super().clear_items())
+        return super().add_item(item)
 
     def _get_page_payload(
         self, page: t.Union[str, hikari.Embed, t.Sequence[hikari.Embed], Page]
@@ -155,7 +152,7 @@ class NavigatorView(View):
         """Get the page content that is to be sent."""
 
         if isinstance(page, Page):
-            d = page._build_payload()
+            d: t.Dict[str, t.Any] = page._build_payload()
             d["components"] = self
             if self.ephemeral:
                 d["flags"] = hikari.MessageFlag.EPHEMERAL
@@ -310,10 +307,7 @@ class NavigatorView(View):
         else:
             self._inter = to
             if not responded:
-                await to.create_initial_response(
-                    hikari.ResponseType.MESSAGE_CREATE,
-                    **payload,
-                )
+                await to.create_initial_response(hikari.ResponseType.MESSAGE_CREATE, **payload)
                 message = await to.fetch_initial_response()
             else:
                 message = await to.execute(**payload)

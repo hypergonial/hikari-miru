@@ -11,16 +11,19 @@ import hikari
 
 from miru.exceptions import BootstrapFailureError, HandlerFullError
 
-from .abc.item import Item, ModalItem
+from .abc.item import ModalItem
 from .abc.item_handler import ItemHandler
 from .context.modal import ModalContext
+
+if t.TYPE_CHECKING:
+    import typing_extensions as te
 
 ModalContextT = t.TypeVar("ModalContextT", bound=ModalContext)
 
 __all__ = ("Modal",)
 
 
-class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder]):
+class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder, ModalContext, ModalItem]):
     """Represents a Discord Modal.
 
     Parameters
@@ -124,26 +127,15 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder]):
         return self._values
 
     @property
-    def last_context(self) -> t.Optional[ModalContextT]:
-        """
-        Context proxying the last interaction that was received by the modal.
-        """
-        return t.cast(ModalContextT, self._last_context)
-
-    @property
     def _builder(self) -> t.Type[hikari.impl.ModalActionRowBuilder]:
         return hikari.impl.ModalActionRowBuilder
 
-    @property
-    def children(self) -> t.Sequence[ModalItem]:
-        return t.cast(t.Sequence[ModalItem], super().children)
-
-    def add_item(self, item: Item[hikari.impl.ModalActionRowBuilder]) -> Modal:
+    def add_item(self, item: ModalItem) -> te.Self:
         """Adds a new item to the modal.
 
         Parameters
         ----------
-        item : Item
+        item : ModalItem
             An instance of ModalItem to be added.
 
         Raises
@@ -167,13 +159,7 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder]):
         if not isinstance(item, ModalItem):
             raise TypeError(f"Expected type ModalItem for parameter item, not {type(item).__name__}.")
 
-        return t.cast(Modal, super().add_item(item))
-
-    def remove_item(self, item: Item[hikari.impl.ModalActionRowBuilder]) -> Modal:
-        return t.cast(Modal, super().remove_item(item))
-
-    def clear_items(self) -> Modal:
-        return t.cast(Modal, super().clear_items())
+        return super().add_item(item)
 
     async def modal_check(self, context: ModalContextT) -> bool:
         """Called before any callback in the modal is called. Must evaluate to a truthy value to pass.
@@ -191,11 +177,7 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder]):
         """
         return True
 
-    async def on_error(
-        self,
-        error: Exception,
-        context: t.Optional[ModalContextT] = None,
-    ) -> None:
+    async def on_error(self, error: Exception, context: t.Optional[ModalContextT] = None) -> None:
         """Called when an error occurs in a callback function.
         Override for custom error-handling logic.
 

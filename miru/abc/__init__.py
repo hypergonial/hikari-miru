@@ -1,13 +1,7 @@
 from .item import *
 from .item_handler import *
 
-__all__ = (
-    "Item",
-    "ItemHandler",
-    "ViewItem",
-    "ModalItem",
-    "DecoratedItem",
-)
+__all__ = ("Item", "ItemHandler", "ViewItem", "ModalItem", "DecoratedItem")
 
 # MIT License
 #

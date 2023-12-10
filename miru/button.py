@@ -202,15 +202,7 @@ def button(
     def decorator(func: t.Callable[[ViewT, Button, ViewContextT], t.Awaitable[None]]) -> DecoratedItem:
         if not inspect.iscoroutinefunction(func):
             raise TypeError("button must decorate coroutine function.")
-        item = Button(
-            label=label,
-            custom_id=custom_id,
-            style=style,
-            emoji=emoji,
-            row=row,
-            disabled=disabled,
-            url=None,
-        )
+        item = Button(label=label, custom_id=custom_id, style=style, emoji=emoji, row=row, disabled=disabled, url=None)
 
         return DecoratedItem(item, func)
 
