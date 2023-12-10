@@ -61,8 +61,9 @@ class _Weights(t.Generic[ItemT]):
     def clear(self) -> None:
         self._weights = [0, 0, 0, 0, 0]
 
+
 # Type ignore: Python 3.8 doesn't support type-arg in abc.ABC
-class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT, ContextT, ItemT]): # type: ignore[type-arg]
+class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT, ContextT, ItemT]):  # type: ignore[type-arg]
     """Abstract base class all item-handlers (e.g. views, modals) inherit from.
 
     Parameters
