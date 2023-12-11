@@ -21,6 +21,7 @@ class MainScreen(menu.Screen):
             ),
         )
 
+    # Note: You should always use @menu decorators inside Screen subclasses, NOT @miru
     @menu.button(label="Moderation")
     async def moderation(self, button: menu.ScreenButton, ctx: miru.Context) -> None:
         # Add a new screen to the menu stack, the message is updated automatically
