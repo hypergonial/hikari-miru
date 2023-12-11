@@ -8,9 +8,8 @@ import attr
 import hikari
 
 from miru import HandlerFullError, ItemAlreadyAttachedError
-from miru.abc import DecoratedItem
 
-from .items import ScreenItem
+from .items import DecoratedScreenItem, ScreenItem
 
 if t.TYPE_CHECKING:
     import typing_extensions as te
@@ -63,15 +62,15 @@ class Screen(abc.ABC):
     """A screen in a menu. Acts similarly to a View, although it is not a subclass of it."""
 
     _screen_children: t.Sequence[
-        DecoratedItem[ScreenItem]
+        DecoratedScreenItem[ScreenItem]
     ] = []  # Decorated callbacks that need to be turned into items
 
     def __init_subclass__(cls) -> None:
         """Get decorated callbacks"""
-        children: t.MutableSequence[DecoratedItem[ScreenItem]] = []
+        children: t.MutableSequence[DecoratedScreenItem[ScreenItem]] = []
         for base_cls in reversed(cls.mro()):
             for value in base_cls.__dict__.values():
-                if isinstance(value, DecoratedItem):
+                if isinstance(value, DecoratedScreenItem):
                     children.append(value)
 
         if len(children) > 25:
@@ -86,7 +85,7 @@ class Screen(abc.ABC):
         for decorated_item in self._screen_children:
             # Must deepcopy, otherwise multiple views will have the same item reference
             decorated_item = copy.deepcopy(decorated_item)
-            item = decorated_item.build(menu)
+            item = decorated_item.build(self)
             self.add_item(item)
             setattr(self, decorated_item.name, item)
 
