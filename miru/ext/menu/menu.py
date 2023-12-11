@@ -41,20 +41,7 @@ class Menu(miru.View):
         for item in self.children:
             item.disabled = True
 
-        await self._edit_message()
-
-    async def _edit_message(self) -> None:
-        """Update the message with the current state of the menu."""
-
-        if self.message is None:
-            return
-
-        if self.last_context is not None and self.last_context.is_valid:
-            await self.last_context.edit_response(components=self, **self._payload)
-        elif self.last_context is None and self._inter is not None:
-            await self._inter.edit_message(self.message, components=self, **self._payload)
-        else:
-            await self.message.edit(components=self, **self._payload)
+        await self.update_message()
 
     async def _load_screen(self, screen: Screen) -> None:
         """Load a screen into the menu, updating it's state."""
@@ -70,14 +57,24 @@ class Menu(miru.View):
             self.add_item(item)
 
     async def update_message(self) -> None:
-        """Edit the menu's message with the current state of the menu."""
-        await self._load_screen(self.current_screen)
-        await self._edit_message()
+        """Update the message with the current state of the menu."""
+
+        if self.message is None:
+            return
+
+        if self.last_context is not None and self.last_context.is_valid:
+            await self.last_context.edit_response(components=self, **self._payload)
+        elif self.last_context is None and self._inter is not None:
+            await self._inter.edit_message(self.message, components=self, **self._payload)
+        else:
+            await self.message.edit(components=self, **self._payload)
 
     async def push(self, screen: Screen) -> None:
         """Push a screen onto the menu stack and display it."""
 
         self._stack.append(screen)
+
+        await self._load_screen(screen)
         await self.update_message()
 
     async def pop(self, count: int = 1) -> None:
@@ -106,6 +103,7 @@ class Menu(miru.View):
             raise ValueError("Cannot pop the last screen.")
 
         self._stack = self._stack[:-count]
+        await self._load_screen(self.current_screen)
         await self.update_message()
 
     async def pop_until_root(self) -> None:
@@ -117,6 +115,8 @@ class Menu(miru.View):
             return
 
         self._stack = [self._stack[0]]
+
+        await self._load_screen(self.current_screen)
         await self.update_message()
 
     async def send(
