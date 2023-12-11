@@ -11,14 +11,16 @@ logger = logging.getLogger(__name__)
 
 __all__ = ("Menu",)
 
+ViewContextT = t.TypeVar("ViewContextT", bound="miru.ViewContext")
+
 
 class Menu(miru.View):
     """A menu that can be used to display multiple nested screens of components."""
 
-    def __init__(self, *, timeout: float = 300.0):
-        super().__init__(timeout=timeout)
+    def __init__(self, *, timeout: float = 300.0, autodefer: bool = True):
+        super().__init__(timeout=timeout, autodefer=autodefer)
         self._stack: t.List[Screen] = []
-        # The last interaction received, used for inter-based handling
+        # The interaction that was used to send the menu, if any.
         self._inter: t.Optional[hikari.MessageResponseMixin[t.Any]] = None
         self._ephemeral: bool = False
         self._payload: t.Dict[str, t.Any] = {}
@@ -47,7 +49,9 @@ class Menu(miru.View):
         if self.message is None:
             return
 
-        if self._inter is not None:
+        if self.last_context is not None:
+            await self.last_context.edit_response(components=self, **self._payload)
+        elif self._inter is not None:
             await self._inter.edit_message(self.message, components=self, **self._payload)
         else:
             await self.message.edit(components=self, **self._payload)
@@ -152,7 +156,7 @@ class Menu(miru.View):
 
         if isinstance(to, (int, hikari.TextableChannel)):
             channel = hikari.Snowflake(to)
-            message = await self.app.rest.create_message(channel, **self._payload)
+            message = await self.app.rest.create_message(channel, components=self, **self._payload)
         elif isinstance(to, miru.Context):
             self._inter = to.interaction
             resp = await to.respond(**self._payload)
@@ -160,9 +164,9 @@ class Menu(miru.View):
         else:
             self._inter = to
             if not responded:
-                await to.create_initial_response(hikari.ResponseType.MESSAGE_CREATE, **self._payload)
+                await to.create_initial_response(hikari.ResponseType.MESSAGE_CREATE, components=self, **self._payload)
                 message = await to.fetch_initial_response()
             else:
-                message = await to.execute(**self._payload)
+                message = await to.execute(components=self, **self._payload)
 
         await self.start(message)

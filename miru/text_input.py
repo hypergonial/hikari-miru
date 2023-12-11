@@ -56,7 +56,6 @@ class TextInput(ModalItem):
         row: t.Optional[int] = None,
     ) -> None:
         super().__init__(custom_id=custom_id, row=row, position=0, width=5, required=required)
-        # Set value directly to avoid validation with missing values
         self._value: t.Optional[str] = str(value) if value else None
         self.style = style
         self.placeholder = placeholder

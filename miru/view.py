@@ -83,7 +83,7 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder, ViewContext, ViewIte
         self._message_id: t.Optional[hikari.Snowflake] = None
         self._input_event: asyncio.Event = asyncio.Event()
 
-        for decorated_item in self._view_children:  # Sort and instantiate decorated callbacks
+        for decorated_item in self._view_children:
             # Must deepcopy, otherwise multiple views will have the same item reference
             decorated_item = copy.deepcopy(decorated_item)
             item = decorated_item.build(self)

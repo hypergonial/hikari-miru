@@ -172,7 +172,6 @@ class EventHandler:
             await handler._process_interactions(event)
             return
 
-        # God why does mypy hate me so much for naming two variables the same in two if statement arms >_<
         if isinstance(event.interaction, hikari.ComponentInteraction):
             comp_ctx = RawComponentContext(event.interaction)
             self._app.event_manager.dispatch(ComponentInteractionCreateEvent(self._app, event.interaction, comp_ctx))
