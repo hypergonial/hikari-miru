@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import asyncio
 import typing as t
 
 import hikari
+
+from miru.context.base import InteractionResponse
 
 from .raw import RawComponentContext
 
@@ -20,6 +23,34 @@ class ViewContext(RawComponentContext):
     def __init__(self, view: View, interaction: hikari.ComponentInteraction) -> None:
         super().__init__(interaction)
         self._view = view
+        self._autodefer_task: t.Optional[asyncio.Task[None]] = None
+
+    def _start_autodefer(self) -> None:
+        if self._autodefer_task is not None:
+            raise RuntimeError("ViewContext autodefer task already started")
+
+        self._autodefer_task = asyncio.create_task(self._autodefer())
+
+    async def _create_response(self, message: hikari.Message | None = None) -> InteractionResponse:
+        if self._autodefer_task is not None:
+            self._autodefer_task.cancel()
+            try:
+                # Await the task to ensure the lock is released
+                await self._autodefer_task
+            except asyncio.CancelledError:
+                pass
+            self._autodefer_task = None
+
+        return await super()._create_response(message)
+
+    async def _autodefer(self) -> None:
+        await asyncio.sleep(2)
+
+        async with self._response_lock:
+            if self._issued_response:
+                return
+            # ctx.defer() also acquires _response_lock so we need to use self._interaction directly
+            await self._interaction.create_initial_response(hikari.ResponseType.DEFERRED_MESSAGE_UPDATE)
 
     @property
     def view(self) -> View:

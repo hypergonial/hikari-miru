@@ -163,19 +163,20 @@ class InteractionResponse:
                 user_mentions=user_mentions,
                 role_mentions=role_mentions,
             )
-        return self._context._create_response(message)
+        return await self._context._create_response(message)
 
 
 class Context(abc.ABC, t.Generic[InteractionT]):
     """An abstract base class for context
     objects that proxying a Discord interaction."""
 
-    __slots__ = ("_interaction", "_responses", "_issued_response", "_created_at")
+    __slots__ = ("_interaction", "_responses", "_issued_response", "_response_lock", "_autodefer_task", "_created_at")
 
     def __init__(self, interaction: InteractionT) -> None:
         self._interaction: InteractionT = interaction
         self._responses: t.MutableSequence[InteractionResponse] = []
         self._issued_response: bool = False
+        self._response_lock: asyncio.Lock = asyncio.Lock()
         self._created_at = datetime.datetime.now()
 
     @property
@@ -259,7 +260,7 @@ class Context(abc.ABC, t.Generic[InteractionT]):
         else:
             return datetime.datetime.now() - self._created_at <= datetime.timedelta(seconds=3)
 
-    def _create_response(self, message: t.Optional[hikari.Message] = None) -> InteractionResponse:
+    async def _create_response(self, message: t.Optional[hikari.Message] = None) -> InteractionResponse:
         """Create a new response and add it to the list of tracked responses."""
         response = InteractionResponse(self, message)
         self._responses.append(response)
@@ -345,43 +346,44 @@ class Context(abc.ABC, t.Generic[InteractionT]):
         InteractionResponse
             A proxy object representing the response to the interaction.
         """
-        if self._issued_response:
-            message = await self.interaction.execute(
-                content,
-                tts=tts,
-                component=component,
-                components=components,
-                attachment=attachment,
-                attachments=attachments,
-                embed=embed,
-                embeds=embeds,
-                mentions_everyone=mentions_everyone,
-                user_mentions=user_mentions,
-                role_mentions=role_mentions,
-                flags=flags,
-            )
-            response = self._create_response(message)
-        else:
-            await self.interaction.create_initial_response(
-                hikari.ResponseType.MESSAGE_CREATE,
-                content,
-                tts=tts,
-                component=component,
-                components=components,
-                attachment=attachment,
-                attachments=attachments,
-                embed=embed,
-                embeds=embeds,
-                mentions_everyone=mentions_everyone,
-                user_mentions=user_mentions,
-                role_mentions=role_mentions,
-                flags=flags,
-            )
-            self._issued_response = True
-            response = self._create_response()
-        if delete_after:
-            response.delete_after(delete_after)
-        return response
+        async with self._response_lock:
+            if self._issued_response:
+                message = await self.interaction.execute(
+                    content,
+                    tts=tts,
+                    component=component,
+                    components=components,
+                    attachment=attachment,
+                    attachments=attachments,
+                    embed=embed,
+                    embeds=embeds,
+                    mentions_everyone=mentions_everyone,
+                    user_mentions=user_mentions,
+                    role_mentions=role_mentions,
+                    flags=flags,
+                )
+                response = await self._create_response(message)
+            else:
+                await self.interaction.create_initial_response(
+                    hikari.ResponseType.MESSAGE_CREATE,
+                    content,
+                    tts=tts,
+                    component=component,
+                    components=components,
+                    attachment=attachment,
+                    attachments=attachments,
+                    embed=embed,
+                    embeds=embeds,
+                    mentions_everyone=mentions_everyone,
+                    user_mentions=user_mentions,
+                    role_mentions=role_mentions,
+                    flags=flags,
+                )
+                self._issued_response = True
+                response = await self._create_response()
+            if delete_after:
+                response.delete_after(delete_after)
+            return response
 
     async def edit_response(
         self,
@@ -439,39 +441,40 @@ class Context(abc.ABC, t.Generic[InteractionT]):
         InteractionResponse
             A proxy object representing the response to the interaction.
         """
-        if self._issued_response:
-            message = await self.interaction.edit_initial_response(
-                content,
-                component=component,
-                components=components,
-                attachment=attachment,
-                attachments=attachments,
-                embed=embed,
-                embeds=embeds,
-                mentions_everyone=mentions_everyone,
-                user_mentions=user_mentions,
-                role_mentions=role_mentions,
-            )
-            return self._create_response(message)
+        async with self._response_lock:
+            if self._issued_response:
+                message = await self.interaction.edit_initial_response(
+                    content,
+                    component=component,
+                    components=components,
+                    attachment=attachment,
+                    attachments=attachments,
+                    embed=embed,
+                    embeds=embeds,
+                    mentions_everyone=mentions_everyone,
+                    user_mentions=user_mentions,
+                    role_mentions=role_mentions,
+                )
+                return await self._create_response(message)
 
-        else:
-            await self.interaction.create_initial_response(
-                hikari.ResponseType.MESSAGE_UPDATE,
-                content,
-                component=component,
-                components=components,
-                attachment=attachment,
-                attachments=attachments,
-                tts=tts,
-                embed=embed,
-                embeds=embeds,
-                mentions_everyone=mentions_everyone,
-                user_mentions=user_mentions,
-                role_mentions=role_mentions,
-                flags=flags,
-            )
-            self._issued_response = True
-            return self._create_response()
+            else:
+                await self.interaction.create_initial_response(
+                    hikari.ResponseType.MESSAGE_UPDATE,
+                    content,
+                    component=component,
+                    components=components,
+                    attachment=attachment,
+                    attachments=attachments,
+                    tts=tts,
+                    embed=embed,
+                    embeds=embeds,
+                    mentions_everyone=mentions_everyone,
+                    user_mentions=user_mentions,
+                    role_mentions=role_mentions,
+                    flags=flags,
+                )
+                self._issued_response = True
+                return await self._create_response()
 
     @t.overload
     async def defer(
@@ -521,8 +524,10 @@ class Context(abc.ABC, t.Generic[InteractionT]):
         if self._issued_response:
             raise RuntimeError("Interaction was already responded to.")
 
-        await self.interaction.create_initial_response(response_type, flags=flags)
-        self._issued_response = True
+        async with self._response_lock:
+            await self.interaction.create_initial_response(response_type, flags=flags)
+            self._issued_response = True
+            await self._create_response()
 
 
 # MIT License

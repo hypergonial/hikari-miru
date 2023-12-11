@@ -271,16 +271,12 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder, ViewContext, ViewIte
             if self._message_id == context.message.id:
                 self._message = context.message
 
-            now = datetime.datetime.now()
             self._input_event.set()
             self._input_event.clear()
 
             await item._refresh_state(context)
+            context._start_autodefer()
             await item.callback(context)
-
-            if not context._issued_response and self.autodefer:
-                if (datetime.datetime.now() - now).total_seconds() <= 3:  # Avoid deferring if inter already timed out
-                    await context.defer()
 
         except Exception as error:
             await self.on_error(error, item, context)

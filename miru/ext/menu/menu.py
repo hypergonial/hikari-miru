@@ -24,6 +24,8 @@ class Menu(miru.View):
         self._stack: t.List[Screen] = []
         # The interaction that was used to send the menu, if any.
         self._inter: t.Optional[hikari.MessageResponseMixin[t.Any]] = None
+        self._responded = False
+
         self._ephemeral: bool = False
         self._payload: t.Dict[str, t.Any] = {}
 
@@ -57,6 +59,17 @@ class Menu(miru.View):
 
         for item in screen.children:
             self.add_item(item)
+
+    async def _defer(self) -> None:
+        flags: hikari.UndefinedOr[hikari.MessageFlag] = (
+            hikari.MessageFlag.EPHEMERAL if self.ephemeral else hikari.UNDEFINED
+        )
+
+        if self.last_context is not None and self.last_context.is_valid:
+            await self.last_context.defer(flags=flags)
+        elif self._inter is not None and not self._responded:
+            await self._inter.create_initial_response(hikari.ResponseType.DEFERRED_MESSAGE_CREATE, flags=flags)
+            self._responded = True
 
     async def update_message(self) -> None:
         """Update the message with the current state of the menu."""
@@ -147,6 +160,7 @@ class Menu(miru.View):
         """
 
         self._ephemeral = ephemeral if isinstance(to, (hikari.MessageResponseMixin, miru.Context)) else False
+        self._responded = responded
         self._stack.append(starting_screen)
 
         if self.ephemeral and self.timeout and self.timeout > 900:
@@ -165,10 +179,34 @@ class Menu(miru.View):
             message = await resp.retrieve_message()
         else:
             self._inter = to
-            if not responded:
+            if not self._responded:
                 await to.create_initial_response(hikari.ResponseType.MESSAGE_CREATE, components=self, **self._payload)
+                self._responded = True
                 message = await to.fetch_initial_response()
             else:
                 message = await to.execute(components=self, **self._payload)
 
         await self.start(message)
+
+
+# MIT License
+#
+# Copyright (c) 2022-present hypergonial
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
