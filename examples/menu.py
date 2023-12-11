@@ -74,11 +74,11 @@ class LoggingScreen(menu.Screen):
     
 
     @menu.button(label="Back")
-    async def back(self, button: menu.ScreenButton, ctx: miru.Context) -> None:
+    async def back(self, button: menu.ScreenButton, ctx: miru.ViewContext) -> None:
         await self.menu.pop()
     
     @menu.button(label="Enable", style=hikari.ButtonStyle.DANGER)
-    async def enable(self, button: menu.ScreenButton, ctx: miru.Context) -> None:
+    async def enable(self, button: menu.ScreenButton, ctx: miru.ViewContext) -> None:
         self.is_enabled = not self.is_enabled
         button.style = hikari.ButtonStyle.SUCCESS if self.is_enabled else hikari.ButtonStyle.DANGER
         button.label = "Disable" if self.is_enabled else "Enable"

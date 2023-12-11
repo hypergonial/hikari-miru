@@ -130,7 +130,7 @@ class Screen(abc.ABC):
             raise HandlerFullError("Screen cannot have more than 25 components attached.")
 
         if not isinstance(item, ScreenItem):
-            raise TypeError(f"Expected Item not {type(item).__name__} for parameter item.")
+            raise TypeError(f"Expected ScreenItem not {type(item).__name__} for parameter item.")
 
         if item in self.children:
             raise ItemAlreadyAttachedError(f"Item {type(item).__name__} is already attached to this screen.")
