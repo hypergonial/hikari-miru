@@ -57,13 +57,13 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder, ViewContext, ViewIte
         Raised if miru.install() was never called before instantiation.
     """
 
-    _view_children: t.Sequence[DecoratedItem] = []  # Decorated callbacks that need to be turned into items
+    _view_children: t.Sequence[DecoratedItem[ViewItem]] = []  # Decorated callbacks that need to be turned into items
 
     def __init_subclass__(cls) -> None:
         """
         Get decorated callbacks
         """
-        children: t.MutableSequence[DecoratedItem] = []
+        children: t.MutableSequence[DecoratedItem[ViewItem]] = []
         for base_cls in reversed(cls.mro()):
             for value in base_cls.__dict__.values():
                 if isinstance(value, DecoratedItem):
@@ -133,7 +133,9 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder, ViewContext, ViewIte
         return hikari.impl.MessageActionRowBuilder
 
     @classmethod
-    def from_message(cls, message: hikari.Message, *, timeout: t.Optional[float] = 120, autodefer: bool = True) -> View:
+    def from_message(
+        cls, message: hikari.Message, *, timeout: t.Optional[float] = 120, autodefer: bool = True
+    ) -> te.Self:
         """Create a new view from the components included in the passed message.
         Returns an empty view if the message has no components attached.
 

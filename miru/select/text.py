@@ -204,12 +204,40 @@ def text_select(
     max_values: int = 1,
     disabled: bool = False,
     row: t.Optional[int] = None,
-) -> t.Callable[[t.Callable[[ViewT, TextSelect, ViewContextT], t.Awaitable[None]]], DecoratedItem]:
+) -> t.Callable[[t.Callable[[ViewT, TextSelect, ViewContextT], t.Awaitable[None]]], DecoratedItem[TextSelect]]:
     """
-    A decorator to transform a function into a Discord UI TextSelectMenu's callback. This must be inside a subclass of View.
+    A decorator to transform a function into a Discord UI TextSelectMenu's callback.
+    This must be inside a subclass of View.
+
+    Parameters
+    ----------
+    options : Sequence[Union[hikari.SelectMenuOption, SelectOption]]
+        A sequence of select menu options that this select menu should use.
+    custom_id : Optional[str], optional
+        The custom ID of the select menu, by default None
+    placeholder : Optional[str], optional
+        Placeholder text displayed on the select menu, by default None
+    min_values : int, optional
+        The minimum number of values that can be selected. Defaults to 1.
+    max_values : int, optional
+        The maximum number of values that can be selected. Defaults to 1.
+    disabled : bool, optional
+        Whether the select menu is disabled. Defaults to False.
+    row : Optional[int], optional
+        The row the select should be in, leave as None for auto-placement.
+
+    Returns
+    -------
+    Callable[[Callable[[ViewT, TextSelect, ViewContextT], Awaitable[None]]], DecoratedItem[TextSelect]]
+        The decorated function.
+
+    Raises
+    ------
+    TypeError
+        If the decorated function is not a coroutine function.
     """
 
-    def decorator(func: t.Callable[[ViewT, TextSelect, ViewContextT], t.Awaitable[None]]) -> DecoratedItem:
+    def decorator(func: t.Callable[[ViewT, TextSelect, ViewContextT], t.Awaitable[None]]) -> DecoratedItem[TextSelect]:
         if not inspect.iscoroutinefunction(func):
             raise TypeError("text_select must decorate coroutine function.")
 

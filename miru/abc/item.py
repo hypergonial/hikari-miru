@@ -22,6 +22,7 @@ if t.TYPE_CHECKING:
 __all__ = ("Item", "DecoratedItem", "ViewItem", "ModalItem")
 
 BuilderT = t.TypeVar("BuilderT", bound=hikari.api.ComponentBuilder)
+ViewItemT = t.TypeVar("ViewItemT", bound="ViewItem")
 
 
 class Item(abc.ABC, t.Generic[BuilderT]):
@@ -245,16 +246,16 @@ class ModalItem(Item[hikari.impl.ModalActionRowBuilder], abc.ABC):
         ...
 
 
-class DecoratedItem:
+class DecoratedItem(t.Generic[ViewItemT]):
     """A partial item made using a decorator."""
 
     __slots__ = ("item", "callback")
 
-    def __init__(self, item: ViewItem, callback: t.Callable[..., t.Any]) -> None:
+    def __init__(self, item: ViewItemT, callback: t.Callable[..., t.Any]) -> None:
         self.item = item
         self.callback = callback
 
-    def build(self, view: View) -> ViewItem:
+    def build(self, view: View) -> ViewItemT:
         """Convert a DecoratedItem into a ViewItem.
 
         Parameters

@@ -20,7 +20,7 @@ if t.TYPE_CHECKING:
     from ..context import Context
     from ..events import EventHandler
 
-__all__ = ("ItemHandler",)
+__all__ = ("ItemHandler", "ItemArranger")
 
 
 BuilderT = t.TypeVar("BuilderT", bound=hikari.api.ComponentBuilder)
@@ -28,9 +28,11 @@ ContextT = t.TypeVar("ContextT", bound="Context[t.Any]")
 ItemT = t.TypeVar("ItemT", bound="Item[t.Any]")
 
 
-class _Weights(t.Generic[ItemT]):
+class ItemArranger(t.Generic[ItemT]):
     """
-    Calculate the position of an item based on it's width, and keep track of item positions
+    Calculate the position of an item based on it's width, and automatically arrange items if no explicit row is specified.
+
+    Used internally by ItemHandler.
     """
 
     __slots__ = ("_weights",)
@@ -39,6 +41,22 @@ class _Weights(t.Generic[ItemT]):
         self._weights = [0, 0, 0, 0, 0]
 
     def add_item(self, item: ItemT) -> None:
+        """Add an item to the weights.
+
+        Parameters
+        ----------
+        item : ItemT
+            The item to add.
+
+        Raises
+        ------
+        RowFullError
+            The item does not fit on the row specified.
+            This error is only raised if a row is specified explicitly.
+        HandlerFullError
+            The item does not fit on any row.
+        """
+
         if item.row is not None:
             if item.width + self._weights[item.row] > 5:
                 raise RowFullError(f"Item does not fit on row {item.row}!")
@@ -54,11 +72,20 @@ class _Weights(t.Generic[ItemT]):
             raise HandlerFullError("Item does not fit on this item handler.")
 
     def remove_item(self, item: ItemT) -> None:
+        """Remove an item from the weights.
+
+        Parameters
+        ----------
+        item : ItemT
+            The item to remove.
+        """
+
         if item._rendered_row is not None:
             self._weights[item._rendered_row] -= item.width
             item._rendered_row = None
 
     def clear(self) -> None:
+        """Clear the weights, remove all items."""
         self._weights = [0, 0, 0, 0, 0]
 
 
@@ -91,7 +118,7 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT, ContextT, ItemT]):  # t
         self._timeout: t.Optional[float] = float(timeout) if timeout else None
         self._children: t.List[ItemT] = []
 
-        self._weights: _Weights[ItemT] = _Weights()
+        self._arranger: ItemArranger[ItemT] = ItemArranger()
         self._stopped: asyncio.Event = asyncio.Event()
         self._timeout_task: t.Optional[asyncio.Task[None]] = None
         self._running_tasks: t.MutableSequence[asyncio.Task[t.Any]] = []
@@ -184,9 +211,9 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT, ContextT, ItemT]):  # t
             ItemHandler already has 25 components attached.
         TypeError
             Parameter item is not an instance of Item.
-        RuntimeError
+        ItemAlreadyAttachedError
             The item is already attached to this item handler.
-        RuntimeError
+        ItemAlreadyAttachedError
             The item is already attached to another item handler.
 
         Returns
@@ -209,7 +236,7 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT, ContextT, ItemT]):  # t
                 f"Item {type(item).__name__} is already attached to another item handler: {type(item._handler).__name__}."
             )
 
-        self._weights.add_item(item)
+        self._arranger.add_item(item)
 
         item._handler = self
         self._children.append(item)
@@ -234,7 +261,7 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT, ContextT, ItemT]):  # t
         except ValueError:
             pass
         else:
-            self._weights.remove_item(item)
+            self._arranger.remove_item(item)
             item._handler = None
 
         return self
@@ -252,7 +279,7 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT, ContextT, ItemT]):  # t
             item._rendered_row = None
 
         self._children.clear()
-        self._weights.clear()
+        self._arranger.clear()
 
         return self
 

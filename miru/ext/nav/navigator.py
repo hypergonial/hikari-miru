@@ -105,8 +105,8 @@ class NavigatorView(View):
         if self.message is None:
             return
 
-        for button in self.children:
-            button.disabled = True
+        for item in self.children:
+            item.disabled = True
 
         if self._inter is not None:
             await self._inter.edit_message(self.message, components=self)
