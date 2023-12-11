@@ -135,6 +135,7 @@ class Screen(abc.ABC):
             raise ItemAlreadyAttachedError(f"Item {type(item).__name__} is already attached to this screen.")
 
         self._children.append(item)
+        item._screen = self
 
         return self
 
@@ -153,6 +154,7 @@ class Screen(abc.ABC):
         """
         try:
             self._children.remove(item)
+            item._screen = None
         except ValueError:
             pass
 
@@ -166,5 +168,8 @@ class Screen(abc.ABC):
         Screen
             The item handler items were cleared from.
         """
+        for item in self.children:
+            item._screen = None
+
         self._children.clear()
         return self
