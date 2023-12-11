@@ -100,7 +100,9 @@ async def buttons(event: hikari.GuildMessageCreateEvent) -> None:
     # If the bot is mentioned
     if me.id in event.message.user_mentions_ids:
         my_menu = menu.Menu()  # Create a new Menu
-        # Specify the starting screen and where to send the menu to
+
+        # Note: You can also send the menu to an interaction or miru context
+        # See the documentation of NavigatorView.send() for more information
         await my_menu.send(MainScreen(my_menu), event.channel_id)
 
 
