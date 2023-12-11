@@ -170,12 +170,13 @@ class Context(abc.ABC, t.Generic[InteractionT]):
     """An abstract base class for context
     objects that proxying a Discord interaction."""
 
-    __slots__ = ("_interaction", "_responses", "_issued_response")
+    __slots__ = ("_interaction", "_responses", "_issued_response", "_created_at")
 
     def __init__(self, interaction: InteractionT) -> None:
         self._interaction: InteractionT = interaction
         self._responses: t.MutableSequence[InteractionResponse] = []
         self._issued_response: bool = False
+        self._created_at = datetime.datetime.now()
 
     @property
     def interaction(self) -> InteractionT:
@@ -247,6 +248,16 @@ class Context(abc.ABC, t.Generic[InteractionT]):
     def guild_id(self) -> t.Optional[Snowflake]:
         """The ID of the guild the context represents. Will be None in DMs."""
         return self._interaction.guild_id
+
+    @property
+    def is_valid(self) -> bool:
+        """Returns if the underlying interaction expired or not.
+        This is not 100% accurate due to API latency, but should be good enough for most use cases.
+        """
+        if self._issued_response:
+            return datetime.datetime.now() - self._created_at <= datetime.timedelta(minutes=15)
+        else:
+            return datetime.datetime.now() - self._created_at <= datetime.timedelta(seconds=3)
 
     def _create_response(self, message: t.Optional[hikari.Message] = None) -> InteractionResponse:
         """Create a new response and add it to the list of tracked responses."""

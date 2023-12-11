@@ -49,9 +49,9 @@ class Menu(miru.View):
         if self.message is None:
             return
 
-        if self.last_context is not None:
+        if self.last_context is not None and self.last_context.is_valid:
             await self.last_context.edit_response(components=self, **self._payload)
-        elif self._inter is not None:
+        elif self.last_context is None and self._inter is not None:
             await self._inter.edit_message(self.message, components=self, **self._payload)
         else:
             await self.message.edit(components=self, **self._payload)
