@@ -181,7 +181,14 @@ class Context(abc.ABC, t.Generic[InteractionT]):
 
     @property
     def interaction(self) -> InteractionT:
-        """The underlying interaction object."""
+        """The underlying interaction object.
+        
+        .. warning::
+            This should not be used directly in most cases, and is only exposed for advanced use cases.
+
+            If you use the interaction to create a response in a view, 
+            you should disable the autodefer feature in your View.
+        """
         return self._interaction
 
     @property

@@ -275,7 +275,10 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder, ViewContext, ViewIte
             self._input_event.clear()
 
             await item._refresh_state(context)
-            context._start_autodefer()
+
+            if self.autodefer:
+                context._start_autodefer()
+
             await item.callback(context)
 
         except Exception as error:
