@@ -117,7 +117,8 @@ def mentionable_select(
     disabled: bool = False,
     row: t.Optional[int] = None,
 ) -> t.Callable[
-    [t.Callable[[ViewT, MentionableSelect, ViewContextT], t.Awaitable[None]]], DecoratedItem[MentionableSelect]
+    [t.Callable[[ViewT, MentionableSelect, ViewContextT], t.Awaitable[None]]],
+    DecoratedItem[ViewT, MentionableSelect, ViewContextT],
 ]:
     """
     A decorator to transform a function into a Discord UI MentionableSelectMenu's callback.
@@ -140,7 +141,7 @@ def mentionable_select(
 
     Returns
     -------
-    Callable[[Callable[[ViewT, MentionableSelect, ViewContextT], Awaitable[None]]], DecoratedItem[MentionableSelect]]
+    Callable[[Callable[[ViewT, MentionableSelect, ViewContextT], Awaitable[None]]], DecoratedItem[ViewT, MentionableSelect, ViewContextT]]
         The decorated function.
 
     Raises
@@ -151,7 +152,7 @@ def mentionable_select(
 
     def decorator(
         func: t.Callable[[ViewT, MentionableSelect, ViewContextT], t.Awaitable[None]],
-    ) -> DecoratedItem[MentionableSelect]:
+    ) -> DecoratedItem[ViewT, MentionableSelect, ViewContextT]:
         if not inspect.iscoroutinefunction(func):
             raise TypeError("mentionable_select must decorate coroutine function.")
 

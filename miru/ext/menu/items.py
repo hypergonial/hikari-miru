@@ -107,12 +107,14 @@ class ScreenMentionableSelect(miru.MentionableSelect, ScreenItem):
     """A base class for all screen mentionable selects."""
 
 
-class DecoratedScreenItem(t.Generic[ScreenItemT]):
+class DecoratedScreenItem(t.Generic[ScreenT, ScreenItemT, ViewContextT]):
     """A partial item made using a decorator."""
 
     __slots__ = ("item", "callback")
 
-    def __init__(self, item: ScreenItemT, callback: t.Callable[..., t.Any]) -> None:
+    def __init__(
+        self, item: ScreenItemT, callback: t.Callable[[ScreenT, ScreenItemT, ViewContextT], t.Awaitable[None]]
+    ) -> None:
         self.item = item
         self.callback = callback
 
@@ -129,7 +131,7 @@ class DecoratedScreenItem(t.Generic[ScreenItemT]):
         ScreenItemT
             The converted item.
         """
-        self.item.callback = partial(self.callback, screen, self.item)  # type: ignore[method-assign]
+        self.item.callback = partial(self.callback, screen, self.item)  # type: ignore[assignment]
 
         return self.item
 
@@ -144,8 +146,8 @@ class DecoratedScreenItem(t.Generic[ScreenItemT]):
         """
         return self.callback.__name__
 
-    def __call__(self, *args: t.Any, **kwargs: t.Any) -> t.Any:
-        return self.callback(*args, **kwargs)
+    def __call__(self, screen: ScreenT, item: ScreenItemT, context: ViewContextT) -> t.Any:
+        return self.callback(screen, item, context)
 
 
 def button(
@@ -157,7 +159,8 @@ def button(
     row: t.Optional[int] = None,
     disabled: bool = False,
 ) -> t.Callable[
-    [t.Callable[[ScreenT, ScreenButton, ViewContextT], t.Awaitable[None]]], DecoratedScreenItem[ScreenButton]
+    [t.Callable[[ScreenT, ScreenButton, ViewContextT], t.Awaitable[None]]],
+    DecoratedScreenItem[ScreenT, ScreenButton, ViewContextT],
 ]:
     """A decorator to transform a coroutine function into a Discord UI Button's callback.
     This must be inside a subclass of Screen.
@@ -179,7 +182,7 @@ def button(
 
     Returns
     -------
-    Callable[[Callable[[ScreenT, ScreenButton, ViewContextT], Awaitable[None]]], DecoratedScreenItem[ScreenButton]]
+    Callable[[Callable[[ScreenT, ScreenButton, ViewContextT], Awaitable[None]]], DecoratedScreenItem[ScreenT, ScreenButton, ViewContextT]]
         The decorated callback coroutine function.
 
     Raises
@@ -190,7 +193,7 @@ def button(
 
     def decorator(
         func: t.Callable[[ScreenT, ScreenButton, ViewContextT], t.Awaitable[None]],
-    ) -> DecoratedScreenItem[ScreenButton]:
+    ) -> DecoratedScreenItem[ScreenT, ScreenButton, ViewContextT]:
         if not inspect.iscoroutinefunction(func):
             raise TypeError("button must decorate coroutine function.")
         item = ScreenButton(
@@ -213,7 +216,7 @@ def channel_select(
     row: t.Optional[int] = None,
 ) -> t.Callable[
     [t.Callable[[ScreenT, ScreenChannelSelect, ViewContextT], t.Awaitable[None]]],
-    DecoratedScreenItem[ScreenChannelSelect],
+    DecoratedScreenItem[ScreenT, ScreenChannelSelect, ViewContextT],
 ]:
     """
     A decorator to transform a function into a Discord UI ChannelSelectMenu's callback.
@@ -238,7 +241,7 @@ def channel_select(
 
     Returns
     -------
-    Callable[[Callable[[ScreenT, ScreenChannelSelect, ViewContextT], Awaitable[None]]], DecoratedScreenItem[ScreenChannelSelect]]
+    Callable[[Callable[[ScreenT, ScreenChannelSelect, ViewContextT], Awaitable[None]]], DecoratedScreenItem[ScreenT, ScreenChannelSelect, ViewContextT]]
         The decorated function.
 
     Raises
@@ -249,7 +252,7 @@ def channel_select(
 
     def decorator(
         func: t.Callable[[ScreenT, ScreenChannelSelect, ViewContextT], t.Awaitable[None]],
-    ) -> DecoratedScreenItem[ScreenChannelSelect]:
+    ) -> DecoratedScreenItem[ScreenT, ScreenChannelSelect, ViewContextT]:
         if not inspect.iscoroutinefunction(func):
             raise TypeError("channel_select must decorate coroutine function.")
 
@@ -277,7 +280,7 @@ def mentionable_select(
     row: t.Optional[int] = None,
 ) -> t.Callable[
     [t.Callable[[ScreenT, ScreenMentionableSelect, ViewContextT], t.Awaitable[None]]],
-    DecoratedScreenItem[ScreenMentionableSelect],
+    DecoratedScreenItem[ScreenT, ScreenMentionableSelect, ViewContextT],
 ]:
     """
     A decorator to transform a function into a Discord UI MentionableSelectMenu's callback.
@@ -300,7 +303,7 @@ def mentionable_select(
 
     Returns
     -------
-    Callable[[Callable[[ScreenT, ScreenMentionableSelect, ViewContextT], Awaitable[None]]], DecoratedScreenItem[ScreenMentionableSelect]]
+    Callable[[Callable[[ScreenT, ScreenMentionableSelect, ViewContextT], Awaitable[None]]], DecoratedScreenItem[ScreenT, ScreenMentionableSelect, ViewContextT]]
         The decorated function.
 
     Raises
@@ -311,7 +314,7 @@ def mentionable_select(
 
     def decorator(
         func: t.Callable[[ScreenT, ScreenMentionableSelect, ViewContextT], t.Awaitable[None]],
-    ) -> DecoratedScreenItem[ScreenMentionableSelect]:
+    ) -> DecoratedScreenItem[ScreenT, ScreenMentionableSelect, ViewContextT]:
         if not inspect.iscoroutinefunction(func):
             raise TypeError("mentionable_select must decorate coroutine function.")
 
@@ -337,7 +340,8 @@ def role_select(
     disabled: bool = False,
     row: t.Optional[int] = None,
 ) -> t.Callable[
-    [t.Callable[[ScreenT, ScreenRoleSelect, ViewContextT], t.Awaitable[None]]], DecoratedScreenItem[ScreenRoleSelect]
+    [t.Callable[[ScreenT, ScreenRoleSelect, ViewContextT], t.Awaitable[None]]],
+    DecoratedScreenItem[ScreenT, ScreenRoleSelect, ViewContextT],
 ]:
     """
     A decorator to transform a function into a Discord UI RoleSelectMenu's callback.
@@ -360,7 +364,7 @@ def role_select(
 
     Returns
     -------
-    Callable[[Callable[[ScreenT, ScreenRoleSelect, ViewContextT], Awaitable[None]]], DecoratedScreenItem[ScreenRoleSelect]]
+    Callable[[Callable[[ScreenT, ScreenRoleSelect, ViewContextT], Awaitable[None]]], DecoratedScreenItem[ScreenT, ScreenRoleSelect, ViewContextT]]
         The decorated function that serves as the callback for the select menu.
 
     Raises
@@ -371,7 +375,7 @@ def role_select(
 
     def decorator(
         func: t.Callable[[ScreenT, ScreenRoleSelect, ViewContextT], t.Awaitable[None]],
-    ) -> DecoratedScreenItem[ScreenRoleSelect]:
+    ) -> DecoratedScreenItem[ScreenT, ScreenRoleSelect, ViewContextT]:
         if not inspect.iscoroutinefunction(func):
             raise TypeError("role_select must decorate coroutine function.")
 
@@ -398,7 +402,8 @@ def text_select(
     disabled: bool = False,
     row: t.Optional[int] = None,
 ) -> t.Callable[
-    [t.Callable[[ScreenT, ScreenTextSelect, ViewContextT], t.Awaitable[None]]], DecoratedScreenItem[ScreenTextSelect]
+    [t.Callable[[ScreenT, ScreenTextSelect, ViewContextT], t.Awaitable[None]]],
+    DecoratedScreenItem[ScreenT, ScreenTextSelect, ViewContextT],
 ]:
     """
     A decorator to transform a function into a Discord UI TextSelectMenu's callback.
@@ -423,13 +428,13 @@ def text_select(
 
     Returns
     -------
-    Callable[[Callable[[ScreenT, ScreenTextSelect, ViewContextT], Awaitable[None]]], DecoratedScreenItem[ScreenTextSelect]]
+    Callable[[Callable[[ScreenT, ScreenTextSelect, ViewContextT], Awaitable[None]]], DecoratedScreenItem[ScreenT, ScreenTextSelect, ViewContextT]]
         The decorated function that serves as the callback for the select menu.
     """
 
     def decorator(
         func: t.Callable[[ScreenT, ScreenTextSelect, ViewContextT], t.Awaitable[None]],
-    ) -> DecoratedScreenItem[ScreenTextSelect]:
+    ) -> DecoratedScreenItem[ScreenT, ScreenTextSelect, ViewContextT]:
         if not inspect.iscoroutinefunction(func):
             raise TypeError("text_select must decorate coroutine function.")
 
@@ -456,7 +461,8 @@ def user_select(
     disabled: bool = False,
     row: t.Optional[int] = None,
 ) -> t.Callable[
-    [t.Callable[[ScreenT, ScreenUserSelect, ViewContextT], t.Awaitable[None]]], DecoratedScreenItem[ScreenUserSelect]
+    [t.Callable[[ScreenT, ScreenUserSelect, ViewContextT], t.Awaitable[None]]],
+    DecoratedScreenItem[ScreenT, ScreenUserSelect, ViewContextT],
 ]:
     """
     A decorator to transform a function into a Discord UI UserSelectMenu's callback.
@@ -479,13 +485,13 @@ def user_select(
 
     Returns
     -------
-    Callable[[Callable[[ScreenT, ScreenUserSelect, ViewContextT], Awaitable[None]]], DecoratedScreenItem[ScreenUserSelect]]
+    Callable[[Callable[[ScreenT, ScreenUserSelect, ViewContextT], Awaitable[None]]], DecoratedScreenItem[ScreenT, ScreenUserSelect, ViewContextT]]
         The decorated function that serves as the callback for the select menu.
     """
 
     def decorator(
         func: t.Callable[[ScreenT, ScreenUserSelect, ViewContextT], t.Awaitable[None]],
-    ) -> DecoratedScreenItem[ScreenUserSelect]:
+    ) -> DecoratedScreenItem[ScreenT, ScreenUserSelect, ViewContextT]:
         if not inspect.iscoroutinefunction(func):
             raise TypeError("user_select must decorate coroutine function.")
 

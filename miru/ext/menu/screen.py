@@ -14,6 +14,8 @@ from .items import DecoratedScreenItem, ScreenItem
 if t.TYPE_CHECKING:
     import typing_extensions as te
 
+    from miru import ViewContext
+
     from .menu import Menu
 
 __all__ = ("ScreenContent", "Screen")
@@ -68,12 +70,12 @@ class Screen(abc.ABC):
     """
 
     _screen_children: t.Sequence[
-        DecoratedScreenItem[ScreenItem]
+        DecoratedScreenItem[te.Self, ScreenItem, ViewContext]
     ] = []  # Decorated callbacks that need to be turned into items
 
     def __init_subclass__(cls) -> None:
         """Get decorated callbacks"""
-        children: t.MutableSequence[DecoratedScreenItem[ScreenItem]] = []
+        children: t.MutableSequence[DecoratedScreenItem[Screen, ScreenItem, ViewContext]] = []
         for base_cls in reversed(cls.mro()):
             for value in base_cls.__dict__.values():
                 if isinstance(value, DecoratedScreenItem):

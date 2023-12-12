@@ -25,6 +25,7 @@ if t.TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 ViewContextT = t.TypeVar("ViewContextT", bound=ViewContext)
+ViewT = t.TypeVar("ViewT", bound="View")
 
 __all__ = ("View", "get_view")
 
@@ -57,13 +58,15 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder, ViewContext, ViewIte
         Raised if miru.install() was never called before instantiation.
     """
 
-    _view_children: t.Sequence[DecoratedItem[ViewItem]] = []  # Decorated callbacks that need to be turned into items
+    _view_children: t.MutableSequence[
+        DecoratedItem[te.Self, ViewItem, ViewContext]
+    ] = []  # Decorated callbacks that need to be turned into items
 
     def __init_subclass__(cls) -> None:
         """
         Get decorated callbacks
         """
-        children: t.MutableSequence[DecoratedItem[ViewItem]] = []
+        children: t.MutableSequence[DecoratedItem[View, ViewItem, ViewContext]] = []
         for base_cls in reversed(cls.mro()):
             for value in base_cls.__dict__.values():
                 if isinstance(value, DecoratedItem):

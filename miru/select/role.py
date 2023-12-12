@@ -108,7 +108,9 @@ def role_select(
     max_values: int = 1,
     disabled: bool = False,
     row: t.Optional[int] = None,
-) -> t.Callable[[t.Callable[[ViewT, RoleSelect, ViewContextT], t.Awaitable[None]]], DecoratedItem[RoleSelect]]:
+) -> t.Callable[
+    [t.Callable[[ViewT, RoleSelect, ViewContextT], t.Awaitable[None]]], DecoratedItem[ViewT, RoleSelect, ViewContextT]
+]:
     """
     A decorator to transform a function into a Discord UI RoleSelectMenu's callback.
     This must be inside a subclass of View.
@@ -130,7 +132,7 @@ def role_select(
 
     Returns
     -------
-    Callable[[Callable[[ViewT, RoleSelect, ViewContextT], Awaitable[None]]], DecoratedItem[RoleSelect]]
+    Callable[[Callable[[ViewT, RoleSelect, ViewContextT], Awaitable[None]]], DecoratedItem[ViewT, RoleSelect, ViewContextT]]
         The decorated function.
 
     Raises
@@ -139,7 +141,9 @@ def role_select(
         If the decorated function is not a coroutine function.
     """
 
-    def decorator(func: t.Callable[[ViewT, RoleSelect, ViewContextT], t.Awaitable[None]]) -> DecoratedItem[RoleSelect]:
+    def decorator(
+        func: t.Callable[[ViewT, RoleSelect, ViewContextT], t.Awaitable[None]],
+    ) -> DecoratedItem[ViewT, RoleSelect, ViewContextT]:
         if not inspect.iscoroutinefunction(func):
             raise TypeError("role_select must decorate coroutine function.")
 

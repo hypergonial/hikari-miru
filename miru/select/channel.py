@@ -124,7 +124,10 @@ def channel_select(
     max_values: int = 1,
     disabled: bool = False,
     row: t.Optional[int] = None,
-) -> t.Callable[[t.Callable[[ViewT, ChannelSelect, ViewContextT], t.Awaitable[None]]], DecoratedItem[ChannelSelect]]:
+) -> t.Callable[
+    [t.Callable[[ViewT, ChannelSelect, ViewContextT], t.Awaitable[None]]],
+    DecoratedItem[ViewT, ChannelSelect, ViewContextT],
+]:
     """
     A decorator to transform a function into a Discord UI ChannelSelectMenu's callback.
     This must be inside a subclass of View.
@@ -148,7 +151,7 @@ def channel_select(
 
     Returns
     -------
-    Callable[[Callable[[ViewT, ChannelSelect, ViewContextT], Awaitable[None]]], DecoratedItem[ChannelSelect]]
+    Callable[[Callable[[ViewT, ChannelSelect, ViewContextT], Awaitable[None]]], DecoratedItem[ViewT, ChannelSelect, ViewContextT]]
         The decorated function.
 
     Raises
@@ -160,7 +163,7 @@ def channel_select(
 
     def decorator(
         func: t.Callable[[ViewT, ChannelSelect, ViewContextT], t.Awaitable[None]],
-    ) -> DecoratedItem[ChannelSelect]:
+    ) -> DecoratedItem[ViewT, ChannelSelect, ViewContextT]:
         if not inspect.iscoroutinefunction(func):
             raise TypeError("channel_select must decorate coroutine function.")
 

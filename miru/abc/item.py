@@ -16,13 +16,13 @@ if t.TYPE_CHECKING:
     from ..view import View
     from .item_handler import ItemHandler
 
-    ViewContextT = t.TypeVar("ViewContextT", bound="ViewContext")
-
 
 __all__ = ("Item", "DecoratedItem", "ViewItem", "ModalItem")
 
 BuilderT = t.TypeVar("BuilderT", bound=hikari.api.ComponentBuilder)
+ViewT = t.TypeVar("ViewT", bound="View")
 ViewItemT = t.TypeVar("ViewItemT", bound="ViewItem")
+ViewContextT = t.TypeVar("ViewContextT", bound="ViewContext")
 
 
 class Item(abc.ABC, t.Generic[BuilderT]):
@@ -246,12 +246,14 @@ class ModalItem(Item[hikari.impl.ModalActionRowBuilder], abc.ABC):
         ...
 
 
-class DecoratedItem(t.Generic[ViewItemT]):
+class DecoratedItem(t.Generic[ViewT, ViewItemT, ViewContextT]):
     """A partial item made using a decorator."""
 
     __slots__ = ("item", "callback")
 
-    def __init__(self, item: ViewItemT, callback: t.Callable[..., t.Any]) -> None:
+    def __init__(
+        self, item: ViewItemT, callback: t.Callable[[ViewT, ViewItemT, ViewContextT], t.Awaitable[None]]
+    ) -> None:
         self.item = item
         self.callback = callback
 
@@ -268,7 +270,7 @@ class DecoratedItem(t.Generic[ViewItemT]):
         ViewItem[ViewT]
             The converted item.
         """
-        self.item.callback = partial(self.callback, view, self.item)  # type: ignore[method-assign]
+        self.item.callback = partial(self.callback, view, self.item)  # type: ignore[assignment]
 
         return self.item
 
@@ -283,8 +285,8 @@ class DecoratedItem(t.Generic[ViewItemT]):
         """
         return self.callback.__name__
 
-    def __call__(self, *args: t.Any, **kwargs: t.Any) -> t.Any:
-        return self.callback(*args, **kwargs)
+    def __call__(self, view: ViewT, item: ViewItemT, context: ViewContextT) -> t.Awaitable[None]:
+        return self.callback(view, item, context)
 
 
 # MIT License

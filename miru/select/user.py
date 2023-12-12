@@ -116,7 +116,9 @@ def user_select(
     max_values: int = 1,
     disabled: bool = False,
     row: t.Optional[int] = None,
-) -> t.Callable[[t.Callable[[ViewT, UserSelect, ViewContextT], t.Awaitable[None]]], DecoratedItem[UserSelect]]:
+) -> t.Callable[
+    [t.Callable[[ViewT, UserSelect, ViewContextT], t.Awaitable[None]]], DecoratedItem[ViewT, UserSelect, ViewContextT]
+]:
     """
     A decorator to transform a function into a Discord UI UserSelectMenu's callback.
     This must be inside a subclass of View.
@@ -138,7 +140,7 @@ def user_select(
 
     Returns
     -------
-    Callable[[Callable[[ViewT, UserSelect, ViewContextT], Awaitable[None]]], DecoratedItem[UserSelect]]
+    Callable[[Callable[[ViewT, UserSelect, ViewContextT], Awaitable[None]]], DecoratedItem[ViewT, UserSelect, ViewContextT]]
         The decorated function.
 
     Raises
@@ -147,7 +149,9 @@ def user_select(
         If the decorated function is not a coroutine function.
     """
 
-    def decorator(func: t.Callable[[ViewT, UserSelect, ViewContextT], t.Awaitable[None]]) -> DecoratedItem[UserSelect]:
+    def decorator(
+        func: t.Callable[[ViewT, UserSelect, ViewContextT], t.Awaitable[None]],
+    ) -> DecoratedItem[ViewT, UserSelect, ViewContextT]:
         if not inspect.iscoroutinefunction(func):
             raise TypeError("user_select must decorate coroutine function.")
 
