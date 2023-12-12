@@ -49,6 +49,11 @@ class Menu(miru.View):
         """The current screen being displayed."""
         return self._stack[-1]
 
+    @property
+    def _flags(self) -> hikari.MessageFlag:
+        """Flags to use when sending an interaction response."""
+        return hikari.MessageFlag.EPHEMERAL if self.ephemeral else hikari.MessageFlag.NONE
+
     async def on_timeout(self) -> None:
         for item in self.children:
             item.disabled = True
@@ -64,9 +69,6 @@ class Menu(miru.View):
         except Exception as e:
             await screen.on_error(e)
 
-        if self.ephemeral:
-            self._payload["flags"] = hikari.MessageFlag.EPHEMERAL
-
         for item in screen.children:
             self.add_item(item)
 
@@ -77,7 +79,7 @@ class Menu(miru.View):
             return
 
         if self.last_context is not None and self.last_context.is_valid:
-            await self.last_context.edit_response(components=self, **self._payload)
+            await self.last_context.edit_response(components=self, **self._payload, flags=self._flags)
         elif self.last_context is None and self._inter is not None:
             await self._inter.edit_message(self.message, components=self, **self._payload)
         else:
@@ -202,12 +204,14 @@ class Menu(miru.View):
             message = await self.app.rest.create_message(channel, components=self, **self._payload)
         elif isinstance(to, miru.Context):
             self._inter = to.interaction
-            resp = await to.respond(**self._payload)
+            resp = await to.respond(components=self, flags=self._flags, **self._payload)
             message = await resp.retrieve_message()
         else:
             self._inter = to
             if not responded:
-                await to.create_initial_response(hikari.ResponseType.MESSAGE_CREATE, components=self, **self._payload)
+                await to.create_initial_response(
+                    hikari.ResponseType.MESSAGE_CREATE, components=self, flags=self._flags, **self._payload
+                )
                 message = await to.fetch_initial_response()
             else:
                 message = await to.execute(components=self, **self._payload)
