@@ -17,7 +17,8 @@ Screens
 
 Let's create a couple screens, so that later on we can navigate between them:
 
-:: 
+::
+
     class MainScreen(menu.Screen):
     # This method must be overridden in your screen classes
     # This is where you would fetch data from a database, etc. to display on your screen
@@ -94,7 +95,6 @@ Let's create a couple screens, so that later on we can navigate between them:
             # Update the message the menu is attached to with the new state of components.
             await self.menu.update_message()
     
-    ...
 
 Here, we defined 3 screens. The ``MainScreen``, our entrypoint, allows us to navigate to the other two
 screens, ``ModerationScreen`` and ``LoggingScreen``, and the latter two screens allow us to go back, 
@@ -115,6 +115,7 @@ it will automatically update it's message and build the corresponding screen's c
 To set up a menu for the screens we designed above, see this snippet below:
 
 ::
+
     @bot.listen()
     async def buttons(event: hikari.GuildMessageCreateEvent) -> None:
         # Do not process messages from bots or webhooks
@@ -131,7 +132,6 @@ To set up a menu for the screens we designed above, see this snippet below:
             # See the documentation of Menu.send() for more information
             await my_menu.send(MainScreen(my_menu), event.channel_id)
 
-    ...
 
 .. note::
     Menus do not support persistence.
