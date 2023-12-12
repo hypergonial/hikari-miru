@@ -6,8 +6,4 @@
 
 ## Usage
 
-```py
-from miru.ext import menu
-
-# TODO: Usage
-```
+For usage examples, see the [detailed example](https://github.com/hypergonial/hikari-miru/tree/main/examples/menu.py), or refer to the [documentation](https://hikari-miru.readthedocs.io/en/latest/guides/menus.html).
