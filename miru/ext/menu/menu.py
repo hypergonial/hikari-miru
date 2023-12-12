@@ -191,10 +191,7 @@ class Menu(miru.View):
 
         # Automatically defer if creating the initial menu payload is taking too long.
         if task in pending and self.autodefer and isinstance(to, hikari.MessageResponseMixin) and not responded:
-            await to.create_initial_response(
-                hikari.ResponseType.DEFERRED_MESSAGE_CREATE,
-                flags=hikari.MessageFlag.EPHEMERAL if self.ephemeral else hikari.UNDEFINED,
-            )
+            await to.create_initial_response(hikari.ResponseType.DEFERRED_MESSAGE_CREATE, flags=self._flags)
             responded = True
 
         await task
