@@ -8,8 +8,7 @@ Version 3.4.0
 =============
 
 - Add ``miru.ext.menu``, which aims to make creating complex, nested menus easy. See the documentation & example on how to use it.
-- Overhaul ``View`` autodefer logic. ``ViewContext``s are now automatically deferred if a response is not issued within 2 seconds,
-even if the callback is still running.
+- Overhaul ``View`` autodefer logic. ``ViewContext`` are now automatically deferred if a response is not issued within 2 seconds, even if the callback is still running.
 - Large amounts of typing improvements across the library.
 
 Version 3.3.1

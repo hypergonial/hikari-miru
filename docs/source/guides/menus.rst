@@ -20,26 +20,27 @@ Let's create a couple screens, so that later on we can navigate between them:
 ::
 
     class MainScreen(menu.Screen):
-    # This method must be overridden in your screen classes
-    # This is where you would fetch data from a database, etc. to display on your screen
-    async def build_content(self) -> menu.ScreenContent:
-        return menu.ScreenContent(
-            embed=hikari.Embed(
-                title="Welcome to the Miru Menu example!",
-                description="This is an example of the Miru Menu extension.",
-                color=0x00FF00,
-            ),
-        )
+        # This method must be overridden in your screen classes
+        # This is where you would fetch data from a database, etc. to display on your screen
+        async def build_content(self) -> menu.ScreenContent:
+            return menu.ScreenContent(
+                embed=hikari.Embed(
+                    title="Welcome to the Miru Menu example!",
+                    description="This is an example of the Miru Menu extension.",
+                    color=0x00FF00,
+                ),
+            )
 
-    # Note: You should always use @menu decorators inside Screen subclasses, NOT @miru
-    @menu.button(label="Moderation")
-    async def moderation(self, button: menu.ScreenButton, ctx: miru.Context) -> None:
-        # Add a new screen to the menu stack, the message is updated automatically
-        await self.menu.push(ModerationScreen(self.menu))
+        # Note: You should always use @menu decorators inside Screen subclasses, NOT @miru
+        @menu.button(label="Moderation")
+        async def moderation(self, button: menu.ScreenButton, ctx: miru.Context) -> None:
+            # Add a new screen to the menu stack, the message is updated automatically
+            await self.menu.push(ModerationScreen(self.menu))
 
-    @menu.button(label="Logging")
-    async def fun(self, button: menu.ScreenButton, ctx: miru.Context) -> None:
-        await self.menu.push(LoggingScreen(self.menu))
+        @menu.button(label="Logging")
+        async def fun(self, button: menu.ScreenButton, ctx: miru.Context) -> None:
+            await self.menu.push(LoggingScreen(self.menu))
+
 
     class ModerationScreen(menu.Screen):
         async def build_content(self) -> menu.ScreenContent:
@@ -65,6 +66,7 @@ Let's create a couple screens, so that later on we can navigate between them:
         async def kick(self, button: menu.ScreenButton, ctx: miru.Context) -> None:
             await ctx.respond("Kick!")
 
+
     class LoggingScreen(menu.Screen):
         def __init__(self, menu: menu.Menu) -> None:
             super().__init__(menu)
@@ -82,7 +84,6 @@ Let's create a couple screens, so that later on we can navigate between them:
                 ),
             )
         
-
         @menu.button(label="Back")
         async def back(self, button: menu.ScreenButton, ctx: miru.ViewContext) -> None:
             await self.menu.pop()
