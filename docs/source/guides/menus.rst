@@ -19,6 +19,12 @@ Let's create a couple screens, so that later on we can navigate between them:
 
 ::
 
+    import hikari
+    import miru
+    # Import the menu extension
+    from miru.ext import menu
+    
+
     class MainScreen(menu.Screen):
         # This method must be overridden in your screen classes
         # This is where you would fetch data from a database, etc. to display on your screen
