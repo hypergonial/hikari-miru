@@ -9,7 +9,7 @@ import hikari
 
 import miru
 
-from .screen import Screen
+from .screen import Screen, ScreenContent
 
 logger = logging.getLogger(__name__)
 
@@ -72,11 +72,20 @@ class Menu(miru.View):
         for item in screen.children:
             self.add_item(item)
 
-    async def update_message(self) -> None:
-        """Update the message with the current state of the menu."""
+    async def update_message(self, new_content: t.Optional[ScreenContent] = None) -> None:
+        """Update the message with the current state of the menu.
+
+        Parameters
+        ----------
+        new_content : Optional[ScreenContent], optional
+            The new content to use, if left as None, only the components will be updated, by default None
+        """
 
         if self.message is None:
             return
+
+        if new_content is not None:
+            self._payload = new_content._build_payload()
 
         if self.last_context is not None and self.last_context.is_valid:
             await self.last_context.edit_response(components=self, **self._payload, flags=self._flags)
