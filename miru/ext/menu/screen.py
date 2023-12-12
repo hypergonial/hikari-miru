@@ -70,7 +70,7 @@ class Screen(abc.ABC):
     """
 
     _screen_children: t.Sequence[
-        DecoratedScreenItem[te.Self, ScreenItem, ViewContext]
+        DecoratedScreenItem[Screen, ScreenItem, ViewContext]
     ] = []  # Decorated callbacks that need to be turned into items
 
     def __init_subclass__(cls) -> None:

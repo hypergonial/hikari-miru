@@ -59,7 +59,7 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder, ViewContext, ViewIte
     """
 
     _view_children: t.MutableSequence[
-        DecoratedItem[te.Self, ViewItem, ViewContext]
+        DecoratedItem[View, ViewItem, ViewContext]
     ] = []  # Decorated callbacks that need to be turned into items
 
     def __init_subclass__(cls) -> None:

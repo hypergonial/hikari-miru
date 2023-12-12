@@ -107,11 +107,6 @@ class EventHandler:
     _handlers: t.MutableMapping[str, ItemHandler[t.Any, t.Any, t.Any]] = {}
     """A mapping of custom_id to ItemHandler. This only contains handlers that are not bound to a message."""
 
-    def __new__(cls: t.Type[EventHandler]) -> EventHandler:
-        if not hasattr(cls, "instance"):  # Ensure that class remains singleton
-            cls.instance = super(EventHandler, cls).__new__(cls)
-        return cls.instance
-
     def start(self, app: MiruAware) -> None:
         """Start all custom event listeners, this is called during miru.install()"""
         if self._app is not None:
