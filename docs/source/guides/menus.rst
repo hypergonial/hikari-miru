@@ -8,12 +8,12 @@ to handle and provides useful abstractions.
     ``miru.ext.menu`` is included with your installation, but is not imported implicitly,
     thus you have to explicitly import the module.
 
+Screens
+-------
+
 The foundation of a menu in ``ext.menu`` is a :obj:`miru.ext.menu.screen.Screen`. It behaves similarly to a :obj:`miru.view.View`,
 in that you can add items such as buttons and select menus to it, however it is not a direct subclass of View. Instead, a collection of
 screens forms a :obj:`miru.ext.menu.menu.Menu`, which manages the screens and the navigation between them.
-
-Screens
--------
 
 Let's create a couple screens, so that later on we can navigate between them:
 
@@ -102,9 +102,9 @@ screens, ``ModerationScreen`` and ``LoggingScreen``, and the latter two screens 
 returning to ``MainScreen``. You may also create more complex, nested navigation, this is just a simple example.
 
 .. note::
-    You should always use ``ScreenItem``s inside ``Screen``s, such as ``ScreenButton`` instead of ``Button``.
+    You should always use ``ScreenItem`` inside ``Screen``s, such as ``ScreenButton`` instead of ``Button``.
 
-    The ``@menu`` decorators create ``ScreenItem``s, but you can also create them via subclassing and then calling
+    The ``@menu`` decorators create ``ScreenItem``, but you can also create them via subclassing and then calling
     ``Screen.add_item()``, similarly to how it is showcased in the ``Getting Started > Subclassing`` section of this guide.
 
 Menu
