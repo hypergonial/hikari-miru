@@ -281,6 +281,39 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT, ContextT, ItemT]):  # t
 
         return self
 
+    def get_item_by(self, predicate: t.Callable[[ItemT], bool]) -> t.Optional[ItemT]:
+        """Get the first item that matches the given predicate.
+
+        Parameters
+        ----------
+        predicate : Callable[[Item[Any]], bool]
+            A predicate to match the item.
+
+        Returns
+        -------
+        Optional[Item[Any]]
+            The item that matched the predicate or None.
+        """
+        for item in self.children:
+            if predicate(item):
+                return item
+        return None
+
+    def get_item_by_id(self, custom_id: str) -> t.Optional[ItemT]:
+        """Get the first item that matches the given custom ID.
+
+        Parameters
+        ----------
+        custom_id : str
+            The custom_id of the component.
+
+        Returns
+        -------
+        Optional[Item[Any]]
+            The item that matched the custom ID or None.
+        """
+        return self.get_item_by(lambda item: item.custom_id == custom_id)
+
     def build(self) -> t.Sequence[BuilderT]:
         """Creates the action rows the item handler represents.
 

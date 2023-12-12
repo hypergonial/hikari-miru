@@ -208,6 +208,40 @@ class Screen(abc.ABC):
         self._children.clear()
         return self
 
+    def get_item_by(self, predicate: t.Callable[[ScreenItem], bool]) -> t.Optional[ScreenItem]:
+        """Get the first item that matches the given predicate.
+
+        Parameters
+        ----------
+        predicate : Callable[[ScreenItem], bool]
+            A predicate to match the item.
+
+        Returns
+        -------
+        Optional[ScreenItem]
+            The item that matched the predicate or None.
+        """
+        for item in self.children:
+            if predicate(item):
+                return item
+
+        return None
+
+    def get_item_by_id(self, custom_id: str) -> t.Optional[ScreenItem]:
+        """Get the first item with the given custom ID.
+
+        Parameters
+        ----------
+        custom_id : str
+            The custom_id of the component.
+
+        Returns
+        -------
+        Optional[ScreenItem]
+            The item with the given custom ID or None.
+        """
+        return self.get_item_by(lambda item: item.custom_id == custom_id)
+
 
 # MIT License
 #
