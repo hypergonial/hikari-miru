@@ -1,13 +1,27 @@
-from .bootstrap import *
-from .button import *
-from .context import *
-from .events import *
-from .exceptions import *
-from .modal import *
-from .select import *
-from .text_input import *
-from .traits import *
-from .view import *
+from .bootstrap import install, uninstall
+from .button import Button, button
+from .context import Context, InteractionResponse, ModalContext, RawComponentContext, RawModalContext, ViewContext
+from .events import ComponentInteractionCreateEvent, Event, ModalInteractionCreateEvent
+from .exceptions import BootstrapFailureError, HandlerFullError, ItemAlreadyAttachedError, MiruException, RowFullError
+from .internal.about import __author__, __author_email__, __license__, __maintainer__, __url__, __version__
+from .modal import Modal
+from .select import (
+    ChannelSelect,
+    MentionableSelect,
+    RoleSelect,
+    SelectBase,
+    SelectOption,
+    TextSelect,
+    UserSelect,
+    channel_select,
+    mentionable_select,
+    role_select,
+    text_select,
+    user_select,
+)
+from .text_input import TextInput
+from .traits import MiruAware
+from .view import View, get_view
 
 __all__ = (
     "Context",
@@ -46,9 +60,13 @@ __all__ = (
     "MiruAware",
     "View",
     "get_view",
+    "__version__",
+    "__author__",
+    "__author_email__",
+    "__license__",
+    "__url__",
+    "__maintainer__",
 )
-
-__version__ = "3.4.0"
 
 # MIT License
 #

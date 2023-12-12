@@ -9,10 +9,10 @@ name = "miru"
 
 
 def parse_meta() -> types.SimpleNamespace:
-    with open(os.path.join(name, "__init__.py")) as fp:
+    with open(os.path.join(name, "internal", "about.py")) as fp:
         code = fp.read()
 
-    token_pattern = re.compile(r"^__(?P<key>\w+)?__\s*=\s*(?P<quote>(?:'{3}|\"{3}|'|\"))(?P<value>.*?)(?P=quote)", re.M)
+    token_pattern = re.compile(r"^__(?P<key>\w+)?__\s*:?.*=\s*(?P<quote>(?:'{3}|\"{3}|'|\"))(?P<value>.*?)(?P=quote)", re.M)
 
     groups = {}
 
@@ -42,12 +42,13 @@ setup(
     description="An alternative component handler for hikari, inspired by discord.py's views.",
     long_description=long_description(),
     long_description_content_type="text/markdown",
-    author="hypergonial",
-    author_email="46067571+hypergonial@users.noreply.github.com",
-    url="https://github.com/hypergonial/hikari-miru",
+    author=meta.author,
+    author_email=meta.author_email,
+    maintainer=meta.maintainer,
+    url=meta.url,
     packages=find_namespace_packages(include=[name + "*"]),
     package_data={"miru": ["py.typed"], "miru.ext.nav": ["py.typed"]},
-    license="MIT",
+    license=meta.license,
     include_package_data=True,
     zip_safe=False,
     install_requires=parse_requirements_file("requirements.txt"),
