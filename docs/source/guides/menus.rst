@@ -102,7 +102,7 @@ screens, ``ModerationScreen`` and ``LoggingScreen``, and the latter two screens 
 returning to ``MainScreen``. You may also create more complex, nested navigation, this is just a simple example.
 
 .. note::
-    You should always use ``ScreenItem`` inside ``Screen``s, such as ``ScreenButton`` instead of ``Button``.
+    You should always use ``ScreenItem`` inside ``Screen``, such as ``ScreenButton`` instead of ``Button``.
 
     The ``@menu`` decorators create ``ScreenItem``, but you can also create them via subclassing and then calling
     ``Screen.add_item()``, similarly to how it is showcased in the ``Getting Started > Subclassing`` section of this guide.
