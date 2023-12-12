@@ -110,12 +110,31 @@ class Screen(abc.ABC):
     @abc.abstractmethod
     async def build_content(self) -> ScreenContent:
         """Build the content payload for this screen.
+        This function is called whenever the screen comes into view.
 
         Returns
         -------
         ScreenContent
             The content payload for this screen.
         """
+
+    async def on_dispose(self) -> None:
+        """Called when this screen is disposed.
+        This happens when the menu navigates away from this screen.
+
+        Note that this is not the same as the screen being
+        removed from the menu, although it can be.
+        """
+
+    async def on_error(self, error: Exception) -> None:
+        """Called when an exception is raised in build_content or on_dispose.
+
+        Parameters
+        ----------
+        error : Exception
+            The exception that was raised.
+        """
+        raise error
 
     def add_item(self, item: ScreenItem) -> te.Self:
         """Adds a new item to the screen.

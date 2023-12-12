@@ -51,6 +51,8 @@ class ViewContext(RawComponentContext):
                 return
             # ctx.defer() also acquires _response_lock so we need to use self._interaction directly
             await self._interaction.create_initial_response(hikari.ResponseType.DEFERRED_MESSAGE_UPDATE)
+            self._issued_response = True
+            await super()._create_response()
 
     @property
     def view(self) -> View:

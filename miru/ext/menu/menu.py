@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import datetime
 import logging
 import typing as t
@@ -13,8 +14,6 @@ from .screen import Screen
 logger = logging.getLogger(__name__)
 
 __all__ = ("Menu",)
-
-ViewContextT = t.TypeVar("ViewContextT", bound="miru.ViewContext")
 
 
 class Menu(miru.View):
@@ -33,8 +32,6 @@ class Menu(miru.View):
         self._stack: t.List[Screen] = []
         # The interaction that was used to send the menu, if any.
         self._inter: t.Optional[hikari.MessageResponseMixin[t.Any]] = None
-        self._responded = False
-
         self._ephemeral: bool = False
         self._payload: t.Dict[str, t.Any] = {}
 
@@ -44,10 +41,12 @@ class Menu(miru.View):
 
     @property
     def ephemeral(self) -> bool:
+        """If true, the menu will be sent ephemerally."""
         return self._ephemeral
 
     @property
     def current_screen(self) -> Screen:
+        """The current screen being displayed."""
         return self._stack[-1]
 
     async def on_timeout(self) -> None:
@@ -58,27 +57,18 @@ class Menu(miru.View):
 
     async def _load_screen(self, screen: Screen) -> None:
         """Load a screen into the menu, updating it's state."""
-
         self.clear_items()
 
-        self._payload = (await screen.build_content())._build_payload()
+        try:
+            self._payload = (await screen.build_content())._build_payload()
+        except Exception as e:
+            await screen.on_error(e)
 
         if self.ephemeral:
             self._payload["flags"] = hikari.MessageFlag.EPHEMERAL
 
         for item in screen.children:
             self.add_item(item)
-
-    async def _defer(self) -> None:
-        flags: hikari.UndefinedOr[hikari.MessageFlag] = (
-            hikari.MessageFlag.EPHEMERAL if self.ephemeral else hikari.UNDEFINED
-        )
-
-        if self.last_context is not None and self.last_context.is_valid:
-            await self.last_context.defer(flags=flags)
-        elif self._inter is not None and not self._responded:
-            await self._inter.create_initial_response(hikari.ResponseType.DEFERRED_MESSAGE_CREATE, flags=flags)
-            self._responded = True
 
     async def update_message(self) -> None:
         """Update the message with the current state of the menu."""
@@ -101,7 +91,7 @@ class Menu(miru.View):
         screen : Screen
             The screen to push onto the stack and display.
         """
-
+        await self.current_screen.on_dispose()
         self._stack.append(screen)
 
         await self._load_screen(screen)
@@ -129,8 +119,14 @@ class Menu(miru.View):
         if count < 1:
             raise ValueError("Cannot pop less than 1 screen.")
 
-        if count > len(self._stack) + 1:
+        if count >= len(self._stack):
             raise ValueError("Cannot pop the last screen.")
+
+        for i in range(len(self._stack) - 1, len(self._stack) - count - 1, -1):
+            try:
+                await self._stack[i].on_dispose()
+            except Exception as e:
+                await self._stack[i].on_error(e)
 
         self._stack = self._stack[:-count]
         await self._load_screen(self.current_screen)
@@ -143,6 +139,12 @@ class Menu(miru.View):
 
         if len(self._stack) == 1:
             return
+
+        for i in range(len(self._stack) - 1, 0, -1):
+            try:
+                await self._stack[i].on_dispose()
+            except Exception as e:
+                await self._stack[i].on_error(e)
 
         self._stack = [self._stack[0]]
 
@@ -175,7 +177,6 @@ class Menu(miru.View):
         """
 
         self._ephemeral = ephemeral if isinstance(to, (hikari.MessageResponseMixin, miru.Context)) else False
-        self._responded = responded
         self._stack.append(starting_screen)
 
         if self.ephemeral and self.timeout and self.timeout > 900:
@@ -183,7 +184,18 @@ class Menu(miru.View):
                 f"Using a timeout value longer than 900 seconds (Used {self.timeout}) in ephemeral menu {type(self).__name__} may cause on_timeout to fail."
             )
 
-        await self._load_screen(starting_screen)
+        task = asyncio.create_task(self._load_screen(starting_screen))
+        done, pending = await asyncio.wait({task}, timeout=2.0)
+
+        # Automatically defer if creating the initial menu payload is taking too long.
+        if task in pending and self.autodefer and isinstance(to, hikari.MessageResponseMixin) and not responded:
+            await to.create_initial_response(
+                hikari.ResponseType.DEFERRED_MESSAGE_CREATE,
+                flags=hikari.MessageFlag.EPHEMERAL if self.ephemeral else hikari.UNDEFINED,
+            )
+            responded = True
+
+        await task
 
         if isinstance(to, (int, hikari.TextableChannel)):
             channel = hikari.Snowflake(to)
@@ -194,9 +206,8 @@ class Menu(miru.View):
             message = await resp.retrieve_message()
         else:
             self._inter = to
-            if not self._responded:
+            if not responded:
                 await to.create_initial_response(hikari.ResponseType.MESSAGE_CREATE, components=self, **self._payload)
-                self._responded = True
                 message = await to.fetch_initial_response()
             else:
                 message = await to.execute(components=self, **self._payload)
