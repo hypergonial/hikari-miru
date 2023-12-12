@@ -20,3 +20,4 @@ If you think anything is missing, feel free to open an issue or pull request.
    guides/persistent_views
    guides/modals
    guides/navigators
+   guides/menus

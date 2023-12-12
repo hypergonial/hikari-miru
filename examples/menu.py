@@ -82,6 +82,7 @@ class LoggingScreen(menu.Screen):
         self.is_enabled = not self.is_enabled
         button.style = hikari.ButtonStyle.SUCCESS if self.is_enabled else hikari.ButtonStyle.DANGER
         button.label = "Disable" if self.is_enabled else "Enable"
+        # Update the message the menu is attached to with the new state of components.
         await self.menu.update_message()
 
 bot = hikari.GatewayBot("...")
@@ -102,7 +103,7 @@ async def buttons(event: hikari.GuildMessageCreateEvent) -> None:
         my_menu = menu.Menu()  # Create a new Menu
 
         # Note: You can also send the menu to an interaction or miru context
-        # See the documentation of NavigatorView.send() for more information
+        # See the documentation of Menu.send() for more information
         await my_menu.send(MainScreen(my_menu), event.channel_id)
 
 
