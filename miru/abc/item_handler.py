@@ -95,10 +95,8 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT, ContextT, ItemT]):  # t
 
     Parameters
     ----------
-    timeout : Optional[float], optional
+    timeout : Optional[Union[float, int, datetime.timedelta]], optional
         The duration after which the item handler times out, in seconds, by default 120.0
-    autodefer : bool
-        If unhandled interactions should be automatically deferred or not, by default True
 
     Raises
     ------

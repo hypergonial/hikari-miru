@@ -32,10 +32,8 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder, ModalContext, ModalIt
         The title of the modal, appears on the top of the modal dialog box.
     custom_id : str
         The custom identifier of the modal, identifies the modal through interactions.
-    timeout : Optional[float]
+    timeout : Optional[Union[float, int, datetime.timedelta]], optional
         The duration after which the modal times out, in seconds, by default 300.0
-    autodefer : bool
-        If unhandled interactions should be automatically deferred or not, by default True
 
     Raises
     ------

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import datetime
 import logging
 import typing as t
 
@@ -17,9 +18,17 @@ ViewContextT = t.TypeVar("ViewContextT", bound="miru.ViewContext")
 
 
 class Menu(miru.View):
-    """A menu that can be used to display multiple nested screens of components."""
+    """A menu that can be used to display multiple nested screens of components.
 
-    def __init__(self, *, timeout: float = 300.0, autodefer: bool = True):
+    Parameters
+    ----------
+    timeout : Optional[Union[float, int, datetime.timedelta]], optional
+        The duration after which the menu times out, in seconds, by default 300.0
+    autodefer : bool, optional
+        If enabled, interactions will be automatically deferred if not responded to within 2 seconds, by default True
+    """
+
+    def __init__(self, *, timeout: t.Optional[t.Union[float, int, datetime.timedelta]] = 300.0, autodefer: bool = True):
         super().__init__(timeout=timeout, autodefer=autodefer)
         self._stack: t.List[Screen] = []
         # The interaction that was used to send the menu, if any.
@@ -85,7 +94,13 @@ class Menu(miru.View):
             await self.message.edit(components=self, **self._payload)
 
     async def push(self, screen: Screen) -> None:
-        """Push a screen onto the menu stack and display it."""
+        """Push a screen onto the menu stack and display it.
+
+        Parameters
+        ----------
+        screen : Screen
+            The screen to push onto the stack and display.
+        """
 
         self._stack.append(screen)
 

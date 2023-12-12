@@ -30,10 +30,10 @@ class NavigatorView(View):
         A list of strings, embeds or page objects that this navigator should paginate.
     buttons : Optional[List[NavButton[NavigatorViewT]]], optional
         A list of navigation buttons to override the default ones with, by default None
-    timeout : Optional[float], optional
+    timeout : Optional[Union[float, int, datetime.timedelta]], optional
         The duration after which the view times out, in seconds, by default 120.0
     autodefer : bool, optional
-        If unhandled interactions should be automatically deferred or not, by default True
+        If enabled, interactions will be automatically deferred if not responded to within 2 seconds, by default True
 
     Raises
     ------

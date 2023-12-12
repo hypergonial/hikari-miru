@@ -44,10 +44,10 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder, ViewContext, ViewIte
 
     Parameters
     ----------
-    timeout : Optional[float], optional
+    timeout : Optional[Union[float, int, datetime.timedelta]], optional
         The duration after which the view times out, in seconds, by default 120.0
     autodefer : bool, optional
-        If unhandled interactions should be automatically deferred or not, by default True
+        If enabled, interactions will be automatically deferred if not responded to within 2 seconds, by default True
 
     Raises
     ------
@@ -146,7 +146,7 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder, ViewContext, ViewIte
         timeout : Optional[float], optional
             The timeout of the created view, by default 120
         autodefer : bool, optional
-            If unhandled interactions should be automatically deferred or not, by default True
+            If enabled, interactions will be automatically deferred if not responded to within 2 seconds, by default True
 
         Returns
         -------

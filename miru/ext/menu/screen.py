@@ -59,7 +59,13 @@ class ScreenContent:
 
 
 class Screen(abc.ABC):
-    """A screen in a menu. Acts similarly to a View, although it is not a subclass of it."""
+    """A screen in a menu. Acts similarly to a View, although it is not a subclass of it.
+
+    Parameters
+    ----------
+    menu : Menu
+        The menu that this screen belongs to.
+    """
 
     _screen_children: t.Sequence[
         DecoratedScreenItem[ScreenItem]
@@ -96,12 +102,18 @@ class Screen(abc.ABC):
 
     @property
     def children(self) -> t.Sequence[ScreenItem]:
-        """The children of this view."""
+        """The items contained in this screen."""
         return self._children
 
     @abc.abstractmethod
     async def build_content(self) -> ScreenContent:
-        """Build the content payload for this screen."""
+        """Build the content payload for this screen.
+
+        Returns
+        -------
+        ScreenContent
+            The content payload for this screen.
+        """
 
     def add_item(self, item: ScreenItem) -> te.Self:
         """Adds a new item to the screen.

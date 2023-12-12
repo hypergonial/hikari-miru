@@ -36,7 +36,7 @@ ScreenItemT = t.TypeVar("ScreenItemT", bound="ScreenItem")
 
 
 class ScreenItem(ViewItem, abc.ABC):
-    """A baseclass for all navigation items. NavigatorView requires instances of this class as it's items."""
+    """A baseclass for all screen items. Screen requires instances of this class as it's items."""
 
     def __init__(
         self,
@@ -65,6 +65,13 @@ class ScreenItem(ViewItem, abc.ABC):
         if not self._handler:
             raise AttributeError(f"{type(self).__name__} hasn't been attached to a view yet")
         return self._handler
+
+    @property
+    def menu(self) -> Menu:
+        """
+        The menu this item is attached to. Alias for `view`.
+        """
+        return self.view
 
     @property
     def screen(self) -> Screen:
@@ -339,7 +346,7 @@ def role_select(
     Parameters
     ----------
     custom_id : Optional[str], optional
-        The custom ID for the RoleSelectMenu, by default None
+        The custom ID for the select menu, by default None
     placeholder : Optional[str], optional
         The placeholder text to display when no roles are selected, by default None
     min_values : int, optional
@@ -347,14 +354,14 @@ def role_select(
     max_values : int, optional
         The maximum number of roles that can be selected, by default 1
     disabled : bool, optional
-        Whether the RoleSelectMenu is disabled or not, by default False
+        Whether the select menu is disabled or not, by default False
     row : Optional[int], optional
-        The row number to place the RoleSelectMenu in, by default None
+        The row number to place the select menu in, by default None
 
     Returns
     -------
     Callable[[Callable[[ScreenT, ScreenRoleSelect, ViewContextT], Awaitable[None]]], DecoratedScreenItem[ScreenRoleSelect]]
-        The decorated function that serves as the callback for the RoleSelectMenu.
+        The decorated function that serves as the callback for the select menu.
 
     Raises
     ------
@@ -395,7 +402,29 @@ def text_select(
 ]:
     """
     A decorator to transform a function into a Discord UI TextSelectMenu's callback.
-    This must be inside a subclass of View.
+    This must be inside a subclass of Screen.
+
+    Parameters
+    ----------
+    options : Sequence[Union[hikari.SelectMenuOption, miru.SelectOption]]
+        The options to add to the select menu.
+    custom_id : Optional[str], optional
+        The custom ID for the select menu, by default None
+    placeholder : Optional[str], optional
+        The placeholder text to display when no options are selected, by default None
+    min_values : int, optional
+        The minimum number of options that can be selected, by default 1
+    max_values : int, optional
+        The maximum number of options that can be selected, by default 1
+    disabled : bool, optional
+        Whether the select menu is disabled or not, by default False
+    row : Optional[int], optional
+        The row number to place the select menu in, by default None
+
+    Returns
+    -------
+    Callable[[Callable[[ScreenT, ScreenTextSelect, ViewContextT], Awaitable[None]]], DecoratedScreenItem[ScreenTextSelect]]
+        The decorated function that serves as the callback for the select menu.
     """
 
     def decorator(
@@ -431,7 +460,27 @@ def user_select(
 ]:
     """
     A decorator to transform a function into a Discord UI UserSelectMenu's callback.
-    This must be inside a subclass of View.
+    This must be inside a subclass of Screen.
+
+    Parameters
+    ----------
+    custom_id : Optional[str], optional
+        The custom ID for the select menu, by default None
+    placeholder : Optional[str], optional
+        The placeholder text to display when no users are selected, by default None
+    min_values : int, optional
+        The minimum number of users that can be selected, by default 1
+    max_values : int, optional
+        The maximum number of users that can be selected, by default 1
+    disabled : bool, optional
+        Whether the select menu is disabled or not, by default False
+    row : Optional[int], optional
+        The row number to place the select menu in, by default None
+
+    Returns
+    -------
+    Callable[[Callable[[ScreenT, ScreenUserSelect, ViewContextT], Awaitable[None]]], DecoratedScreenItem[ScreenUserSelect]]
+        The decorated function that serves as the callback for the select menu.
     """
 
     def decorator(
