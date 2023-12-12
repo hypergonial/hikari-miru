@@ -44,6 +44,10 @@ class ModalContext(RawModalContext):
     ) -> T | str:
         """Get the value for the first modal item that matches the given predicate.
 
+        Deprecated
+        ----------
+        Will be removed in 3.5.0. Use `ModalContext.get_value_by` instead.
+
         Parameters
         ----------
         predicate : Callable[[ModalItem], bool]
