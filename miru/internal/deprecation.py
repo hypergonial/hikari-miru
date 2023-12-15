@@ -8,7 +8,7 @@ from .version import CURRENT_VERSION, Version
 __all__ = ("warn_deprecate",)
 
 
-def warn_deprecate(what: str, when: Version, use_instead: t.Optional[str] = None) -> None:
+def warn_deprecate(*, what: str, when: Version, use_instead: t.Optional[str] = None) -> None:
     """Warn about a deprecation.
 
     Parameters

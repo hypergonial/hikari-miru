@@ -65,7 +65,9 @@ class ModalContext(RawModalContext):
         KeyError
             The item was not found and no default was provided.
         """
-        warn_deprecate("ModalContext.get_value_by_predicate", Version(3, 5, 0), "ModalContext.get_value_by")
+        warn_deprecate(
+            what="ModalContext.get_value_by_predicate", when=Version(3, 5, 0), use_instead="ModalContext.get_value_by"
+        )
         return self.get_value_by(predicate, default=default)
 
     def get_value_by(

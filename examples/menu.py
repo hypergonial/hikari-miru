@@ -28,7 +28,7 @@ class MainScreen(menu.Screen):
         await self.menu.push(ModerationScreen(self.menu))
 
     @menu.button(label="Logging")
-    async def fun(self, button: menu.ScreenButton, ctx: miru.Context) -> None:
+    async def logging(self, button: menu.ScreenButton, ctx: miru.Context) -> None:
         await self.menu.push(LoggingScreen(self.menu))
 
 class ModerationScreen(menu.Screen):
