@@ -128,8 +128,7 @@ def channel_select(
     [t.Callable[[ViewT, ChannelSelect, ViewContextT], t.Awaitable[None]]],
     DecoratedItem[ViewT, ChannelSelect, ViewContextT],
 ]:
-    """
-    A decorator to transform a function into a Discord UI ChannelSelectMenu's callback.
+    """A decorator to transform a function into a Discord UI ChannelSelectMenu's callback.
     This must be inside a subclass of View.
 
     Parameters

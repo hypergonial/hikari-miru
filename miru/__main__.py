@@ -1,3 +1,4 @@
+"""CLI entry point for miru."""
 import os
 import platform
 import sys

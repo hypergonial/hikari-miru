@@ -120,8 +120,7 @@ def mentionable_select(
     [t.Callable[[ViewT, MentionableSelect, ViewContextT], t.Awaitable[None]]],
     DecoratedItem[ViewT, MentionableSelect, ViewContextT],
 ]:
-    """
-    A decorator to transform a function into a Discord UI MentionableSelectMenu's callback.
+    """A decorator to transform a function into a Discord UI MentionableSelectMenu's callback.
     This must be inside a subclass of View.
 
     Parameters

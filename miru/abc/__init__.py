@@ -1,3 +1,5 @@
+"""Abstract types used by the miru."""
+
 from .item import *
 from .item_handler import *
 

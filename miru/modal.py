@@ -47,9 +47,7 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder, ModalContext, ModalIt
     _modal_children: t.Mapping[str, ModalItem] = {}
 
     def __init_subclass__(cls) -> None:
-        """
-        Get ModalItem classvars
-        """
+        """Get ModalItem classvars."""
         children: t.MutableMapping[str, ModalItem] = {}
         for base_cls in reversed(cls.mro()):
             for name, value in base_cls.__dict__.items():
@@ -86,9 +84,7 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder, ModalContext, ModalIt
 
     @property
     def title(self) -> str:
-        """
-        The title of this modal. Will be displayed on the top of the modal prompt.
-        """
+        """The title of this modal. Will be displayed on the top of the modal prompt."""
         return self._title
 
     @title.setter
@@ -103,9 +99,7 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder, ModalContext, ModalIt
 
     @property
     def custom_id(self) -> str:
-        """
-        The custom identifier of this modal. Interactions belonging to it are tracked by this ID.
-        """
+        """The custom identifier of this modal. Interactions belonging to it are tracked by this ID."""
         return self._custom_id
 
     @custom_id.setter
@@ -120,9 +114,7 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder, ModalContext, ModalIt
 
     @property
     def values(self) -> t.Optional[t.Mapping[ModalItem, str]]:
-        """
-        The input values received by this modal.
-        """
+        """The input values received by this modal."""
         return self._values
 
     @property
@@ -210,8 +202,7 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder, ModalContext, ModalIt
         *,
         cls: t.Type[ModalContext] = ModalContext,
     ) -> ModalContext:
-        """
-        Get the context for this modal. Override this function to provide a custom context object.
+        """Get the context for this modal. Override this function to provide a custom context object.
 
         Parameters
         ----------
@@ -219,6 +210,8 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder, ModalContext, ModalIt
             The interaction to construct the context from.
         cls : Optional[Type[ModalContext]], optional
             The class to use for the context, by default ModalContext.
+        values : Mapping[ModalItem, str]
+            The values received by this modal, mapped to the items they belong to.
 
         Returns
         -------
@@ -228,9 +221,7 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder, ModalContext, ModalIt
         return cls(self, interaction, values)
 
     async def _handle_callback(self, context: ModalContextT) -> None:
-        """
-        Handle the callback of the modal. Separate task in case the modal is stopped in the callback.
-        """
+        """Handle the callback of the modal. Separate task in case the modal is stopped in the callback."""
         try:
             await self.callback(context)
 
@@ -270,7 +261,8 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder, ModalContext, ModalIt
 
     async def start(self) -> None:
         """Start up the modal and begin listening for interactions.
-        This should not be called manually, use `Modal.send()` or `Context.respond_with_modal()` instead."""
+        This should not be called manually, use `Modal.send()` or `Context.respond_with_modal()` instead.
+        """
         if not self._events:
             raise BootstrapFailureError(
                 f"Cannot start Modal {type(self).__name__} before calling miru.install() first."

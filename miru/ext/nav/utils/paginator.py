@@ -6,7 +6,7 @@ __all__ = ("Paginator",)
 
 
 class Paginator:
-    """A paginator that can be used to paginate long strings to ensure a consistent character count per page.
+    r"""A paginator that can be used to paginate long strings to ensure a consistent character count per page.
 
     Parameters
     ----------
@@ -17,7 +17,7 @@ class Paginator:
     suffix : str, optional
         A suffix to insert every page, by default ""
     line_separator : str, optional
-        The character used to divide lines, by default "\\n"
+        The character used to divide lines, by default "\n"
     """
 
     __slots__ = ("_max_len", "_prefix", "_suffix", "_line_separator", "_pages")
@@ -31,7 +31,6 @@ class Paginator:
 
     def _add_line(self, line: str) -> None:
         """Add a line to the paginator."""
-
         if len(self._prefix + line + self._line_separator + self._suffix) > self._max_len:
             raise ValueError(
                 f"A single line cannot be longer than the maximum length of a page ({self._max_len} characters)."

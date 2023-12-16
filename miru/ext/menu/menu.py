@@ -82,7 +82,6 @@ class Menu(miru.View):
         new_content : Optional[ScreenContent], optional
             The new content to use, if left as None, only the components will be updated, by default None
         """
-
         if self.message is None:
             return
 
@@ -188,7 +187,6 @@ class Menu(miru.View):
             If an interaction was provided, determines if the interaction was previously acknowledged or not.
             This is ignored if a channel or context was provided.
         """
-
         self._ephemeral = ephemeral if isinstance(to, (hikari.MessageResponseMixin, miru.Context)) else False
         self._stack.append(starting_screen)
 

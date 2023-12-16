@@ -20,9 +20,7 @@ __all__ = ("SelectOption", "TextSelect", "text_select")
 
 
 class SelectOption:
-    """
-    A more lenient way to instantiate select options.
-    """
+    """A more lenient way to instantiate select options."""
 
     __slots__ = ("label", "value", "description", "emoji", "is_default")
 
@@ -119,9 +117,7 @@ class TextSelect(SelectBase):
 
     @property
     def placeholder(self) -> t.Optional[str]:
-        """
-        The placeholder text that appears before the select menu is clicked.
-        """
+        """The placeholder text that appears before the select menu is clicked."""
         return self._placeholder
 
     @placeholder.setter
@@ -134,9 +130,7 @@ class TextSelect(SelectBase):
 
     @property
     def options(self) -> t.Sequence[t.Union[hikari.SelectMenuOption, SelectOption]]:
-        """
-        The select menu's options.
-        """
+        """The select menu's options."""
         return self._options
 
     @options.setter
@@ -207,8 +201,7 @@ def text_select(
 ) -> t.Callable[
     [t.Callable[[ViewT, TextSelect, ViewContextT], t.Awaitable[None]]], DecoratedItem[ViewT, TextSelect, ViewContextT]
 ]:
-    """
-    A decorator to transform a function into a Discord UI TextSelectMenu's callback.
+    """A decorator to transform a function into a Discord UI TextSelectMenu's callback.
     This must be inside a subclass of View.
 
     Parameters

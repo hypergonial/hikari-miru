@@ -7,9 +7,7 @@ __all__ = ("MiruAware",)
 
 @typing.runtime_checkable
 class MiruAware(hikari.RESTAware, hikari.EventManagerAware, typing.Protocol):
-    """
-    A trait that implements RESTAware and EventManagerAware.
-    """
+    """A trait that implements RESTAware and EventManagerAware."""
 
 
 # MIT License

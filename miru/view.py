@@ -60,14 +60,12 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder, ViewContext, ViewIte
         Raised if miru.install() was never called before instantiation.
     """
 
-    _view_children: t.MutableSequence[
-        DecoratedItem[View, ViewItem, ViewContext]
+    _view_children: t.ClassVar[
+        t.MutableSequence[DecoratedItem[View, ViewItem, ViewContext]]
     ] = []  # Decorated callbacks that need to be turned into items
 
     def __init_subclass__(cls) -> None:
-        """
-        Get decorated callbacks
-        """
+        """Get decorated callbacks."""
         children: t.MutableSequence[DecoratedItem[View, ViewItem, ViewContext]] = []
         for base_cls in reversed(cls.mro()):
             for value in base_cls.__dict__.values():
@@ -97,40 +95,29 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder, ViewContext, ViewIte
 
     @property
     def is_persistent(self) -> bool:
-        """
-        Determines if this view is persistent or not.
-        """
-
+        """Determines if this view is persistent or not."""
         return self.timeout is None and all(
             isinstance(item, ViewItem) and item._is_persistent for item in self.children
         )
 
     @property
     def message(self) -> t.Optional[hikari.Message]:
-        """
-        The message this view is bound to. Will be None if the view is not bound, or if a message_id was passed to view.start().
-        """
+        """The message this view is bound to. Will be None if the view is not bound, or if a message_id was passed to view.start()."""
         return self._message
 
     @property
     def message_id(self) -> t.Optional[hikari.Snowflake]:
-        """
-        The message ID this view is bound to. Will be None if the view is an unbound persistent view.
-        """
+        """The message ID this view is bound to. Will be None if the view is an unbound persistent view."""
         return self._message_id
 
     @property
     def is_bound(self) -> bool:
-        """
-        Determines if the view is bound to a message or not. If this is False, message edits will not be supported.
-        """
+        """Determines if the view is bound to a message or not. If this is False, message edits will not be supported."""
         return self._message_id is not None
 
     @property
     def autodefer(self) -> bool:
-        """
-        A boolean indicating if the received interaction should automatically be deferred if not responded to or not.
-        """
+        """A boolean indicating if the received interaction should automatically be deferred if not responded to or not."""
         return self._autodefer
 
     @property
@@ -163,7 +150,6 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder, ViewContext, ViewIte
             Any custom behaviour (such as callbacks) will not be re-created,
             if you want to access an already running view that is bound to a message, use :obj:`miru.view.get_view` instead.
         """
-
         view = cls(timeout=timeout, autodefer=autodefer)
 
         if not message.components:
@@ -204,7 +190,6 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder, ViewContext, ViewIte
         View
             The view the item was added to.
         """
-
         if not isinstance(item, ViewItem):
             raise TypeError(f"Expected type ViewItem for parameter item, not {type(item).__name__}.")
 
@@ -251,8 +236,7 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder, ViewContext, ViewIte
     def get_context(
         self, interaction: hikari.ComponentInteraction, *, cls: t.Type[ViewContext] = ViewContext
     ) -> ViewContext:
-        """
-        Get the context for this view. Override this function to provide a custom context object.
+        """Get the context for this view. Override this function to provide a custom context object.
 
         Parameters
         ----------
@@ -269,9 +253,7 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder, ViewContext, ViewIte
         return cls(self, interaction)
 
     async def _handle_callback(self, item: ViewItem, context: ViewContextT) -> None:
-        """
-        Handle the callback of a view item. Separate task in case the view is stopped in the callback.
-        """
+        """Handle the callback of a view item. Separate task in case the view is stopped in the callback."""
         try:
             if self._message_id == context.message.id:
                 self._message = context.message
@@ -290,10 +272,7 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder, ViewContext, ViewIte
             await self.on_error(error, item, context)
 
     async def _process_interactions(self, event: hikari.InteractionCreateEvent) -> None:
-        """
-        Process incoming interactions.
-        """
-
+        """Process incoming interactions."""
         if not isinstance(event.interaction, hikari.ComponentInteraction):
             return
 
@@ -398,15 +377,13 @@ def get_view(message: hikari.SnowflakeishOr[hikari.PartialMessage]) -> t.Optiona
     BootstrapFailureError
         miru.install() was not called before this operation.
     """
-
     if View._events is None:
         raise BootstrapFailureError("miru is not yet initialized! Please call miru.install() first.")
 
     message_id = hikari.Snowflake(message)
 
-    if view := View._events._bound_handlers.get(message_id):
-        if isinstance(view, View):
-            return view
+    if (view := View._events._bound_handlers.get(message_id)) and isinstance(view, View):
+        return view
 
     return None
 

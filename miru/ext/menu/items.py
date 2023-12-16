@@ -51,33 +51,21 @@ class ScreenItem(ViewItem, abc.ABC):
         self._handler: t.Optional[Menu] = None
         self._screen: t.Optional[Screen] = None
 
-    async def before_page_change(self) -> None:
-        """
-        Called when the navigator is about to transition to the next page. Also called before the first page is sent.
-        """
-        pass
-
     @property
     def view(self) -> Menu:
-        """
-        The view this item is attached to.
-        """
+        """The view this item is attached to."""
         if not self._handler:
             raise AttributeError(f"{type(self).__name__} hasn't been attached to a view yet")
         return self._handler
 
     @property
     def menu(self) -> Menu:
-        """
-        The menu this item is attached to. Alias for `view`.
-        """
+        """The menu this item is attached to. Alias for `view`."""
         return self.view
 
     @property
     def screen(self) -> Screen:
-        """
-        The screen this item is attached to.
-        """
+        """The screen this item is attached to."""
         if not self._screen:
             raise AttributeError(f"{type(self).__name__} hasn't been attached to a screen yet")
         return self._screen
@@ -218,8 +206,7 @@ def channel_select(
     [t.Callable[[ScreenT, ScreenChannelSelect, ViewContextT], t.Awaitable[None]]],
     DecoratedScreenItem[ScreenT, ScreenChannelSelect, ViewContextT],
 ]:
-    """
-    A decorator to transform a function into a Discord UI ChannelSelectMenu's callback.
+    """A decorator to transform a function into a Discord UI ChannelSelectMenu's callback.
     This must be inside a subclass of Screen.
 
     Parameters
@@ -282,8 +269,7 @@ def mentionable_select(
     [t.Callable[[ScreenT, ScreenMentionableSelect, ViewContextT], t.Awaitable[None]]],
     DecoratedScreenItem[ScreenT, ScreenMentionableSelect, ViewContextT],
 ]:
-    """
-    A decorator to transform a function into a Discord UI MentionableSelectMenu's callback.
+    """A decorator to transform a function into a Discord UI MentionableSelectMenu's callback.
     This must be inside a subclass of Screen.
 
     Parameters
@@ -343,8 +329,7 @@ def role_select(
     [t.Callable[[ScreenT, ScreenRoleSelect, ViewContextT], t.Awaitable[None]]],
     DecoratedScreenItem[ScreenT, ScreenRoleSelect, ViewContextT],
 ]:
-    """
-    A decorator to transform a function into a Discord UI RoleSelectMenu's callback.
+    """A decorator to transform a function into a Discord UI RoleSelectMenu's callback.
     This must be inside a subclass of Screen.
 
     Parameters
@@ -405,8 +390,7 @@ def text_select(
     [t.Callable[[ScreenT, ScreenTextSelect, ViewContextT], t.Awaitable[None]]],
     DecoratedScreenItem[ScreenT, ScreenTextSelect, ViewContextT],
 ]:
-    """
-    A decorator to transform a function into a Discord UI TextSelectMenu's callback.
+    """A decorator to transform a function into a Discord UI TextSelectMenu's callback.
     This must be inside a subclass of Screen.
 
     Parameters
@@ -464,8 +448,7 @@ def user_select(
     [t.Callable[[ScreenT, ScreenUserSelect, ViewContextT], t.Awaitable[None]]],
     DecoratedScreenItem[ScreenT, ScreenUserSelect, ViewContextT],
 ]:
-    """
-    A decorator to transform a function into a Discord UI UserSelectMenu's callback.
+    """A decorator to transform a function into a Discord UI UserSelectMenu's callback.
     This must be inside a subclass of Screen.
 
     Parameters

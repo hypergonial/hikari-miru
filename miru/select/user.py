@@ -65,7 +65,8 @@ class UserSelect(SelectBase):
     @property
     def values(self) -> t.Sequence[hikari.User]:
         """The currently selected user objects.
-        Some users may also be instances of ``hikari.InteractionMember``, depending on how they were resolved."""
+        Some users may also be instances of ``hikari.InteractionMember``, depending on how they were resolved.
+        """
         return self._values
 
     @classmethod
@@ -119,8 +120,7 @@ def user_select(
 ) -> t.Callable[
     [t.Callable[[ViewT, UserSelect, ViewContextT], t.Awaitable[None]]], DecoratedItem[ViewT, UserSelect, ViewContextT]
 ]:
-    """
-    A decorator to transform a function into a Discord UI UserSelectMenu's callback.
+    """A decorator to transform a function into a Discord UI UserSelectMenu's callback.
     This must be inside a subclass of View.
 
     Parameters

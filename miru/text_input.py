@@ -70,9 +70,7 @@ class TextInput(ModalItem):
 
     @property
     def style(self) -> hikari.TextInputStyle:
-        """
-        The text input's style.
-        """
+        """The text input's style."""
         return self._style
 
     @style.setter
@@ -84,9 +82,7 @@ class TextInput(ModalItem):
 
     @property
     def label(self) -> str:
-        """
-        The text input's label. This is the text visible above the text input.
-        """
+        """The text input's label. This is the text visible above the text input."""
         return self._label
 
     @label.setter
@@ -97,9 +93,7 @@ class TextInput(ModalItem):
 
     @property
     def placeholder(self) -> t.Optional[str]:
-        """
-        Placeholder content for this text input field.
-        """
+        """Placeholder content for this text input field."""
         return self._placeholder
 
     @placeholder.setter
@@ -110,8 +104,7 @@ class TextInput(ModalItem):
 
     @property
     def value(self) -> t.Optional[str]:
-        """
-        Pre-filled content that should be included in the text input.
+        """Pre-filled content that should be included in the text input.
         After sending the modal, this field will be updated to the user's input.
         """
         return self._value
@@ -136,9 +129,8 @@ class TextInput(ModalItem):
     def min_length(self, value: t.Optional[int]) -> None:
         if value and not isinstance(value, int):
             raise TypeError("Expected type int for property min_length.")
-        if self.value:
-            if value is not None and value > len(self.value):
-                raise ValueError("New minimum length constraint does not satisfy pre-filled value.")
+        if self.value and value is not None and value > len(self.value):
+            raise ValueError("New minimum length constraint does not satisfy pre-filled value.")
         self._min_length = value
 
     @property
@@ -150,9 +142,8 @@ class TextInput(ModalItem):
     def max_length(self, value: t.Optional[int]) -> None:
         if value and not isinstance(value, int):
             raise TypeError("Expected type int for property max_length.")
-        if self.value:
-            if value is not None and value < len(self.value):
-                raise ValueError("New maximum length constraint does not satisfy pre-filled value.")
+        if self.value and value is not None and value < len(self.value):
+            raise ValueError("New maximum length constraint does not satisfy pre-filled value.")
         self._max_length = value
 
     def _build(self, action_row: hikari.api.ModalActionRowBuilder) -> None:

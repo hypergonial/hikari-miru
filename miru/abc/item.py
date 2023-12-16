@@ -26,9 +26,7 @@ ViewContextT = t.TypeVar("ViewContextT", bound="ViewContext")
 
 
 class Item(abc.ABC, t.Generic[BuilderT]):
-    """
-    An abstract base class for all components. Cannot be directly instantiated.
-    """
+    """An abstract base class for all components. Cannot be directly instantiated."""
 
     def __init__(
         self,
@@ -61,9 +59,7 @@ class Item(abc.ABC, t.Generic[BuilderT]):
 
     @property
     def position(self) -> t.Optional[int]:
-        """
-        The position of the item within the row it occupies.
-        """
+        """The position of the item within the row it occupies."""
         return self._position
 
     @position.setter
@@ -75,9 +71,7 @@ class Item(abc.ABC, t.Generic[BuilderT]):
 
     @property
     def row(self) -> t.Optional[int]:
-        """
-        The row the item should occupy. Leave as None for automatic placement.
-        """
+        """The row the item should occupy. Leave as None for automatic placement."""
         return self._row
 
     @row.setter
@@ -92,15 +86,12 @@ class Item(abc.ABC, t.Generic[BuilderT]):
 
     @property
     def width(self) -> int:
-        """
-        The item's width taken up in a Discord UI action row.
-        """
+        """The item's width taken up in a Discord UI action row."""
         return self._width
 
     @property
     def custom_id(self) -> str:
-        """
-        The item's custom identifier. This will be used to track the item through interactions and
+        """The item's custom identifier. This will be used to track the item through interactions and
         is required for persistent views.
         """
         return self._custom_id
@@ -122,22 +113,16 @@ class Item(abc.ABC, t.Generic[BuilderT]):
     @property
     @abstractmethod
     def type(self) -> hikari.ComponentType:
-        """
-        The component's underlying component type.
-        """
+        """The component's underlying component type."""
         ...
 
     async def _refresh_state(self, context: Context[t.Any]) -> None:
-        """
-        Called on an item to refresh it's internal state.
-        """
+        """Called on an item to refresh it's internal state."""
         pass
 
 
 class ViewItem(Item[hikari.impl.MessageActionRowBuilder], abc.ABC):
-    """
-    An abstract base class for view components. Cannot be directly instantiated.
-    """
+    """An abstract base class for view components. Cannot be directly instantiated."""
 
     def __init__(
         self,
@@ -154,9 +139,7 @@ class ViewItem(Item[hikari.impl.MessageActionRowBuilder], abc.ABC):
 
     @property
     def view(self) -> View:
-        """
-        The view this item is attached to.
-        """
+        """The view this item is attached to."""
         if not self._handler:
             raise AttributeError(f"{type(self).__name__} hasn't been attached to a view yet.")
 
@@ -164,9 +147,7 @@ class ViewItem(Item[hikari.impl.MessageActionRowBuilder], abc.ABC):
 
     @property
     def disabled(self) -> bool:
-        """
-        Indicates whether the item is disabled or not.
-        """
+        """Indicates whether the item is disabled or not."""
         return self._disabled
 
     @disabled.setter
@@ -177,30 +158,28 @@ class ViewItem(Item[hikari.impl.MessageActionRowBuilder], abc.ABC):
 
     @abstractmethod
     def _build(self, action_row: hikari.api.MessageActionRowBuilder) -> None:
-        """
-        Called internally to build and append the item to an action row
-        """
+        """Called internally to build and append the item to an action row."""
         ...
 
     @classmethod
     @abstractmethod
     def _from_component(cls, component: hikari.PartialComponent, row: t.Optional[int] = None) -> ViewItem:
-        """
-        Converts the passed hikari component into a miru ViewItem.
-        """
+        """Converts the passed hikari component into a miru ViewItem."""
         ...
 
     async def callback(self, context: ViewContextT) -> None:
-        """
-        The component's callback, gets called when the component receives an interaction.
+        """The component's callback, gets called when the component receives an interaction.
+
+        Parameters
+        ----------
+        context : ViewContextT
+            The context, proxying the incoming interaction.
         """
         pass
 
 
 class ModalItem(Item[hikari.impl.ModalActionRowBuilder], abc.ABC):
-    """
-    An abstract base class for modal components. Cannot be directly instantiated.
-    """
+    """An abstract base class for modal components. Cannot be directly instantiated."""
 
     def __init__(
         self,
@@ -217,9 +196,7 @@ class ModalItem(Item[hikari.impl.ModalActionRowBuilder], abc.ABC):
 
     @property
     def modal(self) -> t.Optional[Modal]:
-        """
-        The modal this item is attached to.
-        """
+        """The modal this item is attached to."""
         if not self._handler:
             raise AttributeError(f"{type(self).__name__} hasn't been attached to a modal yet.")
 
@@ -227,9 +204,7 @@ class ModalItem(Item[hikari.impl.ModalActionRowBuilder], abc.ABC):
 
     @property
     def required(self) -> bool:
-        """
-        Indicates whether the item is required or not.
-        """
+        """Indicates whether the item is required or not."""
         return self._required
 
     @required.setter
@@ -240,9 +215,7 @@ class ModalItem(Item[hikari.impl.ModalActionRowBuilder], abc.ABC):
 
     @abstractmethod
     def _build(self, action_row: hikari.api.ModalActionRowBuilder) -> None:
-        """
-        Called internally to build and append the item to an action row
-        """
+        """Called internally to build and append the item to an action row."""
         ...
 
 
@@ -286,6 +259,7 @@ class DecoratedItem(t.Generic[ViewT, ViewItemT, ViewContextT]):
         return self.callback.__name__
 
     def __call__(self, view: ViewT, item: ViewItemT, context: ViewContextT) -> t.Awaitable[None]:
+        """Call the callback this DecoratedItem wraps."""
         return self.callback(view, item, context)
 
 

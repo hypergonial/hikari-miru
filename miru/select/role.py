@@ -111,8 +111,7 @@ def role_select(
 ) -> t.Callable[
     [t.Callable[[ViewT, RoleSelect, ViewContextT], t.Awaitable[None]]], DecoratedItem[ViewT, RoleSelect, ViewContextT]
 ]:
-    """
-    A decorator to transform a function into a Discord UI RoleSelectMenu's callback.
+    """A decorator to transform a function into a Discord UI RoleSelectMenu's callback.
     This must be inside a subclass of View.
 
     Parameters

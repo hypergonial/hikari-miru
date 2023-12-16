@@ -1,3 +1,14 @@
+"""A component handler for hikari, with support for modals and views.
+
+To get started, you will want to call `miru.install` with an instance of your bot.
+
+GitHub:
+https://github.com/hypergonial/hikari-miru
+
+Documentation:
+https://hikari-miru.readthedocs.io/
+"""
+
 from .bootstrap import install, uninstall
 from .button import Button, button
 from .context import Context, InteractionResponse, ModalContext, RawComponentContext, RawModalContext, ViewContext

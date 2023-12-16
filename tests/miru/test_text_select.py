@@ -47,7 +47,7 @@ def test_select_build() -> None:
 def test_select_from_hikari() -> None:
     """Test that the select is built correctly from a hikari component."""
     select = miru.TextSelect._from_component(
-        hikari.components.TextSelectMenuComponent(
+        hikari.TextSelectMenuComponent(
             type=hikari.ComponentType.TEXT_SELECT_MENU,
             custom_id="test",
             placeholder="test",

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import typing as t
+from contextlib import suppress
 
 import hikari
 
@@ -34,11 +35,8 @@ class ViewContext(RawComponentContext):
     async def _create_response(self, message: hikari.Message | None = None) -> InteractionResponse:
         if self._autodefer_task is not None:
             self._autodefer_task.cancel()
-            try:
-                # Await the task to ensure the lock is released
+            with suppress(asyncio.CancelledError):
                 await self._autodefer_task
-            except asyncio.CancelledError:
-                pass
             self._autodefer_task = None
 
         return await super()._create_response(message)

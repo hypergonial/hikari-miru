@@ -52,9 +52,7 @@ class SelectBase(ViewItem, abc.ABC):
 
     @property
     def placeholder(self) -> t.Optional[str]:
-        """
-        The placeholder text that appears before the select menu is clicked.
-        """
+        """The placeholder text that appears before the select menu is clicked."""
         return self._placeholder
 
     @placeholder.setter
@@ -67,9 +65,7 @@ class SelectBase(ViewItem, abc.ABC):
 
     @property
     def min_values(self) -> int:
-        """
-        The minimum amount of options a user has to select.
-        """
+        """The minimum amount of options a user has to select."""
         return self._min_values
 
     @min_values.setter
@@ -80,9 +76,7 @@ class SelectBase(ViewItem, abc.ABC):
 
     @property
     def max_values(self) -> int:
-        """
-        The maximum amount of options a user is allowed to select.
-        """
+        """The maximum amount of options a user is allowed to select."""
         return self._max_values
 
     @max_values.setter
@@ -94,15 +88,11 @@ class SelectBase(ViewItem, abc.ABC):
     @classmethod
     @abc.abstractmethod
     def _from_component(cls, component: hikari.PartialComponent, row: t.Optional[int] = None) -> SelectBase:
-        """
-        Called internally to convert a component to a select menu.
-        """
+        """Called internally to convert a component to a select menu."""
 
     @abc.abstractmethod
     def _build(self, action_row: hikari.api.MessageActionRowBuilder) -> None:
-        """
-        Called internally to build and append to an action row
-        """
+        """Called internally to build and append to an action row."""
 
 
 # MIT License

@@ -43,14 +43,14 @@ class ScreenContent:
     """The set of allowed role mentions in this page's message. Set to True to allow all."""
 
     def _build_payload(self) -> t.Dict[str, t.Any]:
-        d: t.Dict[str, t.Any] = dict(
-            content=self.content or None,
-            attachments=self.attachments or None,
-            embeds=self.embeds or None,
-            mentions_everyone=self.mentions_everyone or False,
-            user_mentions=self.user_mentions or False,
-            role_mentions=self.role_mentions or False,
-        )
+        d: t.Dict[str, t.Any] = {
+            "content": self.content or None,
+            "attachments": self.attachments or None,
+            "embeds": self.embeds or None,
+            "mentions_everyone": self.mentions_everyone or False,
+            "user_mentions": self.user_mentions or False,
+            "role_mentions": self.role_mentions or False,
+        }
         if not d["attachments"] and self.attachment:
             d["attachments"] = [self.attachment]
 
@@ -74,7 +74,7 @@ class Screen(abc.ABC):
     ] = []  # Decorated callbacks that need to be turned into items
 
     def __init_subclass__(cls) -> None:
-        """Get decorated callbacks"""
+        """Get decorated callbacks."""
         children: t.MutableSequence[DecoratedScreenItem[Screen, ScreenItem, ViewContext]] = []
         for base_cls in reversed(cls.mro()):
             for value in base_cls.__dict__.values():
@@ -158,7 +158,6 @@ class Screen(abc.ABC):
         Screen
             The item handler the item was added to.
         """
-
         if len(self.children) > 25:
             raise HandlerFullError("Screen cannot have more than 25 components attached.")
 

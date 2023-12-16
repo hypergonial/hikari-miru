@@ -20,20 +20,19 @@ def warn_deprecate(*, what: str, when: Version, use_instead: t.Optional[str] = N
     use_instead : Optional[str], optional
         The object's name that should be used instead, by default None
     """
-
-    if CURRENT_VERSION > when:
+    if when < CURRENT_VERSION:
         raise DeprecationWarning(
-            f"{repr(what)} is past its deprecation date and should not be used. {f'Use {repr(use_instead)} instead.' if use_instead else ''}"
+            f"{what!r} is past its deprecation date and should not be used. {f'Use {use_instead!r} instead.' if use_instead else ''}"
         )
 
     if use_instead:
         warn(
-            f"{repr(what)} is deprecated and will be removed in version {when}. Use {repr(use_instead)} instead.",
+            f"{what!r} is deprecated and will be removed in version {when}. Use {use_instead!r} instead.",
             DeprecationWarning,
             stacklevel=3,
         )
     else:
-        warn(f"{repr(what)} is deprecated and will be removed in version {when}.", DeprecationWarning, stacklevel=3)
+        warn(f"{what!r} is deprecated and will be removed in version {when}.", DeprecationWarning, stacklevel=3)
 
 
 # MIT License

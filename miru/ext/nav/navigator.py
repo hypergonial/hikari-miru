@@ -71,16 +71,12 @@ class NavigatorView(View):
 
     @property
     def pages(self) -> t.Sequence[t.Union[str, hikari.Embed, t.Sequence[hikari.Embed], Page]]:
-        """
-        The pages the navigator is iterating through.
-        """
+        """The pages the navigator is iterating through."""
         return self._pages
 
     @property
     def current_page(self) -> int:
-        """
-        The current page of the navigator, zero-indexed integer.
-        """
+        """The current page of the navigator, zero-indexed integer."""
         return self._current_page
 
     @current_page.setter
@@ -93,8 +89,7 @@ class NavigatorView(View):
 
     @property
     def ephemeral(self) -> bool:
-        """
-        Value determining if the navigator is sent ephemerally or not.
+        """Value determining if the navigator is sent ephemerally or not.
         This value will be ignored if the navigator is not sent on an interaction.
         """
         return self._ephemeral
@@ -152,7 +147,6 @@ class NavigatorView(View):
         self, page: t.Union[str, hikari.Embed, t.Sequence[hikari.Embed], Page]
     ) -> t.MutableMapping[str, t.Any]:
         """Get the page content that is to be sent."""
-
         if isinstance(page, Page):
             d: t.Dict[str, t.Any] = page._build_payload()
             d["components"] = self
@@ -171,16 +165,15 @@ class NavigatorView(View):
                 "Expected type 'str', 'hikari.Embed', 'Sequence[hikari.Embed]' or 'ext.nav.Page' "
                 f"to send as page, not '{type(page).__name__}'."
             )
-
-        d = dict(
-            content=content,
-            embeds=embeds,
-            attachments=None,
-            mentions_everyone=False,
-            user_mentions=False,
-            role_mentions=False,
-            components=self,
-        )
+        d = {
+            "content": content,
+            "embeds": embeds,
+            "attachments": None,
+            "mentions_everyone": False,
+            "user_mentions": False,
+            "role_mentions": False,
+            "components": self,
+        }
         if self.ephemeral:
             d["flags"] = hikari.MessageFlag.EPHEMERAL
 
@@ -341,15 +334,15 @@ class Page:
     role_mentions: hikari.UndefinedOr[t.Union[hikari.SnowflakeishSequence[hikari.PartialRole], bool]] = hikari.UNDEFINED
     """The set of allowed role mentions in this page's message. Set to True to allow all."""
 
-    def _build_payload(self) -> dict[str, t.Any]:
-        d: dict[str, t.Any] = dict(
-            content=self.content or None,
-            attachments=self.attachments or None,
-            embeds=self.embeds or None,
-            mentions_everyone=self.mentions_everyone or False,
-            user_mentions=self.user_mentions or False,
-            role_mentions=self.role_mentions or False,
-        )
+    def _build_payload(self) -> t.Dict[str, t.Any]:
+        d: t.Dict[str, t.Any] = {
+            "content": self.content or None,
+            "attachments": self.attachments or None,
+            "embeds": self.embeds or None,
+            "mentions_everyone": self.mentions_everyone or False,
+            "user_mentions": self.user_mentions or False,
+            "role_mentions": self.role_mentions or False,
+        }
         if not d["attachments"] and self.attachment:
             d["attachments"] = [self.attachment]
 

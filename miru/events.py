@@ -75,8 +75,7 @@ class InteractionCreateEvent(Event):
 
 @attr.define()
 class ComponentInteractionCreateEvent(InteractionCreateEvent):
-    """
-    An event that is dispatched when a new component interaction is received.
+    """An event that is dispatched when a new component interaction is received.
     This event is only dispatched if the interaction was not handled by a miru view.
     """
 
@@ -86,8 +85,7 @@ class ComponentInteractionCreateEvent(InteractionCreateEvent):
 
 @attr.define()
 class ModalInteractionCreateEvent(InteractionCreateEvent):
-    """
-    An event that is dispatched when a new modal interaction is received.
+    """An event that is dispatched when a new modal interaction is received.
     This event is only dispatched if the interaction was not handled by a miru modal.
     """
 
@@ -95,27 +93,28 @@ class ModalInteractionCreateEvent(InteractionCreateEvent):
     context: RawModalContext = attr.field()
 
 
+@attr.define()
 class EventHandler:
     """Singleton class for handling events."""
 
     _app: t.Optional[MiruAware] = None
     """The currently running app instance that will be subscribed to the listener."""
 
-    _bound_handlers: t.MutableMapping[hikari.Snowflakeish, ItemHandler[t.Any, t.Any, t.Any]] = {}
+    _bound_handlers: t.MutableMapping[hikari.Snowflakeish, ItemHandler[t.Any, t.Any, t.Any]] = attr.field(factory=dict)
     """A mapping of message_id to ItemHandler. This contains handlers that are bound to a message or custom_id."""
 
-    _handlers: t.MutableMapping[str, ItemHandler[t.Any, t.Any, t.Any]] = {}
+    _handlers: t.MutableMapping[str, ItemHandler[t.Any, t.Any, t.Any]] = attr.field(factory=dict)
     """A mapping of custom_id to ItemHandler. This only contains handlers that are not bound to a message."""
 
     def start(self, app: MiruAware) -> None:
-        """Start all custom event listeners, this is called during miru.install()"""
+        """Start all custom event listeners, this is called during miru.install()."""
         if self._app is not None:
             self.close()
         self._app = app
         self._app.event_manager.subscribe(hikari.InteractionCreateEvent, self._handle_events)
 
     def close(self) -> None:
-        """Stop all custom event listeners for events, this is called during miru.uninstall()"""
+        """Stop all custom event listeners for events, this is called during miru.uninstall()."""
         if self._app is None:
             raise RuntimeError("miru was never installed, cannot close listener.")
         self._app.event_manager.unsubscribe(hikari.InteractionCreateEvent, self._handle_events)
@@ -147,7 +146,6 @@ class EventHandler:
 
     async def _handle_events(self, event: hikari.InteractionCreateEvent) -> None:
         """Sort interaction create events and dispatch miru custom events."""
-
         assert self._app is not None
 
         if not isinstance(event.interaction, (hikari.ComponentInteraction, hikari.ModalInteraction)):
