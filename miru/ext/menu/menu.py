@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import datetime
 import logging
 import typing as t
 
@@ -9,7 +8,10 @@ import hikari
 
 import miru
 
-from .screen import Screen, ScreenContent
+if t.TYPE_CHECKING:
+    import datetime
+
+    from .screen import Screen, ScreenContent
 
 logger = logging.getLogger(__name__)
 

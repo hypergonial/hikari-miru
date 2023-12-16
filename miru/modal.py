@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import copy
-import datetime
 import os
 import sys
 import traceback
@@ -16,6 +15,8 @@ from .abc.item_handler import ItemHandler
 from .context.modal import ModalContext
 
 if t.TYPE_CHECKING:
+    import datetime
+
     import typing_extensions as te
 
 ModalContextT = t.TypeVar("ModalContextT", bound=ModalContext)

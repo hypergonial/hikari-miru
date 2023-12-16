@@ -1,20 +1,22 @@
 from __future__ import annotations
 
-import datetime
 import logging
 import typing as t
 
 import attr
 import hikari
 
-from miru.abc import Item
 from miru.context import Context
 from miru.view import View
 
 from .items import FirstButton, IndicatorButton, LastButton, NavButton, NavItem, NextButton, PrevButton
 
 if t.TYPE_CHECKING:
+    import datetime
+
     import typing_extensions as te
+
+    from miru.abc import Item
 
 logger = logging.getLogger(__name__)
 

@@ -4,12 +4,13 @@ import typing as t
 
 import hikari
 
-from miru.context.base import Context
 from miru.context.modal import ModalContext
 
 from .abc.item import ModalItem
 
 if t.TYPE_CHECKING:
+    from miru.context.base import Context
+
     from .modal import Modal
 
 ModalT = t.TypeVar("ModalT", bound="Modal")

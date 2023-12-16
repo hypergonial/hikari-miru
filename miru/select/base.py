@@ -3,11 +3,11 @@ from __future__ import annotations
 import abc
 import typing as t
 
-import hikari
-
 from ..abc.item import ViewItem
 
 if t.TYPE_CHECKING:
+    import hikari
+
     from ..view import View
 
     ViewT = t.TypeVar("ViewT", bound="View")

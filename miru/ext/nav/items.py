@@ -7,12 +7,13 @@ import hikari
 
 from miru.abc.item import ViewItem
 from miru.button import Button
-from miru.context import ViewContext
 from miru.modal import Modal
 from miru.select import ChannelSelect, MentionableSelect, RoleSelect, TextSelect, UserSelect
 from miru.text_input import TextInput
 
 if t.TYPE_CHECKING:
+    from miru.context import ViewContext
+
     from .navigator import NavigatorView
 
     ViewContextT = t.TypeVar("ViewContextT", bound=ViewContext)

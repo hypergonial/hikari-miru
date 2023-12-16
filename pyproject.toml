@@ -1,8 +1,8 @@
 [tool.ruff]
 exclude = ["examples", "docs", "build"]
-select = ["E", "F", "I"]
+select = ["E", "F", "I", "TCH"]
 ignore = ["F405", "F403", "E501"]
-fixable = ["I"]
+fixable = ["I", "TCH"]
 line-length = 120
 target-version = "py38"
 

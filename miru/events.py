@@ -5,12 +5,12 @@ import typing as t
 import attr
 import hikari
 
-from .abc.item_handler import ItemHandler
 from .context.raw import RawComponentContext, RawModalContext
 from .modal import Modal
 from .view import View
 
 if t.TYPE_CHECKING:
+    from .abc.item_handler import ItemHandler
     from .traits import MiruAware
 
 __all__ = ("Event", "ComponentInteractionCreateEvent", "ModalInteractionCreateEvent")

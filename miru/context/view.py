@@ -5,11 +5,11 @@ import typing as t
 
 import hikari
 
-from miru.context.base import InteractionResponse
-
 from .raw import RawComponentContext
 
 if t.TYPE_CHECKING:
+    from miru.context.base import InteractionResponse
+
     from ..view import View
 
 __all__ = ("ViewContext",)

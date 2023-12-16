@@ -7,12 +7,15 @@ import logging
 import typing as t
 
 import hikari
-from hikari.snowflakes import Snowflake
 
 from miru.exceptions import BootstrapFailureError
 
 from ..abc.item_handler import ItemHandler
-from ..traits import MiruAware
+
+if t.TYPE_CHECKING:
+    from hikari.snowflakes import Snowflake
+
+    from ..traits import MiruAware
 
 InteractionT = t.TypeVar("InteractionT", "hikari.ComponentInteraction", "hikari.ModalInteraction")
 

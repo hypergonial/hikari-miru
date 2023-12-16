@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import copy
-import datetime
 import inspect
 import logging
 import sys
@@ -20,7 +19,10 @@ from .context.view import ViewContext
 from .select import ChannelSelect, MentionableSelect, RoleSelect, TextSelect, UserSelect
 
 if t.TYPE_CHECKING:
+    import datetime
+
     import typing_extensions as te
+
 
 logger = logging.getLogger(__name__)
 

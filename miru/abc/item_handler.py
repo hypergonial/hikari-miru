@@ -11,7 +11,6 @@ from collections.abc import Sequence
 import hikari
 
 from ..exceptions import BootstrapFailureError, HandlerFullError, ItemAlreadyAttachedError, RowFullError
-from ..traits import MiruAware
 from .item import Item
 
 if t.TYPE_CHECKING:
@@ -19,6 +18,7 @@ if t.TYPE_CHECKING:
 
     from ..context import Context
     from ..events import EventHandler
+    from ..traits import MiruAware
 
 __all__ = ("ItemHandler", "ItemArranger")
 

@@ -6,11 +6,11 @@ import typing as t
 import hikari
 
 from ..abc.item import DecoratedItem
-from ..context.view import ViewContext
 from .base import SelectBase
 
 if t.TYPE_CHECKING:
     from ..context.base import Context
+    from ..context.view import ViewContext
     from ..view import View
 
     ViewT = t.TypeVar("ViewT", bound="View")
