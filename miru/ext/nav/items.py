@@ -7,12 +7,13 @@ import hikari
 
 from miru.abc.item import ViewItem
 from miru.button import Button
-from miru.context import ViewContext
 from miru.modal import Modal
 from miru.select import ChannelSelect, MentionableSelect, RoleSelect, TextSelect, UserSelect
 from miru.text_input import TextInput
 
 if t.TYPE_CHECKING:
+    from miru.context import ViewContext
+
     from .navigator import NavigatorView
 
     ViewContextT = t.TypeVar("ViewContextT", bound=ViewContext)
@@ -50,16 +51,12 @@ class NavItem(ViewItem, abc.ABC):
         self._handler: t.Optional[NavigatorView] = None
 
     async def before_page_change(self) -> None:
-        """
-        Called when the navigator is about to transition to the next page. Also called before the first page is sent.
-        """
+        """Called when the navigator is about to transition to the next page. Also called before the first page is sent."""
         pass
 
     @property
     def view(self) -> NavigatorView:
-        """
-        The view this item is attached to.
-        """
+        """The view this item is attached to."""
         if not self._handler:
             raise AttributeError(f"{type(self).__name__} hasn't been attached to a view yet")
         return self._handler
@@ -90,9 +87,7 @@ class NavMentionableSelect(MentionableSelect, NavItem):
 
 
 class NextButton(NavButton):
-    """
-    A built-in NavButton to jump to the next page.
-    """
+    """A built-in NavButton to jump to the next page."""
 
     def __init__(
         self,
@@ -118,9 +113,7 @@ class NextButton(NavButton):
 
 
 class PrevButton(NavButton):
-    """
-    A built-in NavButton to jump to previous page.
-    """
+    """A built-in NavButton to jump to previous page."""
 
     def __init__(
         self,
@@ -146,9 +139,7 @@ class PrevButton(NavButton):
 
 
 class FirstButton(NavButton):
-    """
-    A built-in NavButton to jump to first page.
-    """
+    """A built-in NavButton to jump to first page."""
 
     def __init__(
         self,
@@ -174,9 +165,7 @@ class FirstButton(NavButton):
 
 
 class LastButton(NavButton):
-    """
-    A built-in NavButton to jump to the last page.
-    """
+    """A built-in NavButton to jump to the last page."""
 
     def __init__(
         self,
@@ -202,9 +191,7 @@ class LastButton(NavButton):
 
 
 class IndicatorButton(NavButton):
-    """
-    A built-in NavButton to show the current page's number.
-    """
+    """A built-in NavButton to show the current page's number."""
 
     def __init__(
         self,
@@ -248,9 +235,7 @@ class IndicatorButton(NavButton):
 
 
 class StopButton(NavButton):
-    """
-    A built-in NavButton to stop the navigator and disable all buttons.
-    """
+    """A built-in NavButton to stop the navigator and disable all buttons."""
 
     def __init__(
         self,

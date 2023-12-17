@@ -6,11 +6,11 @@ import typing as t
 import hikari
 
 from ..abc.item import DecoratedItem
-from ..context.view import ViewContext
 from .base import SelectBase
 
 if t.TYPE_CHECKING:
     from ..context.base import Context
+    from ..context.view import ViewContext
     from ..view import View
 
     ViewT = t.TypeVar("ViewT", bound="View")
@@ -108,12 +108,41 @@ def role_select(
     max_values: int = 1,
     disabled: bool = False,
     row: t.Optional[int] = None,
-) -> t.Callable[[t.Callable[[ViewT, RoleSelect, ViewContextT], t.Awaitable[None]]], DecoratedItem]:
-    """
-    A decorator to transform a function into a Discord UI RoleSelectMenu's callback. This must be inside a subclass of View.
+) -> t.Callable[
+    [t.Callable[[ViewT, RoleSelect, ViewContextT], t.Awaitable[None]]], DecoratedItem[ViewT, RoleSelect, ViewContextT]
+]:
+    """A decorator to transform a function into a Discord UI RoleSelectMenu's callback.
+    This must be inside a subclass of View.
+
+    Parameters
+    ----------
+    custom_id : Optional[str], optional
+        The custom ID of the select menu, by default None
+    placeholder : Optional[str], optional
+        Placeholder text displayed on the select menu, by default None
+    min_values : int, optional
+        The minimum number of values that can be selected. Defaults to 1.
+    max_values : int, optional
+        The maximum number of values that can be selected. Defaults to 1.
+    disabled : bool, optional
+        Whether the select menu is disabled. Defaults to False.
+    row : Optional[int], optional
+        The row the select should be in, leave as None for auto-placement.
+
+    Returns
+    -------
+    Callable[[Callable[[ViewT, RoleSelect, ViewContextT], Awaitable[None]]], DecoratedItem[ViewT, RoleSelect, ViewContextT]]
+        The decorated function.
+
+    Raises
+    ------
+    TypeError
+        If the decorated function is not a coroutine function.
     """
 
-    def decorator(func: t.Callable[[ViewT, RoleSelect, ViewContextT], t.Awaitable[None]]) -> DecoratedItem:
+    def decorator(
+        func: t.Callable[[ViewT, RoleSelect, ViewContextT], t.Awaitable[None]],
+    ) -> DecoratedItem[ViewT, RoleSelect, ViewContextT]:
         if not inspect.iscoroutinefunction(func):
             raise TypeError("role_select must decorate coroutine function.")
 

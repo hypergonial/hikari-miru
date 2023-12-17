@@ -1,7 +1,8 @@
 __all__ = ("MiruException", "BootstrapFailureError", "RowFullError", "HandlerFullError", "ItemAlreadyAttachedError")
 
 
-class MiruException(Exception):
+# TODO: Rename this to MiruError at some point
+class MiruException(Exception):  # noqa: N818
     """Base class for all miru exceptions."""
 
 

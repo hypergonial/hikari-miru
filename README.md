@@ -73,11 +73,11 @@ For more examples see [examples](https://github.com/hypergonial/hikari-miru/tree
 
 ## Issues and support
 
-For general usage help or questions, see the `#miru` channel in the [hikari discord](https://discord.gg/Jx4cNGG), if you have found a bug or have a feature request, feel free to [open an issue](https://github.com/hypergonial/hikari-miru/issues/new)!
+For general usage help or questions, see the `#miru` channel in the [hikari discord](https://discord.gg/hikari), if you have found a bug or have a feature request, feel free to [open an issue](https://github.com/hypergonial/hikari-miru/issues/new)!
 
 ## Contributing
 
-If you wish to contribute, make sure to run [nox](https://nox.thea.codes/en/stable/) before pushing your changes, and ensure all pipelines pass. This will format and typecheck your code to ensure it passes the CI.
+See [Contributing](./CONTRIBUTING.md)
 
 ## Links
 

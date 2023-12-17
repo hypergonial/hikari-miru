@@ -4,6 +4,9 @@ import typing as t
 
 import hikari
 
+from miru.internal.deprecation import warn_deprecate
+from miru.internal.version import Version
+
 from .raw import RawModalContext
 
 if t.TYPE_CHECKING:
@@ -35,7 +38,39 @@ class ModalContext(RawModalContext):
         """The values received as input for this modal."""
         return self._values
 
+    # TODO: Remove in v3.5.0
     def get_value_by_predicate(
+        self, predicate: t.Callable[[ModalItem], bool], default: hikari.UndefinedOr[T] = hikari.UNDEFINED
+    ) -> T | str:
+        """Get the value for the first modal item that matches the given predicate.
+
+        Deprecated
+        ----------
+        Will be removed in 3.5.0. Use `ModalContext.get_value_by` instead.
+
+        Parameters
+        ----------
+        predicate : Callable[[ModalItem], bool]
+            A predicate to match the item.
+        default : hikari.UndefinedOr[T], optional
+            A default value to return if no item was matched, by default hikari.UNDEFINED
+
+        Returns
+        -------
+        T | str
+            The value of the item that matched the predicate or the default value.
+
+        Raises
+        ------
+        KeyError
+            The item was not found and no default was provided.
+        """
+        warn_deprecate(
+            what="ModalContext.get_value_by_predicate", when=Version(3, 5, 0), use_instead="ModalContext.get_value_by"
+        )
+        return self.get_value_by(predicate, default=default)
+
+    def get_value_by(
         self, predicate: t.Callable[[ModalItem], bool], default: hikari.UndefinedOr[T] = hikari.UNDEFINED
     ) -> T | str:
         """Get the value for the first modal item that matches the given predicate.
@@ -85,7 +120,7 @@ class ModalContext(RawModalContext):
         KeyError
             The item was not found and no default was provided.
         """
-        return self.get_value_by_predicate(lambda item: item.custom_id == custom_id, default=default)
+        return self.get_value_by(lambda item: item.custom_id == custom_id, default=default)
 
 
 # MIT License

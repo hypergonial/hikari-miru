@@ -4,6 +4,16 @@ Versions 3.0+ Changelog
 
 These are all the changelogs for stable releases of hikari-miru (version 3.0.0 to present).
 
+Version 3.4.0
+=============
+
+- Add ``miru.ext.menu``, which aims to make creating complex, nested menus easy. See the documentation & example on how to use it.
+- Overhaul ``View`` autodefer logic. ``ViewContext`` are now automatically deferred if a response is not issued within 2 seconds, even if the callback is still running.
+- Add ``ItemHandler.get_item_by()`` and ``ItemHandler.get_item_by_id()``.
+- Deprecate ``ModalContext.get_value_by_predicate`` in favour of ``ModalContext.get_value_by``. It will be removed in the next minor release (3.5.0).
+- Large amounts of typing improvements across the library.
+- Add ``CONTRIBUTING.md`` and configuration for common editors for better developer experience.
+
 Version 3.3.1
 =============
 
@@ -14,7 +24,7 @@ Version 3.3.0
 
 - Add support for Python 3.12
 - Improve Context typing in callbacks for better typechecking experience when using custom contexts.
-- Minor changes to the type signature of ``ModalContext.get_value_by_id()`` and ``ModalContext.get_value_by_predicate()``
+- Minor changes to the type signature of ``ModalContext.get_value_by_id()`` and ``ModalContext.get_value_by_predicate()``.
 
 Version 3.2.2
 =============

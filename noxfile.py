@@ -6,7 +6,7 @@ from nox import options
 PATH_TO_PROJECT = os.path.join(".", "miru")
 SCRIPT_PATHS = [PATH_TO_PROJECT, "noxfile.py", os.path.join("docs", "source", "conf.py"), os.path.join(".", "tests")]
 
-options.sessions = ["format_fix", "mypy", "pytest", "sphinx"]
+options.sessions = ["format_fix", "mypy", "pyright", "pytest", "sphinx"]
 
 
 @nox.session()
@@ -30,6 +30,13 @@ def mypy(session: nox.Session) -> None:
     session.run(
         "python", "-m", "mypy", "--install-types", "--non-interactive", "--cache-dir=.mypy_cache/", PATH_TO_PROJECT
     )
+
+
+@nox.session()
+def pyright(session: nox.Session) -> None:
+    session.install(".")
+    session.install("-U", "pyright")
+    session.run("pyright", PATH_TO_PROJECT)
 
 
 @nox.session()

@@ -20,9 +20,7 @@ __all__ = ("SelectOption", "TextSelect", "text_select")
 
 
 class SelectOption:
-    """
-    A more lenient way to instantiate select options.
-    """
+    """A more lenient way to instantiate select options."""
 
     __slots__ = ("label", "value", "description", "emoji", "is_default")
 
@@ -119,9 +117,7 @@ class TextSelect(SelectBase):
 
     @property
     def placeholder(self) -> t.Optional[str]:
-        """
-        The placeholder text that appears before the select menu is clicked.
-        """
+        """The placeholder text that appears before the select menu is clicked."""
         return self._placeholder
 
     @placeholder.setter
@@ -134,9 +130,7 @@ class TextSelect(SelectBase):
 
     @property
     def options(self) -> t.Sequence[t.Union[hikari.SelectMenuOption, SelectOption]]:
-        """
-        The select menu's options.
-        """
+        """The select menu's options."""
         return self._options
 
     @options.setter
@@ -204,12 +198,43 @@ def text_select(
     max_values: int = 1,
     disabled: bool = False,
     row: t.Optional[int] = None,
-) -> t.Callable[[t.Callable[[ViewT, TextSelect, ViewContextT], t.Awaitable[None]]], DecoratedItem]:
-    """
-    A decorator to transform a function into a Discord UI TextSelectMenu's callback. This must be inside a subclass of View.
+) -> t.Callable[
+    [t.Callable[[ViewT, TextSelect, ViewContextT], t.Awaitable[None]]], DecoratedItem[ViewT, TextSelect, ViewContextT]
+]:
+    """A decorator to transform a function into a Discord UI TextSelectMenu's callback.
+    This must be inside a subclass of View.
+
+    Parameters
+    ----------
+    options : Sequence[Union[hikari.SelectMenuOption, SelectOption]]
+        A sequence of select menu options that this select menu should use.
+    custom_id : Optional[str], optional
+        The custom ID of the select menu, by default None
+    placeholder : Optional[str], optional
+        Placeholder text displayed on the select menu, by default None
+    min_values : int, optional
+        The minimum number of values that can be selected. Defaults to 1.
+    max_values : int, optional
+        The maximum number of values that can be selected. Defaults to 1.
+    disabled : bool, optional
+        Whether the select menu is disabled. Defaults to False.
+    row : Optional[int], optional
+        The row the select should be in, leave as None for auto-placement.
+
+    Returns
+    -------
+    Callable[[Callable[[ViewT, TextSelect, ViewContextT], Awaitable[None]]], DecoratedItem[ViewT, TextSelect, ViewContextT]]
+        The decorated function.
+
+    Raises
+    ------
+    TypeError
+        If the decorated function is not a coroutine function.
     """
 
-    def decorator(func: t.Callable[[ViewT, TextSelect, ViewContextT], t.Awaitable[None]]) -> DecoratedItem:
+    def decorator(
+        func: t.Callable[[ViewT, TextSelect, ViewContextT], t.Awaitable[None]],
+    ) -> DecoratedItem[ViewT, TextSelect, ViewContextT]:
         if not inspect.iscoroutinefunction(func):
             raise TypeError("text_select must decorate coroutine function.")
 

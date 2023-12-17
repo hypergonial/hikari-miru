@@ -49,7 +49,8 @@ async def navigator(event: hikari.GuildMessageCreateEvent) -> None:
         # Define our navigator and pass in our list of pages
         navigator = nav.NavigatorView(pages=pages)
 
-        # You may also pass an interaction or miru context to this function
+        # Note: You can also send the navigator to an interaction or miru context
+        # See the documentation of NavigatorView.send() for more information
         await navigator.send(event.channel_id)
 
     # Otherwise we annoy everyone with our custom navigator instead

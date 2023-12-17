@@ -22,14 +22,14 @@ project = "hikari-miru"
 copyright = "2022, hypergonial"
 author = "hypergonial"
 
-with open("../../miru/__init__.py") as fp:
+with open("../../miru/internal/about.py") as fp:
     file = fp.read()
 
-if _match := re.search(r"__version__ = \"([^\"]+)", file):
+if _match := re.search(r"__version__:?.*=\s*\"([^\"]+)", file):
     version = _match.group(1)
     release = version
 else:
-    raise RuntimeError("Improperly formatted miru/__init__.py file")
+    raise RuntimeError("Improperly formatted miru/internal/about.py file")
 
 master_doc = "index"
 

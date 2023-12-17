@@ -6,11 +6,11 @@ import typing as t
 import hikari
 
 from ..abc.item import DecoratedItem
-from ..context.view import ViewContext
 from .base import SelectBase
 
 if t.TYPE_CHECKING:
     from ..context.base import Context
+    from ..context.view import ViewContext
     from ..view import View
 
     ViewT = t.TypeVar("ViewT", bound="View")
@@ -124,12 +124,45 @@ def channel_select(
     max_values: int = 1,
     disabled: bool = False,
     row: t.Optional[int] = None,
-) -> t.Callable[[t.Callable[[ViewT, ChannelSelect, ViewContextT], t.Awaitable[None]]], DecoratedItem]:
-    """
-    A decorator to transform a function into a Discord UI ChannelSelectMenu's callback. This must be inside a subclass of View.
+) -> t.Callable[
+    [t.Callable[[ViewT, ChannelSelect, ViewContextT], t.Awaitable[None]]],
+    DecoratedItem[ViewT, ChannelSelect, ViewContextT],
+]:
+    """A decorator to transform a function into a Discord UI ChannelSelectMenu's callback.
+    This must be inside a subclass of View.
+
+    Parameters
+    ----------
+    channel_types : Sequence[Union[int, hikari.ChannelType]], optional
+        A sequence of channel types to filter the select menu by. Defaults to (hikari.ChannelType.GUILD_TEXT,).
+    custom_id : Optional[str], optional
+        The custom ID of the select menu. Defaults to None.
+    placeholder: Optional[str], optional
+        The placeholder to display when nothing is selected. Defaults to None.
+    min_values : int, optional
+        The minimum number of values that can be selected. Defaults to 1.
+    max_values : int, optional
+        The maximum number of values that can be selected. Defaults to 1.
+    disabled : bool, optional
+        Whether the select menu is disabled. Defaults to False.
+    row : Optional[int], optional
+        The row the select should be in, leave as None for auto-placement.
+
+    Returns
+    -------
+    Callable[[Callable[[ViewT, ChannelSelect, ViewContextT], Awaitable[None]]], DecoratedItem[ViewT, ChannelSelect, ViewContextT]]
+        The decorated function.
+
+    Raises
+    ------
+    TypeError
+        If the decorated function is not a coroutine function.
+
     """
 
-    def decorator(func: t.Callable[[ViewT, ChannelSelect, ViewContextT], t.Awaitable[None]]) -> DecoratedItem:
+    def decorator(
+        func: t.Callable[[ViewT, ChannelSelect, ViewContextT], t.Awaitable[None]],
+    ) -> DecoratedItem[ViewT, ChannelSelect, ViewContextT]:
         if not inspect.iscoroutinefunction(func):
             raise TypeError("channel_select must decorate coroutine function.")
 

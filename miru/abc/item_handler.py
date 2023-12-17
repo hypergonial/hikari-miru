@@ -11,7 +11,6 @@ from collections.abc import Sequence
 import hikari
 
 from ..exceptions import BootstrapFailureError, HandlerFullError, ItemAlreadyAttachedError, RowFullError
-from ..traits import MiruAware
 from .item import Item
 
 if t.TYPE_CHECKING:
@@ -19,8 +18,9 @@ if t.TYPE_CHECKING:
 
     from ..context import Context
     from ..events import EventHandler
+    from ..traits import MiruAware
 
-__all__ = ("ItemHandler",)
+__all__ = ("ItemHandler", "ItemArranger")
 
 
 BuilderT = t.TypeVar("BuilderT", bound=hikari.api.ComponentBuilder)
@@ -28,9 +28,10 @@ ContextT = t.TypeVar("ContextT", bound="Context[t.Any]")
 ItemT = t.TypeVar("ItemT", bound="Item[t.Any]")
 
 
-class _Weights(t.Generic[ItemT]):
-    """
-    Calculate the position of an item based on it's width, and keep track of item positions
+class ItemArranger(t.Generic[ItemT]):
+    """Calculate the position of an item based on it's width, and automatically arrange items if no explicit row is specified.
+
+    Used internally by ItemHandler.
     """
 
     __slots__ = ("_weights",)
@@ -39,6 +40,21 @@ class _Weights(t.Generic[ItemT]):
         self._weights = [0, 0, 0, 0, 0]
 
     def add_item(self, item: ItemT) -> None:
+        """Add an item to the weights.
+
+        Parameters
+        ----------
+        item : ItemT
+            The item to add.
+
+        Raises
+        ------
+        RowFullError
+            The item does not fit on the row specified.
+            This error is only raised if a row is specified explicitly.
+        HandlerFullError
+            The item does not fit on any row.
+        """
         if item.row is not None:
             if item.width + self._weights[item.row] > 5:
                 raise RowFullError(f"Item does not fit on row {item.row}!")
@@ -54,24 +70,30 @@ class _Weights(t.Generic[ItemT]):
             raise HandlerFullError("Item does not fit on this item handler.")
 
     def remove_item(self, item: ItemT) -> None:
+        """Remove an item from the weights.
+
+        Parameters
+        ----------
+        item : ItemT
+            The item to remove.
+        """
         if item._rendered_row is not None:
             self._weights[item._rendered_row] -= item.width
             item._rendered_row = None
 
     def clear(self) -> None:
+        """Clear the weights, remove all items."""
         self._weights = [0, 0, 0, 0, 0]
 
 
-# Type ignore: Python 3.8 doesn't support type-arg in abc.ABC
+# TODO Type ignore: Python 3.8 doesn't support type-arg in abc.ABC, add when 3.9 is released
 class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT, ContextT, ItemT]):  # type: ignore[type-arg]
     """Abstract base class all item-handlers (e.g. views, modals) inherit from.
 
     Parameters
     ----------
-    timeout : Optional[float], optional
+    timeout : Optional[Union[float, int, datetime.timedelta]], optional
         The duration after which the item handler times out, in seconds, by default 120.0
-    autodefer : bool
-        If unhandled interactions should be automatically deferred or not, by default True
 
     Raises
     ------
@@ -91,7 +113,7 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT, ContextT, ItemT]):  # t
         self._timeout: t.Optional[float] = float(timeout) if timeout else None
         self._children: t.List[ItemT] = []
 
-        self._weights: _Weights[ItemT] = _Weights()
+        self._arranger: ItemArranger[ItemT] = ItemArranger()
         self._stopped: asyncio.Event = asyncio.Event()
         self._timeout_task: t.Optional[asyncio.Task[None]] = None
         self._running_tasks: t.MutableSequence[asyncio.Task[t.Any]] = []
@@ -129,23 +151,17 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT, ContextT, ItemT]):  # t
 
     @property
     def children(self) -> t.Sequence[ItemT]:
-        """
-        A list of all items attached to the item handler.
-        """
+        """A list of all items attached to the item handler."""
         return self._children
 
     @property
     def timeout(self) -> t.Optional[float]:
-        """
-        The amount of time the item handler is allowed to idle for, in seconds. Must be None for persistent views.
-        """
+        """The amount of time the item handler is allowed to idle for, in seconds. Must be None for persistent views."""
         return self._timeout
 
     @property
     def app(self) -> MiruAware:
-        """
-        The application that loaded the miru extension.
-        """
+        """The application that loaded the miru extension."""
         if not self._app:
             raise AttributeError(f"miru was not loaded, {type(self).__name__} has no attribute app.")
 
@@ -153,16 +169,12 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT, ContextT, ItemT]):  # t
 
     @property
     def bot(self) -> MiruAware:
-        """
-        The application that loaded the miru extension.
-        """
+        """The application that loaded the miru extension."""
         return self.app
 
     @property
     def last_context(self) -> t.Optional[ContextT]:
-        """
-        The last context that was received by the item handler.
-        """
+        """The last context that was received by the item handler."""
         return self._last_context
 
     @property
@@ -184,9 +196,9 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT, ContextT, ItemT]):  # t
             ItemHandler already has 25 components attached.
         TypeError
             Parameter item is not an instance of Item.
-        RuntimeError
+        ItemAlreadyAttachedError
             The item is already attached to this item handler.
-        RuntimeError
+        ItemAlreadyAttachedError
             The item is already attached to another item handler.
 
         Returns
@@ -194,7 +206,6 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT, ContextT, ItemT]):  # t
         ItemHandler
             The item handler the item was added to.
         """
-
         if len(self.children) > 25:
             raise HandlerFullError("Item Handler cannot have more than 25 components attached.")
 
@@ -209,7 +220,7 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT, ContextT, ItemT]):  # t
                 f"Item {type(item).__name__} is already attached to another item handler: {type(item._handler).__name__}."
             )
 
-        self._weights.add_item(item)
+        self._arranger.add_item(item)
 
         item._handler = self
         self._children.append(item)
@@ -234,7 +245,7 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT, ContextT, ItemT]):  # t
         except ValueError:
             pass
         else:
-            self._weights.remove_item(item)
+            self._arranger.remove_item(item)
             item._handler = None
 
         return self
@@ -252,9 +263,42 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT, ContextT, ItemT]):  # t
             item._rendered_row = None
 
         self._children.clear()
-        self._weights.clear()
+        self._arranger.clear()
 
         return self
+
+    def get_item_by(self, predicate: t.Callable[[ItemT], bool]) -> t.Optional[ItemT]:
+        """Get the first item that matches the given predicate.
+
+        Parameters
+        ----------
+        predicate : Callable[[Item[Any]], bool]
+            A predicate to match the item.
+
+        Returns
+        -------
+        Optional[Item[Any]]
+            The item that matched the predicate or None.
+        """
+        for item in self.children:
+            if predicate(item):
+                return item
+        return None
+
+    def get_item_by_id(self, custom_id: str) -> t.Optional[ItemT]:
+        """Get the first item that matches the given custom ID.
+
+        Parameters
+        ----------
+        custom_id : str
+            The custom_id of the component.
+
+        Returns
+        -------
+        Optional[Item[Any]]
+            The item that matched the custom ID or None.
+        """
+        return self.get_item_by(lambda item: item.custom_id == custom_id)
 
     def build(self) -> t.Sequence[BuilderT]:
         """Creates the action rows the item handler represents.
@@ -274,7 +318,7 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT, ContextT, ItemT]):  # t
         action_rows = []
 
         for _, items in itertools.groupby(self.children, lambda i: i._rendered_row):
-            s_items = sorted(list(items), key=lambda i: i.position if i.position is not None else sys.maxsize)
+            s_items = sorted(items, key=lambda i: i.position if i.position is not None else sys.maxsize)
             action_row = self._builder()
             for item in s_items:
                 item._build(action_row)
@@ -282,15 +326,11 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT, ContextT, ItemT]):  # t
         return action_rows
 
     async def on_timeout(self) -> None:
-        """
-        Called when the item handler times out. Override for custom timeout logic.
-        """
+        """Called when the item handler times out. Override for custom timeout logic."""
         pass
 
     def stop(self) -> None:
-        """
-        Stop listening for interactions.
-        """
+        """Stop listening for interactions."""
         self._stopped.set()
 
         if self._timeout_task:
@@ -303,22 +343,16 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT, ContextT, ItemT]):  # t
 
     @abc.abstractmethod
     async def _process_interactions(self, event: hikari.InteractionCreateEvent) -> None:
-        """
-        Process incoming interactions.
-        """
+        """Process incoming interactions."""
 
     def _reset_timeout(self) -> None:
-        """
-        Reset the timeout counter.
-        """
+        """Reset the timeout counter."""
         if self.timeout is not None and self._timeout_task:
             self._timeout_task.cancel()
             self._timeout_task = self._create_task(self._handle_timeout())
 
     async def _handle_timeout(self) -> None:
-        """
-        Handle the timing out of the item handler.
-        """
+        """Handle the timing out of the item handler."""
         if not self.timeout:
             return
 
@@ -332,9 +366,7 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT, ContextT, ItemT]):  # t
         self.stop()
 
     def _create_task(self, coro: t.Awaitable[t.Any], *, name: t.Optional[str] = None) -> asyncio.Task[t.Any]:
-        """
-        Run tasks inside the item handler internally while keeping a reference to the provided task.
-        """
+        """Run tasks inside the item handler internally while keeping a reference to the provided task."""
         task = asyncio.create_task(coro, name=name)  # type: ignore
         self._running_tasks.append(task)
         task.add_done_callback(lambda t: self._running_tasks.remove(t))

@@ -74,9 +74,7 @@ class Button(ViewItem):
 
     @property
     def style(self) -> hikari.ButtonStyle:
-        """
-        The button's style.
-        """
+        """The button's style."""
         return self._style
 
     @style.setter
@@ -91,9 +89,7 @@ class Button(ViewItem):
 
     @property
     def label(self) -> t.Optional[str]:
-        """
-        The button's label. This is the text visible on the button.
-        """
+        """The button's label. This is the text visible on the button."""
         return self._label
 
     @label.setter
@@ -104,9 +100,7 @@ class Button(ViewItem):
 
     @property
     def emoji(self) -> t.Optional[hikari.Emoji]:
-        """
-        The emoji that should be visible on the button.
-        """
+        """The emoji that should be visible on the button."""
         return self._emoji
 
     @emoji.setter
@@ -118,8 +112,7 @@ class Button(ViewItem):
 
     @property
     def url(self) -> t.Optional[str]:
-        """
-        The button's URL. If specified, the button will turn into a link button,
+        """The button's URL. If specified, the button will turn into a link button,
         and the style parameter will be ignored.
         """
         return self._url
@@ -174,7 +167,9 @@ def button(
     emoji: t.Optional[t.Union[str, hikari.Emoji]] = None,
     row: t.Optional[int] = None,
     disabled: bool = False,
-) -> t.Callable[[t.Callable[[ViewT, Button, ViewContextT], t.Awaitable[None]]], DecoratedItem]:
+) -> t.Callable[
+    [t.Callable[[ViewT, Button, ViewContextT], t.Awaitable[None]]], DecoratedItem[ViewT, Button, ViewContextT]
+]:
     """A decorator to transform a coroutine function into a Discord UI Button's callback.
     This must be inside a subclass of View.
 
@@ -195,11 +190,13 @@ def button(
 
     Returns
     -------
-    Callable[[CallableT], CallableT]
-        The decorated callback coroutine function.
+    Callable[[Callable[[ViewT, Button, ViewContextT], Awaitable[None]]], DecoratedItem[ViewT, Button, ViewContextT]]
+        The decorated callback function.
     """
 
-    def decorator(func: t.Callable[[ViewT, Button, ViewContextT], t.Awaitable[None]]) -> DecoratedItem:
+    def decorator(
+        func: t.Callable[[ViewT, Button, ViewContextT], t.Awaitable[None]],
+    ) -> DecoratedItem[ViewT, Button, ViewContextT]:
         if not inspect.iscoroutinefunction(func):
             raise TypeError("button must decorate coroutine function.")
         item = Button(label=label, custom_id=custom_id, style=style, emoji=emoji, row=row, disabled=disabled, url=None)

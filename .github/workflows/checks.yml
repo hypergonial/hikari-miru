@@ -5,7 +5,7 @@ on: [push, pull_request]
 jobs:
   formatting:
     runs-on: ubuntu-latest
-    name: "Run ruff and black on Python 3.10"
+    name: "Run ruff on Python 3.10"
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python 3.10
@@ -13,7 +13,7 @@ jobs:
         with:
           python-version: "3.10"
 
-      - name: Run black via nox
+      - name: Run ruff via nox
         run: |
           python -m pip install nox
           python -m nox -s format
@@ -32,6 +32,21 @@ jobs:
         run: |
           python -m pip install nox
           python -m nox -s mypy
+  
+  pyright:
+    runs-on: ubuntu-latest
+    name: "Run pyright via nox on Python 3.10"
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Run pyright via nox
+        run: |
+          python -m pip install nox
+          python -m nox -s pyright
   
   pytest:
     runs-on: ubuntu-latest

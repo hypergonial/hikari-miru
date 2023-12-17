@@ -24,4 +24,5 @@ If you think anything is missing, feel free to open an issue or pull request.
    api_references/context
    api_references/exceptions
    api_references/traits
-   api_references/ext_navigator
+   api_references/ext_nav
+   api_references/ext_menu

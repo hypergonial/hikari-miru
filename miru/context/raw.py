@@ -24,7 +24,6 @@ class RawComponentContext(Context[hikari.ComponentInteraction]):
 
     async def respond_with_modal(self, modal: Modal) -> None:
         """Respond to this interaction with a modal."""
-
         if self._issued_response:
             raise RuntimeError("Interaction was already responded to.")
 
