@@ -12,6 +12,7 @@ Version 3.4.0
 - Add ``ItemHandler.get_item_by()`` and ``ItemHandler.get_item_by_id()``.
 - Deprecate ``ModalContext.get_value_by_predicate`` in favour of ``ModalContext.get_value_by``. It will be removed in the next minor release (3.5.0).
 - Large amounts of typing improvements across the library.
+- Add ``CONTRIBUTING.md`` and configuration for common editors for better developer experience.
 
 Version 3.3.1
 =============
