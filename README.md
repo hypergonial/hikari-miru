@@ -71,6 +71,15 @@ bot.run()
 
 For more examples see [examples](https://github.com/hypergonial/hikari-miru/tree/main/examples), or refer to the [documentation](https://hikari-miru.readthedocs.io/en/latest/).
 
+## Extensions
+
+miru has two extensions built-in:
+
+- [`ext.nav`](https://hikari-miru.readthedocs.io/en/latest/guides/navigators.html) - To make it easier to build navigators (sometimes called paginators).
+- [`ext.menu`](https://hikari-miru.readthedocs.io/en/latest/guides/menus.html) - To make it easier to create nested menus.
+
+Check the corresponding documentation and the [examples](https://github.com/hypergonial/hikari-miru/tree/main/examples) on how to use them.
+
 ## Issues and support
 
 For general usage help or questions, see the `#miru` channel in the [hikari discord](https://discord.gg/hikari), if you have found a bug or have a feature request, feel free to [open an issue](https://github.com/hypergonial/hikari-miru/issues/new)!
