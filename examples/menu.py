@@ -40,7 +40,7 @@ class ModerationScreen(menu.Screen):
                 color=0x00FF00,
             ),
         )
-    
+
     @menu.button(label="Back")
     async def back(self, button: menu.ScreenButton, ctx: miru.Context) -> None:
         # Remove the current screen from the menu stack,
@@ -50,7 +50,7 @@ class ModerationScreen(menu.Screen):
     @menu.button(label="Ban", style=hikari.ButtonStyle.DANGER)
     async def ban(self, button: menu.ScreenButton, ctx: miru.Context) -> None:
         await ctx.respond("Hammer time!")
-    
+
     @menu.button(label="Kick", style=hikari.ButtonStyle.SECONDARY)
     async def kick(self, button: menu.ScreenButton, ctx: miru.Context) -> None:
         await ctx.respond("Kick!")
@@ -59,7 +59,7 @@ class LoggingScreen(menu.Screen):
     def __init__(self, menu: menu.Menu) -> None:
         super().__init__(menu)
         # Your screens can store state in the class instance
-        # But keep in mind that the instance will be 
+        # But keep in mind that the instance will be
         # destroyed once the screen is popped off the stack
         self.is_enabled = False
 
@@ -71,12 +71,12 @@ class LoggingScreen(menu.Screen):
                 color=0x00FF00,
             ),
         )
-    
+
 
     @menu.button(label="Back")
     async def back(self, button: menu.ScreenButton, ctx: miru.ViewContext) -> None:
         await self.menu.pop()
-    
+
     @menu.button(label="Enable", style=hikari.ButtonStyle.DANGER)
     async def enable(self, button: menu.ScreenButton, ctx: miru.ViewContext) -> None:
         self.is_enabled = not self.is_enabled

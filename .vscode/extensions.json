@@ -1,0 +1,9 @@
+{
+    "recommendations": [
+        "ms-python.python",
+        "charliermarsh.ruff",
+        "matangover.mypy",
+        "njpwerner.autodocstring",
+        "EditorConfig.EditorConfig"
+    ]
+}

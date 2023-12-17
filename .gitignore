@@ -128,11 +128,5 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# Jetbrains is annoying
-.idea/
-
-# And so is VS Code
-.vscode/
-
 # Ruff
 .ruff_cache/

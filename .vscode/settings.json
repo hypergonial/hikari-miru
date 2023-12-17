@@ -1,0 +1,9 @@
+{
+    "python.analysis.autoImportCompletions": true,
+    "editor.formatOnSave": true,
+    "[python]": {
+        "editor.defaultFormatter": "charliermarsh.ruff"
+    },
+    "autoDocstring.docstringFormat": "numpy",
+    "mypy.runUsingActiveInterpreter": true,
+}
