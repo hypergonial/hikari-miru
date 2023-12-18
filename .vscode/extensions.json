@@ -4,6 +4,7 @@
         "charliermarsh.ruff",
         "matangover.mypy",
         "njpwerner.autodocstring",
-        "EditorConfig.EditorConfig"
+        "EditorConfig.EditorConfig",
+        "tamasfe.even-better-toml"
     ]
 }

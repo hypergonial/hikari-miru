@@ -130,3 +130,6 @@ dmypy.json
 
 # Ruff
 .ruff_cache/
+
+# Dolphin
+.directory
