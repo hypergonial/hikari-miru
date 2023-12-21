@@ -12,7 +12,9 @@ def parse_meta() -> types.SimpleNamespace:
     with open(os.path.join(name, "internal", "about.py")) as fp:
         code = fp.read()
 
-    token_pattern = re.compile(r"^__(?P<key>\w+)?__\s*:?.*=\s*(?P<quote>(?:'{3}|\"{3}|'|\"))(?P<value>.*?)(?P=quote)", re.M)
+    token_pattern = re.compile(
+        r"^__(?P<key>\w+)?__\s*:?.*=\s*(?P<quote>(?:'{3}|\"{3}|'|\"))(?P<value>.*?)(?P=quote)", re.M
+    )
 
     groups = {}
 
@@ -47,15 +49,12 @@ setup(
     maintainer=meta.maintainer,
     url=meta.url,
     packages=find_namespace_packages(include=[name + "*"]),
-    package_data={"miru": ["py.typed"], "miru.ext.nav": ["py.typed"]},
+    package_data={"miru": ["py.typed"], "miru.ext.nav": ["py.typed"], "miru.ext.menu": ["py.typed"]},
     license=meta.license,
     include_package_data=True,
     zip_safe=False,
     install_requires=parse_requirements_file("requirements.txt"),
-    extras_require={
-        ':sys_platform=="win32"': ["colorama"],
-        "docs": parse_requirements_file("doc_requirements.txt"),
-    },
+    extras_require={':sys_platform=="win32"': ["colorama"], "docs": parse_requirements_file("doc_requirements.txt")},
     python_requires=">=3.8.0,<3.13",
     classifiers=[
         "Development Status :: 5 - Production/Stable",
