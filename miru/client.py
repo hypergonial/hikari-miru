@@ -156,14 +156,8 @@ class GatewayClient(Client[hikari.GatewayBot]):
 
         if isinstance(event.interaction, hikari.ModalInteraction):
             await self._handle_modal_inter(event.interaction)
-
-        if event.interaction.message and (handler := self._bound_handlers.get(event.interaction.message.id)):
-            await handler._invoke(event)
-            return
-
-        if handler := self._handlers.get(event.interaction.custom_id):
-            await handler._invoke(event)
-            return
+        else:
+            await self._handle_component_inter(event.interaction)
 
 
 # MIT License
