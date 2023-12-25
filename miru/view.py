@@ -86,12 +86,10 @@ class View(
 
         cls._view_children = children
 
-    def __init__(
-        self, *, timeout: t.Optional[t.Union[float, int, datetime.timedelta]] = 120.0, autodefer: bool = True
-    ) -> None:
+    def __init__(self, *, timeout: float | int | datetime.timedelta | None = 120.0, autodefer: bool = True) -> None:
         super().__init__(timeout=timeout)
         self._autodefer: bool = autodefer
-        self._message: t.Optional[hikari.Message] = None
+        self._message: hikari.Message | None = None
         self._input_event: asyncio.Event = asyncio.Event()
 
         for decorated_item in self._view_children:
@@ -107,7 +105,7 @@ class View(
         return self.timeout is None and all(item._is_persistent for item in self.children)
 
     @property
-    def message(self) -> t.Optional[hikari.Message]:
+    def message(self) -> hikari.Message | None:
         """The message this view is bound to. Will be None if the view is not bound, or if a message_id was passed to view.start()."""
         return self._message
 
@@ -130,7 +128,11 @@ class View(
 
     @classmethod
     def from_message(
-        cls, message: hikari.Message, *, timeout: t.Optional[float] = 120, autodefer: bool = True
+        cls,
+        message: hikari.Message,
+        *,
+        timeout: float | int | datetime.timedelta | None = 120.0,
+        autodefer: bool = True,
     ) -> te.Self:
         """Create a new view from the components included in the passed message.
         Returns an empty view if the message has no components attached.
@@ -264,7 +266,7 @@ class View(
         return True
 
     async def on_error(
-        self, error: Exception, item: t.Optional[ViewItem[ClientT]] = None, context: t.Optional[ViewContextT] = None
+        self, error: Exception, item: ViewItem[ClientT] | None = None, context: ViewContext[ClientT] | None = None
     ) -> None:
         """Called when an error occurs in a callback function or the built-in timeout function.
         Override for custom error-handling logic.
@@ -350,7 +352,7 @@ class View(
         self._input_event.set()
         return super().stop()
 
-    async def wait_for_input(self, timeout: t.Optional[float] = None) -> None:
+    async def wait_for_input(self, timeout: float | None = None) -> None:
         """Wait for any input to be received. This will also unblock if the view was stopped, thus
         it is recommended to check for the presence of a value after this function returns.
 

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import typing as t
 from warnings import warn
 
 from .version import CURRENT_VERSION, Version
@@ -8,7 +7,7 @@ from .version import CURRENT_VERSION, Version
 __all__ = ("warn_deprecate",)
 
 
-def warn_deprecate(*, what: str, when: Version, use_instead: t.Optional[str] = None) -> None:
+def warn_deprecate(*, what: str, when: Version, use_instead: str | None = None) -> None:
     """Warn about a deprecation.
 
     Parameters

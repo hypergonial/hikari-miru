@@ -45,12 +45,12 @@ class ChannelSelect(SelectBase[ClientT]):
         self,
         *,
         channel_types: t.Sequence[hikari.ChannelType] = (hikari.ChannelType.GUILD_TEXT,),
-        custom_id: t.Optional[str] = None,
-        placeholder: t.Optional[str] = None,
+        custom_id: str | None = None,
+        placeholder: str | None = None,
         min_values: int = 1,
         max_values: int = 1,
         disabled: bool = False,
-        row: t.Optional[int] = None,
+        row: int | None = None,
     ) -> None:
         super().__init__(
             custom_id=custom_id,
@@ -82,7 +82,7 @@ class ChannelSelect(SelectBase[ClientT]):
         return self._values
 
     @classmethod
-    def _from_component(cls, component: hikari.PartialComponent, row: t.Optional[int] = None) -> te.Self:
+    def _from_component(cls, component: hikari.PartialComponent, row: int | None = None) -> te.Self:
         assert isinstance(component, hikari.ChannelSelectMenuComponent)
 
         # Filter out unrecognized channel types
@@ -119,12 +119,12 @@ class ChannelSelect(SelectBase[ClientT]):
 def channel_select(
     *,
     channel_types: t.Sequence[hikari.ChannelType] = (hikari.ChannelType.GUILD_TEXT,),
-    custom_id: t.Optional[str] = None,
-    placeholder: t.Optional[str] = None,
+    custom_id: str | None = None,
+    placeholder: str | None = None,
     min_values: int = 1,
     max_values: int = 1,
     disabled: bool = False,
-    row: t.Optional[int] = None,
+    row: int | None = None,
 ) -> t.Callable[
     [t.Callable[[ViewT, ChannelSelect[ClientT], ViewContext[ClientT]], t.Awaitable[None]]],
     DecoratedItem[ClientT, ViewT, ChannelSelect[ClientT]],

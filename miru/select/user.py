@@ -42,12 +42,12 @@ class UserSelect(SelectBase[ClientT]):
     def __init__(
         self,
         *,
-        custom_id: t.Optional[str] = None,
-        placeholder: t.Optional[str] = None,
+        custom_id: str | None = None,
+        placeholder: str | None = None,
         min_values: int = 1,
         max_values: int = 1,
         disabled: bool = False,
-        row: t.Optional[int] = None,
+        row: int | None = None,
     ) -> None:
         super().__init__(
             custom_id=custom_id,
@@ -71,7 +71,7 @@ class UserSelect(SelectBase[ClientT]):
         return self._values
 
     @classmethod
-    def _from_component(cls, component: hikari.PartialComponent, row: t.Optional[int] = None) -> te.Self:
+    def _from_component(cls, component: hikari.PartialComponent, row: int | None = None) -> te.Self:
         assert (
             isinstance(component, hikari.SelectMenuComponent)
             and component.type == hikari.ComponentType.USER_SELECT_MENU
@@ -112,12 +112,12 @@ class UserSelect(SelectBase[ClientT]):
 
 def user_select(
     *,
-    custom_id: t.Optional[str] = None,
-    placeholder: t.Optional[str] = None,
+    custom_id: str | None = None,
+    placeholder: str | None = None,
     min_values: int = 1,
     max_values: int = 1,
     disabled: bool = False,
-    row: t.Optional[int] = None,
+    row: int | None = None,
 ) -> t.Callable[
     [t.Callable[[ViewT, UserSelect[ClientT], ViewContext[ClientT]], t.Awaitable[None]]],
     DecoratedItem[ClientT, ViewT, UserSelect[ClientT]],

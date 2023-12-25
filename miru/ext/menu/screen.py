@@ -36,13 +36,13 @@ class ScreenContent:
     """A sequence of embeds to add to this page."""
     mentions_everyone: hikari.UndefinedOr[bool] = hikari.UNDEFINED
     """If True, mentioning @everyone will be allowed in this page's message."""
-    user_mentions: hikari.UndefinedOr[t.Union[hikari.SnowflakeishSequence[hikari.PartialUser], bool]] = hikari.UNDEFINED
+    user_mentions: hikari.UndefinedOr[hikari.SnowflakeishSequence[hikari.PartialUser] | bool] = hikari.UNDEFINED
     """The set of allowed user mentions in this page's message. Set to True to allow all."""
-    role_mentions: hikari.UndefinedOr[t.Union[hikari.SnowflakeishSequence[hikari.PartialRole], bool]] = hikari.UNDEFINED
+    role_mentions: hikari.UndefinedOr[hikari.SnowflakeishSequence[hikari.PartialRole] | bool] = hikari.UNDEFINED
     """The set of allowed role mentions in this page's message. Set to True to allow all."""
 
-    def _build_payload(self) -> t.Dict[str, t.Any]:
-        d: t.Dict[str, t.Any] = {
+    def _build_payload(self) -> dict[str, t.Any]:
+        d: dict[str, t.Any] = {
             "content": self.content or None,
             "attachments": self.attachments or None,
             "embeds": self.embeds or None,
@@ -203,9 +203,7 @@ class Screen(abc.ABC, t.Generic[miru.ClientT]):
         self._children.clear()
         return self
 
-    def get_item_by(
-        self, predicate: t.Callable[[ScreenItem[miru.ClientT]], bool]
-    ) -> t.Optional[ScreenItem[miru.ClientT]]:
+    def get_item_by(self, predicate: t.Callable[[ScreenItem[miru.ClientT]], bool]) -> ScreenItem[miru.ClientT] | None:
         """Get the first item that matches the given predicate.
 
         Parameters
@@ -224,7 +222,7 @@ class Screen(abc.ABC, t.Generic[miru.ClientT]):
 
         return None
 
-    def get_item_by_id(self, custom_id: str) -> t.Optional[ScreenItem[miru.ClientT]]:
+    def get_item_by_id(self, custom_id: str) -> ScreenItem[miru.ClientT] | None:
         """Get the first item with the given custom ID.
 
         Parameters

@@ -49,16 +49,16 @@ class NavigatorView(View[ClientT]):
     def __init__(
         self,
         *,
-        pages: t.Sequence[t.Union[str, hikari.Embed, t.Sequence[hikari.Embed], Page]],
-        buttons: t.Optional[t.Sequence[NavButton[ClientT]]] = None,
-        timeout: t.Optional[t.Union[float, int, datetime.timedelta]] = 120.0,
+        pages: t.Sequence[str | hikari.Embed | t.Sequence[hikari.Embed] | Page],
+        buttons: t.Sequence[NavButton[ClientT]] | None = None,
+        timeout: float | int | datetime.timedelta | None = 120.0,
         autodefer: bool = True,
     ) -> None:
-        self._pages: t.Sequence[t.Union[str, hikari.Embed, t.Sequence[hikari.Embed], Page]] = pages
+        self._pages: t.Sequence[str | hikari.Embed | t.Sequence[hikari.Embed] | Page] = pages
         self._current_page: int = 0
         self._ephemeral: bool = False
         # The last interaction received, used for inter-based handling
-        self._inter: t.Optional[hikari.MessageResponseMixin[t.Any]] = None
+        self._inter: hikari.MessageResponseMixin[t.Any] | None = None
         super().__init__(timeout=timeout, autodefer=autodefer)
 
         if buttons is not None:
@@ -73,7 +73,7 @@ class NavigatorView(View[ClientT]):
             raise ValueError(f"Expected at least one page to be passed to {type(self).__name__}.")
 
     @property
-    def pages(self) -> t.Sequence[t.Union[str, hikari.Embed, t.Sequence[hikari.Embed], Page]]:
+    def pages(self) -> t.Sequence[str | hikari.Embed | t.Sequence[hikari.Embed] | Page]:
         """The pages the navigator is iterating through."""
         return self._pages
 
@@ -144,11 +144,11 @@ class NavigatorView(View[ClientT]):
         return super().add_item(item)
 
     def _get_page_payload(
-        self, page: t.Union[str, hikari.Embed, t.Sequence[hikari.Embed], Page]
+        self, page: str | hikari.Embed | t.Sequence[hikari.Embed] | Page
     ) -> t.MutableMapping[str, t.Any]:
         """Get the page content that is to be sent."""
         if isinstance(page, Page):
-            d: t.Dict[str, t.Any] = page._build_payload()
+            d: dict[str, t.Any] = page._build_payload()
             d["components"] = self
             if self.ephemeral:
                 d["flags"] = hikari.MessageFlag.EPHEMERAL
@@ -183,7 +183,7 @@ class NavigatorView(View[ClientT]):
     def is_persistent(self) -> bool:
         return super().is_persistent and not self.ephemeral
 
-    async def send_page(self, context: Context[t.Any, t.Any], page_index: t.Optional[int] = None) -> None:
+    async def send_page(self, context: Context[t.Any, t.Any], page_index: int | None = None) -> None:
         """Send a page, editing the original message.
 
         Parameters
@@ -210,7 +210,7 @@ class NavigatorView(View[ClientT]):
     async def swap_pages(
         self,
         context: Context[t.Any, t.Any],
-        new_pages: t.Sequence[t.Union[str, hikari.Embed, t.Sequence[hikari.Embed], Page]],
+        new_pages: t.Sequence[str | hikari.Embed | t.Sequence[hikari.Embed] | Page],
         start_at: int = 0,
     ) -> None:
         """Swap out the pages of the navigator to the newly provided pages.
@@ -268,13 +268,13 @@ class Page:
     """A sequence of embeds to add to this page."""
     mentions_everyone: hikari.UndefinedOr[bool] = hikari.UNDEFINED
     """If True, mentioning @everyone will be allowed in this page's message."""
-    user_mentions: hikari.UndefinedOr[t.Union[hikari.SnowflakeishSequence[hikari.PartialUser], bool]] = hikari.UNDEFINED
+    user_mentions: hikari.UndefinedOr[hikari.SnowflakeishSequence[hikari.PartialUser] | bool] = hikari.UNDEFINED
     """The set of allowed user mentions in this page's message. Set to True to allow all."""
-    role_mentions: hikari.UndefinedOr[t.Union[hikari.SnowflakeishSequence[hikari.PartialRole], bool]] = hikari.UNDEFINED
+    role_mentions: hikari.UndefinedOr[hikari.SnowflakeishSequence[hikari.PartialRole] | bool] = hikari.UNDEFINED
     """The set of allowed role mentions in this page's message. Set to True to allow all."""
 
-    def _build_payload(self) -> t.Dict[str, t.Any]:
-        d: t.Dict[str, t.Any] = {
+    def _build_payload(self) -> dict[str, t.Any]:
+        d: dict[str, t.Any] = {
             "content": self.content or None,
             "attachments": self.attachments or None,
             "embeds": self.embeds or None,

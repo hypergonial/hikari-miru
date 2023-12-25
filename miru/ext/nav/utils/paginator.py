@@ -27,7 +27,7 @@ class Paginator:
         self._prefix = prefix
         self._suffix = suffix
         self._line_separator = line_separator
-        self._pages: t.List[str] = []
+        self._pages: list[str] = []
 
     def _add_line(self, line: str) -> None:
         """Add a line to the paginator."""

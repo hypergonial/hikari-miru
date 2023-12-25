@@ -40,15 +40,15 @@ class ScreenItem(ViewItem[miru.ClientT], abc.ABC):
     def __init__(
         self,
         *,
-        custom_id: t.Optional[str] = None,
-        row: t.Optional[int] = None,
-        position: t.Optional[int] = None,
+        custom_id: str | None = None,
+        row: int | None = None,
+        position: int | None = None,
         disabled: bool = False,
         width: int = 1,
     ) -> None:
         super().__init__(custom_id=custom_id, row=row, width=width, position=position, disabled=disabled)
-        self._handler: t.Optional[Menu[miru.ClientT]] = None  # type: ignore
-        self._screen: t.Optional[Screen[miru.ClientT]] = None
+        self._handler: Menu[miru.ClientT] | None = None  # type: ignore
+        self._screen: Screen[miru.ClientT] | None = None
 
     @property
     def view(self) -> Menu[miru.ClientT]:
@@ -141,11 +141,11 @@ class DecoratedScreenItem(t.Generic[miru.ClientT, ScreenT, ScreenItemT]):
 
 def button(
     *,
-    label: t.Optional[str] = None,
-    custom_id: t.Optional[str] = None,
+    label: str | None = None,
+    custom_id: str | None = None,
     style: hikari.ButtonStyle = hikari.ButtonStyle.PRIMARY,
-    emoji: t.Optional[t.Union[str, hikari.Emoji]] = None,
-    row: t.Optional[int] = None,
+    emoji: str | hikari.Emoji | None = None,
+    row: int | None = None,
     disabled: bool = False,
 ) -> t.Callable[
     [t.Callable[[ScreenT, ScreenButton[miru.ClientT], miru.ViewContext[miru.ClientT]], t.Awaitable[None]]],
@@ -197,12 +197,12 @@ def button(
 def channel_select(
     *,
     channel_types: t.Sequence[hikari.ChannelType] = (hikari.ChannelType.GUILD_TEXT,),
-    custom_id: t.Optional[str] = None,
-    placeholder: t.Optional[str] = None,
+    custom_id: str | None = None,
+    placeholder: str | None = None,
     min_values: int = 1,
     max_values: int = 1,
     disabled: bool = False,
-    row: t.Optional[int] = None,
+    row: int | None = None,
 ) -> t.Callable[
     [t.Callable[[ScreenT, ScreenChannelSelect[miru.ClientT], miru.ViewContext[miru.ClientT]], t.Awaitable[None]]],
     DecoratedScreenItem[miru.ClientT, ScreenT, ScreenChannelSelect[miru.ClientT]],
@@ -262,12 +262,12 @@ def channel_select(
 
 def mentionable_select(
     *,
-    custom_id: t.Optional[str] = None,
-    placeholder: t.Optional[str] = None,
+    custom_id: str | None = None,
+    placeholder: str | None = None,
     min_values: int = 1,
     max_values: int = 1,
     disabled: bool = False,
-    row: t.Optional[int] = None,
+    row: int | None = None,
 ) -> t.Callable[
     [t.Callable[[ScreenT, ScreenMentionableSelect[miru.ClientT], miru.ViewContext[miru.ClientT]], t.Awaitable[None]]],
     DecoratedScreenItem[miru.ClientT, ScreenT, ScreenMentionableSelect[miru.ClientT]],
@@ -324,12 +324,12 @@ def mentionable_select(
 
 def role_select(
     *,
-    custom_id: t.Optional[str] = None,
-    placeholder: t.Optional[str] = None,
+    custom_id: str | None = None,
+    placeholder: str | None = None,
     min_values: int = 1,
     max_values: int = 1,
     disabled: bool = False,
-    row: t.Optional[int] = None,
+    row: int | None = None,
 ) -> t.Callable[
     [t.Callable[[ScreenT, ScreenRoleSelect[miru.ClientT], miru.ViewContext[miru.ClientT]], t.Awaitable[None]]],
     DecoratedScreenItem[miru.ClientT, ScreenT, ScreenRoleSelect[miru.ClientT]],
@@ -384,13 +384,13 @@ def role_select(
 
 def text_select(
     *,
-    options: t.Sequence[t.Union[hikari.SelectMenuOption, miru.SelectOption]],
-    custom_id: t.Optional[str] = None,
-    placeholder: t.Optional[str] = None,
+    options: t.Sequence[hikari.SelectMenuOption | miru.SelectOption],
+    custom_id: str | None = None,
+    placeholder: str | None = None,
     min_values: int = 1,
     max_values: int = 1,
     disabled: bool = False,
-    row: t.Optional[int] = None,
+    row: int | None = None,
 ) -> t.Callable[
     [t.Callable[[ScreenT, ScreenTextSelect[miru.ClientT], miru.ViewContext[miru.ClientT]], t.Awaitable[None]]],
     DecoratedScreenItem[miru.ClientT, ScreenT, ScreenTextSelect[miru.ClientT]],
@@ -443,12 +443,12 @@ def text_select(
 
 def user_select(
     *,
-    custom_id: t.Optional[str] = None,
-    placeholder: t.Optional[str] = None,
+    custom_id: str | None = None,
+    placeholder: str | None = None,
     min_values: int = 1,
     max_values: int = 1,
     disabled: bool = False,
-    row: t.Optional[int] = None,
+    row: int | None = None,
 ) -> t.Callable[
     [t.Callable[[ScreenT, ScreenUserSelect[miru.ClientT], miru.ViewContext[miru.ClientT]], t.Awaitable[None]]],
     DecoratedScreenItem[miru.ClientT, ScreenT, ScreenUserSelect[miru.ClientT]],

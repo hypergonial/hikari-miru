@@ -29,13 +29,13 @@ class Menu(miru.View[miru.ClientT]):
         If enabled, interactions will be automatically deferred if not responded to within 2 seconds, by default True
     """
 
-    def __init__(self, *, timeout: t.Optional[t.Union[float, int, datetime.timedelta]] = 300.0, autodefer: bool = True):
+    def __init__(self, *, timeout: float | int | datetime.timedelta | None = 300.0, autodefer: bool = True):
         super().__init__(timeout=timeout, autodefer=autodefer)
-        self._stack: t.List[Screen[miru.ClientT]] = []
+        self._stack: list[Screen[miru.ClientT]] = []
         # The interaction that was used to send the menu, if any.
-        self._inter: t.Optional[hikari.MessageResponseMixin[t.Any]] = None
+        self._inter: hikari.MessageResponseMixin[t.Any] | None = None
         self._ephemeral: bool = False
-        self._payload: t.Dict[str, t.Any] = {}
+        self._payload: dict[str, t.Any] = {}
 
     @property
     def is_persistent(self) -> bool:
@@ -74,7 +74,7 @@ class Menu(miru.View[miru.ClientT]):
         for item in screen.children:
             self.add_item(item)
 
-    async def update_message(self, new_content: t.Optional[ScreenContent] = None) -> None:
+    async def update_message(self, new_content: ScreenContent | None = None) -> None:
         """Update the message with the current state of the menu.
 
         Parameters

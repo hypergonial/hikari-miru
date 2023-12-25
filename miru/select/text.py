@@ -28,9 +28,9 @@ class SelectOption:
     def __init__(
         self,
         label: str,
-        value: t.Optional[str] = None,
-        description: t.Optional[str] = None,
-        emoji: t.Optional[t.Union[str, hikari.Emoji]] = None,
+        value: str | None = None,
+        description: str | None = None,
+        emoji: str | hikari.Emoji | None = None,
         is_default: bool = False,
     ) -> None:
         """A more lenient way to instantiate select options.
@@ -50,8 +50,8 @@ class SelectOption:
         """
         self.label: str = label
         self.value: str = value or label
-        self.description: t.Optional[str] = description
-        self.emoji: t.Optional[hikari.Emoji] = hikari.Emoji.parse(emoji) if isinstance(emoji, str) else emoji
+        self.description: str | None = description
+        self.emoji: hikari.Emoji | None = hikari.Emoji.parse(emoji) if isinstance(emoji, str) else emoji
         self.is_default: bool = is_default
 
     def _convert(self) -> hikari.SelectMenuOption:
@@ -93,13 +93,13 @@ class TextSelect(SelectBase[ClientT]):
     def __init__(
         self,
         *,
-        options: t.Sequence[t.Union[hikari.SelectMenuOption, SelectOption]],
-        custom_id: t.Optional[str] = None,
-        placeholder: t.Optional[str] = None,
+        options: t.Sequence[hikari.SelectMenuOption | SelectOption],
+        custom_id: str | None = None,
+        placeholder: str | None = None,
         min_values: int = 1,
         max_values: int = 1,
         disabled: bool = False,
-        row: t.Optional[int] = None,
+        row: int | None = None,
     ) -> None:
         super().__init__(
             custom_id=custom_id,
@@ -117,12 +117,12 @@ class TextSelect(SelectBase[ClientT]):
         return hikari.ComponentType.TEXT_SELECT_MENU
 
     @property
-    def placeholder(self) -> t.Optional[str]:
+    def placeholder(self) -> str | None:
         """The placeholder text that appears before the select menu is clicked."""
         return self._placeholder
 
     @placeholder.setter
-    def placeholder(self, value: t.Optional[str]) -> None:
+    def placeholder(self, value: str | None) -> None:
         if value is not None and len(value) > 150:
             raise ValueError(f"Parameter 'placeholder' must be 150 or fewer in length. (Found length {len(value)})")
         self._placeholder = str(value) if value else None
@@ -140,7 +140,7 @@ class TextSelect(SelectBase[ClientT]):
         self._options = value
 
     @classmethod
-    def _from_component(cls, component: hikari.PartialComponent, row: t.Optional[int] = None) -> te.Self:
+    def _from_component(cls, component: hikari.PartialComponent, row: int | None = None) -> te.Self:
         assert isinstance(component, hikari.TextSelectMenuComponent)
 
         return cls(
@@ -185,13 +185,13 @@ class TextSelect(SelectBase[ClientT]):
 
 def text_select(
     *,
-    options: t.Sequence[t.Union[hikari.SelectMenuOption, SelectOption]],
-    custom_id: t.Optional[str] = None,
-    placeholder: t.Optional[str] = None,
+    options: t.Sequence[hikari.SelectMenuOption | SelectOption],
+    custom_id: str | None = None,
+    placeholder: str | None = None,
     min_values: int = 1,
     max_values: int = 1,
     disabled: bool = False,
-    row: t.Optional[int] = None,
+    row: int | None = None,
 ) -> t.Callable[
     [t.Callable[[ViewT, TextSelect[ClientT], ViewContext[ClientT]], t.Awaitable[None]]],
     DecoratedItem[ClientT, ViewT, TextSelect[ClientT]],

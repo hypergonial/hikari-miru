@@ -34,14 +34,9 @@ class Item(abc.ABC, t.Generic[ClientT, BuilderT, ContextT, HandlerT]):
     """An abstract base class for all components. Cannot be directly instantiated."""
 
     def __init__(
-        self,
-        *,
-        custom_id: t.Optional[str] = None,
-        row: t.Optional[int] = None,
-        position: t.Optional[int] = None,
-        width: int = 1,
+        self, *, custom_id: str | None = None, row: int | None = None, position: int | None = None, width: int = 1
     ) -> None:
-        self._rendered_row: t.Optional[int] = None
+        self._rendered_row: int | None = None
         """The row the item was placed at when rendered. None if this item was not sent to a message yet."""
 
         self.row = row
@@ -59,28 +54,28 @@ class Item(abc.ABC, t.Generic[ClientT, BuilderT, ContextT, HandlerT]):
         self._is_persistent: bool = bool(custom_id)
         """If True, the custom_id was provided by the user, and not randomly generated."""
 
-        self._handler: t.Optional[HandlerT] = None
+        self._handler: HandlerT | None = None
         """The handler the item was added to, if any."""
 
     @property
-    def position(self) -> t.Optional[int]:
+    def position(self) -> int | None:
         """The position of the item within the row it occupies."""
         return self._position
 
     @position.setter
-    def position(self, value: t.Optional[int]) -> None:
+    def position(self, value: int | None) -> None:
         if value is None or 4 >= value >= 0:
             self._position = value
         else:
             raise ValueError(f"Position of item {type(self).__name__} must be between 0 and 4.")
 
     @property
-    def row(self) -> t.Optional[int]:
+    def row(self) -> int | None:
         """The row the item should occupy. Leave as None for automatic placement."""
         return self._row
 
     @row.setter
-    def row(self, value: t.Optional[int]) -> None:
+    def row(self, value: int | None) -> None:
         if self._rendered_row is not None:
             raise ItemAlreadyAttachedError("Item is already attached to an item handler, row cannot be changed.")
 
@@ -102,7 +97,7 @@ class Item(abc.ABC, t.Generic[ClientT, BuilderT, ContextT, HandlerT]):
         return self._custom_id
 
     @custom_id.setter
-    def custom_id(self, value: t.Optional[str]) -> None:
+    def custom_id(self, value: str | None) -> None:
         if value and len(value) > 100:
             raise ValueError("custom_id has a max length of 100.")
 
@@ -130,14 +125,14 @@ class ViewItem(Item[ClientT, "hikari.impl.MessageActionRowBuilder", "ViewContext
     def __init__(
         self,
         *,
-        custom_id: t.Optional[str] = None,
-        row: t.Optional[int] = None,
-        position: t.Optional[int] = None,
+        custom_id: str | None = None,
+        row: int | None = None,
+        position: int | None = None,
         width: int = 1,
         disabled: bool = False,
     ) -> None:
         super().__init__(custom_id=custom_id, row=row, position=position, width=width)
-        self._handler: t.Optional[View[ClientT]] = None
+        self._handler: View[ClientT] | None = None
         self._disabled: bool = disabled
 
     @property
@@ -164,7 +159,7 @@ class ViewItem(Item[ClientT, "hikari.impl.MessageActionRowBuilder", "ViewContext
 
     @classmethod
     @abstractmethod
-    def _from_component(cls, component: hikari.PartialComponent, row: t.Optional[int] = None) -> te.Self:
+    def _from_component(cls, component: hikari.PartialComponent, row: int | None = None) -> te.Self:
         """Converts the passed hikari component into a miru ViewItem."""
         ...
 
@@ -185,18 +180,18 @@ class ModalItem(Item[ClientT, "hikari.impl.ModalActionRowBuilder", "ModalContext
     def __init__(
         self,
         *,
-        custom_id: t.Optional[str] = None,
-        row: t.Optional[int] = None,
-        position: t.Optional[int] = None,
+        custom_id: str | None = None,
+        row: int | None = None,
+        position: int | None = None,
         width: int = 1,
         required: bool = False,
     ) -> None:
         super().__init__(custom_id=custom_id, row=row, position=position, width=width)
-        self._handler: t.Optional[Modal[ClientT]] = None
+        self._handler: Modal[ClientT] | None = None
         self._required: bool = required
 
     @property
-    def modal(self) -> t.Optional[Modal[ClientT]]:
+    def modal(self) -> Modal[ClientT] | None:
         """The modal this item is attached to."""
         if not self._handler:
             raise AttributeError(f"{type(self).__name__} hasn't been attached to a modal yet.")

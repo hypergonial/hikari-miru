@@ -26,7 +26,7 @@ class ViewContext(Context[ClientT, hikari.ComponentInteraction]):
     def __init__(self, view: View[ClientT], client: ClientT, interaction: hikari.ComponentInteraction) -> None:
         super().__init__(client, interaction)
         self._view = view
-        self._autodefer_task: t.Optional[asyncio.Task[None]] = None
+        self._autodefer_task: asyncio.Task[None] | None = None
 
     def _start_autodefer(self) -> None:
         if self._autodefer_task is not None:

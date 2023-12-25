@@ -105,9 +105,9 @@ class ItemHandler(
 
         self._arranger: ItemArranger[ItemT] = ItemArranger()
         self._stopped: asyncio.Event = asyncio.Event()
-        self._timeout_task: t.Optional[asyncio.Task[None]] = None
+        self._timeout_task: asyncio.Task[None] | None = None
         self._running_tasks: t.MutableSequence[asyncio.Task[t.Any]] = []
-        self._last_context: t.Optional[ContextT] = None
+        self._last_context: ContextT | None = None
 
         if len(self.children) > 25:
             raise HandlerFullError(f"{type(self).__name__} cannot have more than 25 components attached.")
@@ -120,7 +120,7 @@ class ItemHandler(
     def __getitem__(self, value: slice) -> list[BuilderT]:
         ...
 
-    def __getitem__(self, value: t.Union[slice, int]) -> BuilderT | t.Sequence[BuilderT]:
+    def __getitem__(self, value: slice | int) -> BuilderT | t.Sequence[BuilderT]:
         return self.build()[value]
 
     def __iter__(self) -> t.Iterator[BuilderT]:
@@ -142,7 +142,7 @@ class ItemHandler(
         return self._children
 
     @property
-    def timeout(self) -> t.Optional[float]:
+    def timeout(self) -> float | None:
         """The amount of time the item handler is allowed to idle for, in seconds. Must be None for persistent views."""
         return self._timeout
 
@@ -157,7 +157,7 @@ class ItemHandler(
         return self._client
 
     @property
-    def last_context(self) -> t.Optional[ContextT]:
+    def last_context(self) -> ContextT | None:
         """The last context that was received by the item handler."""
         return self._last_context
 
@@ -251,7 +251,7 @@ class ItemHandler(
 
         return self
 
-    def get_item_by(self, predicate: t.Callable[[ItemT], bool]) -> t.Optional[ItemT]:
+    def get_item_by(self, predicate: t.Callable[[ItemT], bool]) -> ItemT | None:
         """Get the first item that matches the given predicate.
 
         Parameters
@@ -269,7 +269,7 @@ class ItemHandler(
                 return item
         return None
 
-    def get_item_by_id(self, custom_id: str) -> t.Optional[ItemT]:
+    def get_item_by_id(self, custom_id: str) -> ItemT | None:
         """Get the first item that matches the given custom ID.
 
         Parameters
@@ -349,14 +349,14 @@ class ItemHandler(
 
         self.stop()
 
-    def _create_task(self, coro: t.Awaitable[t.Any], *, name: t.Optional[str] = None) -> asyncio.Task[t.Any]:
+    def _create_task(self, coro: t.Awaitable[t.Any], *, name: str | None = None) -> asyncio.Task[t.Any]:
         """Run tasks inside the item handler internally while keeping a reference to the provided task."""
         task: asyncio.Task[t.Any] = asyncio.create_task(coro, name=name)  # type: ignore
         self._running_tasks.append(task)
         task.add_done_callback(lambda t: self._running_tasks.remove(t))
         return task
 
-    async def wait(self, timeout: t.Optional[float] = None) -> None:
+    async def wait(self, timeout: float | None = None) -> None:
         """Wait until the item handler has stopped receiving interactions.
 
         Parameters

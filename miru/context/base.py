@@ -11,10 +11,6 @@ import hikari
 
 from ..internal.types import ClientT
 
-if t.TYPE_CHECKING:
-    from hikari.snowflakes import Snowflake
-
-
 InteractionT = t.TypeVar("InteractionT", "hikari.ComponentInteraction", "hikari.ModalInteraction")
 
 __all__ = ("Context", "InteractionResponse")
@@ -84,10 +80,10 @@ class InteractionResponse:
 
     __slots__ = ("_context", "_message", "_delete_after_task")
 
-    def __init__(self, context: Context[ClientT, InteractionT], message: t.Optional[hikari.Message] = None) -> None:
+    def __init__(self, context: Context[ClientT, InteractionT], message: hikari.Message | None = None) -> None:
         self._context: Context[ClientT, InteractionT] = context
-        self._message: t.Optional[hikari.Message] = message
-        self._delete_after_task: t.Optional[asyncio.Task[None]] = None
+        self._message: hikari.Message | None = message
+        self._delete_after_task: asyncio.Task[None] | None = None
 
     def __await__(self) -> t.Generator[t.Any, None, hikari.Message]:
         return self.retrieve_message().__await__()
@@ -101,7 +97,7 @@ class InteractionResponse:
         await asyncio.sleep(delay)
         await self.delete()
 
-    def delete_after(self, delay: t.Union[int, float, datetime.timedelta]) -> None:
+    def delete_after(self, delay: int | float | datetime.timedelta) -> None:
         """Delete the response after the specified delay.
 
         Parameters
@@ -153,12 +149,8 @@ class InteractionResponse:
         embed: hikari.UndefinedOr[hikari.Embed] = hikari.UNDEFINED,
         embeds: hikari.UndefinedOr[t.Sequence[hikari.Embed]] = hikari.UNDEFINED,
         mentions_everyone: hikari.UndefinedOr[bool] = hikari.UNDEFINED,
-        user_mentions: hikari.UndefinedOr[
-            t.Union[hikari.SnowflakeishSequence[hikari.PartialUser], bool]
-        ] = hikari.UNDEFINED,
-        role_mentions: hikari.UndefinedOr[
-            t.Union[hikari.SnowflakeishSequence[hikari.PartialRole], bool]
-        ] = hikari.UNDEFINED,
+        user_mentions: hikari.UndefinedOr[hikari.SnowflakeishSequence[hikari.PartialUser] | bool] = hikari.UNDEFINED,
+        role_mentions: hikari.UndefinedOr[hikari.SnowflakeishSequence[hikari.PartialRole] | bool] = hikari.UNDEFINED,
     ) -> InteractionResponse:
         """A short-hand method to edit the message belonging to this response.
 
@@ -180,9 +172,9 @@ class InteractionResponse:
             A sequence of embeds to add to this message.
         mentions_everyone : undefined.UndefinedOr[bool], optional
             If True, mentioning @everyone will be allowed.
-        user_mentions : undefined.UndefinedOr[t.Union[hikari.SnowflakeishSequence[hikari.PartialUser], bool]], optional
+        user_mentions : undefined.UndefinedOr[[hikari.SnowflakeishSequence[hikari.PartialUser] | bool], optional
             The set of allowed user mentions in this message. Set to True to allow all.
-        role_mentions : undefined.UndefinedOr[t.Union[hikari.SnowflakeishSequence[hikari.PartialRole], bool]], optional
+        role_mentions : undefined.UndefinedOr[[hikari.SnowflakeishSequence[hikari.PartialRole] | bool], optional
             The set of allowed role mentions in this message. Set to True to allow all.
 
         Returns
@@ -285,34 +277,34 @@ class Context(abc.ABC, t.Generic[ClientT, InteractionT]):
         return self.user
 
     @property
-    def member(self) -> t.Optional[hikari.InteractionMember]:
+    def member(self) -> hikari.InteractionMember | None:
         """The member who triggered this interaction. Will be None in DMs."""
         return self._interaction.member
 
     @property
-    def locale(self) -> t.Union[str, hikari.Locale]:
+    def locale(self) -> str | hikari.Locale:
         """The locale of this context."""
         return self._interaction.locale
 
     @property
-    def guild_locale(self) -> t.Optional[t.Union[str, hikari.Locale]]:
+    def guild_locale(self) -> str | hikari.Locale | None:
         """The guild locale of this context, if in a guild.
         This will default to `en-US` if not a community guild.
         """
         return self._interaction.guild_locale
 
     @property
-    def app_permissions(self) -> t.Optional[hikari.Permissions]:
+    def app_permissions(self) -> hikari.Permissions | None:
         """The permissions of the user who triggered the interaction. Will be None in DMs."""
         return self._interaction.app_permissions
 
     @property
-    def channel_id(self) -> Snowflake:
+    def channel_id(self) -> hikari.Snowflake:
         """The ID of the channel the context represents."""
         return self._interaction.channel_id
 
     @property
-    def guild_id(self) -> t.Optional[Snowflake]:
+    def guild_id(self) -> hikari.Snowflake | None:
         """The ID of the guild the context represents. Will be None in DMs."""
         return self._interaction.guild_id
 
@@ -326,17 +318,17 @@ class Context(abc.ABC, t.Generic[ClientT, InteractionT]):
         else:
             return datetime.datetime.now() - self._created_at <= datetime.timedelta(seconds=3)
 
-    async def _create_response(self, message: t.Optional[hikari.Message] = None) -> InteractionResponse:
+    async def _create_response(self, message: hikari.Message | None = None) -> InteractionResponse:
         """Create a new response and add it to the list of tracked responses."""
         response = InteractionResponse(self, message)
         self._responses.append(response)
         return response
 
-    def get_guild(self) -> t.Optional[hikari.GatewayGuild]:
+    def get_guild(self) -> hikari.GatewayGuild | None:
         """Gets the guild this context represents, if any. Requires application cache."""
         return self._interaction.get_guild()
 
-    def get_channel(self) -> t.Optional[hikari.TextableGuildChannel]:
+    def get_channel(self) -> hikari.TextableGuildChannel | None:
         """Gets the channel this context represents, None if in a DM. Requires application cache."""
         return self._interaction.get_channel()
 
@@ -361,7 +353,7 @@ class Context(abc.ABC, t.Generic[ClientT, InteractionT]):
         self,
         content: hikari.UndefinedOr[t.Any] = hikari.UNDEFINED,
         *,
-        flags: t.Union[int, hikari.MessageFlag, hikari.UndefinedType] = hikari.UNDEFINED,
+        flags: int | hikari.MessageFlag | hikari.UndefinedType = hikari.UNDEFINED,
         tts: hikari.UndefinedOr[bool] = hikari.UNDEFINED,
         component: hikari.UndefinedOr[hikari.api.ComponentBuilder] = hikari.UNDEFINED,
         components: hikari.UndefinedOr[t.Sequence[hikari.api.ComponentBuilder]] = hikari.UNDEFINED,
@@ -370,13 +362,9 @@ class Context(abc.ABC, t.Generic[ClientT, InteractionT]):
         embed: hikari.UndefinedOr[hikari.Embed] = hikari.UNDEFINED,
         embeds: hikari.UndefinedOr[t.Sequence[hikari.Embed]] = hikari.UNDEFINED,
         mentions_everyone: hikari.UndefinedOr[bool] = hikari.UNDEFINED,
-        user_mentions: hikari.UndefinedOr[
-            t.Union[hikari.SnowflakeishSequence[hikari.PartialUser], bool]
-        ] = hikari.UNDEFINED,
-        role_mentions: hikari.UndefinedOr[
-            t.Union[hikari.SnowflakeishSequence[hikari.PartialRole], bool]
-        ] = hikari.UNDEFINED,
-        delete_after: hikari.UndefinedOr[t.Union[float, int, datetime.timedelta]] = hikari.UNDEFINED,
+        user_mentions: hikari.UndefinedOr[hikari.SnowflakeishSequence[hikari.PartialUser] | bool] = hikari.UNDEFINED,
+        role_mentions: hikari.UndefinedOr[hikari.SnowflakeishSequence[hikari.PartialRole] | bool] = hikari.UNDEFINED,
+        delete_after: hikari.UndefinedOr[float | int | datetime.timedelta] = hikari.UNDEFINED,
     ) -> InteractionResponse:
         """Short-hand method to create a new message response via the interaction this context represents.
 
@@ -461,7 +449,7 @@ class Context(abc.ABC, t.Generic[ClientT, InteractionT]):
         self,
         content: hikari.UndefinedNoneOr[t.Any] = hikari.UNDEFINED,
         *,
-        flags: t.Union[int, hikari.MessageFlag, hikari.UndefinedType] = hikari.UNDEFINED,
+        flags: int | hikari.MessageFlag | hikari.UndefinedType = hikari.UNDEFINED,
         tts: hikari.UndefinedOr[bool] = hikari.UNDEFINED,
         component: hikari.UndefinedNoneOr[hikari.api.ComponentBuilder] = hikari.UNDEFINED,
         components: hikari.UndefinedNoneOr[t.Sequence[hikari.api.ComponentBuilder]] = hikari.UNDEFINED,
@@ -470,12 +458,8 @@ class Context(abc.ABC, t.Generic[ClientT, InteractionT]):
         embed: hikari.UndefinedNoneOr[hikari.Embed] = hikari.UNDEFINED,
         embeds: hikari.UndefinedNoneOr[t.Sequence[hikari.Embed]] = hikari.UNDEFINED,
         mentions_everyone: hikari.UndefinedOr[bool] = hikari.UNDEFINED,
-        user_mentions: hikari.UndefinedOr[
-            t.Union[hikari.SnowflakeishSequence[hikari.PartialUser], bool]
-        ] = hikari.UNDEFINED,
-        role_mentions: hikari.UndefinedOr[
-            t.Union[hikari.SnowflakeishSequence[hikari.PartialRole], bool]
-        ] = hikari.UNDEFINED,
+        user_mentions: hikari.UndefinedOr[hikari.SnowflakeishSequence[hikari.PartialUser] | bool] = hikari.UNDEFINED,
+        role_mentions: hikari.UndefinedOr[hikari.SnowflakeishSequence[hikari.PartialRole] | bool] = hikari.UNDEFINED,
     ) -> InteractionResponse:
         """A short-hand method to edit the initial response belonging to this interaction.
         If no initial response was issued yet, this will create one of type ``MESSAGE_UPDATE``.
@@ -560,19 +544,16 @@ class Context(abc.ABC, t.Generic[ClientT, InteractionT]):
         response_type: t.Literal[hikari.ResponseType.DEFERRED_MESSAGE_CREATE]
         | t.Literal[hikari.ResponseType.DEFERRED_MESSAGE_UPDATE],
         *,
-        flags: hikari.UndefinedOr[t.Union[int, hikari.MessageFlag]] = hikari.UNDEFINED,
+        flags: hikari.UndefinedOr[int | hikari.MessageFlag] = hikari.UNDEFINED,
     ) -> None:
         ...
 
     @t.overload
-    async def defer(self, *, flags: hikari.UndefinedOr[t.Union[int, hikari.MessageFlag]] = hikari.UNDEFINED) -> None:
+    async def defer(self, *, flags: hikari.UndefinedOr[int | hikari.MessageFlag] = hikari.UNDEFINED) -> None:
         ...
 
     async def defer(  # noqa: D417
-        self,
-        *args: t.Any,
-        flags: hikari.UndefinedOr[t.Union[int, hikari.MessageFlag]] = hikari.UNDEFINED,
-        **kwargs: t.Any,
+        self, *args: t.Any, flags: hikari.UndefinedOr[int | hikari.MessageFlag] = hikari.UNDEFINED, **kwargs: t.Any
     ) -> None:
         """Short-hand method to defer an interaction response. Raises RuntimeError if the interaction was already responded to.
 

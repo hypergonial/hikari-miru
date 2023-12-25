@@ -40,14 +40,14 @@ class NavItem(ViewItem[ClientT], abc.ABC):
     def __init__(
         self,
         *,
-        custom_id: t.Optional[str] = None,
-        row: t.Optional[int] = None,
-        position: t.Optional[int] = None,
+        custom_id: str | None = None,
+        row: int | None = None,
+        position: int | None = None,
         disabled: bool = False,
         width: int = 1,
     ) -> None:
         super().__init__(custom_id=custom_id, row=row, width=width, position=position, disabled=disabled)
-        self._handler: t.Optional[NavigatorView[ClientT]] = None  # type: ignore
+        self._handler: NavigatorView[ClientT] | None = None  # type: ignore
 
     async def before_page_change(self) -> None:
         """Called when the navigator is about to transition to the next page. Also called before the first page is sent."""
@@ -92,11 +92,11 @@ class NextButton(NavButton[ClientT]):
         self,
         *,
         style: hikari.ButtonStyle = hikari.ButtonStyle.PRIMARY,
-        label: t.Optional[str] = None,
-        custom_id: t.Optional[str] = None,
-        emoji: t.Union[hikari.Emoji, str, None] = chr(9654),
-        row: t.Optional[int] = None,
-        position: t.Optional[int] = None,
+        label: str | None = None,
+        custom_id: str | None = None,
+        emoji: hikari.Emoji | str | None = chr(9654),
+        row: int | None = None,
+        position: int | None = None,
     ):
         super().__init__(style=style, label=label, custom_id=custom_id, emoji=emoji, row=row, position=position)
 
@@ -118,11 +118,11 @@ class PrevButton(NavButton[ClientT]):
         self,
         *,
         style: hikari.ButtonStyle = hikari.ButtonStyle.PRIMARY,
-        label: t.Optional[str] = None,
-        custom_id: t.Optional[str] = None,
-        emoji: t.Union[hikari.Emoji, str, None] = chr(9664),
-        row: t.Optional[int] = None,
-        position: t.Optional[int] = None,
+        label: str | None = None,
+        custom_id: str | None = None,
+        emoji: hikari.Emoji | str | None = chr(9664),
+        row: int | None = None,
+        position: int | None = None,
     ):
         super().__init__(style=style, label=label, custom_id=custom_id, emoji=emoji, row=row, position=position)
 
@@ -144,11 +144,11 @@ class FirstButton(NavButton[ClientT]):
         self,
         *,
         style: hikari.ButtonStyle = hikari.ButtonStyle.PRIMARY,
-        label: t.Optional[str] = None,
-        custom_id: t.Optional[str] = None,
-        emoji: t.Union[hikari.Emoji, str, None] = chr(9194),
-        row: t.Optional[int] = None,
-        position: t.Optional[int] = None,
+        label: str | None = None,
+        custom_id: str | None = None,
+        emoji: hikari.Emoji | str | None = chr(9194),
+        row: int | None = None,
+        position: int | None = None,
     ):
         super().__init__(style=style, label=label, custom_id=custom_id, emoji=emoji, row=row, position=position)
 
@@ -170,11 +170,11 @@ class LastButton(NavButton[ClientT]):
         self,
         *,
         style: hikari.ButtonStyle = hikari.ButtonStyle.PRIMARY,
-        label: t.Optional[str] = None,
-        custom_id: t.Optional[str] = None,
-        emoji: t.Union[hikari.Emoji, str, None] = chr(9193),
-        row: t.Optional[int] = None,
-        position: t.Optional[int] = None,
+        label: str | None = None,
+        custom_id: str | None = None,
+        emoji: hikari.Emoji | str | None = chr(9193),
+        row: int | None = None,
+        position: int | None = None,
     ):
         super().__init__(style=style, label=label, custom_id=custom_id, emoji=emoji, row=row, position=position)
 
@@ -196,11 +196,11 @@ class IndicatorButton(NavButton[ClientT]):
         self,
         *,
         style: hikari.ButtonStyle = hikari.ButtonStyle.SECONDARY,
-        custom_id: t.Optional[str] = None,
-        emoji: t.Union[hikari.Emoji, str, None] = None,
+        custom_id: str | None = None,
+        emoji: hikari.Emoji | str | None = None,
         disabled: bool = False,
-        row: t.Optional[int] = None,
-        position: t.Optional[int] = None,
+        row: int | None = None,
+        position: int | None = None,
     ):
         # Either label or emoji is required, so we pass a placeholder
         super().__init__(
@@ -242,11 +242,11 @@ class StopButton(NavButton[ClientT]):
         self,
         *,
         style: hikari.ButtonStyle = hikari.ButtonStyle.DANGER,
-        label: t.Optional[str] = None,
-        custom_id: t.Optional[str] = None,
-        emoji: t.Union[hikari.Emoji, str, None] = chr(9209),
-        row: t.Optional[int] = None,
-        position: t.Optional[int] = None,
+        label: str | None = None,
+        custom_id: str | None = None,
+        emoji: hikari.Emoji | str | None = chr(9209),
+        row: int | None = None,
+        position: int | None = None,
     ):
         super().__init__(style=style, label=label, custom_id=custom_id, emoji=emoji, row=row, position=position)
 

@@ -1,7 +1,6 @@
 import os
 import re
 import types
-import typing as t
 
 from setuptools import find_namespace_packages, setup
 
@@ -30,7 +29,7 @@ def long_description() -> str:
         return fp.read()
 
 
-def parse_requirements_file(path: str) -> t.List[str]:
+def parse_requirements_file(path: str) -> list[str]:
     with open(path) as fp:
         dependencies = (d.strip() for d in fp.read().split("\n") if d.strip())
         return [d for d in dependencies if not d.startswith("#")]

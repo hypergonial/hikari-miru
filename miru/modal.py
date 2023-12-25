@@ -71,17 +71,13 @@ class Modal(
         cls._modal_children = children
 
     def __init__(
-        self,
-        title: str,
-        *,
-        custom_id: t.Optional[str] = None,
-        timeout: t.Optional[t.Union[float, int, datetime.timedelta]] = 300.0,
+        self, title: str, *, custom_id: str | None = None, timeout: float | int | datetime.timedelta | None = 300.0
     ) -> None:
         super().__init__(timeout=timeout)
 
         self._title: str = title
         self._custom_id: str = custom_id or os.urandom(16).hex()
-        self._values: t.Optional[t.Mapping[ModalItem[ClientT], str]] = None
+        self._values: t.Mapping[ModalItem[ClientT], str] | None = None
 
         if len(self._title) > 100:
             raise ValueError("Modal title is too long. Maximum 100 characters.")
@@ -119,7 +115,7 @@ class Modal(
         self._custom_id = value
 
     @property
-    def values(self) -> t.Optional[t.Mapping[ModalItem[ClientT], str]]:
+    def values(self) -> t.Mapping[ModalItem[ClientT], str] | None:
         """The input values received by this modal."""
         return self._values
 
@@ -171,7 +167,7 @@ class Modal(
         """
         return True
 
-    async def on_error(self, error: Exception, context: t.Optional[ModalContextT] = None) -> None:
+    async def on_error(self, error: Exception, context: ModalContext[ClientT] | None = None) -> None:
         """Called when an error occurs in a callback function.
         Override for custom error-handling logic.
 

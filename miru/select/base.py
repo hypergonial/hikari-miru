@@ -40,12 +40,12 @@ class SelectBase(ViewItem[ClientT], abc.ABC):
     def __init__(
         self,
         *,
-        custom_id: t.Optional[str] = None,
-        placeholder: t.Optional[str] = None,
+        custom_id: str | None = None,
+        placeholder: str | None = None,
         min_values: int = 1,
         max_values: int = 1,
         disabled: bool = False,
-        row: t.Optional[int] = None,
+        row: int | None = None,
     ) -> None:
         super().__init__(custom_id=custom_id, row=row, position=0, width=5, disabled=disabled)
         self.placeholder = placeholder
@@ -53,12 +53,12 @@ class SelectBase(ViewItem[ClientT], abc.ABC):
         self.max_values = max_values
 
     @property
-    def placeholder(self) -> t.Optional[str]:
+    def placeholder(self) -> str | None:
         """The placeholder text that appears before the select menu is clicked."""
         return self._placeholder
 
     @placeholder.setter
-    def placeholder(self, value: t.Optional[str]) -> None:
+    def placeholder(self, value: str | None) -> None:
         if value is not None and len(value) > 150:
             raise ValueError(f"Parameter 'placeholder' must be 150 or fewer in length. (Found length {len(value)})")
         self._placeholder = str(value) if value else None
@@ -83,7 +83,7 @@ class SelectBase(ViewItem[ClientT], abc.ABC):
 
     @classmethod
     @abc.abstractmethod
-    def _from_component(cls, component: hikari.PartialComponent, row: t.Optional[int] = None) -> te.Self:
+    def _from_component(cls, component: hikari.PartialComponent, row: int | None = None) -> te.Self:
         """Called internally to convert a component to a select menu."""
 
     @abc.abstractmethod

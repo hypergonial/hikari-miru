@@ -54,16 +54,16 @@ class Button(ViewItem[ClientT]):
         self,
         *,
         style: hikari.ButtonStyle = hikari.ButtonStyle.PRIMARY,
-        label: t.Optional[str] = None,
+        label: str | None = None,
         disabled: bool = False,
-        custom_id: t.Optional[str] = None,
-        url: t.Optional[str] = None,
-        emoji: t.Union[hikari.Emoji, str, None] = None,
-        row: t.Optional[int] = None,
-        position: t.Optional[int] = None,
+        custom_id: str | None = None,
+        url: str | None = None,
+        emoji: hikari.Emoji | str | None = None,
+        row: int | None = None,
+        position: int | None = None,
     ) -> None:
         super().__init__(custom_id=custom_id, row=row, position=position, disabled=disabled)
-        self._emoji: t.Optional[hikari.Emoji] = hikari.Emoji.parse(emoji) if isinstance(emoji, str) else emoji
+        self._emoji: hikari.Emoji | None = hikari.Emoji.parse(emoji) if isinstance(emoji, str) else emoji
         self.label = label
         self.url = self._url = url
         self.style = self._style = style if self._url is None else hikari.ButtonStyle.LINK
@@ -88,44 +88,44 @@ class Button(ViewItem[ClientT]):
         self._style = value
 
     @property
-    def label(self) -> t.Optional[str]:
+    def label(self) -> str | None:
         """The button's label. This is the text visible on the button."""
         return self._label
 
     @label.setter
-    def label(self, value: t.Optional[str]) -> None:
+    def label(self, value: str | None) -> None:
         if value is not None and len(value) > 80:
             raise ValueError(f"Parameter 'label' must be 80 or fewer in length. (Found {len(value)})")
         self._label = str(value) if value else None
 
     @property
-    def emoji(self) -> t.Optional[hikari.Emoji]:
+    def emoji(self) -> hikari.Emoji | None:
         """The emoji that should be visible on the button."""
         return self._emoji
 
     @emoji.setter
-    def emoji(self, value: t.Union[str, hikari.Emoji, None]) -> None:
+    def emoji(self, value: str | hikari.Emoji | None) -> None:
         if value and isinstance(value, str):
             value = hikari.Emoji.parse(value)
 
         self._emoji = value  # type: ignore [assignment]
 
     @property
-    def url(self) -> t.Optional[str]:
+    def url(self) -> str | None:
         """The button's URL. If specified, the button will turn into a link button,
         and the style parameter will be ignored.
         """
         return self._url
 
     @url.setter
-    def url(self, value: t.Optional[str]) -> None:
+    def url(self, value: str | None) -> None:
         if value:
             self._style = hikari.ButtonStyle.LINK
 
         self._url = value
 
     @classmethod
-    def _from_component(cls, component: hikari.PartialComponent, row: t.Optional[int] = None) -> te.Self:
+    def _from_component(cls, component: hikari.PartialComponent, row: int | None = None) -> te.Self:
         assert isinstance(component, hikari.ButtonComponent)
 
         return cls(
@@ -158,11 +158,11 @@ class Button(ViewItem[ClientT]):
 
 def button(
     *,
-    label: t.Optional[str] = None,
-    custom_id: t.Optional[str] = None,
+    label: str | None = None,
+    custom_id: str | None = None,
     style: hikari.ButtonStyle = hikari.ButtonStyle.PRIMARY,
-    emoji: t.Optional[t.Union[str, hikari.Emoji]] = None,
-    row: t.Optional[int] = None,
+    emoji: str | hikari.Emoji | None = None,
+    row: int | None = None,
     disabled: bool = False,
 ) -> t.Callable[
     [t.Callable[[ViewT, Button[ClientT], ViewContext[ClientT]], t.Awaitable[None]]],

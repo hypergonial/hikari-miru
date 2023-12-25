@@ -47,16 +47,16 @@ class TextInput(ModalItem[ClientT]):
         *,
         label: str,
         style: hikari.TextInputStyle = hikari.TextInputStyle.SHORT,
-        placeholder: t.Optional[str] = None,
-        value: t.Optional[str] = None,
+        placeholder: str | None = None,
+        value: str | None = None,
         required: bool = False,
-        min_length: t.Optional[int] = None,
-        max_length: t.Optional[int] = None,
-        custom_id: t.Optional[str] = None,
-        row: t.Optional[int] = None,
+        min_length: int | None = None,
+        max_length: int | None = None,
+        custom_id: str | None = None,
+        row: int | None = None,
     ) -> None:
         super().__init__(custom_id=custom_id, row=row, position=0, width=5, required=required)
-        self._value: t.Optional[str] = str(value) if value else None
+        self._value: str | None = str(value) if value else None
         self.style = style
         self.placeholder = placeholder
         self.label = label
@@ -88,25 +88,25 @@ class TextInput(ModalItem[ClientT]):
         self._label = str(value)
 
     @property
-    def placeholder(self) -> t.Optional[str]:
+    def placeholder(self) -> str | None:
         """Placeholder content for this text input field."""
         return self._placeholder
 
     @placeholder.setter
-    def placeholder(self, value: t.Optional[str]) -> None:
+    def placeholder(self, value: str | None) -> None:
         if value is not None and len(value) > 100:
             raise ValueError(f"Parameter 'placeholder' must be 100 or fewer in length. (Found length {len(value)})")
         self._placeholder = str(value) if value else None
 
     @property
-    def value(self) -> t.Optional[str]:
+    def value(self) -> str | None:
         """Pre-filled content that should be included in the text input.
         After sending the modal, this field will be updated to the user's input.
         """
         return self._value
 
     @value.setter
-    def value(self, value: t.Optional[str]) -> None:
+    def value(self, value: str | None) -> None:
         if value:
             if self.min_length is not None and self.min_length > len(value):
                 raise ValueError("Parameter 'value' does not meet minimum length requirement.")
@@ -117,23 +117,23 @@ class TextInput(ModalItem[ClientT]):
         self._value = str(value) if value else None
 
     @property
-    def min_length(self) -> t.Optional[int]:
+    def min_length(self) -> int | None:
         """What the required minimum length of the input text should be."""
         return self._min_length
 
     @min_length.setter
-    def min_length(self, value: t.Optional[int]) -> None:
+    def min_length(self, value: int | None) -> None:
         if self.value and value is not None and value > len(self.value):
             raise ValueError("New minimum length constraint does not satisfy pre-filled value.")
         self._min_length = value
 
     @property
-    def max_length(self) -> t.Optional[int]:
+    def max_length(self) -> int | None:
         """What the maximum allowed length of the input text should be."""
         return self._max_length
 
     @max_length.setter
-    def max_length(self, value: t.Optional[int]) -> None:
+    def max_length(self, value: int | None) -> None:
         if self.value and value is not None and value < len(self.value):
             raise ValueError("New maximum length constraint does not satisfy pre-filled value.")
         self._max_length = value
