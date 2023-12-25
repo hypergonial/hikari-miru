@@ -5,7 +5,7 @@ import typing as t
 import hikari
 
 from ..internal.types import ClientT, ModalResponseBuildersT
-from .base import Context
+from .base import Context, InteractionResponse
 
 if t.TYPE_CHECKING:
     from ..abc.item import ModalItem
@@ -42,13 +42,18 @@ class ModalContext(Context[ClientT, hikari.ModalInteraction]):
         """The values received as input for this modal."""
         return self._values
 
-    async def respond_with_builder(self, builder: ModalResponseBuildersT) -> None:
+    async def respond_with_builder(self, builder: ModalResponseBuildersT) -> InteractionResponse:
         """Respond to this interaction with a response builder.
 
         Parameters
         ----------
         builder : ModalResponseBuildersT
             The builder to respond with.
+
+        Returns
+        -------
+        InteractionResponse | None
+            The response that was sent. This is None if the interaction created a modal.
 
         Raises
         ------
@@ -78,6 +83,7 @@ class ModalContext(Context[ClientT, hikari.ModalInteraction]):
                         role_mentions=builder.role_mentions,
                     )
             self._issued_response = True
+            return await self._create_response()
 
     def get_value_by(
         self, predicate: t.Callable[[ModalItem[ClientT]], bool], default: hikari.UndefinedOr[T] = hikari.UNDEFINED

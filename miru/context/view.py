@@ -86,13 +86,18 @@ class ViewContext(Context[ClientT, hikari.ComponentInteraction]):
             self.client.start_modal(modal)
             self._issued_response = True
 
-    async def respond_with_builder(self, builder: ViewResponseBuildersT) -> None:
+    async def respond_with_builder(self, builder: ViewResponseBuildersT) -> InteractionResponse | None:
         """Respond to this interaction with a response builder.
 
         Parameters
         ----------
         builder : ViewResponseBuildersT
             The builder to respond with.
+
+        Returns
+        -------
+        InteractionResponse | None
+            The response that was sent. This is None if the builder created a modal.
 
         Raises
         ------
@@ -125,7 +130,13 @@ class ViewContext(Context[ClientT, hikari.ComponentInteraction]):
                     await self._interaction.create_modal_response(
                         title=builder.title, custom_id=builder.custom_id, components=builder.components
                     )
+
+            resp = (
+                await self._create_response() if not isinstance(builder, hikari.api.InteractionModalBuilder) else None
+            )
+
             self._issued_response = True
+            return resp
 
 
 # MIT License
