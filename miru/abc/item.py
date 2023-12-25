@@ -27,7 +27,7 @@ BuilderT = t.TypeVar("BuilderT", bound=hikari.api.ComponentBuilder)
 ViewT = t.TypeVar("ViewT", bound="View[t.Any]")
 ViewItemT = t.TypeVar("ViewItemT", bound="ViewItem[t.Any]")
 ViewContextT = t.TypeVar("ViewContextT", bound="ViewContext[t.Any]")
-HandlerT = t.TypeVar("HandlerT", bound="ItemHandler[t.Any, t.Any, t.Any, t.Any, t.Any]")
+HandlerT = t.TypeVar("HandlerT", bound="ItemHandler[t.Any, t.Any, t.Any, t.Any, t.Any, t.Any]")
 
 
 class Item(abc.ABC, t.Generic[ClientT, BuilderT, ContextT, HandlerT]):

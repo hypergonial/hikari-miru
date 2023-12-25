@@ -7,15 +7,17 @@ import attr
 import hikari
 
 from miru import ClientT
-from miru.context import Context
 from miru.view import View
 
+from ...response import InteractionMessageBuilder
 from .items import FirstButton, IndicatorButton, LastButton, NavButton, NavItem, NextButton, PrevButton
 
 if t.TYPE_CHECKING:
     import datetime
 
     import typing_extensions as te
+
+    from miru.context import Context
 
     from .items import ViewItem
 
@@ -229,90 +231,28 @@ class NavigatorView(View[ClientT]):
         self._pages = new_pages
         await self.send_page(context, page_index=start_at)
 
-    async def _start(
-        self,
-        client: ClientT,
-        message: t.Optional[
-            t.Union[
-                hikari.SnowflakeishOr[hikari.PartialMessage], t.Awaitable[hikari.SnowflakeishOr[hikari.PartialMessage]]
-            ]
-        ] = None,
-        *,
-        start_at: int = 0,
-    ) -> None:
-        """Start up the navigator listener. This should not be called directly, use send() instead.
+    def build_response(self, client: ClientT, start_at: int = 0, ephemeral: bool = False) -> InteractionMessageBuilder:
+        """Create a REST response builder out of this Navigator.
 
         Parameters
         ----------
-        message : Union[hikari.Message, Awaitable[hikari.Message]]
-            If provided, the view will be bound to this message, and if the
-            message is edited with a new view, this view will be stopped.
-            Unbound views do not support message editing with additional views.
+        client : ClientT
+            The client instance to use to build the response
+        ephemeral : bool
+            Determines if the navigator will be sent ephemerally or not.
         start_at : int, optional
             The page index to start at, by default 0
         """
-        await super()._start(self.client, message)
+        if self._client is not None:
+            raise RuntimeError("Navigator is already bound to a client.")
         self.current_page = start_at
-
-    async def send(
-        self,
-        to: t.Union[
-            hikari.SnowflakeishOr[hikari.TextableChannel], hikari.MessageResponseMixin[t.Any], Context[t.Any, t.Any]
-        ],
-        *,
-        start_at: int = 0,
-        ephemeral: bool = False,
-        responded: bool = False,
-    ) -> None:
-        """Start up the navigator, send the first page, and start listening for interactions.
-
-        Parameters
-        ----------
-        to : Union[hikari.SnowflakeishOr[hikari.PartialChannel], hikari.MessageResponseMixin[Any], miru.Context]
-            The channel, interaction, or miru context to send the navigator to.
-        start_at : int
-            If provided, the page number to start the pagination at.
-        ephemeral : bool
-            If an interaction or context was provided, determines if the navigator will be sent ephemerally or not.
-            This is ignored if a channel was provided, as regular messages cannot be ephemeral.
-        responded : bool
-            If an interaction was provided, determines if the interaction was previously acknowledged or not.
-            This is ignored if a channel or context was provided.
-        """
-        self._ephemeral = ephemeral if isinstance(to, (hikari.MessageResponseMixin, Context)) else False
-
-        for item in self.children:
-            await item.before_page_change()
-
-        if self.ephemeral and self.timeout and self.timeout > 900:
-            logger.warning(
-                f"Using a timeout value longer than 900 seconds (Used {self.timeout}) in ephemeral navigator {type(self).__name__} may cause on_timeout to fail."
-            )
-
-        payload = self._get_page_payload(self.pages[start_at])
-
-        if isinstance(to, (int, hikari.TextableChannel)):
-            channel = hikari.Snowflake(to)
-            message = await self.client.rest.create_message(channel, **payload)
-        elif isinstance(to, Context):
-            self._inter = to.interaction
-            resp = await to.respond(**payload)
-            message = await resp.retrieve_message()
-        else:
-            self._inter = to
-            if not responded:
-                await to.create_initial_response(hikari.ResponseType.MESSAGE_CREATE, **payload)
-                message = await to.fetch_initial_response()
-            else:
-                message = await to.execute(**payload)
-
-        if self.is_persistent and not self.is_bound:
-            return  # Do not start the view if unbound persistent
-
-        await self._start(message, start_at=start_at)
+        self._ephemeral = ephemeral
+        return InteractionMessageBuilder(
+            hikari.ResponseType.MESSAGE_CREATE, _client=client, **self._get_page_payload(self.pages[start_at])
+        )
 
 
-@attr.define(slots=True)
+@attr.define(slots=True, kw_only=True)
 class Page:
     """Allows for the building of more complex pages for use with NavigatorView."""
 

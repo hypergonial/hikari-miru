@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-import asyncio
 import logging
 import typing as t
 
 import hikari
 
 import miru
+from miru.response import InteractionMessageBuilder
 
 if t.TYPE_CHECKING:
     import datetime
@@ -163,69 +163,28 @@ class Menu(miru.View[miru.ClientT]):
         await self._load_screen(self.current_screen)
         await self.update_message()
 
-    async def send(
-        self,
-        starting_screen: Screen[miru.ClientT],
-        to: t.Union[
-            hikari.SnowflakeishOr[hikari.TextableChannel],
-            hikari.MessageResponseMixin[t.Any],
-            miru.Context[t.Any, t.Any],
-        ],
-        ephemeral: bool = False,
-        responded: bool = False,
-    ) -> None:
-        """Start up the menu, send the starting screen, and start listening for interactions.
+    async def build_response_async(
+        self, client: miru.ClientT, starting_screen: Screen[miru.ClientT], ephemeral: bool = False
+    ) -> InteractionMessageBuilder:
+        """Create a REST response builder out of this Menu.
 
         Parameters
         ----------
+        client : ClientT
+            The client instance to use to build the response
         starting_screen : Screen
             The screen to start the menu with.
-        to : Union[hikari.SnowflakeishOr[hikari.PartialChannel], hikari.MessageResponseMixin[Any], miru.Context]
-            The channel, interaction, or miru context to send the menu to.
         ephemeral : bool
-            If an interaction or context was provided, determines if the navigator will be sent ephemerally or not.
-            This is ignored if a channel was provided, as regular messages cannot be ephemeral.
-        responded : bool
-            If an interaction was provided, determines if the interaction was previously acknowledged or not.
-            This is ignored if a channel or context was provided.
+            Determines if the navigator will be sent ephemerally or not.
+        start_at : int, optional
+            The page index to start at, by default 0
         """
-        self._ephemeral = ephemeral if isinstance(to, (hikari.MessageResponseMixin, miru.Context)) else False
-        self._stack.append(starting_screen)
+        if self._client is not None:
+            raise RuntimeError("Navigator is already bound to a client.")
 
-        if self.ephemeral and self.timeout and self.timeout > 900:
-            logger.warning(
-                f"Using a timeout value longer than 900 seconds (Used {self.timeout}) in ephemeral menu {type(self).__name__} may cause on_timeout to fail."
-            )
-
-        task = asyncio.create_task(self._load_screen(starting_screen))
-        _, pending = await asyncio.wait({task}, timeout=2.0)
-
-        # Automatically defer if creating the initial menu payload is taking too long.
-        if task in pending and self.autodefer and isinstance(to, hikari.MessageResponseMixin) and not responded:
-            await to.create_initial_response(hikari.ResponseType.DEFERRED_MESSAGE_CREATE, flags=self._flags)
-            responded = True
-
-        await task
-
-        if isinstance(to, (int, hikari.TextableChannel)):
-            channel = hikari.Snowflake(to)
-            message = await self.client.rest.create_message(channel, components=self, **self._payload)
-        elif isinstance(to, miru.Context):
-            self._inter = to.interaction
-            resp = await to.respond(components=self, flags=self._flags, **self._payload)
-            message = await resp.retrieve_message()
-        else:
-            self._inter = to
-            if not responded:
-                await to.create_initial_response(
-                    hikari.ResponseType.MESSAGE_CREATE, components=self, flags=self._flags, **self._payload
-                )
-                message = await to.fetch_initial_response()
-            else:
-                message = await to.execute(components=self, **self._payload)
-
-        # FIXME
-        await self._start(message)
+        await self._load_screen(starting_screen)
+        self._ephemeral = ephemeral
+        return InteractionMessageBuilder(hikari.ResponseType.MESSAGE_CREATE, _client=client, **self._payload)
 
 
 # MIT License

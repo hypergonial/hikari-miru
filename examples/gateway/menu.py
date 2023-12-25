@@ -102,10 +102,10 @@ async def buttons(event: hikari.GuildMessageCreateEvent) -> None:
     # If the bot is mentioned
     if me.id in event.message.user_mentions_ids:
         my_menu = menu.Menu[GW]()  # Create a new Menu
-
+        builder = await my_menu.build_response_async(client, MainScreen(my_menu))
+        await builder.send_to_channel(event.channel_id)
         # Note: You can also send the menu to an interaction or miru context
         # See the documentation of Menu.send() for more information
-        await my_menu.send(MainScreen(my_menu), event.channel_id)
 
 
 bot.run()

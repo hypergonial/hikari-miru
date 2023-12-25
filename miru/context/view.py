@@ -6,7 +6,7 @@ from contextlib import suppress
 
 import hikari
 
-from ..internal.types import ClientT
+from ..internal.types import ClientT, ViewResponseBuildersT
 from .base import Context
 
 if t.TYPE_CHECKING:
@@ -50,7 +50,12 @@ class ViewContext(Context[ClientT, hikari.ComponentInteraction]):
             if self._issued_response:
                 return
             # ctx.defer() also acquires _response_lock so we need to use self._interaction directly
-            await self._interaction.create_initial_response(hikari.ResponseType.DEFERRED_MESSAGE_UPDATE)
+            if not self.client.is_rest:
+                await self._interaction.create_initial_response(hikari.ResponseType.DEFERRED_MESSAGE_UPDATE)
+            else:
+                self._resp_builder.set_result(
+                    hikari.impl.InteractionDeferredBuilder(hikari.ResponseType.DEFERRED_MESSAGE_UPDATE)
+                )
             self._issued_response = True
             await super()._create_response()
 
@@ -69,8 +74,58 @@ class ViewContext(Context[ClientT, hikari.ComponentInteraction]):
         if self._issued_response:
             raise RuntimeError("Interaction was already responded to.")
 
-        await modal._send(self.client, self.interaction)
-        self._issued_response = True
+        async with self._response_lock:
+            builder = modal.build_response(self.client)
+
+            if self.client.is_rest:
+                self._resp_builder.set_result(builder)
+            else:
+                await self._interaction.create_modal_response(
+                    title=builder.title, custom_id=builder.custom_id, components=builder.components
+                )
+            self.client.start_modal(modal)
+            self._issued_response = True
+
+    async def respond_with_builder(self, builder: ViewResponseBuildersT) -> None:
+        """Respond to this interaction with a response builder.
+
+        Parameters
+        ----------
+        builder : ViewResponseBuildersT
+            The builder to respond with.
+
+        Raises
+        ------
+        RuntimeError
+            The interaction was already responded to.
+        """
+        if self._issued_response:
+            raise RuntimeError("Interaction was already responded to.")
+
+        async with self._response_lock:
+            if self.client.is_rest:
+                self._resp_builder.set_result(builder)
+            else:
+                if isinstance(builder, hikari.api.InteractionDeferredBuilder):
+                    await self._interaction.create_initial_response(response_type=builder.type, flags=builder.flags)
+                elif isinstance(builder, hikari.api.InteractionMessageBuilder):
+                    await self._interaction.create_initial_response(
+                        response_type=builder.type,
+                        flags=builder.flags,
+                        content=builder.content,
+                        embeds=builder.embeds,
+                        components=builder.components,
+                        attachments=builder.attachments,
+                        tts=builder.is_tts,
+                        mentions_everyone=builder.mentions_everyone,
+                        user_mentions=builder.user_mentions,
+                        role_mentions=builder.role_mentions,
+                    )
+                else:
+                    await self._interaction.create_modal_response(
+                        title=builder.title, custom_id=builder.custom_id, components=builder.components
+                    )
+            self._issued_response = True
 
 
 # MIT License

@@ -9,13 +9,15 @@ import typing as t
 import hikari
 
 from miru.exceptions import HandlerFullError
+from miru.response import InteractionModalBuilder
 
 from .abc.item import ModalItem
 from .abc.item_handler import ItemHandler
 from .context.modal import ModalContext
-from .internal.types import ClientT
+from .internal.types import ClientT, ModalResponseBuildersT
 
 if t.TYPE_CHECKING:
+    import asyncio
     import datetime
 
     import typing_extensions as te
@@ -27,7 +29,12 @@ __all__ = ("Modal",)
 
 class Modal(
     ItemHandler[
-        ClientT, hikari.impl.ModalActionRowBuilder, ModalContext[ClientT], hikari.ModalInteraction, ModalItem[ClientT]
+        ClientT,
+        hikari.impl.ModalActionRowBuilder,
+        ModalResponseBuildersT,
+        ModalContext[ClientT],
+        hikari.ModalInteraction,
+        ModalItem[ClientT],
     ]
 ):
     """Represents a Discord Modal.
@@ -226,7 +233,7 @@ class Modal(
 
         self.stop()  # Modals can only receive one response
 
-    async def _invoke(self, interaction: hikari.ModalInteraction) -> None:
+    async def _invoke(self, interaction: hikari.ModalInteraction) -> asyncio.Future[ModalResponseBuildersT] | None:
         children = {item.custom_id: item for item in self.children}
 
         values = {  # Check if any components match the provided custom_ids
@@ -252,20 +259,20 @@ class Modal(
 
         self._create_task(self._handle_callback(context))
 
-    async def _start(self, client: ClientT) -> None:
-        """Start up the modal and begin listening for interactions.
-        This should not be called manually, use `Modal.send()` or `Context.respond_with_modal()` instead.
-        """
+        if self.client.is_rest:
+            # The alternative would be making Context generic over ResponseBuildersT
+            # I can't take it anymore
+            return context._resp_builder  # type: ignore
+
+    def _client_start_hook(self, client: ClientT) -> None:
+        """Called when the client adds the modal to itself."""
         self._client = client
         self._client.add_handler(self)
         self._timeout_task = self._create_task(self._handle_timeout())
 
-    # FIXME come up with a good idea for this
-    # client.send_modal(inter)?
-    async def _send(self, client: ClientT, interaction: hikari.ModalResponseMixin) -> None:
-        """Send this modal as a response to the provided interaction."""
-        await interaction.create_modal_response(self.title, self.custom_id, components=self.build())
-        await self._start(client)
+    def build_response(self, client: ClientT) -> InteractionModalBuilder:
+        """Build the modal response for this modal."""
+        return InteractionModalBuilder(self.title, self.custom_id, list(self.build()), _client=client)
 
 
 # MIT License

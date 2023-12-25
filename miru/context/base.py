@@ -6,6 +6,7 @@ import datetime
 import logging
 import typing as t
 
+import attr
 import hikari
 
 from ..internal.types import ClientT
@@ -19,6 +20,61 @@ InteractionT = t.TypeVar("InteractionT", "hikari.ComponentInteraction", "hikari.
 __all__ = ("Context", "InteractionResponse")
 
 logger = logging.getLogger("__name__")
+
+
+@attr.define(slots=True, kw_only=True, frozen=True)
+class _ResponseGlue:
+    """A glue object to allow for easy creation of responses in both REST and Gateway contexts."""
+
+    response_type: t.Literal[hikari.ResponseType.MESSAGE_CREATE] | t.Literal[
+        hikari.ResponseType.MESSAGE_UPDATE
+    ] = hikari.ResponseType.MESSAGE_CREATE
+    content: hikari.UndefinedOr[t.Any] = hikari.UNDEFINED
+    flags: int | hikari.MessageFlag | hikari.UndefinedType = hikari.UNDEFINED
+    tts: hikari.UndefinedOr[bool] = hikari.UNDEFINED
+    component: hikari.UndefinedNoneOr[hikari.api.ComponentBuilder] = hikari.UNDEFINED
+    components: hikari.UndefinedNoneOr[t.Sequence[hikari.api.ComponentBuilder]] = hikari.UNDEFINED
+    attachment: hikari.UndefinedNoneOr[hikari.Resourceish] = hikari.UNDEFINED
+    attachments: hikari.UndefinedNoneOr[t.Sequence[hikari.Resourceish]] = hikari.UNDEFINED
+    embed: hikari.UndefinedNoneOr[hikari.Embed] = hikari.UNDEFINED
+    embeds: hikari.UndefinedNoneOr[t.Sequence[hikari.Embed]] = hikari.UNDEFINED
+    mentions_everyone: hikari.UndefinedOr[bool] = hikari.UNDEFINED
+    user_mentions: hikari.UndefinedOr[hikari.SnowflakeishSequence[hikari.PartialUser] | bool] = hikari.UNDEFINED
+    role_mentions: hikari.UndefinedOr[hikari.SnowflakeishSequence[hikari.PartialRole] | bool] = hikari.UNDEFINED
+
+    def _to_dict(self) -> dict[str, t.Any]:
+        return {
+            "response_type": self.response_type,
+            "content": self.content,
+            "flags": self.flags,
+            "tts": self.tts,
+            "component": self.component,
+            "components": self.components,
+            "attachment": self.attachment,
+            "attachments": self.attachments,
+            "embed": self.embed,
+            "embeds": self.embeds,
+            "mentions_everyone": self.mentions_everyone,
+            "user_mentions": self.user_mentions,
+            "role_mentions": self.role_mentions,
+        }
+
+    def _to_builder(self) -> hikari.api.InteractionMessageBuilder:
+        components: list[hikari.api.ComponentBuilder] = list(self.components) if self.components else []
+        attachments: list[hikari.Resourceish] = list(self.attachments) if self.attachments else []
+        embeds: list[hikari.Embed] = list(self.embeds) if self.embeds else []
+
+        return hikari.impl.InteractionMessageBuilder(
+            type=self.response_type,
+            content=self.content,
+            flags=self.flags,
+            components=components or [self.component] if self.component else hikari.UNDEFINED,
+            attachments=attachments or [self.attachment] if self.attachment else hikari.UNDEFINED,
+            embeds=embeds or [self.embed] if self.embed else hikari.UNDEFINED,
+            mentions_everyone=self.mentions_everyone,
+            user_mentions=self.user_mentions,
+            role_mentions=self.role_mentions,
+        )
 
 
 class InteractionResponse:
@@ -172,6 +228,7 @@ class Context(abc.ABC, t.Generic[ClientT, InteractionT]):
         "_client",
         "_responses",
         "_issued_response",
+        "_resp_builder",
         "_response_lock",
         "_autodefer_task",
         "_created_at",
@@ -182,6 +239,11 @@ class Context(abc.ABC, t.Generic[ClientT, InteractionT]):
         self._client = client
         self._responses: t.MutableSequence[InteractionResponse] = []
         self._issued_response: bool = False
+        self._resp_builder: asyncio.Future[
+            hikari.api.InteractionMessageBuilder
+            | hikari.api.InteractionModalBuilder
+            | hikari.api.InteractionDeferredBuilder
+        ] = asyncio.Future()
         self._response_lock: asyncio.Lock = asyncio.Lock()
         self._created_at = datetime.datetime.now()
 
@@ -370,9 +432,10 @@ class Context(abc.ABC, t.Generic[ClientT, InteractionT]):
                 )
                 response = await self._create_response(message)
             else:
-                await self.interaction.create_initial_response(
-                    hikari.ResponseType.MESSAGE_CREATE,
-                    content,
+                glue = _ResponseGlue(
+                    response_type=hikari.ResponseType.MESSAGE_CREATE,
+                    content=content,
+                    flags=flags,
                     tts=tts,
                     component=component,
                     components=components,
@@ -383,8 +446,11 @@ class Context(abc.ABC, t.Generic[ClientT, InteractionT]):
                     mentions_everyone=mentions_everyone,
                     user_mentions=user_mentions,
                     role_mentions=role_mentions,
-                    flags=flags,
                 )
+                if not self.client.is_rest:
+                    await self.interaction.create_initial_response(**glue._to_dict())
+                else:
+                    self._resp_builder.set_result(glue._to_builder())
                 self._issued_response = True
                 response = await self._create_response()
             if delete_after:
@@ -464,28 +530,35 @@ class Context(abc.ABC, t.Generic[ClientT, InteractionT]):
                 return await self._create_response(message)
 
             else:
-                await self.interaction.create_initial_response(
-                    hikari.ResponseType.MESSAGE_UPDATE,
-                    content,
+                glue = _ResponseGlue(
+                    response_type=hikari.ResponseType.MESSAGE_UPDATE,
+                    content=content,
+                    flags=flags,
+                    tts=tts,
                     component=component,
                     components=components,
                     attachment=attachment,
                     attachments=attachments,
-                    tts=tts,
                     embed=embed,
                     embeds=embeds,
                     mentions_everyone=mentions_everyone,
                     user_mentions=user_mentions,
                     role_mentions=role_mentions,
-                    flags=flags,
                 )
+
+                if not self.client.is_rest:
+                    await self.interaction.create_initial_response(**glue._to_dict())
+                else:
+                    self._resp_builder.set_result(glue._to_builder())
+
                 self._issued_response = True
                 return await self._create_response()
 
     @t.overload
     async def defer(
         self,
-        response_type: hikari.ResponseType,
+        response_type: t.Literal[hikari.ResponseType.DEFERRED_MESSAGE_CREATE]
+        | t.Literal[hikari.ResponseType.DEFERRED_MESSAGE_UPDATE],
         *,
         flags: hikari.UndefinedOr[t.Union[int, hikari.MessageFlag]] = hikari.UNDEFINED,
     ) -> None:
@@ -531,7 +604,10 @@ class Context(abc.ABC, t.Generic[ClientT, InteractionT]):
             raise RuntimeError("Interaction was already responded to.")
 
         async with self._response_lock:
-            await self.interaction.create_initial_response(response_type, flags=flags)
+            if not self.client.is_rest:
+                await self.interaction.create_initial_response(response_type, flags=flags)
+            else:
+                self._resp_builder.set_result(hikari.impl.InteractionDeferredBuilder(response_type, flags=flags))
             self._issued_response = True
             await self._create_response()
 

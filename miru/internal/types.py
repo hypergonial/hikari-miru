@@ -17,7 +17,13 @@ BuilderT = t.TypeVar("BuilderT", bound="hikari.api.ComponentBuilder")
 ViewT = t.TypeVar("ViewT", bound="View[t.Any]")
 ViewItemT = t.TypeVar("ViewItemT", bound="ViewItem[t.Any]")
 ViewContextT = t.TypeVar("ViewContextT", bound="ViewContext[t.Any]")
-HandlerT = t.TypeVar("HandlerT", bound="ItemHandler[t.Any, t.Any, t.Any, t.Any, t.Any]")
+HandlerT = t.TypeVar("HandlerT", bound="ItemHandler[t.Any, t.Any, t.Any, t.Any, t.Any, t.Any]")
 ContextT = t.TypeVar("ContextT", bound="Context[t.Any, t.Any]")
-ItemT = t.TypeVar("ItemT", bound="Item[t.Any, t.Any, t.Any]")
+ItemT = t.TypeVar("ItemT", bound="Item[t.Any, t.Any, t.Any, t.Any]")
 InteractionT = t.TypeVar("InteractionT", bound="hikari.ComponentInteraction | hikari.ModalInteraction")
+RespBuilderT = t.TypeVar("RespBuilderT", bound="hikari.api.InteractionResponseBuilder")
+ViewResponseBuildersT: t.TypeAlias = (
+    "hikari.api.InteractionMessageBuilder | hikari.api.InteractionDeferredBuilder | hikari.api.InteractionModalBuilder"
+)
+
+ModalResponseBuildersT: t.TypeAlias = "hikari.api.InteractionMessageBuilder | hikari.api.InteractionDeferredBuilder"

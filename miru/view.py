@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import copy
-import inspect
 import logging
 import sys
 import traceback
@@ -16,7 +15,7 @@ from .abc.item import DecoratedItem, ViewItem
 from .abc.item_handler import ItemHandler
 from .button import Button
 from .context.view import ViewContext
-from .internal.types import ClientT
+from .internal.types import ClientT, ViewResponseBuildersT
 from .select import ChannelSelect, MentionableSelect, RoleSelect, TextSelect, UserSelect
 
 if t.TYPE_CHECKING:
@@ -32,7 +31,7 @@ ViewT = t.TypeVar("ViewT", bound="View[t.Any]")
 
 __all__ = ("View",)
 
-COMPONENT_VIEW_ITEM_MAPPING: t.Mapping[hikari.ComponentType, t.Type[ViewItem[t.Any]]] = {  # type: ignore
+COMPONENT_VIEW_ITEM_MAPPING: t.Mapping[hikari.ComponentType, t.Type[ViewItem[t.Any]]] = {
     hikari.ComponentType.BUTTON: Button,
     hikari.ComponentType.TEXT_SELECT_MENU: TextSelect,
     hikari.ComponentType.CHANNEL_SELECT_MENU: ChannelSelect,
@@ -47,6 +46,7 @@ class View(
     ItemHandler[
         ClientT,
         hikari.impl.MessageActionRowBuilder,
+        ViewResponseBuildersT,
         ViewContext[ClientT],
         hikari.ComponentInteraction,
         ViewItem[ClientT],
@@ -92,7 +92,6 @@ class View(
         super().__init__(timeout=timeout)
         self._autodefer: bool = autodefer
         self._message: t.Optional[hikari.Message] = None
-        self._message_id: t.Optional[hikari.Snowflake] = None
         self._input_event: asyncio.Event = asyncio.Event()
 
         for decorated_item in self._view_children:
@@ -113,14 +112,12 @@ class View(
         return self._message
 
     @property
-    def message_id(self) -> t.Optional[hikari.Snowflake]:
-        """The message ID this view is bound to. Will be None if the view is an unbound persistent view."""
-        return self._message_id
-
-    @property
     def is_bound(self) -> bool:
-        """Determines if the view is bound to a message or not. If this is False, message edits will not be supported."""
-        return self._message_id is not None
+        """Determines if the view is bound to a message or not. If this is False, message edits will not be supported.
+
+        Note that this will return False before the view receives it's first interaction.
+        """
+        return self._message is not None
 
     @property
     def autodefer(self) -> bool:
@@ -173,6 +170,21 @@ class View(
 
         return view
 
+    def _refresh_client_customid_list(self) -> None:
+        """Refresh the client's registered custom_ids.
+
+        This is to handle an edge-case where the view was started,
+        did not yet receive it's first interaction, but the components were edited.
+        """
+        if self._client is None:  # Did not start yet
+            return
+
+        if self._message is not None:  # If bound, the view is tracked by message_id instead
+            return
+
+        self.client.remove_handler(self)
+        self.client.add_handler(self)
+
     def add_item(self, item: ViewItem[ClientT]) -> te.Self:
         """Adds a new item to the view.
 
@@ -197,7 +209,43 @@ class View(
         View
             The view the item was added to.
         """
-        return super().add_item(item)
+        super().add_item(item)
+        self._refresh_client_customid_list()
+        return self
+
+    def remove_item(self, item: ViewItem[ClientT]) -> te.Self:
+        """Removes an item from the view.
+
+        Parameters
+        ----------
+        item : ViewItem
+            The item to be removed.
+
+        Raises
+        ------
+        ValueError
+            The item is not attached to this view.
+
+        Returns
+        -------
+        View
+            The view the item was removed from.
+        """
+        super().remove_item(item)
+        self._refresh_client_customid_list()
+        return self
+
+    def clear_items(self) -> te.Self:
+        """Removes all items from the view.
+
+        Returns
+        -------
+        View
+            The view the items were removed from.
+        """
+        super().clear_items()
+        self._refresh_client_customid_list()
+        return self
 
     async def view_check(self, context: ViewContext[ClientT]) -> bool:
         """Called before any callback in the view is called. Must evaluate to a truthy value to pass.
@@ -259,7 +307,7 @@ class View(
     async def _handle_callback(self, item: ViewItem[ClientT], context: ViewContext[ClientT]) -> None:
         """Handle the callback of a view item. Separate task in case the view is stopped in the callback."""
         try:
-            if self._message_id == context.message.id:
+            if not self._message or (self._message.id == context.message.id):
                 self._message = context.message
 
             self._input_event.set()
@@ -275,23 +323,28 @@ class View(
         except Exception as error:
             await self.on_error(error, item, context)
 
-    async def _invoke(self, interaction: hikari.ComponentInteraction) -> None:
+    async def _invoke(self, interaction: hikari.ComponentInteraction) -> asyncio.Future[ViewResponseBuildersT] | None:
         """Process incoming interactions."""
-        items = [item for item in self.children if item.custom_id == interaction.custom_id]
-        if items:
-            self._reset_timeout()
+        item = next((item for item in self.children if item.custom_id == interaction.custom_id), None)
 
-            context = self.get_context(interaction)
-            self._last_context = context
+        if not item:
+            return
 
-            passed = await self.view_check(context)
-            if not passed:
-                return
+        self._reset_timeout()
 
-            for item in items:
-                assert isinstance(item, ViewItem)
-                # Create task here to ensure autodefer works even if callback stops view
-                self._create_task(self._handle_callback(item, context))
+        context = self.get_context(interaction)
+        self._last_context = context
+
+        passed = await self.view_check(context)
+        if not passed:
+            return
+
+        assert isinstance(item, ViewItem)
+        # Create task here to ensure autodefer works even if callback stops view
+        self._create_task(self._handle_callback(item, context))
+
+        if self.client.is_rest:
+            return context._resp_builder
 
     def stop(self) -> None:
         self._input_event.set()
@@ -308,55 +361,16 @@ class View(
         """
         await asyncio.wait_for(self._input_event.wait(), timeout=timeout)
 
-    async def _start(
-        self,
-        client: ClientT,
-        message: t.Optional[
-            t.Union[
-                hikari.SnowflakeishOr[hikari.PartialMessage], t.Awaitable[hikari.SnowflakeishOr[hikari.PartialMessage]]
-            ]
-        ] = None,
-    ) -> None:
-        """Start up the view and begin listening for interactions.
-
-        Parameters
-        ----------
-        client : ClientT
-            The client to use for this view.
-        message : Union[hikari.Message, Awaitable[hikari.Message]]
-            If provided, the view will be bound to this message, and if the
-            message is edited with a new view, this view will be stopped.
-            Unbound views do not support message editing with additional views.
-
-        Raises
-        ------
-        TypeError
-            Parameter 'message' cannot be resolved to an instance of 'hikari.Message'.
-        BootstrapFailureError
-            miru.install() was not called before starting a view.
-        """
+    def _client_start_hook(self, client: ClientT) -> None:
+        """Called when a client wants to add the view itself."""
         self._client = client
 
         # Optimize URL-button-only views by not adding to listener
         if all((isinstance(item, Button) and item.url is not None) for item in self.children):
-            logger.warning(f"View {type(self).__name__} only contains link buttons. Ignoring 'View.start()' call.")
+            logger.warning(
+                f"View {type(self).__name__} only contains link buttons. Ignoring '{type(client).__name__}.start_view()' call."
+            )
             return
-
-        if message is None and not self.is_persistent:
-            raise ValueError(f"View '{type(self).__name__}' is not persistent, parameter 'message' must be provided.")
-
-        if message is None:
-            self._client.add_handler(self)
-            return
-
-        result = (await message) if inspect.isawaitable(message) else message
-        if not isinstance(result, (hikari.PartialMessage, hikari.Snowflake, int)):
-            raise TypeError("Parameter 'message' cannot be resolved to an instance of 'hikari.Message'.")
-
-        self._message_id = hikari.Snowflake(result)
-
-        if isinstance(result, hikari.Message):
-            self._message = result
 
         self._client.add_handler(self)
         self._timeout_task = self._create_task(self._handle_timeout())

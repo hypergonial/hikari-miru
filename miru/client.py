@@ -5,7 +5,7 @@ import typing as t
 
 import hikari
 
-from .internal.types import AppT
+from .internal.types import AppT, ModalResponseBuildersT, ViewResponseBuildersT
 from .modal import Modal
 from .view import View
 
@@ -26,10 +26,10 @@ class Client(t.Generic[AppT]):
     def __init__(self, app: AppT) -> None:
         self._app = app
 
-        self._handlers: dict[str, ItemHandler[te.Self, t.Any, t.Any, t.Any, t.Any]] = {}
+        self._handlers: dict[str, ItemHandler[te.Self, t.Any, t.Any, t.Any, t.Any, t.Any]] = {}
         """A mapping of custom_id to ItemHandler. This only contains handlers that are not bound to a message."""
 
-        self._bound_handlers: dict[hikari.Snowflakeish, ItemHandler[te.Self, t.Any, t.Any, t.Any, t.Any]] = {}
+        self._bound_handlers: dict[hikari.Snowflakeish, ItemHandler[te.Self, t.Any, t.Any, t.Any, t.Any, t.Any]] = {}
         """A mapping of message_id to ItemHandler. This contains handlers that are bound to a message or custom_id."""
 
     @property
@@ -47,47 +47,55 @@ class Client(t.Generic[AppT]):
     def is_rest(self) -> bool:
         """Whether the app is a rest client or a gateway client."""
 
-    async def _handle_component_inter(
-        self, interaction: hikari.ComponentInteraction
-    ) -> (
-        hikari.api.InteractionMessageBuilder
-        | hikari.api.InteractionDeferredBuilder
-        | hikari.api.InteractionModalBuilder
-        | None
-    ):
-        if interaction.message and (handler := self._bound_handlers.get(interaction.message.id)):  # noqa: SIM114
-            return await handler._invoke(interaction)
+    def _associate_message(self, message: hikari.Message, view: View[te.Self]) -> None:
+        """Associate a message with a bound view."""
+        view._message = message
+        self._bound_handlers[message.id] = view
 
+        for item in view.children:
+            self._handlers.pop(item.custom_id, None)
+
+    async def _handle_component_inter(self, interaction: hikari.ComponentInteraction) -> ViewResponseBuildersT | None:
+        # Check bound views first
+        if handler := self._bound_handlers.get(interaction.message.id):
+            fut = await handler._invoke(interaction)
+            return await fut if fut is not None else None
+
+        # Check unbound or pending bound views
         elif handler := self._handlers.get(interaction.custom_id):
-            return await handler._invoke(interaction)
+            # Bind pending bound views
+            if isinstance(handler, View) and not handler.is_persistent:
+                self._associate_message(interaction.message, handler)
 
-    async def _handle_modal_inter(
-        self, interaction: hikari.ModalInteraction
-    ) -> hikari.api.InteractionMessageBuilder | hikari.api.InteractionDeferredBuilder | None:
+            fut = await handler._invoke(interaction)
+            return await fut if fut is not None else None
+
+    async def _handle_modal_inter(self, interaction: hikari.ModalInteraction) -> ModalResponseBuildersT | None:
         if handler := self._handlers.get(interaction.custom_id):
-            return await handler._invoke(interaction)
+            fut = await handler._invoke(interaction)
+            return await fut if fut is not None else None
 
     def clear(self) -> None:
         """Stop all custom event listeners for events, this is called during miru.uninstall()."""
         self._bound_handlers.clear()
         self._handlers.clear()
 
-    def add_handler(self, handler: ItemHandler[te.Self, t.Any, t.Any, t.Any, t.Any]) -> None:
+    def add_handler(self, handler: ItemHandler[te.Self, t.Any, t.Any, t.Any, t.Any, t.Any]) -> None:
         """Add a handler to the event handler."""
         if isinstance(handler, View):
-            if handler.is_bound and handler._message_id is not None:
-                self._bound_handlers[handler._message_id] = handler
+            if handler.is_bound and handler._message is not None:
+                self._bound_handlers[handler._message.id] = handler
             else:
                 for custom_id in (item.custom_id for item in handler.children):
                     self._handlers[custom_id] = handler
         elif isinstance(handler, Modal):
             self._handlers[handler.custom_id] = handler
 
-    def remove_handler(self, handler: ItemHandler[te.Self, t.Any, t.Any, t.Any, t.Any]) -> None:
+    def remove_handler(self, handler: ItemHandler[te.Self, t.Any, t.Any, t.Any, t.Any, t.Any]) -> None:
         """Remove a handler from the event handler."""
         if isinstance(handler, View):
-            if handler.is_bound and handler._message_id is not None:
-                self._bound_handlers.pop(handler._message_id, None)
+            if handler.is_bound and handler._message is not None:
+                self._bound_handlers.pop(handler._message.id, None)
             else:
                 for custom_id in (item.custom_id for item in handler.children):
                     self._handlers.pop(custom_id, None)
@@ -102,8 +110,29 @@ class Client(t.Generic[AppT]):
 
         return handler
 
+    def start_view(self, view: View[te.Self]) -> None:
+        view._client_start_hook(self)
+
+    def start_modal(self, modal: Modal[te.Self]) -> None:
+        modal._client_start_hook(self)
+
 
 class RESTClient(Client[hikari.RESTBot]):
+    def __init__(self, app: hikari.RESTBot) -> None:
+        super().__init__(app)
+        self.app.set_listener(hikari.ModalInteraction, self._rest_handle_modal_inter)
+        self.app.set_listener(hikari.ComponentInteraction, self._rest_handle_component_inter)
+
+    async def _rest_handle_modal_inter(self, interaction: hikari.ModalInteraction) -> ModalResponseBuildersT:
+        builder = await super()._handle_modal_inter(interaction)
+        assert builder is not None
+        return builder
+
+    async def _rest_handle_component_inter(self, interaction: hikari.ComponentInteraction) -> ViewResponseBuildersT:
+        builder = await super()._handle_component_inter(interaction)
+        assert builder is not None
+        return builder
+
     @property
     def is_rest(self) -> bool:
         return True

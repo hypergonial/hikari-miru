@@ -9,7 +9,7 @@ import typing as t
 from collections.abc import Sequence
 
 from ..exceptions import HandlerFullError, ItemAlreadyAttachedError, RowFullError
-from ..internal.types import BuilderT, ClientT, ContextT, InteractionT, ItemT
+from ..internal.types import BuilderT, ClientT, ContextT, InteractionT, ItemT, RespBuilderT
 from .item import Item
 
 if t.TYPE_CHECKING:
@@ -76,7 +76,10 @@ class ItemArranger(t.Generic[ItemT]):
         self._weights = [0, 0, 0, 0, 0]
 
 
-class ItemHandler(Sequence[BuilderT], abc.ABC, t.Generic[ClientT, BuilderT, ContextT, InteractionT, ItemT]):
+# TODO: Turn this back into a Sequence if hikari builders fall back to Sequence instead of list.
+class ItemHandler(
+    Sequence[BuilderT], abc.ABC, t.Generic[ClientT, BuilderT, RespBuilderT, ContextT, InteractionT, ItemT]
+):
     """Abstract base class all item-handlers (e.g. views, modals) inherit from.
 
     Parameters
@@ -114,7 +117,7 @@ class ItemHandler(Sequence[BuilderT], abc.ABC, t.Generic[ClientT, BuilderT, Cont
         ...
 
     @t.overload
-    def __getitem__(self, value: slice) -> t.Sequence[BuilderT]:
+    def __getitem__(self, value: slice) -> list[BuilderT]:
         ...
 
     def __getitem__(self, value: t.Union[slice, int]) -> BuilderT | t.Sequence[BuilderT]:
@@ -145,9 +148,11 @@ class ItemHandler(Sequence[BuilderT], abc.ABC, t.Generic[ClientT, BuilderT, Cont
 
     @property
     def client(self) -> ClientT:
-        """The application that loaded the miru extension."""
+        """The client that started this handler."""
         if not self._client:
-            raise AttributeError(f"{type(self).__name__} is not started.")
+            raise RuntimeError(
+                f"'{type(self).__name__}' was not started, '{type(self).__name__}.client' is unavailable."
+            )
 
         return self._client
 
@@ -321,7 +326,7 @@ class ItemHandler(Sequence[BuilderT], abc.ABC, t.Generic[ClientT, BuilderT, Cont
         self._client.remove_handler(self)
 
     @abc.abstractmethod
-    async def _invoke(self, interaction: InteractionT) -> None:
+    async def _invoke(self, interaction: InteractionT) -> asyncio.Future[RespBuilderT] | None:
         """Process incoming interactions."""
 
     def _reset_timeout(self) -> None:
