@@ -263,7 +263,7 @@ class Modal(
     def _client_start_hook(self, client: ClientT) -> None:
         """Called when the client adds the modal to itself."""
         self._client = client
-        self._client.add_handler(self)
+        self._client._add_handler(self)
         self._timeout_task = self._create_task(self._handle_timeout())
 
     def build_response(self, client: ClientT) -> InteractionModalBuilder:

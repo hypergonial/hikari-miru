@@ -184,8 +184,8 @@ class View(
         if self._message is not None:  # If bound, the view is tracked by message_id instead
             return
 
-        self.client.remove_handler(self)
-        self.client.add_handler(self)
+        self.client._remove_handler(self)
+        self.client._add_handler(self)
 
     def add_item(self, item: ViewItem[ClientT]) -> te.Self:
         """Adds a new item to the view.
@@ -374,7 +374,7 @@ class View(
             )
             return
 
-        self._client.add_handler(self)
+        self._client._add_handler(self)
         self._timeout_task = self._create_task(self._handle_timeout())
 
 

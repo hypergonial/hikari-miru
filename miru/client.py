@@ -21,7 +21,15 @@ REST: t.TypeAlias = "RESTClient"
 
 
 class Client(t.Generic[AppT]):
-    """Singleton class for handling events."""
+    """The base class for a miru client.
+
+    It is responsible for handling component and modal interactions and dispatching them to the correct item handler.
+
+    Parameters
+    ----------
+    app : AppT
+        The currently running app instance that will be used to receive interactions.
+    """
 
     def __init__(self, app: AppT) -> None:
         self._app = app
@@ -38,14 +46,23 @@ class Client(t.Generic[AppT]):
         return self._app
 
     @property
+    def bot(self) -> AppT:
+        """Alias for 'Client.app'. The currently running app instance that will be subscribed to the listener."""
+        return self.app
+
+    @property
     def rest(self) -> hikari.api.RESTClient:
-        """The rest client instance."""
+        """The rest client instance of the underlying app."""
         return self._app.rest
 
     @property
     @abc.abstractmethod
     def is_rest(self) -> bool:
-        """Whether the app is a rest client or a gateway client."""
+        """Whether the app is a rest client or a gateway client.
+
+        This controls the client response flow, if True, `Client.handle_component_interaction` and `Client.handle_modal_interaction`
+        will return interaction response builders to be sent back to Discord, otherwise they will return None.
+        """
 
     def _associate_message(self, message: hikari.Message, view: View[te.Self]) -> None:
         """Associate a message with a bound view."""
@@ -55,7 +72,21 @@ class Client(t.Generic[AppT]):
         for item in view.children:
             self._handlers.pop(item.custom_id, None)
 
-    async def _handle_component_inter(self, interaction: hikari.ComponentInteraction) -> ViewResponseBuildersT | None:
+    async def handle_component_interaction(
+        self, interaction: hikari.ComponentInteraction
+    ) -> ViewResponseBuildersT | None:
+        """Handle a component interaction.
+
+        Parameters
+        ----------
+        interaction : hikari.ComponentInteraction
+            The interaction to handle.
+
+        Returns
+        -------
+        ViewResponseBuildersT | None
+            If using a REST client, the response builders to send back to discord.
+        """
         # Check bound views first
         if handler := self._bound_handlers.get(interaction.message.id):
             fut = await handler._invoke(interaction)
@@ -70,18 +101,30 @@ class Client(t.Generic[AppT]):
             fut = await handler._invoke(interaction)
             return await fut if fut is not None else None
 
-    async def _handle_modal_inter(self, interaction: hikari.ModalInteraction) -> ModalResponseBuildersT | None:
+    async def handle_modal_interaction(self, interaction: hikari.ModalInteraction) -> ModalResponseBuildersT | None:
+        """Handle a modal interaction.
+
+        Parameters
+        ----------
+        interaction : hikari.ModalInteraction
+            The interaction to handle.
+
+        Returns
+        -------
+        ModalResponseBuildersT | None
+            If using a REST client, the response builders to send back to discord.
+        """
         if handler := self._handlers.get(interaction.custom_id):
             fut = await handler._invoke(interaction)
             return await fut if fut is not None else None
 
     def clear(self) -> None:
-        """Stop all custom event listeners for events, this is called during miru.uninstall()."""
+        """Stop all currently running views and modals."""
         self._bound_handlers.clear()
         self._handlers.clear()
 
-    def add_handler(self, handler: ItemHandler[te.Self, t.Any, t.Any, t.Any, t.Any, t.Any]) -> None:
-        """Add a handler to the event handler."""
+    def _add_handler(self, handler: ItemHandler[te.Self, t.Any, t.Any, t.Any, t.Any, t.Any]) -> None:
+        """Add a handler to this client handler."""
         if isinstance(handler, View):
             if handler.is_bound and handler._message is not None:
                 self._bound_handlers[handler._message.id] = handler
@@ -91,8 +134,8 @@ class Client(t.Generic[AppT]):
         elif isinstance(handler, Modal):
             self._handlers[handler.custom_id] = handler
 
-    def remove_handler(self, handler: ItemHandler[te.Self, t.Any, t.Any, t.Any, t.Any, t.Any]) -> None:
-        """Remove a handler from the event handler."""
+    def _remove_handler(self, handler: ItemHandler[te.Self, t.Any, t.Any, t.Any, t.Any, t.Any]) -> None:
+        """Remove a handler from this client."""
         if isinstance(handler, View):
             if handler.is_bound and handler._message is not None:
                 self._bound_handlers.pop(handler._message.id, None)
@@ -102,7 +145,7 @@ class Client(t.Generic[AppT]):
         elif isinstance(handler, Modal):
             self._handlers.pop(handler.custom_id, None)
 
-    def get_view(self, message_id: hikari.Snowflake) -> View[te.Self] | None:
+    def get_bound_view(self, message_id: hikari.Snowflake) -> View[te.Self] | None:
         """Get a bound view that is currently managed by this client."""
         handler = self._bound_handlers.get(message_id)
         if handler is None or not isinstance(handler, View):
@@ -110,42 +153,117 @@ class Client(t.Generic[AppT]):
 
         return handler
 
+    def get_unbound_view(self, custom_id: str) -> View[te.Self] | None:
+        """Get a currently running view that is managed by this client.
+
+        This will not return bound views.
+
+        Parameters
+        ----------
+        custom_id : str
+            The custom_id of one of the view's children.
+
+        Returns
+        -------
+        View[te.Self] | None
+            The view if found, otherwise None.
+        """
+        handler = self._handlers.get(custom_id)
+        if handler is None or not isinstance(handler, View):
+            return None
+
+        return handler
+
+    def get_modal(self, custom_id: str) -> Modal[te.Self] | None:
+        """Get a currently running modal that is managed by this client.
+
+        Parameters
+        ----------
+        custom_id : str
+            The custom_id of the modal.
+
+        Returns
+        -------
+        Modal[te.Self] | None
+            The modal if found, otherwise None.
+        """
+        handler = self._handlers.get(custom_id)
+        if handler is None or not isinstance(handler, Modal):
+            return None
+
+        return handler
+
     def start_view(self, view: View[te.Self]) -> None:
+        """Add a view to this client and start it.
+
+        Parameters
+        ----------
+        view : View[te.Self]
+            The view to start.
+        """
         view._client_start_hook(self)
 
     def start_modal(self, modal: Modal[te.Self]) -> None:
+        """Add a modal to this client and start it.
+
+        Parameters
+        ----------
+        modal : Modal[te.Self]
+            The modal to start.
+        """
         modal._client_start_hook(self)
 
 
-class RESTClient(Client[hikari.RESTBot]):
-    def __init__(self, app: hikari.RESTBot) -> None:
+class RESTClient(Client[hikari.RESTBotAware]):
+    """The default REST client implementation for miru.
+
+    Parameters
+    ----------
+    app : hikari.RESTBotAware
+        The currently running app instance that will be used to receive interactions.
+    """
+
+    def __init__(self, app: hikari.RESTBotAware) -> None:
         super().__init__(app)
-        self.app.set_listener(hikari.ModalInteraction, self._rest_handle_modal_inter)
-        self.app.set_listener(hikari.ComponentInteraction, self._rest_handle_component_inter)
-
-    async def _rest_handle_modal_inter(self, interaction: hikari.ModalInteraction) -> ModalResponseBuildersT:
-        builder = await super()._handle_modal_inter(interaction)
-        assert builder is not None
-        return builder
-
-    async def _rest_handle_component_inter(self, interaction: hikari.ComponentInteraction) -> ViewResponseBuildersT:
-        builder = await super()._handle_component_inter(interaction)
-        assert builder is not None
-        return builder
+        self.app.interaction_server.set_listener(hikari.ModalInteraction, self._rest_handle_modal_inter)
+        self.app.interaction_server.set_listener(hikari.ComponentInteraction, self._rest_handle_component_inter)
 
     @property
     def is_rest(self) -> bool:
         return True
 
+    async def _rest_handle_modal_inter(self, interaction: hikari.ModalInteraction) -> ModalResponseBuildersT:
+        builder = await self.handle_modal_interaction(interaction)
+        assert builder is not None
+        return builder
 
-class GatewayClient(Client[hikari.GatewayBot]):
-    def __init__(self, app: hikari.GatewayBot) -> None:
+    async def _rest_handle_component_inter(self, interaction: hikari.ComponentInteraction) -> ViewResponseBuildersT:
+        builder = await self.handle_component_interaction(interaction)
+        assert builder is not None
+        return builder
+
+
+class GatewayClient(Client[hikari.GatewayBotAware]):
+    """The default gateway client implementation for miru.
+
+    Parameters
+    ----------
+    app : hikari.GatewayBotAware
+        The currently running app instance that will be used to receive interactions.
+    """
+
+    def __init__(self, app: hikari.GatewayBotAware) -> None:
         super().__init__(app)
-        self._app.subscribe(hikari.InteractionCreateEvent, self._handle_events)
+        self._app.event_manager.subscribe(hikari.InteractionCreateEvent, self._handle_events)
 
     @property
     def is_rest(self) -> bool:
         return False
+
+    @property
+    def cache(self) -> hikari.api.Cache:
+        """The cache instance of the underlying app."""
+        return self._app.cache
 
     async def _handle_events(self, event: hikari.InteractionCreateEvent) -> None:
         """Sort interaction create events and dispatch miru custom events."""
@@ -155,9 +273,9 @@ class GatewayClient(Client[hikari.GatewayBot]):
             return
 
         if isinstance(event.interaction, hikari.ModalInteraction):
-            await self._handle_modal_inter(event.interaction)
+            await self.handle_modal_interaction(event.interaction)
         else:
-            await self._handle_component_inter(event.interaction)
+            await self.handle_component_interaction(event.interaction)
 
 
 # MIT License

@@ -323,7 +323,7 @@ class ItemHandler(
         if self._timeout_task:
             self._timeout_task.cancel()
 
-        self._client.remove_handler(self)
+        self._client._remove_handler(self)
 
     @abc.abstractmethod
     async def _invoke(self, interaction: InteractionT) -> asyncio.Future[RespBuilderT] | None:
