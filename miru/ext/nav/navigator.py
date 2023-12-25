@@ -6,6 +6,7 @@ import typing as t
 import attr
 import hikari
 
+from miru import ClientT
 from miru.context import Context
 from miru.view import View
 
@@ -16,14 +17,14 @@ if t.TYPE_CHECKING:
 
     import typing_extensions as te
 
-    from miru.abc import Item
+    from .items import ViewItem
 
 logger = logging.getLogger(__name__)
 
 __all__ = ("NavigatorView", "Page")
 
 
-class NavigatorView(View):
+class NavigatorView(View[ClientT]):
     """A specialized view built for paginated button-menus, navigators.
 
     Parameters
@@ -47,7 +48,7 @@ class NavigatorView(View):
         self,
         *,
         pages: t.Sequence[t.Union[str, hikari.Embed, t.Sequence[hikari.Embed], Page]],
-        buttons: t.Optional[t.Sequence[NavButton]] = None,
+        buttons: t.Optional[t.Sequence[NavButton[ClientT]]] = None,
         timeout: t.Optional[t.Union[float, int, datetime.timedelta]] = 120.0,
         autodefer: bool = True,
     ) -> None:
@@ -81,9 +82,6 @@ class NavigatorView(View):
 
     @current_page.setter
     def current_page(self, value: int) -> None:
-        if not isinstance(value, int):
-            raise TypeError("Expected type int for property current_page.")
-
         # Ensure this value is always correct
         self._current_page = max(0, min(value, len(self.pages) - 1))
 
@@ -95,8 +93,8 @@ class NavigatorView(View):
         return self._ephemeral
 
     @property
-    def children(self) -> t.Sequence[NavItem]:
-        return t.cast(t.Sequence[NavItem], super().children)
+    def children(self) -> t.Sequence[NavItem[ClientT]]:
+        return t.cast(t.Sequence[NavItem[ClientT]], super().children)
 
     async def on_timeout(self) -> None:
         if self.message is None:
@@ -110,7 +108,7 @@ class NavigatorView(View):
         else:
             await self.message.edit(components=self)
 
-    def get_default_buttons(self) -> t.Sequence[NavButton]:
+    def get_default_buttons(self) -> t.Sequence[NavButton[ClientT]]:
         """Returns the default set of buttons.
 
         Returns
@@ -120,7 +118,7 @@ class NavigatorView(View):
         """
         return [FirstButton(), PrevButton(), IndicatorButton(), NextButton(), LastButton()]
 
-    def add_item(self, item: Item[hikari.impl.MessageActionRowBuilder]) -> te.Self:
+    def add_item(self, item: ViewItem[ClientT]) -> te.Self:
         """Adds a new item to the navigator. Item must be of type NavItem.
 
         Parameters
@@ -183,7 +181,7 @@ class NavigatorView(View):
     def is_persistent(self) -> bool:
         return super().is_persistent and not self.ephemeral
 
-    async def send_page(self, context: Context[t.Any], page_index: t.Optional[int] = None) -> None:
+    async def send_page(self, context: Context[t.Any, t.Any], page_index: t.Optional[int] = None) -> None:
         """Send a page, editing the original message.
 
         Parameters
@@ -199,8 +197,7 @@ class NavigatorView(View):
         page = self.pages[self.current_page]
 
         for item in self.children:
-            if isinstance(item, NavItem):
-                await item.before_page_change()
+            await item.before_page_change()
 
         payload = self._get_page_payload(page)
 
@@ -210,7 +207,7 @@ class NavigatorView(View):
 
     async def swap_pages(
         self,
-        context: Context[t.Any],
+        context: Context[t.Any, t.Any],
         new_pages: t.Sequence[t.Union[str, hikari.Embed, t.Sequence[hikari.Embed], Page]],
         start_at: int = 0,
     ) -> None:
@@ -232,8 +229,9 @@ class NavigatorView(View):
         self._pages = new_pages
         await self.send_page(context, page_index=start_at)
 
-    async def start(
+    async def _start(
         self,
+        client: ClientT,
         message: t.Optional[
             t.Union[
                 hikari.SnowflakeishOr[hikari.PartialMessage], t.Awaitable[hikari.SnowflakeishOr[hikari.PartialMessage]]
@@ -253,12 +251,14 @@ class NavigatorView(View):
         start_at : int, optional
             The page index to start at, by default 0
         """
-        await super().start(message)
+        await super()._start(self.client, message)
         self.current_page = start_at
 
     async def send(
         self,
-        to: t.Union[hikari.SnowflakeishOr[hikari.TextableChannel], hikari.MessageResponseMixin[t.Any], Context[t.Any]],
+        to: t.Union[
+            hikari.SnowflakeishOr[hikari.TextableChannel], hikari.MessageResponseMixin[t.Any], Context[t.Any, t.Any]
+        ],
         *,
         start_at: int = 0,
         ephemeral: bool = False,
@@ -282,8 +282,7 @@ class NavigatorView(View):
         self._ephemeral = ephemeral if isinstance(to, (hikari.MessageResponseMixin, Context)) else False
 
         for item in self.children:
-            if isinstance(item, NavItem):
-                await item.before_page_change()
+            await item.before_page_change()
 
         if self.ephemeral and self.timeout and self.timeout > 900:
             logger.warning(
@@ -294,7 +293,7 @@ class NavigatorView(View):
 
         if isinstance(to, (int, hikari.TextableChannel)):
             channel = hikari.Snowflake(to)
-            message = await self.app.rest.create_message(channel, **payload)
+            message = await self.client.rest.create_message(channel, **payload)
         elif isinstance(to, Context):
             self._inter = to.interaction
             resp = await to.respond(**payload)
@@ -310,7 +309,7 @@ class NavigatorView(View):
         if self.is_persistent and not self.is_bound:
             return  # Do not start the view if unbound persistent
 
-        await self.start(message, start_at=start_at)
+        await self._start(message, start_at=start_at)
 
 
 @attr.define(slots=True)

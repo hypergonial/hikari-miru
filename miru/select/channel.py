@@ -6,20 +6,21 @@ import typing as t
 import hikari
 
 from ..abc.item import DecoratedItem
+from ..internal.types import ClientT
 from .base import SelectBase
 
 if t.TYPE_CHECKING:
-    from ..context.base import Context
+    import typing_extensions as te
+
     from ..context.view import ViewContext
     from ..view import View
 
-    ViewT = t.TypeVar("ViewT", bound="View")
-    ViewContextT = t.TypeVar("ViewContextT", bound=ViewContext)
+    ViewT = t.TypeVar("ViewT", bound="View[t.Any]")
 
 __all__ = ("ChannelSelect", "channel_select")
 
 
-class ChannelSelect(SelectBase):
+class ChannelSelect(SelectBase[ClientT]):
     """A view component representing a select menu of channels.
 
     Parameters
@@ -81,7 +82,7 @@ class ChannelSelect(SelectBase):
         return self._values
 
     @classmethod
-    def _from_component(cls, component: hikari.PartialComponent, row: t.Optional[int] = None) -> ChannelSelect:
+    def _from_component(cls, component: hikari.PartialComponent, row: t.Optional[int] = None) -> te.Self:
         assert isinstance(component, hikari.ChannelSelectMenuComponent)
 
         # Filter out unrecognized channel types
@@ -107,7 +108,7 @@ class ChannelSelect(SelectBase):
             channel_types=self.channel_types,
         )
 
-    async def _refresh_state(self, context: Context[t.Any]) -> None:
+    async def _refresh_state(self, context: ViewContext[ClientT]) -> None:
         hikari.ComponentInteraction
         if context.interaction.resolved is None:
             self._values = ()
@@ -125,8 +126,8 @@ def channel_select(
     disabled: bool = False,
     row: t.Optional[int] = None,
 ) -> t.Callable[
-    [t.Callable[[ViewT, ChannelSelect, ViewContextT], t.Awaitable[None]]],
-    DecoratedItem[ViewT, ChannelSelect, ViewContextT],
+    [t.Callable[[ViewT, ChannelSelect[ClientT], ViewContext[ClientT]], t.Awaitable[None]]],
+    DecoratedItem[ClientT, ViewT, ChannelSelect[ClientT]],
 ]:
     """A decorator to transform a function into a Discord UI ChannelSelectMenu's callback.
     This must be inside a subclass of View.
@@ -161,12 +162,12 @@ def channel_select(
     """
 
     def decorator(
-        func: t.Callable[[ViewT, ChannelSelect, ViewContextT], t.Awaitable[None]],
-    ) -> DecoratedItem[ViewT, ChannelSelect, ViewContextT]:
+        func: t.Callable[[ViewT, ChannelSelect[ClientT], ViewContext[ClientT]], t.Awaitable[None]],
+    ) -> DecoratedItem[ClientT, ViewT, ChannelSelect[ClientT]]:
         if not inspect.iscoroutinefunction(func):
             raise TypeError("channel_select must decorate coroutine function.")
 
-        item = ChannelSelect(
+        item: ChannelSelect[ClientT] = ChannelSelect(
             channel_types=channel_types,
             custom_id=custom_id,
             placeholder=placeholder,
@@ -175,6 +176,7 @@ def channel_select(
             disabled=disabled,
             row=row,
         )
+
         return DecoratedItem(item, func)
 
     return decorator

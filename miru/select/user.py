@@ -6,20 +6,21 @@ import typing as t
 import hikari
 
 from ..abc.item import DecoratedItem
+from ..internal.types import ClientT
 from .base import SelectBase
 
 if t.TYPE_CHECKING:
-    from ..context.base import Context
+    import typing_extensions as te
+
     from ..context.view import ViewContext
     from ..view import View
 
-    ViewT = t.TypeVar("ViewT", bound="View")
-    ViewContextT = t.TypeVar("ViewContextT", bound=ViewContext)
+    ViewT = t.TypeVar("ViewT", bound="View[t.Any]")
 
 __all__ = ("UserSelect", "user_select")
 
 
-class UserSelect(SelectBase):
+class UserSelect(SelectBase[ClientT]):
     """A view component representing a select menu of users.
 
     Parameters
@@ -70,7 +71,7 @@ class UserSelect(SelectBase):
         return self._values
 
     @classmethod
-    def _from_component(cls, component: hikari.PartialComponent, row: t.Optional[int] = None) -> UserSelect:
+    def _from_component(cls, component: hikari.PartialComponent, row: t.Optional[int] = None) -> te.Self:
         assert (
             isinstance(component, hikari.SelectMenuComponent)
             and component.type == hikari.ComponentType.USER_SELECT_MENU
@@ -95,12 +96,12 @@ class UserSelect(SelectBase):
             is_disabled=self.disabled,
         )
 
-    async def _refresh_state(self, context: Context[t.Any]) -> None:
+    async def _refresh_state(self, context: ViewContext[ClientT]) -> None:
         if context.interaction.resolved is None:
             self._values = ()
             return
 
-        values = []
+        values: list[hikari.User] = []
         for user in context.interaction.resolved.users.values():
             if member := context.interaction.resolved.members.get(user.id):
                 values.append(member)
@@ -118,7 +119,8 @@ def user_select(
     disabled: bool = False,
     row: t.Optional[int] = None,
 ) -> t.Callable[
-    [t.Callable[[ViewT, UserSelect, ViewContextT], t.Awaitable[None]]], DecoratedItem[ViewT, UserSelect, ViewContextT]
+    [t.Callable[[ViewT, UserSelect[ClientT], ViewContext[ClientT]], t.Awaitable[None]]],
+    DecoratedItem[ClientT, ViewT, UserSelect[ClientT]],
 ]:
     """A decorator to transform a function into a Discord UI UserSelectMenu's callback.
     This must be inside a subclass of View.
@@ -150,12 +152,12 @@ def user_select(
     """
 
     def decorator(
-        func: t.Callable[[ViewT, UserSelect, ViewContextT], t.Awaitable[None]],
-    ) -> DecoratedItem[ViewT, UserSelect, ViewContextT]:
+        func: t.Callable[[ViewT, UserSelect[ClientT], ViewContext[ClientT]], t.Awaitable[None]],
+    ) -> DecoratedItem[ClientT, ViewT, UserSelect[ClientT]]:
         if not inspect.iscoroutinefunction(func):
             raise TypeError("user_select must decorate coroutine function.")
 
-        item = UserSelect(
+        item: UserSelect[ClientT] = UserSelect(
             custom_id=custom_id,
             placeholder=placeholder,
             min_values=min_values,

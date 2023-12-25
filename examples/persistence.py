@@ -41,7 +41,7 @@ async def startup_views(event: hikari.StartedEvent) -> None:
     # all interactions for every view of type 'Persistence' globally.
     # If you do pass a message_id to start(), it will only handle interactions for that message,
     # and will be considered a bound persistent view.
-    await view.start()
+    await view._start()
 
 
 @bot.listen()

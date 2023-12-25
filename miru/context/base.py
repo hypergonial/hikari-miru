@@ -8,14 +8,11 @@ import typing as t
 
 import hikari
 
-from miru.exceptions import BootstrapFailureError
-
-from ..abc.item_handler import ItemHandler
+from ..internal.types import ClientT
 
 if t.TYPE_CHECKING:
     from hikari.snowflakes import Snowflake
 
-    from ..traits import MiruAware
 
 InteractionT = t.TypeVar("InteractionT", "hikari.ComponentInteraction", "hikari.ModalInteraction")
 
@@ -31,8 +28,8 @@ class InteractionResponse:
 
     __slots__ = ("_context", "_message", "_delete_after_task")
 
-    def __init__(self, context: Context[InteractionT], message: t.Optional[hikari.Message] = None) -> None:
-        self._context: Context[t.Any] = context  # Before you ask why it is Any, because mypy is dumb
+    def __init__(self, context: Context[ClientT, InteractionT], message: t.Optional[hikari.Message] = None) -> None:
+        self._context: Context[ClientT, InteractionT] = context
         self._message: t.Optional[hikari.Message] = message
         self._delete_after_task: t.Optional[asyncio.Task[None]] = None
 
@@ -167,13 +164,22 @@ class InteractionResponse:
         return await self._context._create_response(message)
 
 
-class Context(abc.ABC, t.Generic[InteractionT]):
+class Context(abc.ABC, t.Generic[ClientT, InteractionT]):
     """An abstract base class for context objects that proxying a Discord interaction."""
 
-    __slots__ = ("_interaction", "_responses", "_issued_response", "_response_lock", "_autodefer_task", "_created_at")
+    __slots__ = (
+        "_interaction",
+        "_client",
+        "_responses",
+        "_issued_response",
+        "_response_lock",
+        "_autodefer_task",
+        "_created_at",
+    )
 
-    def __init__(self, interaction: InteractionT) -> None:
+    def __init__(self, client: ClientT, interaction: InteractionT) -> None:
         self._interaction: InteractionT = interaction
+        self._client = client
         self._responses: t.MutableSequence[InteractionResponse] = []
         self._issued_response: bool = False
         self._response_lock: asyncio.Lock = asyncio.Lock()
@@ -202,17 +208,9 @@ class Context(abc.ABC, t.Generic[InteractionT]):
         return self._responses
 
     @property
-    def app(self) -> MiruAware:
-        """The application that loaded miru."""
-        if not ItemHandler._app:
-            raise BootstrapFailureError(f"miru was not loaded, {type(self).__name__} has no property app.")
-
-        return ItemHandler._app
-
-    @property
-    def bot(self) -> MiruAware:
-        """The application that loaded miru."""
-        return self.app
+    def client(self) -> ClientT:
+        """The client that loaded miru."""
+        return self._client
 
     @property
     def user(self) -> hikari.User:

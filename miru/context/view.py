@@ -6,23 +6,25 @@ from contextlib import suppress
 
 import hikari
 
-from .raw import RawComponentContext
+from ..internal.types import ClientT
+from .base import Context
 
 if t.TYPE_CHECKING:
     from miru.context.base import InteractionResponse
 
+    from ..modal import Modal
     from ..view import View
 
 __all__ = ("ViewContext",)
 
 
-class ViewContext(RawComponentContext):
+class ViewContext(Context[ClientT, hikari.ComponentInteraction]):
     """A context object proxying a ComponentInteraction for a view item."""
 
     __slots__ = "_view"
 
-    def __init__(self, view: View, interaction: hikari.ComponentInteraction) -> None:
-        super().__init__(interaction)
+    def __init__(self, view: View[ClientT], client: ClientT, interaction: hikari.ComponentInteraction) -> None:
+        super().__init__(client, interaction)
         self._view = view
         self._autodefer_task: t.Optional[asyncio.Task[None]] = None
 
@@ -53,9 +55,22 @@ class ViewContext(RawComponentContext):
             await super()._create_response()
 
     @property
-    def view(self) -> View:
+    def view(self) -> View[ClientT]:
         """The view this context originates from."""
         return self._view
+
+    @property
+    def message(self) -> hikari.Message:
+        """The message object for the view this context is proxying."""
+        return self._interaction.message
+
+    async def respond_with_modal(self, modal: Modal[ClientT]) -> None:
+        """Respond to this interaction with a modal."""
+        if self._issued_response:
+            raise RuntimeError("Interaction was already responded to.")
+
+        await modal._send(self.client, self.interaction)
+        self._issued_response = True
 
 
 # MIT License

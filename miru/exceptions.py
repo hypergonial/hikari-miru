@@ -1,24 +1,23 @@
-__all__ = ("MiruException", "BootstrapFailureError", "RowFullError", "HandlerFullError", "ItemAlreadyAttachedError")
+__all__ = ("MiruError", "BootstrapFailureError", "RowFullError", "HandlerFullError", "ItemAlreadyAttachedError")
 
 
-# TODO: Rename this to MiruError at some point
-class MiruException(Exception):  # noqa: N818
+class MiruError(Exception):
     """Base class for all miru exceptions."""
 
 
-class BootstrapFailureError(MiruException):
+class BootstrapFailureError(MiruError):
     """Raised when the requested operation requires calling miru.install() beforehand, but was omitted."""
 
 
-class RowFullError(MiruException):
+class RowFullError(MiruError):
     """Raised when a row of components is full and cannot be added to."""
 
 
-class HandlerFullError(MiruException):
+class HandlerFullError(MiruError):
     """Raised when an ItemHandler instance is full and cannot fit more components."""
 
 
-class ItemAlreadyAttachedError(MiruException):
+class ItemAlreadyAttachedError(MiruError):
     """Raised when an item is already attached to a handler and the requested operation is not possible because of it."""
 
 

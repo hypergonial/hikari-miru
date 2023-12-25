@@ -6,20 +6,21 @@ import typing as t
 import hikari
 
 from ..abc.item import DecoratedItem
+from ..internal.types import ClientT
 from .base import SelectBase
 
 if t.TYPE_CHECKING:
-    from ..context.base import Context
+    import typing_extensions as te
+
     from ..context.view import ViewContext
     from ..view import View
 
-    ViewT = t.TypeVar("ViewT", bound="View")
-    ViewContextT = t.TypeVar("ViewContextT", bound=ViewContext)
+    ViewT = t.TypeVar("ViewT", bound="View[t.Any]")
 
 __all__ = ("MentionableSelect", "mentionable_select")
 
 
-class MentionableSelect(SelectBase):
+class MentionableSelect(SelectBase[ClientT]):
     """A view component representing a select menu of mentionables.
 
     Parameters
@@ -65,7 +66,7 @@ class MentionableSelect(SelectBase):
         return hikari.ComponentType.MENTIONABLE_SELECT_MENU
 
     @property
-    def values(self) -> t.Optional[hikari.ResolvedOptionData]:
+    def values(self) -> hikari.ResolvedOptionData | None:
         """The currently selected mentionable objects.
 
         This is returned as a `hikari.ResolvedOptionData` object.
@@ -79,7 +80,7 @@ class MentionableSelect(SelectBase):
         return self._values
 
     @classmethod
-    def _from_component(cls, component: hikari.PartialComponent, row: t.Optional[int] = None) -> MentionableSelect:
+    def _from_component(cls, component: hikari.PartialComponent, row: t.Optional[int] = None) -> te.Self:
         assert (
             isinstance(component, hikari.ChannelSelectMenuComponent)
             and component.type == hikari.ComponentType.MENTIONABLE_SELECT_MENU
@@ -104,7 +105,7 @@ class MentionableSelect(SelectBase):
             is_disabled=self.disabled,
         )
 
-    async def _refresh_state(self, context: Context[t.Any]) -> None:
+    async def _refresh_state(self, context: ViewContext[ClientT]) -> None:
         self._values = context.interaction.resolved
 
 
@@ -117,8 +118,8 @@ def mentionable_select(
     disabled: bool = False,
     row: t.Optional[int] = None,
 ) -> t.Callable[
-    [t.Callable[[ViewT, MentionableSelect, ViewContextT], t.Awaitable[None]]],
-    DecoratedItem[ViewT, MentionableSelect, ViewContextT],
+    [t.Callable[[ViewT, MentionableSelect[ClientT], ViewContext[ClientT]], t.Awaitable[None]]],
+    DecoratedItem[ClientT, ViewT, MentionableSelect[ClientT]],
 ]:
     """A decorator to transform a function into a Discord UI MentionableSelectMenu's callback.
     This must be inside a subclass of View.
@@ -150,12 +151,12 @@ def mentionable_select(
     """
 
     def decorator(
-        func: t.Callable[[ViewT, MentionableSelect, ViewContextT], t.Awaitable[None]],
-    ) -> DecoratedItem[ViewT, MentionableSelect, ViewContextT]:
+        func: t.Callable[[ViewT, MentionableSelect[ClientT], ViewContext[ClientT]], t.Awaitable[None]],
+    ) -> DecoratedItem[ClientT, ViewT, MentionableSelect[ClientT]]:
         if not inspect.iscoroutinefunction(func):
             raise TypeError("mentionable_select must decorate coroutine function.")
 
-        item = MentionableSelect(
+        item: MentionableSelect[ClientT] = MentionableSelect(
             custom_id=custom_id,
             placeholder=placeholder,
             min_values=min_values,

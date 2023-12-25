@@ -5,6 +5,7 @@ import typing as t
 
 import hikari
 
+from miru import ClientT
 from miru.abc.item import ViewItem
 from miru.button import Button
 from miru.modal import Modal
@@ -15,8 +16,6 @@ if t.TYPE_CHECKING:
     from miru.context import ViewContext
 
     from .navigator import NavigatorView
-
-    ViewContextT = t.TypeVar("ViewContextT", bound=ViewContext)
 
 __all__ = (
     "NavItem",
@@ -35,7 +34,7 @@ __all__ = (
 )
 
 
-class NavItem(ViewItem, abc.ABC):
+class NavItem(ViewItem[ClientT], abc.ABC):
     """A baseclass for all navigation items. NavigatorView requires instances of this class as it's items."""
 
     def __init__(
@@ -48,45 +47,45 @@ class NavItem(ViewItem, abc.ABC):
         width: int = 1,
     ) -> None:
         super().__init__(custom_id=custom_id, row=row, width=width, position=position, disabled=disabled)
-        self._handler: t.Optional[NavigatorView] = None
+        self._handler: t.Optional[NavigatorView[ClientT]] = None  # type: ignore
 
     async def before_page_change(self) -> None:
         """Called when the navigator is about to transition to the next page. Also called before the first page is sent."""
         pass
 
     @property
-    def view(self) -> NavigatorView:
+    def view(self) -> NavigatorView[ClientT]:
         """The view this item is attached to."""
         if not self._handler:
             raise AttributeError(f"{type(self).__name__} hasn't been attached to a view yet")
         return self._handler
 
 
-class NavButton(Button, NavItem):
+class NavButton(Button[ClientT], NavItem[ClientT]):
     """A base class for all navigation buttons."""
 
 
-class NavTextSelect(TextSelect, NavItem):
+class NavTextSelect(TextSelect[ClientT], NavItem[ClientT]):
     """A base class for all navigation text selects."""
 
 
-class NavUserSelect(UserSelect, NavItem):
+class NavUserSelect(UserSelect[ClientT], NavItem[ClientT]):
     """A base class for all navigation user selects."""
 
 
-class NavRoleSelect(RoleSelect, NavItem):
+class NavRoleSelect(RoleSelect[ClientT], NavItem[ClientT]):
     """A base class for all navigation role selects."""
 
 
-class NavChannelSelect(ChannelSelect, NavItem):
+class NavChannelSelect(ChannelSelect[ClientT], NavItem[ClientT]):
     """A base class for all navigation channel selects."""
 
 
-class NavMentionableSelect(MentionableSelect, NavItem):
+class NavMentionableSelect(MentionableSelect[ClientT], NavItem[ClientT]):
     """A base class for all navigation mentionable selects."""
 
 
-class NextButton(NavButton):
+class NextButton(NavButton[ClientT]):
     """A built-in NavButton to jump to the next page."""
 
     def __init__(
@@ -101,7 +100,7 @@ class NextButton(NavButton):
     ):
         super().__init__(style=style, label=label, custom_id=custom_id, emoji=emoji, row=row, position=position)
 
-    async def callback(self, context: ViewContextT) -> None:
+    async def callback(self, context: ViewContext[ClientT]) -> None:
         self.view.current_page += 1
         await self.view.send_page(context)
 
@@ -112,7 +111,7 @@ class NextButton(NavButton):
             self.disabled = False
 
 
-class PrevButton(NavButton):
+class PrevButton(NavButton[ClientT]):
     """A built-in NavButton to jump to previous page."""
 
     def __init__(
@@ -127,7 +126,7 @@ class PrevButton(NavButton):
     ):
         super().__init__(style=style, label=label, custom_id=custom_id, emoji=emoji, row=row, position=position)
 
-    async def callback(self, context: ViewContextT) -> None:
+    async def callback(self, context: ViewContext[ClientT]) -> None:
         self.view.current_page -= 1
         await self.view.send_page(context)
 
@@ -138,7 +137,7 @@ class PrevButton(NavButton):
             self.disabled = False
 
 
-class FirstButton(NavButton):
+class FirstButton(NavButton[ClientT]):
     """A built-in NavButton to jump to first page."""
 
     def __init__(
@@ -153,7 +152,7 @@ class FirstButton(NavButton):
     ):
         super().__init__(style=style, label=label, custom_id=custom_id, emoji=emoji, row=row, position=position)
 
-    async def callback(self, context: ViewContextT) -> None:
+    async def callback(self, context: ViewContext[ClientT]) -> None:
         self.view.current_page = 0
         await self.view.send_page(context)
 
@@ -164,7 +163,7 @@ class FirstButton(NavButton):
             self.disabled = False
 
 
-class LastButton(NavButton):
+class LastButton(NavButton[ClientT]):
     """A built-in NavButton to jump to the last page."""
 
     def __init__(
@@ -179,7 +178,7 @@ class LastButton(NavButton):
     ):
         super().__init__(style=style, label=label, custom_id=custom_id, emoji=emoji, row=row, position=position)
 
-    async def callback(self, context: ViewContextT) -> None:
+    async def callback(self, context: ViewContext[ClientT]) -> None:
         self.view.current_page = len(self.view.pages) - 1
         await self.view.send_page(context)
 
@@ -190,7 +189,7 @@ class LastButton(NavButton):
             self.disabled = False
 
 
-class IndicatorButton(NavButton):
+class IndicatorButton(NavButton[ClientT]):
     """A built-in NavButton to show the current page's number."""
 
     def __init__(
@@ -212,10 +211,12 @@ class IndicatorButton(NavButton):
         self.label = f"{self.view.current_page+1}/{len(self.view.pages)}"
         self.disabled = self.disabled if len(self.view.pages) != 1 else True
 
-    async def callback(self, context: ViewContextT) -> None:
+    async def callback(self, context: ViewContext[ClientT]) -> None:
         modal = Modal(title="Jump to page")
         modal.add_item(
-            TextInput(label="Page Number", placeholder="Enter a page number to jump to it...", custom_id="pgnum")
+            TextInput[ClientT](
+                label="Page Number", placeholder="Enter a page number to jump to it...", custom_id="pgnum"
+            )  # type: ignore
         )
         await context.respond_with_modal(modal)
         await modal.wait()
@@ -234,7 +235,7 @@ class IndicatorButton(NavButton):
         await self.view.send_page(modal.last_context)
 
 
-class StopButton(NavButton):
+class StopButton(NavButton[ClientT]):
     """A built-in NavButton to stop the navigator and disable all buttons."""
 
     def __init__(
@@ -249,13 +250,12 @@ class StopButton(NavButton):
     ):
         super().__init__(style=style, label=label, custom_id=custom_id, emoji=emoji, row=row, position=position)
 
-    async def callback(self, context: ViewContextT) -> None:
+    async def callback(self, context: ViewContext[ClientT]) -> None:
         if not self.view.message and not self.view._inter:
             return
 
         for item in self.view.children:
-            if isinstance(item, (NavItem)):
-                item.disabled = True
+            item.disabled = True
 
         if self.view._inter:
             await self.view._inter.edit_initial_response(components=self.view)

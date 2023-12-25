@@ -1,9 +1,11 @@
 import hikari
 import miru
 from miru.ext import nav
+from miru import GW
+from miru.ext.nav.items import NavButton
 
 
-class MyNavButton(nav.NavButton):
+class MyNavButton(nav.NavButton[GW]):
     # This is how you can create your own navigator button
     # The extension also comes with the following nav buttons built-in:
     #
@@ -14,8 +16,8 @@ class MyNavButton(nav.NavButton):
     # NextButton - Goes to next page
     # LastButton - Goes to the last page
 
-    async def callback(self, ctx: miru.ViewContext) -> None:
-        await ctx.respond("You clicked me!", flags=hikari.MessageFlag.EPHEMERAL)
+    async def callback(self, context: miru.ViewContext[GW]) -> None:
+        await context.respond("You clicked me!", flags=hikari.MessageFlag.EPHEMERAL)
 
     async def before_page_change(self) -> None:
         # This function is called before the new page is sent by
@@ -24,7 +26,7 @@ class MyNavButton(nav.NavButton):
 
 
 bot = hikari.GatewayBot("...")
-miru.install(bot)
+client = miru.GatewayClient(bot)
 
 
 @bot.listen()
@@ -47,7 +49,7 @@ async def navigator(event: hikari.GuildMessageCreateEvent) -> None:
         pages = ["I'm the first page!", embed, page]
 
         # Define our navigator and pass in our list of pages
-        navigator = nav.NavigatorView(pages=pages)
+        navigator: nav.NavigatorView[GW] = nav.NavigatorView(pages=pages)
 
         # Note: You can also send the navigator to an interaction or miru context
         # See the documentation of NavigatorView.send() for more information
@@ -59,7 +61,7 @@ async def navigator(event: hikari.GuildMessageCreateEvent) -> None:
         pages = ["I'm a customized navigator!", embed, "I'm the last page!"]
         # Define our custom buttons for this navigator
         # All navigator buttons MUST subclass NavButton
-        buttons = [nav.PrevButton(), nav.StopButton(), nav.NextButton(), MyNavButton(label="Page: 1", row=1)]
+        buttons: list[NavButton[GW]] = [nav.PrevButton(), nav.StopButton(), nav.NextButton(), MyNavButton(label="Page: 1", row=1)]
         # Pass our list of NavButton to the navigator
         navigator = nav.NavigatorView(pages=pages, buttons=buttons)
 

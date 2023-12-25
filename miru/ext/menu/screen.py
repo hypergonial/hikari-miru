@@ -7,14 +7,13 @@ import typing as t
 import attr
 import hikari
 
+import miru
 from miru import HandlerFullError, ItemAlreadyAttachedError
 
 from .items import DecoratedScreenItem, ScreenItem
 
 if t.TYPE_CHECKING:
     import typing_extensions as te
-
-    from miru import ViewContext
 
     from .menu import Menu
 
@@ -60,7 +59,7 @@ class ScreenContent:
         return d
 
 
-class Screen(abc.ABC):
+class Screen(abc.ABC, t.Generic[miru.ClientT]):
     """A screen in a menu. Acts similarly to a View, although it is not a subclass of it.
 
     Parameters
@@ -70,25 +69,25 @@ class Screen(abc.ABC):
     """
 
     _screen_children: t.Sequence[
-        DecoratedScreenItem[Screen, ScreenItem, ViewContext]
+        DecoratedScreenItem[miru.ClientT, te.Self, ScreenItem[miru.ClientT]]
     ] = []  # Decorated callbacks that need to be turned into items
 
     def __init_subclass__(cls) -> None:
         """Get decorated callbacks."""
-        children: t.MutableSequence[DecoratedScreenItem[Screen, ScreenItem, ViewContext]] = []
+        children: t.MutableSequence[DecoratedScreenItem[miru.ClientT, te.Self, ScreenItem[miru.ClientT]]] = []
         for base_cls in reversed(cls.mro()):
             for value in base_cls.__dict__.values():
                 if isinstance(value, DecoratedScreenItem):
-                    children.append(value)
+                    children.append(value)  # type: ignore
 
         if len(children) > 25:
             raise HandlerFullError("View cannot have more than 25 components attached.")
 
         cls._screen_children = children
 
-    def __init__(self, menu: Menu) -> None:
+    def __init__(self, menu: Menu[miru.ClientT]) -> None:
         self._menu = menu
-        self._children: t.MutableSequence[ScreenItem] = []
+        self._children: t.MutableSequence[ScreenItem[miru.ClientT]] = []
 
         for decorated_item in self._screen_children:
             # Must deepcopy, otherwise multiple views will have the same item reference
@@ -98,12 +97,12 @@ class Screen(abc.ABC):
             setattr(self, decorated_item.name, item)
 
     @property
-    def menu(self) -> Menu:
+    def menu(self) -> Menu[miru.ClientT]:
         """The menu that this screen belongs to."""
         return self._menu
 
     @property
-    def children(self) -> t.Sequence[ScreenItem]:
+    def children(self) -> t.Sequence[ScreenItem[miru.ClientT]]:
         """The items contained in this screen."""
         return self._children
 
@@ -136,7 +135,7 @@ class Screen(abc.ABC):
         """
         raise error
 
-    def add_item(self, item: ScreenItem) -> te.Self:
+    def add_item(self, item: ScreenItem[miru.ClientT]) -> te.Self:
         """Adds a new item to the screen.
 
         Parameters
@@ -161,9 +160,6 @@ class Screen(abc.ABC):
         if len(self.children) > 25:
             raise HandlerFullError("Screen cannot have more than 25 components attached.")
 
-        if not isinstance(item, ScreenItem):
-            raise TypeError(f"Expected ScreenItem not {type(item).__name__} for parameter item.")
-
         if item in self.children:
             raise ItemAlreadyAttachedError(f"Item {type(item).__name__} is already attached to this screen.")
 
@@ -172,7 +168,7 @@ class Screen(abc.ABC):
 
         return self
 
-    def remove_item(self, item: ScreenItem) -> te.Self:
+    def remove_item(self, item: ScreenItem[miru.ClientT]) -> te.Self:
         """Removes the specified item from the screen.
 
         Parameters
@@ -207,7 +203,9 @@ class Screen(abc.ABC):
         self._children.clear()
         return self
 
-    def get_item_by(self, predicate: t.Callable[[ScreenItem], bool]) -> t.Optional[ScreenItem]:
+    def get_item_by(
+        self, predicate: t.Callable[[ScreenItem[miru.ClientT]], bool]
+    ) -> t.Optional[ScreenItem[miru.ClientT]]:
         """Get the first item that matches the given predicate.
 
         Parameters
@@ -226,7 +224,7 @@ class Screen(abc.ABC):
 
         return None
 
-    def get_item_by_id(self, custom_id: str) -> t.Optional[ScreenItem]:
+    def get_item_by_id(self, custom_id: str) -> t.Optional[ScreenItem[miru.ClientT]]:
         """Get the first item with the given custom ID.
 
         Parameters

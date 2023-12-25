@@ -10,8 +10,12 @@ import hikari
 
 from miru.exceptions import ItemAlreadyAttachedError
 
+from ..internal.types import ClientT, ContextT
+
 if t.TYPE_CHECKING:
-    from ..context import Context, ViewContext
+    import typing_extensions as te
+
+    from ..context import ModalContext, ViewContext  # noqa: F401
     from ..modal import Modal
     from ..view import View
     from .item_handler import ItemHandler
@@ -20,12 +24,13 @@ if t.TYPE_CHECKING:
 __all__ = ("Item", "DecoratedItem", "ViewItem", "ModalItem")
 
 BuilderT = t.TypeVar("BuilderT", bound=hikari.api.ComponentBuilder)
-ViewT = t.TypeVar("ViewT", bound="View")
-ViewItemT = t.TypeVar("ViewItemT", bound="ViewItem")
-ViewContextT = t.TypeVar("ViewContextT", bound="ViewContext")
+ViewT = t.TypeVar("ViewT", bound="View[t.Any]")
+ViewItemT = t.TypeVar("ViewItemT", bound="ViewItem[t.Any]")
+ViewContextT = t.TypeVar("ViewContextT", bound="ViewContext[t.Any]")
+HandlerT = t.TypeVar("HandlerT", bound="ItemHandler[t.Any, t.Any, t.Any, t.Any, t.Any]")
 
 
-class Item(abc.ABC, t.Generic[BuilderT]):
+class Item(abc.ABC, t.Generic[ClientT, BuilderT, ContextT, HandlerT]):
     """An abstract base class for all components. Cannot be directly instantiated."""
 
     def __init__(
@@ -48,13 +53,13 @@ class Item(abc.ABC, t.Generic[BuilderT]):
         self.position = position
         """The position of the item within the row it occupies. Leave as None for automatic placement."""
 
-        self.custom_id = custom_id  # type: ignore[assignment]
+        self.custom_id = custom_id
         """The Discord custom_id of the item."""
 
         self._is_persistent: bool = bool(custom_id)
         """If True, the custom_id was provided by the user, and not randomly generated."""
 
-        self._handler: t.Optional[ItemHandler[BuilderT, t.Any, t.Any]] = None
+        self._handler: t.Optional[HandlerT] = None
         """The handler the item was added to, if any."""
 
     @property
@@ -98,8 +103,6 @@ class Item(abc.ABC, t.Generic[BuilderT]):
 
     @custom_id.setter
     def custom_id(self, value: t.Optional[str]) -> None:
-        if value and not isinstance(value, str):
-            raise TypeError("Expected type str for property custom_id.")
         if value and len(value) > 100:
             raise ValueError("custom_id has a max length of 100.")
 
@@ -116,12 +119,12 @@ class Item(abc.ABC, t.Generic[BuilderT]):
         """The component's underlying component type."""
         ...
 
-    async def _refresh_state(self, context: Context[t.Any]) -> None:
+    async def _refresh_state(self, context: ContextT) -> None:
         """Called on an item to refresh it's internal state."""
         pass
 
 
-class ViewItem(Item[hikari.impl.MessageActionRowBuilder], abc.ABC):
+class ViewItem(Item[ClientT, "hikari.impl.MessageActionRowBuilder", "ViewContext[ClientT]", "View[ClientT]"], abc.ABC):
     """An abstract base class for view components. Cannot be directly instantiated."""
 
     def __init__(
@@ -134,11 +137,11 @@ class ViewItem(Item[hikari.impl.MessageActionRowBuilder], abc.ABC):
         disabled: bool = False,
     ) -> None:
         super().__init__(custom_id=custom_id, row=row, position=position, width=width)
-        self._handler: t.Optional[View] = None
+        self._handler: t.Optional[View[ClientT]] = None
         self._disabled: bool = disabled
 
     @property
-    def view(self) -> View:
+    def view(self) -> View[ClientT]:
         """The view this item is attached to."""
         if not self._handler:
             raise AttributeError(f"{type(self).__name__} hasn't been attached to a view yet.")
@@ -152,8 +155,6 @@ class ViewItem(Item[hikari.impl.MessageActionRowBuilder], abc.ABC):
 
     @disabled.setter
     def disabled(self, value: bool) -> None:
-        if not isinstance(value, bool):
-            raise TypeError("Expected type 'bool' for property 'disabled'.")
         self._disabled = value
 
     @abstractmethod
@@ -163,11 +164,11 @@ class ViewItem(Item[hikari.impl.MessageActionRowBuilder], abc.ABC):
 
     @classmethod
     @abstractmethod
-    def _from_component(cls, component: hikari.PartialComponent, row: t.Optional[int] = None) -> ViewItem:
+    def _from_component(cls, component: hikari.PartialComponent, row: t.Optional[int] = None) -> te.Self:
         """Converts the passed hikari component into a miru ViewItem."""
         ...
 
-    async def callback(self, context: ViewContextT) -> None:
+    async def callback(self, context: ViewContext[ClientT]) -> None:
         """The component's callback, gets called when the component receives an interaction.
 
         Parameters
@@ -178,7 +179,7 @@ class ViewItem(Item[hikari.impl.MessageActionRowBuilder], abc.ABC):
         pass
 
 
-class ModalItem(Item[hikari.impl.ModalActionRowBuilder], abc.ABC):
+class ModalItem(Item[ClientT, "hikari.impl.ModalActionRowBuilder", "ModalContext[ClientT]", "Modal"], abc.ABC):
     """An abstract base class for modal components. Cannot be directly instantiated."""
 
     def __init__(
@@ -191,11 +192,11 @@ class ModalItem(Item[hikari.impl.ModalActionRowBuilder], abc.ABC):
         required: bool = False,
     ) -> None:
         super().__init__(custom_id=custom_id, row=row, position=position, width=width)
-        self._handler: t.Optional[Modal] = None
+        self._handler: t.Optional[Modal[ClientT]] = None
         self._required: bool = required
 
     @property
-    def modal(self) -> t.Optional[Modal]:
+    def modal(self) -> t.Optional[Modal[ClientT]]:
         """The modal this item is attached to."""
         if not self._handler:
             raise AttributeError(f"{type(self).__name__} hasn't been attached to a modal yet.")
@@ -209,8 +210,6 @@ class ModalItem(Item[hikari.impl.ModalActionRowBuilder], abc.ABC):
 
     @required.setter
     def required(self, value: bool) -> None:
-        if not isinstance(value, bool):
-            raise TypeError("Expected type 'bool' for property 'required'.")
         self._required = value
 
     @abstractmethod
@@ -219,18 +218,18 @@ class ModalItem(Item[hikari.impl.ModalActionRowBuilder], abc.ABC):
         ...
 
 
-class DecoratedItem(t.Generic[ViewT, ViewItemT, ViewContextT]):
+class DecoratedItem(t.Generic[ClientT, ViewT, ViewItemT]):
     """A partial item made using a decorator."""
 
     __slots__ = ("item", "callback")
 
     def __init__(
-        self, item: ViewItemT, callback: t.Callable[[ViewT, ViewItemT, ViewContextT], t.Awaitable[None]]
+        self, item: ViewItemT, callback: t.Callable[[ViewT, ViewItemT, ViewContext[ClientT]], t.Awaitable[None]]
     ) -> None:
         self.item = item
         self.callback = callback
 
-    def build(self, view: View) -> ViewItemT:
+    def build(self, view: View[ClientT]) -> ViewItemT:
         """Convert a DecoratedItem into a ViewItem.
 
         Parameters
@@ -258,7 +257,7 @@ class DecoratedItem(t.Generic[ViewT, ViewItemT, ViewContextT]):
         """
         return self.callback.__name__
 
-    def __call__(self, view: ViewT, item: ViewItemT, context: ViewContextT) -> t.Awaitable[None]:
+    def __call__(self, view: ViewT, item: ViewItemT, context: ViewContext[ClientT]) -> t.Awaitable[None]:
         """Call the callback this DecoratedItem wraps."""
         return self.callback(view, item, context)
 

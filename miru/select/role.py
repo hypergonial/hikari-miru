@@ -6,20 +6,21 @@ import typing as t
 import hikari
 
 from ..abc.item import DecoratedItem
+from ..internal.types import ClientT
 from .base import SelectBase
 
 if t.TYPE_CHECKING:
-    from ..context.base import Context
+    import typing_extensions as te
+
     from ..context.view import ViewContext
     from ..view import View
 
-    ViewT = t.TypeVar("ViewT", bound="View")
-    ViewContextT = t.TypeVar("ViewContextT", bound=ViewContext)
+    ViewT = t.TypeVar("ViewT", bound="View[t.Any]")
 
 __all__ = ("RoleSelect", "role_select")
 
 
-class RoleSelect(SelectBase):
+class RoleSelect(SelectBase[ClientT]):
     """A view component representing a select menu of roles.
 
     Parameters
@@ -68,7 +69,7 @@ class RoleSelect(SelectBase):
         return self._values
 
     @classmethod
-    def _from_component(cls, component: hikari.PartialComponent, row: t.Optional[int] = None) -> RoleSelect:
+    def _from_component(cls, component: hikari.PartialComponent, row: t.Optional[int] = None) -> te.Self:
         assert (
             isinstance(component, hikari.SelectMenuComponent)
             and component.type == hikari.ComponentType.ROLE_SELECT_MENU
@@ -93,7 +94,7 @@ class RoleSelect(SelectBase):
             is_disabled=self.disabled,
         )
 
-    async def _refresh_state(self, context: Context[t.Any]) -> None:
+    async def _refresh_state(self, context: ViewContext[ClientT]) -> None:
         if context.interaction.resolved is None:
             self._values = ()
             return
@@ -109,7 +110,8 @@ def role_select(
     disabled: bool = False,
     row: t.Optional[int] = None,
 ) -> t.Callable[
-    [t.Callable[[ViewT, RoleSelect, ViewContextT], t.Awaitable[None]]], DecoratedItem[ViewT, RoleSelect, ViewContextT]
+    [t.Callable[[ViewT, RoleSelect[ClientT], ViewContext[ClientT]], t.Awaitable[None]]],
+    DecoratedItem[ClientT, ViewT, RoleSelect[ClientT]],
 ]:
     """A decorator to transform a function into a Discord UI RoleSelectMenu's callback.
     This must be inside a subclass of View.
@@ -141,12 +143,12 @@ def role_select(
     """
 
     def decorator(
-        func: t.Callable[[ViewT, RoleSelect, ViewContextT], t.Awaitable[None]],
-    ) -> DecoratedItem[ViewT, RoleSelect, ViewContextT]:
+        func: t.Callable[[ViewT, RoleSelect[ClientT], ViewContext[ClientT]], t.Awaitable[None]],
+    ) -> DecoratedItem[ClientT, ViewT, RoleSelect[ClientT]]:
         if not inspect.iscoroutinefunction(func):
             raise TypeError("role_select must decorate coroutine function.")
 
-        item = RoleSelect(
+        item: RoleSelect[ClientT] = RoleSelect(
             custom_id=custom_id,
             placeholder=placeholder,
             min_values=min_values,

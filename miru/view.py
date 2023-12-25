@@ -10,12 +10,13 @@ import typing as t
 
 import hikari
 
-from miru.exceptions import BootstrapFailureError, HandlerFullError
+from miru.exceptions import HandlerFullError
 
 from .abc.item import DecoratedItem, ViewItem
 from .abc.item_handler import ItemHandler
 from .button import Button
 from .context.view import ViewContext
+from .internal.types import ClientT
 from .select import ChannelSelect, MentionableSelect, RoleSelect, TextSelect, UserSelect
 
 if t.TYPE_CHECKING:
@@ -26,12 +27,12 @@ if t.TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-ViewContextT = t.TypeVar("ViewContextT", bound=ViewContext)
-ViewT = t.TypeVar("ViewT", bound="View")
+ViewContextT = t.TypeVar("ViewContextT", bound=ViewContext[t.Any])
+ViewT = t.TypeVar("ViewT", bound="View[t.Any]")
 
-__all__ = ("View", "get_view")
+__all__ = ("View",)
 
-COMPONENT_VIEW_ITEM_MAPPING: t.Mapping[hikari.ComponentType, t.Type[ViewItem]] = {
+COMPONENT_VIEW_ITEM_MAPPING: t.Mapping[hikari.ComponentType, t.Type[ViewItem[t.Any]]] = {  # type: ignore
     hikari.ComponentType.BUTTON: Button,
     hikari.ComponentType.TEXT_SELECT_MENU: TextSelect,
     hikari.ComponentType.CHANNEL_SELECT_MENU: ChannelSelect,
@@ -42,7 +43,15 @@ COMPONENT_VIEW_ITEM_MAPPING: t.Mapping[hikari.ComponentType, t.Type[ViewItem]] =
 """A mapping of all message component types to their respective item classes."""
 
 
-class View(ItemHandler[hikari.impl.MessageActionRowBuilder, ViewContext, ViewItem]):
+class View(
+    ItemHandler[
+        ClientT,
+        hikari.impl.MessageActionRowBuilder,
+        ViewContext[ClientT],
+        hikari.ComponentInteraction,
+        ViewItem[ClientT],
+    ]
+):
     """Represents a set of Discord UI components attached to a message.
 
     Parameters
@@ -61,16 +70,16 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder, ViewContext, ViewIte
     """
 
     _view_children: t.ClassVar[
-        t.MutableSequence[DecoratedItem[View, ViewItem, ViewContext]]
+        t.MutableSequence[DecoratedItem[t.Any, te.Self, ViewItem[t.Any]]]
     ] = []  # Decorated callbacks that need to be turned into items
 
     def __init_subclass__(cls) -> None:
         """Get decorated callbacks."""
-        children: t.MutableSequence[DecoratedItem[View, ViewItem, ViewContext]] = []
+        children: t.MutableSequence[DecoratedItem[ClientT, te.Self, ViewItem[ClientT]]] = []
         for base_cls in reversed(cls.mro()):
             for value in base_cls.__dict__.values():
                 if isinstance(value, DecoratedItem):
-                    children.append(value)
+                    children.append(value)  # type: ignore
 
         if len(children) > 25:
             raise HandlerFullError("View cannot have more than 25 components attached.")
@@ -96,9 +105,7 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder, ViewContext, ViewIte
     @property
     def is_persistent(self) -> bool:
         """Determines if this view is persistent or not."""
-        return self.timeout is None and all(
-            isinstance(item, ViewItem) and item._is_persistent for item in self.children
-        )
+        return self.timeout is None and all(item._is_persistent for item in self.children)
 
     @property
     def message(self) -> t.Optional[hikari.Message]:
@@ -166,7 +173,7 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder, ViewContext, ViewIte
 
         return view
 
-    def add_item(self, item: ViewItem) -> te.Self:
+    def add_item(self, item: ViewItem[ClientT]) -> te.Self:
         """Adds a new item to the view.
 
         Parameters
@@ -190,12 +197,9 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder, ViewContext, ViewIte
         View
             The view the item was added to.
         """
-        if not isinstance(item, ViewItem):
-            raise TypeError(f"Expected type ViewItem for parameter item, not {type(item).__name__}.")
-
         return super().add_item(item)
 
-    async def view_check(self, context: ViewContextT) -> bool:
+    async def view_check(self, context: ViewContext[ClientT]) -> bool:
         """Called before any callback in the view is called. Must evaluate to a truthy value to pass.
         Override for custom check logic.
 
@@ -212,7 +216,7 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder, ViewContext, ViewIte
         return True
 
     async def on_error(
-        self, error: Exception, item: t.Optional[ViewItem] = None, context: t.Optional[ViewContextT] = None
+        self, error: Exception, item: t.Optional[ViewItem[ClientT]] = None, context: t.Optional[ViewContextT] = None
     ) -> None:
         """Called when an error occurs in a callback function or the built-in timeout function.
         Override for custom error-handling logic.
@@ -234,8 +238,8 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder, ViewContext, ViewIte
         traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
 
     def get_context(
-        self, interaction: hikari.ComponentInteraction, *, cls: t.Type[ViewContext] = ViewContext
-    ) -> ViewContext:
+        self, interaction: hikari.ComponentInteraction, *, cls: t.Type[ViewContext[ClientT]] = ViewContext
+    ) -> ViewContext[ClientT]:
         """Get the context for this view. Override this function to provide a custom context object.
 
         Parameters
@@ -250,9 +254,9 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder, ViewContext, ViewIte
         ViewContext
             The context for this interaction.
         """
-        return cls(self, interaction)
+        return cls(self, self.client, interaction)
 
-    async def _handle_callback(self, item: ViewItem, context: ViewContextT) -> None:
+    async def _handle_callback(self, item: ViewItem[ClientT], context: ViewContext[ClientT]) -> None:
         """Handle the callback of a view item. Separate task in case the view is stopped in the callback."""
         try:
             if self._message_id == context.message.id:
@@ -271,16 +275,13 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder, ViewContext, ViewIte
         except Exception as error:
             await self.on_error(error, item, context)
 
-    async def _process_interactions(self, event: hikari.InteractionCreateEvent) -> None:
+    async def _invoke(self, interaction: hikari.ComponentInteraction) -> None:
         """Process incoming interactions."""
-        if not isinstance(event.interaction, hikari.ComponentInteraction):
-            return
-
-        items = [item for item in self.children if item.custom_id == event.interaction.custom_id]
+        items = [item for item in self.children if item.custom_id == interaction.custom_id]
         if items:
             self._reset_timeout()
 
-            context = self.get_context(event.interaction)
+            context = self.get_context(interaction)
             self._last_context = context
 
             passed = await self.view_check(context)
@@ -307,8 +308,9 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder, ViewContext, ViewIte
         """
         await asyncio.wait_for(self._input_event.wait(), timeout=timeout)
 
-    async def start(
+    async def _start(
         self,
+        client: ClientT,
         message: t.Optional[
             t.Union[
                 hikari.SnowflakeishOr[hikari.PartialMessage], t.Awaitable[hikari.SnowflakeishOr[hikari.PartialMessage]]
@@ -319,6 +321,8 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder, ViewContext, ViewIte
 
         Parameters
         ----------
+        client : ClientT
+            The client to use for this view.
         message : Union[hikari.Message, Awaitable[hikari.Message]]
             If provided, the view will be bound to this message, and if the
             message is edited with a new view, this view will be stopped.
@@ -331,8 +335,7 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder, ViewContext, ViewIte
         BootstrapFailureError
             miru.install() was not called before starting a view.
         """
-        if self._events is None:
-            raise BootstrapFailureError(f"Cannot start View {type(self).__name__} before calling miru.install() first.")
+        self._client = client
 
         # Optimize URL-button-only views by not adding to listener
         if all((isinstance(item, Button) and item.url is not None) for item in self.children):
@@ -343,7 +346,7 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder, ViewContext, ViewIte
             raise ValueError(f"View '{type(self).__name__}' is not persistent, parameter 'message' must be provided.")
 
         if message is None:
-            self._events.add_handler(self)
+            self._client.add_handler(self)
             return
 
         result = (await message) if inspect.isawaitable(message) else message
@@ -355,37 +358,8 @@ class View(ItemHandler[hikari.impl.MessageActionRowBuilder, ViewContext, ViewIte
         if isinstance(result, hikari.Message):
             self._message = result
 
-        self._events.add_handler(self)
+        self._client.add_handler(self)
         self._timeout_task = self._create_task(self._handle_timeout())
-
-
-def get_view(message: hikari.SnowflakeishOr[hikari.PartialMessage]) -> t.Optional[View]:
-    """Get a currently running view that is attached to the provided message.
-
-    Parameters
-    ----------
-    message : hikari.SnowflakeishOr[hikari.PartialMessage]
-        The message the view is attached to.
-
-    Returns
-    -------
-    Optional[View]
-        The view bound to this message, if any.
-
-    Raises
-    ------
-    BootstrapFailureError
-        miru.install() was not called before this operation.
-    """
-    if View._events is None:
-        raise BootstrapFailureError("miru is not yet initialized! Please call miru.install() first.")
-
-    message_id = hikari.Snowflake(message)
-
-    if (view := View._events._bound_handlers.get(message_id)) and isinstance(view, View):
-        return view
-
-    return None
 
 
 # MIT License

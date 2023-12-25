@@ -8,23 +8,28 @@ import typing as t
 
 import hikari
 
-from miru.exceptions import BootstrapFailureError, HandlerFullError
+from miru.exceptions import HandlerFullError
 
 from .abc.item import ModalItem
 from .abc.item_handler import ItemHandler
 from .context.modal import ModalContext
+from .internal.types import ClientT
 
 if t.TYPE_CHECKING:
     import datetime
 
     import typing_extensions as te
 
-ModalContextT = t.TypeVar("ModalContextT", bound=ModalContext)
+ModalContextT = t.TypeVar("ModalContextT", bound=ModalContext[t.Any])
 
 __all__ = ("Modal",)
 
 
-class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder, ModalContext, ModalItem]):
+class Modal(
+    ItemHandler[
+        ClientT, hikari.impl.ModalActionRowBuilder, ModalContext[ClientT], hikari.ModalInteraction, ModalItem[ClientT]
+    ]
+):
     """Represents a Discord Modal.
 
     Parameters
@@ -44,15 +49,15 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder, ModalContext, ModalIt
         Raised if miru.install() was never called before instantiation.
     """
 
-    _modal_children: t.Mapping[str, ModalItem] = {}
+    _modal_children: t.Mapping[str, ModalItem[t.Any]] = {}
 
     def __init_subclass__(cls) -> None:
         """Get ModalItem classvars."""
-        children: t.MutableMapping[str, ModalItem] = {}
+        children: t.MutableMapping[str, ModalItem[ClientT]] = {}
         for base_cls in reversed(cls.mro()):
             for name, value in base_cls.__dict__.items():
                 if isinstance(value, ModalItem):
-                    children[name] = value
+                    children[name] = value  # type: ignore
 
         if len(children) > 25:
             raise HandlerFullError("Modal cannot have more than 25 components attached.")
@@ -69,7 +74,7 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder, ModalContext, ModalIt
 
         self._title: str = title
         self._custom_id: str = custom_id or os.urandom(16).hex()
-        self._values: t.Optional[t.Mapping[ModalItem, str]] = None
+        self._values: t.Optional[t.Mapping[ModalItem[ClientT], str]] = None
 
         if len(self._title) > 100:
             raise ValueError("Modal title is too long. Maximum 100 characters.")
@@ -89,9 +94,6 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder, ModalContext, ModalIt
 
     @title.setter
     def title(self, value: str) -> None:
-        if not isinstance(value, str):
-            raise TypeError("Expected type str for property title.")
-
         if len(value) > 100:
             raise ValueError("Modal title is too long. Maximum 100 characters.")
 
@@ -104,16 +106,13 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder, ModalContext, ModalIt
 
     @custom_id.setter
     def custom_id(self, value: str) -> None:
-        if not isinstance(value, str):
-            raise TypeError("Expected type str for property custom_id.")
-
         if len(value) > 100:
             raise ValueError("Modal custom_id is too long. Maximum 100 characters.")
 
         self._custom_id = value
 
     @property
-    def values(self) -> t.Optional[t.Mapping[ModalItem, str]]:
+    def values(self) -> t.Optional[t.Mapping[ModalItem[ClientT], str]]:
         """The input values received by this modal."""
         return self._values
 
@@ -121,7 +120,7 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder, ModalContext, ModalIt
     def _builder(self) -> t.Type[hikari.impl.ModalActionRowBuilder]:
         return hikari.impl.ModalActionRowBuilder
 
-    def add_item(self, item: ModalItem) -> te.Self:
+    def add_item(self, item: ModalItem[ClientT]) -> te.Self:
         """Adds a new item to the modal.
 
         Parameters
@@ -147,12 +146,9 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder, ModalContext, ModalIt
         ItemHandler
             The item handler the item was added to.
         """
-        if not isinstance(item, ModalItem):
-            raise TypeError(f"Expected type ModalItem for parameter item, not {type(item).__name__}.")
-
         return super().add_item(item)
 
-    async def modal_check(self, context: ModalContextT) -> bool:
+    async def modal_check(self, context: ModalContext[ClientT]) -> bool:
         """Called before any callback in the modal is called. Must evaluate to a truthy value to pass.
         Override for custom check logic.
 
@@ -185,7 +181,7 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder, ModalContext, ModalIt
 
         traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
 
-    async def callback(self, context: ModalContextT) -> None:
+    async def callback(self, context: ModalContext[ClientT]) -> None:
         """Called when the modal is submitted.
 
         Parameters
@@ -198,10 +194,10 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder, ModalContext, ModalIt
     def get_context(
         self,
         interaction: hikari.ModalInteraction,
-        values: t.Mapping[ModalItem, str],
+        values: t.Mapping[ModalItem[ClientT], str],
         *,
-        cls: t.Type[ModalContext] = ModalContext,
-    ) -> ModalContext:
+        cls: t.Type[ModalContext[ClientT]] = ModalContext,
+    ) -> ModalContext[ClientT]:
         """Get the context for this modal. Override this function to provide a custom context object.
 
         Parameters
@@ -218,9 +214,9 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder, ModalContext, ModalIt
         ModalContext
             The context for this interaction.
         """
-        return cls(self, interaction, values)
+        return cls(self, self.client, interaction, values)
 
-    async def _handle_callback(self, context: ModalContextT) -> None:
+    async def _handle_callback(self, context: ModalContext[ClientT]) -> None:
         """Handle the callback of the modal. Separate task in case the modal is stopped in the callback."""
         try:
             await self.callback(context)
@@ -230,15 +226,12 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder, ModalContext, ModalIt
 
         self.stop()  # Modals can only receive one response
 
-    async def _process_interactions(self, event: hikari.InteractionCreateEvent) -> None:
-        if not isinstance(event.interaction, hikari.ModalInteraction):
-            return
-
+    async def _invoke(self, interaction: hikari.ModalInteraction) -> None:
         children = {item.custom_id: item for item in self.children}
 
         values = {  # Check if any components match the provided custom_ids
             children[component.custom_id]: component.value
-            for action_row in event.interaction.components
+            for action_row in interaction.components
             for component in action_row.components
             if children.get(component.custom_id) is not None
         }
@@ -247,7 +240,7 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder, ModalContext, ModalIt
 
         self._values = values
 
-        context = self.get_context(event.interaction, values)
+        context = self.get_context(interaction, values)
         self._last_context = context
 
         passed = await self.modal_check(context)
@@ -259,22 +252,20 @@ class Modal(ItemHandler[hikari.impl.ModalActionRowBuilder, ModalContext, ModalIt
 
         self._create_task(self._handle_callback(context))
 
-    async def start(self) -> None:
+    async def _start(self, client: ClientT) -> None:
         """Start up the modal and begin listening for interactions.
         This should not be called manually, use `Modal.send()` or `Context.respond_with_modal()` instead.
         """
-        if not self._events:
-            raise BootstrapFailureError(
-                f"Cannot start Modal {type(self).__name__} before calling miru.install() first."
-            )
-
-        self._events.add_handler(self)
+        self._client = client
+        self._client.add_handler(self)
         self._timeout_task = self._create_task(self._handle_timeout())
 
-    async def send(self, interaction: hikari.ModalResponseMixin) -> None:
+    # FIXME come up with a good idea for this
+    # client.send_modal(inter)?
+    async def _send(self, client: ClientT, interaction: hikari.ModalResponseMixin) -> None:
         """Send this modal as a response to the provided interaction."""
         await interaction.create_modal_response(self.title, self.custom_id, components=self.build())
-        await self.start()
+        await self._start(client)
 
 
 # MIT License

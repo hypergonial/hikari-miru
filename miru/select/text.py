@@ -7,14 +7,15 @@ import hikari
 
 from ..abc.item import DecoratedItem
 from ..context.view import ViewContext
+from ..internal.types import ClientT
 from .base import SelectBase
 
 if t.TYPE_CHECKING:
-    from ..context.base import Context
+    import typing_extensions as te
+
     from ..view import View
 
-    ViewT = t.TypeVar("ViewT", bound="View")
-    ViewContextT = t.TypeVar("ViewContextT", bound=ViewContext)
+    ViewT = t.TypeVar("ViewT", bound="View[t.Any]")
 
 __all__ = ("SelectOption", "TextSelect", "text_select")
 
@@ -63,7 +64,7 @@ class SelectOption:
         )
 
 
-class TextSelect(SelectBase):
+class TextSelect(SelectBase[ClientT]):
     """A view component representing a text select menu.
 
     Parameters
@@ -122,31 +123,24 @@ class TextSelect(SelectBase):
 
     @placeholder.setter
     def placeholder(self, value: t.Optional[str]) -> None:
-        if value and not isinstance(value, str):
-            raise TypeError("Expected type str for property placeholder.")
         if value is not None and len(value) > 150:
             raise ValueError(f"Parameter 'placeholder' must be 150 or fewer in length. (Found length {len(value)})")
         self._placeholder = str(value) if value else None
 
     @property
-    def options(self) -> t.Sequence[t.Union[hikari.SelectMenuOption, SelectOption]]:
+    def options(self) -> t.Sequence[hikari.SelectMenuOption | SelectOption]:
         """The select menu's options."""
         return self._options
 
     @options.setter
-    def options(self, value: t.Sequence[t.Union[hikari.SelectMenuOption, SelectOption]]) -> None:
-        if not isinstance(value, t.Sequence) or not isinstance(value[0], (hikari.SelectMenuOption, SelectOption)):
-            raise TypeError(
-                "Expected type 'Sequence[Union[hikari.SelectMenuOption, SelectOption]]' for property 'options'."
-            )
-
+    def options(self, value: t.Sequence[hikari.SelectMenuOption | SelectOption]) -> None:
         if len(value) > 25:
             raise ValueError("A select can have a maximum of 25 options.")
 
         self._options = value
 
     @classmethod
-    def _from_component(cls, component: hikari.PartialComponent, row: t.Optional[int] = None) -> TextSelect:
+    def _from_component(cls, component: hikari.PartialComponent, row: t.Optional[int] = None) -> te.Self:
         assert isinstance(component, hikari.TextSelectMenuComponent)
 
         return cls(
@@ -184,7 +178,7 @@ class TextSelect(SelectBase):
     def values(self) -> t.Sequence[str]:
         return self._values
 
-    async def _refresh_state(self, context: Context[hikari.ComponentInteraction]) -> None:
+    async def _refresh_state(self, context: ViewContext[ClientT]) -> None:
         assert isinstance(context, ViewContext)
         self._values = context.interaction.values
 
@@ -199,7 +193,8 @@ def text_select(
     disabled: bool = False,
     row: t.Optional[int] = None,
 ) -> t.Callable[
-    [t.Callable[[ViewT, TextSelect, ViewContextT], t.Awaitable[None]]], DecoratedItem[ViewT, TextSelect, ViewContextT]
+    [t.Callable[[ViewT, TextSelect[ClientT], ViewContext[ClientT]], t.Awaitable[None]]],
+    DecoratedItem[ClientT, ViewT, TextSelect[ClientT]],
 ]:
     """A decorator to transform a function into a Discord UI TextSelectMenu's callback.
     This must be inside a subclass of View.
@@ -233,12 +228,12 @@ def text_select(
     """
 
     def decorator(
-        func: t.Callable[[ViewT, TextSelect, ViewContextT], t.Awaitable[None]],
-    ) -> DecoratedItem[ViewT, TextSelect, ViewContextT]:
+        func: t.Callable[[ViewT, TextSelect[ClientT], ViewContext[ClientT]], t.Awaitable[None]],
+    ) -> DecoratedItem[ClientT, ViewT, TextSelect[ClientT]]:
         if not inspect.iscoroutinefunction(func):
             raise TypeError("text_select must decorate coroutine function.")
 
-        item = TextSelect(
+        item: TextSelect[ClientT] = TextSelect(
             options=options,
             custom_id=custom_id,
             placeholder=placeholder,

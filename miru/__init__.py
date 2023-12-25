@@ -9,12 +9,12 @@ Documentation:
 https://hikari-miru.readthedocs.io/
 """
 
-from .bootstrap import install, uninstall
 from .button import Button, button
-from .context import Context, InteractionResponse, ModalContext, RawComponentContext, RawModalContext, ViewContext
-from .events import ComponentInteractionCreateEvent, Event, ModalInteractionCreateEvent
-from .exceptions import BootstrapFailureError, HandlerFullError, ItemAlreadyAttachedError, MiruException, RowFullError
+from .client import GW, REST, Client, GatewayClient, RESTClient
+from .context import Context, InteractionResponse, ModalContext, ViewContext
+from .exceptions import BootstrapFailureError, HandlerFullError, ItemAlreadyAttachedError, MiruError, RowFullError
 from .internal.about import __author__, __author_email__, __license__, __maintainer__, __url__, __version__
+from .internal.types import ClientT
 from .modal import Modal
 from .select import (
     ChannelSelect,
@@ -31,25 +31,24 @@ from .select import (
     user_select,
 )
 from .text_input import TextInput
-from .traits import MiruAware
-from .view import View, get_view
+from .view import View
 
 __all__ = (
+    "ClientT",
+    "Client",
+    "GatewayClient",
+    "GW",
+    "REST",
+    "RESTClient",
     "Context",
     "InteractionResponse",
     "ModalContext",
-    "RawComponentContext",
+    "View",
     "ViewContext",
     "ModalContext",
-    "RawModalContext",
-    "install",
-    "uninstall",
     "Button",
     "button",
-    "Event",
-    "ComponentInteractionCreateEvent",
-    "ModalInteractionCreateEvent",
-    "MiruException",
+    "MiruError",
     "BootstrapFailureError",
     "RowFullError",
     "HandlerFullError",
@@ -68,9 +67,6 @@ __all__ = (
     "MentionableSelect",
     "mentionable_select",
     "TextInput",
-    "MiruAware",
-    "View",
-    "get_view",
     "__version__",
     "__author__",
     "__author_email__",

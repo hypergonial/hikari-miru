@@ -4,10 +4,8 @@ import typing as t
 
 import hikari
 
-from miru.internal.deprecation import warn_deprecate
-from miru.internal.version import Version
-
-from .raw import RawModalContext
+from ..internal.types import ClientT
+from .base import Context
 
 if t.TYPE_CHECKING:
     from ..abc.item import ModalItem
@@ -18,60 +16,34 @@ __all__ = ("ModalContext",)
 T = t.TypeVar("T")
 
 
-class ModalContext(RawModalContext):
+class ModalContext(Context[ClientT, hikari.ModalInteraction]):
     """A context object proxying a ModalInteraction received by a miru modal."""
 
     __slots__ = ("_modal", "_values")
 
-    def __init__(self, modal: Modal, interaction: hikari.ModalInteraction, values: t.Mapping[ModalItem, str]) -> None:
-        super().__init__(interaction)
+    def __init__(
+        self,
+        modal: Modal[ClientT],
+        client: ClientT,
+        interaction: hikari.ModalInteraction,
+        values: t.Mapping[ModalItem[ClientT], str],
+    ) -> None:
+        super().__init__(client, interaction)
         self._modal = modal
         self._values = values
 
     @property
-    def modal(self) -> Modal:
+    def modal(self) -> Modal[ClientT]:
         """The modal this context originates from."""
         return self._modal
 
     @property
-    def values(self) -> t.Mapping[ModalItem, str]:
+    def values(self) -> t.Mapping[ModalItem[ClientT], str]:
         """The values received as input for this modal."""
         return self._values
 
-    # TODO: Remove in v3.5.0
-    def get_value_by_predicate(
-        self, predicate: t.Callable[[ModalItem], bool], default: hikari.UndefinedOr[T] = hikari.UNDEFINED
-    ) -> T | str:
-        """Get the value for the first modal item that matches the given predicate.
-
-        Deprecated
-        ----------
-        Will be removed in 3.5.0. Use `ModalContext.get_value_by` instead.
-
-        Parameters
-        ----------
-        predicate : Callable[[ModalItem], bool]
-            A predicate to match the item.
-        default : hikari.UndefinedOr[T], optional
-            A default value to return if no item was matched, by default hikari.UNDEFINED
-
-        Returns
-        -------
-        T | str
-            The value of the item that matched the predicate or the default value.
-
-        Raises
-        ------
-        KeyError
-            The item was not found and no default was provided.
-        """
-        warn_deprecate(
-            what="ModalContext.get_value_by_predicate", when=Version(3, 5, 0), use_instead="ModalContext.get_value_by"
-        )
-        return self.get_value_by(predicate, default=default)
-
     def get_value_by(
-        self, predicate: t.Callable[[ModalItem], bool], default: hikari.UndefinedOr[T] = hikari.UNDEFINED
+        self, predicate: t.Callable[[ModalItem[ClientT]], bool], default: hikari.UndefinedOr[T] = hikari.UNDEFINED
     ) -> T | str:
         """Get the value for the first modal item that matches the given predicate.
 

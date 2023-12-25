@@ -8,24 +8,14 @@ import sys
 import typing as t
 from collections.abc import Sequence
 
-import hikari
-
-from ..exceptions import BootstrapFailureError, HandlerFullError, ItemAlreadyAttachedError, RowFullError
+from ..exceptions import HandlerFullError, ItemAlreadyAttachedError, RowFullError
+from ..internal.types import BuilderT, ClientT, ContextT, InteractionT, ItemT
 from .item import Item
 
 if t.TYPE_CHECKING:
     import typing_extensions as te
 
-    from ..context import Context
-    from ..events import EventHandler
-    from ..traits import MiruAware
-
 __all__ = ("ItemHandler", "ItemArranger")
-
-
-BuilderT = t.TypeVar("BuilderT", bound=hikari.api.ComponentBuilder)
-ContextT = t.TypeVar("ContextT", bound="Context[t.Any]")
-ItemT = t.TypeVar("ItemT", bound="Item[t.Any]")
 
 
 class ItemArranger(t.Generic[ItemT]):
@@ -86,8 +76,7 @@ class ItemArranger(t.Generic[ItemT]):
         self._weights = [0, 0, 0, 0, 0]
 
 
-# TODO Type ignore: Python 3.8 doesn't support type-arg in abc.ABC, add when 3.9 is released
-class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT, ContextT, ItemT]):  # type: ignore[type-arg]
+class ItemHandler(Sequence[BuilderT], abc.ABC, t.Generic[ClientT, BuilderT, ContextT, InteractionT, ItemT]):
     """Abstract base class all item-handlers (e.g. views, modals) inherit from.
 
     Parameters
@@ -103,15 +92,13 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT, ContextT, ItemT]):  # t
         Raised if miru.install() was never called before instantiation.
     """
 
-    _app: t.ClassVar[t.Optional[MiruAware]] = None
-    _events: t.ClassVar[t.Optional[EventHandler]] = None
-
-    def __init__(self, *, timeout: t.Optional[t.Union[float, int, datetime.timedelta]] = 120.0) -> None:
+    def __init__(self, *, timeout: float | int | datetime.timedelta | None = 120.0) -> None:
         if isinstance(timeout, datetime.timedelta):
             timeout = timeout.total_seconds()
 
-        self._timeout: t.Optional[float] = float(timeout) if timeout else None
-        self._children: t.List[ItemT] = []
+        self._client: ClientT | None = None
+        self._timeout: float | None = float(timeout) if timeout else None
+        self._children: list[ItemT] = []
 
         self._arranger: ItemArranger[ItemT] = ItemArranger()
         self._stopped: asyncio.Event = asyncio.Event()
@@ -122,9 +109,6 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT, ContextT, ItemT]):  # t
         if len(self.children) > 25:
             raise HandlerFullError(f"{type(self).__name__} cannot have more than 25 components attached.")
 
-        if self.app is None or self._events is None:
-            raise BootstrapFailureError(f"miru.install() was not called before instantiation of {type(self).__name__}.")
-
     @t.overload
     def __getitem__(self, value: int) -> BuilderT:
         ...
@@ -133,7 +117,7 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT, ContextT, ItemT]):  # t
     def __getitem__(self, value: slice) -> t.Sequence[BuilderT]:
         ...
 
-    def __getitem__(self, value: t.Union[slice, int]) -> t.Union[BuilderT, t.Sequence[BuilderT]]:
+    def __getitem__(self, value: t.Union[slice, int]) -> BuilderT | t.Sequence[BuilderT]:
         return self.build()[value]
 
     def __iter__(self) -> t.Iterator[BuilderT]:
@@ -160,17 +144,12 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT, ContextT, ItemT]):  # t
         return self._timeout
 
     @property
-    def app(self) -> MiruAware:
+    def client(self) -> ClientT:
         """The application that loaded the miru extension."""
-        if not self._app:
-            raise AttributeError(f"miru was not loaded, {type(self).__name__} has no attribute app.")
+        if not self._client:
+            raise AttributeError(f"{type(self).__name__} is not started.")
 
-        return self._app
-
-    @property
-    def bot(self) -> MiruAware:
-        """The application that loaded the miru extension."""
-        return self.app
+        return self._client
 
     @property
     def last_context(self) -> t.Optional[ContextT]:
@@ -315,7 +294,7 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT, ContextT, ItemT]):  # t
 
         self._children.sort(key=lambda i: i._rendered_row if i._rendered_row is not None else sys.maxsize)
 
-        action_rows = []
+        action_rows: list[BuilderT] = []
 
         for _, items in itertools.groupby(self.children, lambda i: i._rendered_row):
             s_items = sorted(items, key=lambda i: i.position if i.position is not None else sys.maxsize)
@@ -331,18 +310,18 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT, ContextT, ItemT]):  # t
 
     def stop(self) -> None:
         """Stop listening for interactions."""
+        if not self._client:
+            return
+
         self._stopped.set()
 
         if self._timeout_task:
             self._timeout_task.cancel()
 
-        if not self._events:
-            return
-
-        self._events.remove_handler(self)
+        self._client.remove_handler(self)
 
     @abc.abstractmethod
-    async def _process_interactions(self, event: hikari.InteractionCreateEvent) -> None:
+    async def _invoke(self, interaction: InteractionT) -> None:
         """Process incoming interactions."""
 
     def _reset_timeout(self) -> None:
@@ -367,7 +346,7 @@ class ItemHandler(Sequence, abc.ABC, t.Generic[BuilderT, ContextT, ItemT]):  # t
 
     def _create_task(self, coro: t.Awaitable[t.Any], *, name: t.Optional[str] = None) -> asyncio.Task[t.Any]:
         """Run tasks inside the item handler internally while keeping a reference to the provided task."""
-        task = asyncio.create_task(coro, name=name)  # type: ignore
+        task: asyncio.Task[t.Any] = asyncio.create_task(coro, name=name)  # type: ignore
         self._running_tasks.append(task)
         task.add_done_callback(lambda t: self._running_tasks.remove(t))
         return task

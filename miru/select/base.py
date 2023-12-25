@@ -4,18 +4,20 @@ import abc
 import typing as t
 
 from ..abc.item import ViewItem
+from ..internal.types import ClientT
 
 if t.TYPE_CHECKING:
     import hikari
+    import typing_extensions as te
 
     from ..view import View
 
-    ViewT = t.TypeVar("ViewT", bound="View")
+    ViewT = t.TypeVar("ViewT", bound="View[t.Any]")
 
 __all__ = ("SelectBase",)
 
 
-class SelectBase(ViewItem, abc.ABC):
+class SelectBase(ViewItem[ClientT], abc.ABC):
     """A view component representing some type of select menu. All types of selects derive from this class.
 
     Parameters
@@ -57,8 +59,6 @@ class SelectBase(ViewItem, abc.ABC):
 
     @placeholder.setter
     def placeholder(self, value: t.Optional[str]) -> None:
-        if value and not isinstance(value, str):
-            raise TypeError("Expected type str for property placeholder.")
         if value is not None and len(value) > 150:
             raise ValueError(f"Parameter 'placeholder' must be 150 or fewer in length. (Found length {len(value)})")
         self._placeholder = str(value) if value else None
@@ -70,8 +70,6 @@ class SelectBase(ViewItem, abc.ABC):
 
     @min_values.setter
     def min_values(self, value: int) -> None:
-        if not isinstance(value, int):
-            raise TypeError("Expected type 'int' for property 'min_values'.")
         self._min_values = value
 
     @property
@@ -81,13 +79,11 @@ class SelectBase(ViewItem, abc.ABC):
 
     @max_values.setter
     def max_values(self, value: int) -> None:
-        if not isinstance(value, int):
-            raise TypeError("Expected type 'int' for property 'max_values'.")
         self._max_values = value
 
     @classmethod
     @abc.abstractmethod
-    def _from_component(cls, component: hikari.PartialComponent, row: t.Optional[int] = None) -> SelectBase:
+    def _from_component(cls, component: hikari.PartialComponent, row: t.Optional[int] = None) -> te.Self:
         """Called internally to convert a component to a select menu."""
 
     @abc.abstractmethod

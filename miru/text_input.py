@@ -7,18 +7,17 @@ import hikari
 from miru.context.modal import ModalContext
 
 from .abc.item import ModalItem
+from .internal.types import ClientT
 
 if t.TYPE_CHECKING:
-    from miru.context.base import Context
-
     from .modal import Modal
 
-ModalT = t.TypeVar("ModalT", bound="Modal")
+ModalT = t.TypeVar("ModalT", bound="Modal[t.Any]")
 
 __all__ = ("TextInput",)
 
 
-class TextInput(ModalItem):
+class TextInput(ModalItem[ClientT]):
     """A text input field that can be used in modals.
 
     Parameters
@@ -75,9 +74,6 @@ class TextInput(ModalItem):
 
     @style.setter
     def style(self, value: hikari.TextInputStyle) -> None:
-        if not isinstance(value, hikari.TextInputStyle):
-            raise TypeError("Expected type hikari.TextInputStyle or int for property style.")
-
         self._style = value
 
     @property
@@ -127,8 +123,6 @@ class TextInput(ModalItem):
 
     @min_length.setter
     def min_length(self, value: t.Optional[int]) -> None:
-        if value and not isinstance(value, int):
-            raise TypeError("Expected type int for property min_length.")
         if self.value and value is not None and value > len(self.value):
             raise ValueError("New minimum length constraint does not satisfy pre-filled value.")
         self._min_length = value
@@ -140,8 +134,6 @@ class TextInput(ModalItem):
 
     @max_length.setter
     def max_length(self, value: t.Optional[int]) -> None:
-        if value and not isinstance(value, int):
-            raise TypeError("Expected type int for property max_length.")
         if self.value and value is not None and value < len(self.value):
             raise ValueError("New maximum length constraint does not satisfy pre-filled value.")
         self._max_length = value
@@ -158,7 +150,7 @@ class TextInput(ModalItem):
             max_length=self.max_length or 4000,
         )
 
-    async def _refresh_state(self, context: Context[hikari.ModalInteraction]) -> None:
+    async def _refresh_state(self, context: ModalContext[ClientT]) -> None:
         assert isinstance(context, ModalContext)
         self._value = context.values.get(self)
 

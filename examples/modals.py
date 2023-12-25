@@ -1,34 +1,35 @@
 import hikari
 import miru
+from miru import GW
 
 
-class MyModal(miru.Modal):
+class MyModal(miru.Modal[GW]):
     # Define our modal items
     # You can also use Modal.add_item() to add items to the modal after instantiation, just like with views.
     name = miru.TextInput(label="Name", placeholder="Enter your name!", required=True)
     bio = miru.TextInput(label="Biography", value="Pre-filled content!", style=hikari.TextInputStyle.PARAGRAPH)
 
     # The callback function is called after the user hits 'Submit'
-    async def callback(self, ctx: miru.ModalContext) -> None:
+    async def callback(self, context: miru.ModalContext[GW]) -> None:
         # You can also access the values using ctx.values, Modal.values, or use ctx.get_value_by_id()
-        await ctx.respond(f"Your name: `{self.name.value}`\nYour bio: ```{self.bio.value}```")
+        await context.respond(f"Your name: `{self.name.value}`\nYour bio: ```{self.bio.value}```")
 
 
-class ModalView(miru.View):
+class ModalView(miru.View[GW]):
 
     # Create a new button that will invoke our modal
     @miru.button(label="Click me!", style=hikari.ButtonStyle.PRIMARY)
-    async def modal_button(self, button: miru.Button, ctx: miru.ViewContext) -> None:
+    async def modal_button(self, button: miru.Button[GW], context: miru.ViewContext[GW]) -> None:
         modal = MyModal(title="Example Title")
         # You may also use Modal.send(interaction) if not working with a miru context object. (e.g. slash commands)
         # Keep in mind that modals can only be sent in response to interactions.
-        await ctx.respond_with_modal(modal)
+        await context.respond_with_modal(modal)
         # OR
-        # await modal.send(ctx.interaction)
+        # await modal.send(context.interaction)
 
 
 bot = hikari.GatewayBot("...")
-miru.install(bot)
+client = miru.GatewayClient(bot)
 
 
 @bot.listen()
@@ -44,7 +45,7 @@ async def modals(event: hikari.GuildMessageCreateEvent) -> None:
     if me.id in event.message.user_mentions_ids:
         view = ModalView()
         message = await event.message.respond("This button triggers a modal!", components=view)
-        await view.start(message)
+        await view._start(client, message)
 
 
 bot.run()

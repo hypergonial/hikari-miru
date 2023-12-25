@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 __all__ = ("Menu",)
 
 
-class Menu(miru.View):
+class Menu(miru.View[miru.ClientT]):
     """A menu that can be used to display multiple nested screens of components.
 
     Parameters
@@ -31,7 +31,7 @@ class Menu(miru.View):
 
     def __init__(self, *, timeout: t.Optional[t.Union[float, int, datetime.timedelta]] = 300.0, autodefer: bool = True):
         super().__init__(timeout=timeout, autodefer=autodefer)
-        self._stack: t.List[Screen] = []
+        self._stack: t.List[Screen[miru.ClientT]] = []
         # The interaction that was used to send the menu, if any.
         self._inter: t.Optional[hikari.MessageResponseMixin[t.Any]] = None
         self._ephemeral: bool = False
@@ -47,7 +47,7 @@ class Menu(miru.View):
         return self._ephemeral
 
     @property
-    def current_screen(self) -> Screen:
+    def current_screen(self) -> Screen[miru.ClientT]:
         """The current screen being displayed."""
         return self._stack[-1]
 
@@ -62,7 +62,7 @@ class Menu(miru.View):
 
         await self.update_message()
 
-    async def _load_screen(self, screen: Screen) -> None:
+    async def _load_screen(self, screen: Screen[miru.ClientT]) -> None:
         """Load a screen into the menu, updating it's state."""
         self.clear_items()
 
@@ -95,7 +95,7 @@ class Menu(miru.View):
         else:
             await self.message.edit(components=self, **self._payload)
 
-    async def push(self, screen: Screen) -> None:
+    async def push(self, screen: Screen[miru.ClientT]) -> None:
         """Push a screen onto the menu stack and display it.
 
         Parameters
@@ -165,9 +165,11 @@ class Menu(miru.View):
 
     async def send(
         self,
-        starting_screen: Screen,
+        starting_screen: Screen[miru.ClientT],
         to: t.Union[
-            hikari.SnowflakeishOr[hikari.TextableChannel], hikari.MessageResponseMixin[t.Any], miru.Context[t.Any]
+            hikari.SnowflakeishOr[hikari.TextableChannel],
+            hikari.MessageResponseMixin[t.Any],
+            miru.Context[t.Any, t.Any],
         ],
         ephemeral: bool = False,
         responded: bool = False,
@@ -196,7 +198,7 @@ class Menu(miru.View):
             )
 
         task = asyncio.create_task(self._load_screen(starting_screen))
-        done, pending = await asyncio.wait({task}, timeout=2.0)
+        _, pending = await asyncio.wait({task}, timeout=2.0)
 
         # Automatically defer if creating the initial menu payload is taking too long.
         if task in pending and self.autodefer and isinstance(to, hikari.MessageResponseMixin) and not responded:
@@ -207,7 +209,7 @@ class Menu(miru.View):
 
         if isinstance(to, (int, hikari.TextableChannel)):
             channel = hikari.Snowflake(to)
-            message = await self.app.rest.create_message(channel, components=self, **self._payload)
+            message = await self.client.rest.create_message(channel, components=self, **self._payload)
         elif isinstance(to, miru.Context):
             self._inter = to.interaction
             resp = await to.respond(components=self, flags=self._flags, **self._payload)
@@ -222,7 +224,8 @@ class Menu(miru.View):
             else:
                 message = await to.execute(components=self, **self._payload)
 
-        await self.start(message)
+        # FIXME
+        await self._start(message)
 
 
 # MIT License

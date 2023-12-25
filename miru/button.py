@@ -6,18 +6,21 @@ import typing as t
 import hikari
 
 from .abc.item import DecoratedItem, ViewItem
+from .internal.types import ClientT
 
 if t.TYPE_CHECKING:
+    import typing_extensions as te
+
     from .context import ViewContext
     from .view import View
 
-    ViewT = t.TypeVar("ViewT", bound="View")
-    ViewContextT = t.TypeVar("ViewContextT", bound="ViewContext")
+    ViewT = t.TypeVar("ViewT", bound="View[t.Any]")
+    ViewContextT = t.TypeVar("ViewContextT", bound="ViewContext[t.Any]")
 
 __all__ = ("Button", "button")
 
 
-class Button(ViewItem):
+class Button(ViewItem[ClientT]):
     """A view component representing a button.
 
     Parameters
@@ -79,9 +82,6 @@ class Button(ViewItem):
 
     @style.setter
     def style(self, value: hikari.ButtonStyle) -> None:
-        if not isinstance(value, hikari.ButtonStyle):
-            raise TypeError("Expected type 'hikari.ButtonStyle' or 'int' for property 'style'.")
-
         if self._url is not None and value != hikari.ButtonStyle.LINK:
             raise ValueError("A link button cannot have it's style changed. Set 'url' to 'None' to change the style.")
 
@@ -119,16 +119,13 @@ class Button(ViewItem):
 
     @url.setter
     def url(self, value: t.Optional[str]) -> None:
-        if value and not isinstance(value, str):
-            raise TypeError("Expected type 'str' for property 'url'.")
-
         if value:
             self._style = hikari.ButtonStyle.LINK
 
         self._url = value
 
     @classmethod
-    def _from_component(cls, component: hikari.PartialComponent, row: t.Optional[int] = None) -> Button:
+    def _from_component(cls, component: hikari.PartialComponent, row: t.Optional[int] = None) -> te.Self:
         assert isinstance(component, hikari.ButtonComponent)
 
         return cls(
@@ -168,7 +165,8 @@ def button(
     row: t.Optional[int] = None,
     disabled: bool = False,
 ) -> t.Callable[
-    [t.Callable[[ViewT, Button, ViewContextT], t.Awaitable[None]]], DecoratedItem[ViewT, Button, ViewContextT]
+    [t.Callable[[ViewT, Button[ClientT], ViewContext[ClientT]], t.Awaitable[None]]],
+    DecoratedItem[ClientT, ViewT, Button[ClientT]],
 ]:
     """A decorator to transform a coroutine function into a Discord UI Button's callback.
     This must be inside a subclass of View.
@@ -195,11 +193,13 @@ def button(
     """
 
     def decorator(
-        func: t.Callable[[ViewT, Button, ViewContextT], t.Awaitable[None]],
-    ) -> DecoratedItem[ViewT, Button, ViewContextT]:
+        func: t.Callable[[ViewT, Button[ClientT], ViewContext[ClientT]], t.Awaitable[None]],
+    ) -> DecoratedItem[ClientT, ViewT, Button[ClientT]]:
         if not inspect.iscoroutinefunction(func):
             raise TypeError("button must decorate coroutine function.")
-        item = Button(label=label, custom_id=custom_id, style=style, emoji=emoji, row=row, disabled=disabled, url=None)
+        item: Button[ClientT] = Button(
+            label=label, custom_id=custom_id, style=style, emoji=emoji, row=row, disabled=disabled, url=None
+        )
 
         return DecoratedItem(item, func)
 
