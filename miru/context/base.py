@@ -295,7 +295,7 @@ class Context(abc.ABC, t.Generic[ClientT, InteractionT]):
 
     @property
     def app_permissions(self) -> hikari.Permissions | None:
-        """The permissions of the user who triggered the interaction. Will be None in DMs."""
+        """The permissions of the bot. Will be None in DMs."""
         return self._interaction.app_permissions
 
     @property

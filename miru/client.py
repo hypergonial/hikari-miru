@@ -250,11 +250,15 @@ class GatewayClient(Client[hikari.GatewayBotAware]):
     ----------
     app : hikari.GatewayBotAware
         The currently running app instance that will be used to receive interactions.
+    stop_bound_on_delete : bool
+        Whether to automatically stop bound views when the message it is bound to is deleted.
     """
 
-    def __init__(self, app: hikari.GatewayBotAware) -> None:
+    def __init__(self, app: hikari.GatewayBotAware, *, stop_bound_on_delete: bool = True) -> None:
         super().__init__(app)
         self._app.event_manager.subscribe(hikari.InteractionCreateEvent, self._handle_events)
+        if stop_bound_on_delete:
+            self._app.event_manager.subscribe(hikari.MessageDeleteEvent, self._remove_bound_view)
 
     @property
     def is_rest(self) -> bool:
@@ -276,6 +280,11 @@ class GatewayClient(Client[hikari.GatewayBotAware]):
             await self.handle_modal_interaction(event.interaction)
         else:
             await self.handle_component_interaction(event.interaction)
+
+    async def _remove_bound_view(self, event: hikari.MessageDeleteEvent) -> None:
+        """Remove a bound view if the message it is bound to is deleted."""
+        if handler := self._bound_handlers.pop(event.message_id, None):
+            handler.stop()
 
 
 # MIT License
