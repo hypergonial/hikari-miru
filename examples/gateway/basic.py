@@ -54,10 +54,6 @@ async def buttons(event: hikari.GuildMessageCreateEvent) -> None:
 
         client.start_view(view)  # Attach the view to the client and start it
 
-        await view.wait()  # Wait until the view is stopped or times out
-
-        print("View stopped or timed out!")
-
 
 bot.run()
 

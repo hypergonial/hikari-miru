@@ -93,6 +93,8 @@ class View(
         super().__init__(timeout=timeout)
         self._autodefer: AutodeferOptions = AutodeferOptions.parse(autodefer)
         self._message: hikari.Message | None = None
+        self._message_id: hikari.Snowflake | None = None
+        self._is_bound = True
         self._input_event: asyncio.Event = asyncio.Event()
 
         for decorated_item in self._view_children:
@@ -104,21 +106,20 @@ class View(
 
     @property
     def is_persistent(self) -> bool:
-        """Determines if this view is persistent or not."""
+        """Determines if this view is persistent or not.
+        A view is persistent only if it has no timeout and all of it's items have explicitly set custom_ids.
+        """
         return self.timeout is None and all(item._is_persistent for item in self.children)
 
     @property
     def message(self) -> hikari.Message | None:
-        """The message this view is bound to. Will be None if the view is not bound, or if a message_id was passed to view.start()."""
+        """The message this view is bound to. Will be None if the view is not bound."""
         return self._message
 
     @property
     def is_bound(self) -> bool:
-        """Determines if the view is bound to a message or not. If this is False, message edits will not be supported.
-
-        Note that this will return False before the view receives it's first interaction.
-        """
-        return self._message is not None
+        """Determines if the view should be bound to a message or not."""
+        return self._is_bound
 
     @property
     def autodefer(self) -> AutodeferOptions:
@@ -154,7 +155,7 @@ class View(
         View
             The view that represents the components attached to this message.
 
-        .. warning::
+        !!! warning
             This function constructs a completely new view based on the information available in the message object.
             Any custom behaviour (such as callbacks) will not be re-created,
             if you want to access an already running view that is bound to a message, use :obj:`miru.view.get_view` instead.
@@ -184,7 +185,7 @@ class View(
         if self._client is None:  # Did not start yet
             return
 
-        if self._message is not None:  # If bound, the view is tracked by message_id instead
+        if self._message_id is not None:  # If bound, the view is tracked by message_id instead
             return
 
         self.client._remove_handler(self)

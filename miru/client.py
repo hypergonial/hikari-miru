@@ -67,6 +67,7 @@ class Client(t.Generic[AppT]):
     def _associate_message(self, message: hikari.Message, view: View[te.Self]) -> None:
         """Associate a message with a bound view."""
         view._message = message
+        view._message_id = message.id
         self._bound_handlers[message.id] = view
 
         for item in view.children:
@@ -95,7 +96,7 @@ class Client(t.Generic[AppT]):
         # Check unbound or pending bound views
         elif handler := self._handlers.get(interaction.custom_id):
             # Bind pending bound views
-            if isinstance(handler, View) and not handler.is_persistent:
+            if isinstance(handler, View) and handler.is_bound and handler._message_id is None:
                 self._associate_message(interaction.message, handler)
 
             fut = await handler._invoke(interaction)
@@ -126,8 +127,8 @@ class Client(t.Generic[AppT]):
     def _add_handler(self, handler: ItemHandler[te.Self, t.Any, t.Any, t.Any, t.Any, t.Any]) -> None:
         """Add a handler to this client handler."""
         if isinstance(handler, View):
-            if handler.is_bound and handler._message is not None:
-                self._bound_handlers[handler._message.id] = handler
+            if handler.is_bound and handler._message_id is not None:
+                self._bound_handlers[handler._message_id] = handler
             else:
                 for custom_id in (item.custom_id for item in handler.children):
                     self._handlers[custom_id] = handler
@@ -137,8 +138,8 @@ class Client(t.Generic[AppT]):
     def _remove_handler(self, handler: ItemHandler[te.Self, t.Any, t.Any, t.Any, t.Any, t.Any]) -> None:
         """Remove a handler from this client."""
         if isinstance(handler, View):
-            if handler.is_bound and handler._message is not None:
-                self._bound_handlers.pop(handler._message.id, None)
+            if handler.is_bound and handler._message_id is not None:
+                self._bound_handlers.pop(handler._message_id, None)
             else:
                 for custom_id in (item.custom_id for item in handler.children):
                     self._handlers.pop(custom_id, None)
@@ -205,14 +206,38 @@ class Client(t.Generic[AppT]):
 
         return handler
 
-    def start_view(self, view: View[te.Self]) -> None:
+    def start_view(
+        self,
+        view: View[te.Self],
+        bind_to: hikari.UndefinedNoneOr[hikari.SnowflakeishOr[hikari.PartialMessage]] = hikari.UNDEFINED,
+    ) -> None:
         """Add a view to this client and start it.
 
         Parameters
         ----------
         view : View[te.Self]
             The view to start.
+        bind_to : hikari.UndefinedNoneOr[hikari.SnowflakeishOr[hikari.PartialMessage]]
+            The message to bind the view to. If set to `None`, the view will be unbound.
+            If left as `UNDEFINED` (the default), the view will automatically be bound
+            to the first message it receives an interaction from.
+
+        Raises
+        ------
+        ValueError
+            If the view is not persistent and `bind_to` is set to None.
+
+        !!! note
+            A view can only be unbound if it is persistent, meaning that it has a timeout of None and all it's items have
+            explicitly defined custom_ids. If a view is not persistent, it must be bound to a message.
         """
+        if bind_to is None and not view.is_persistent:
+            raise ValueError("Cannot make a view unbound that is not persistent.")
+        view._is_bound = bind_to is not None
+
+        if isinstance(bind_to, hikari.Snowflakeish):
+            view._message_id = hikari.Snowflake(bind_to)
+
         view._client_start_hook(self)
 
     def start_modal(self, modal: Modal[te.Self]) -> None:

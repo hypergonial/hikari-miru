@@ -4,44 +4,43 @@ import miru
 # If you want your components to work and persist after an application restart,
 # you have to make them persistent. There are two conditions to this:
 # - The view's timeout must explicitly be set to None
-# - All components MUST have a unique custom_id
-# It is recommended to tie custom_ids to some variable to ensure they do not match,
-# to avoid conflicts. (e.g. a UUID stored in a database), but that is outside the
-# scope of this example.
+# - All components MUST have a unique custom_id within the view
 
 # Tip: It is recommended to subclass components to have the ability to pass
 # variable custom_ids. See the subclassed example on how to do this.
 
 # Tip 2: To check if your view can be persistent or not, use the View.is_persistent
-# boolean property. If this is false, calling view.start() without a message will fail.
+# boolean property.
+# If this is false, calling client.start_view with bind_to=None will fail.
 
+bot = hikari.GatewayBot("...")
+client = miru.GatewayClient(bot)
 
-class Persistence(miru.View):
+class Persistence(miru.View[miru.GW]):
     def __init__(self) -> None:
         super().__init__(timeout=None)  # Setting timeout to None
 
     @miru.button(label="Button 1", custom_id="my_unique_custom_id_1")
-    async def button_one(self, button: miru.Button, ctx: miru.ViewContext) -> None:
+    async def button_one(self, button: miru.Button[miru.GW], ctx: miru.ViewContext[miru.GW]) -> None:
         await ctx.respond("You pressed button 1.")
 
     @miru.button(label="Button 2", custom_id="my_unique_custom_id_2")
-    async def button_two(self, button: miru.Button, ctx: miru.ViewContext) -> None:
+    async def button_two(self, button: miru.Button[miru.GW], ctx: miru.ViewContext[miru.GW]) -> None:
         await ctx.respond("You pressed button 2.")
 
 
-bot = hikari.GatewayBot("...")
-miru.install(bot)
+
 
 
 @bot.listen()
 async def startup_views(event: hikari.StartedEvent) -> None:
     # You must reinstantiate the view in the same state it was before shutdown (e.g. same custom_ids)
     view = Persistence()
-    # Restart the listener for the view, if you do not pass a message (id), this will handle
+    # Restart the listener for the view, this will handle
     # all interactions for every view of type 'Persistence' globally.
-    # If you do pass a message_id to start(), it will only handle interactions for that message,
-    # and will be considered a bound persistent view.
-    await view._client_start_hook()
+    # You can also pass a message ID to bind the view to a specific message.
+    # It will then only handle interactions for that message.
+    client.start_view(view, bind_to=None)
 
 
 @bot.listen()
@@ -60,8 +59,7 @@ async def buttons(event: hikari.GuildMessageCreateEvent) -> None:
             "This is a persistent component menu, and works after bot restarts!",
             components=view,
         )
-        # Unbound views do not need to be started, as starting one listener will handle all views of the same type.
-        # Bound views (ones that are bound to a message) must be started here via view.start().
+        # Persistent views do not need to be started, as starting one listener will handle all views of the same type.
 
 
 bot.run()

@@ -116,7 +116,7 @@ class InteractionResponse:
         """Get or fetch the message created by this response.
         Initial responses need to be fetched, while followups will be provided directly.
 
-        .. note::
+        !!! note
             The object itself can also be awaited directly, which in turn calls this method,
             producing the same results.
 
@@ -243,7 +243,7 @@ class Context(abc.ABC, t.Generic[ClientT, InteractionT]):
     def interaction(self) -> InteractionT:
         """The underlying interaction object.
 
-        .. warning::
+        !!! warning
             This should not be used directly in most cases, and is only exposed for advanced use cases.
 
             If you use the interaction to create a response in a view,
