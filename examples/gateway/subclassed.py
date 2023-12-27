@@ -54,9 +54,9 @@ async def buttons(event: hikari.GuildMessageCreateEvent) -> None:
         view: miru.View[GW] = miru.View()  # Create a new view
         view.add_item(YesButton())  # Add our custom buttons to it
         view.add_item(NoButton(style=hikari.ButtonStyle.DANGER, label="No"))  # Pass arguments to NoButton
-        message = await event.message.respond("Do you put pineapple on your pizza?", components=view)
+        await event.message.respond("Do you put pineapple on your pizza?", components=view)
 
-        await view._client_start_hook(message)  # Start listening for interactions
+        client.start_view(view)  # Start listening for interactions
 
         await view.wait()  # Wait until the view is stopped or times out
 
