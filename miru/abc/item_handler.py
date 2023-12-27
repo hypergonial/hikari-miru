@@ -76,7 +76,6 @@ class ItemArranger(t.Generic[ItemT]):
         self._weights = [0, 0, 0, 0, 0]
 
 
-# TODO: Turn this back into a Sequence if hikari builders fall back to Sequence instead of list.
 class ItemHandler(
     Sequence[BuilderT], abc.ABC, t.Generic[ClientT, BuilderT, RespBuilderT, ContextT, InteractionT, ItemT]
 ):
