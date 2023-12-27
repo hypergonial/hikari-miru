@@ -145,8 +145,20 @@ class Client(t.Generic[AppT]):
         elif isinstance(handler, Modal):
             self._handlers.pop(handler.custom_id, None)
 
-    def get_bound_view(self, message_id: hikari.Snowflake) -> View[te.Self] | None:
-        """Get a bound view that is currently managed by this client."""
+    def get_bound_view(self, message: hikari.SnowflakeishOr[hikari.PartialMessage]) -> View[te.Self] | None:
+        """Get a bound view that is currently managed by this client.
+
+        Parameters
+        ----------
+        message : hikari.SnowflakeishOr[hikari.PartialMessage]
+            The message object or ID of the message that the view is bound to.
+
+        Returns
+        -------
+        View[te.Self] | None
+            The view if found, otherwise None.
+        """
+        message_id = hikari.Snowflake(message)
         handler = self._bound_handlers.get(message_id)
         if handler is None or not isinstance(handler, View):
             return None

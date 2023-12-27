@@ -58,8 +58,9 @@ class View(
     ----------
     timeout : Optional[Union[float, int, datetime.timedelta]], optional
         The duration after which the view times out, in seconds, by default 120.0
-    autodefer : bool, optional
+    autodefer : bool | AutodeferOptions, optional
         If enabled, interactions will be automatically deferred if not responded to within 2 seconds, by default True
+        You may also pass an instance of [miru.AutodeferOptions][miru.context.view.AutodeferOptions] to customize the autodefer behaviour.
 
     Raises
     ------
