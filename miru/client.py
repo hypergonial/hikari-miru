@@ -38,7 +38,7 @@ class Client(t.Generic[AppT]):
         """A mapping of custom_id to ItemHandler. This only contains handlers that are not bound to a message."""
 
         self._bound_handlers: dict[hikari.Snowflakeish, ItemHandler[te.Self, t.Any, t.Any, t.Any, t.Any, t.Any]] = {}
-        """A mapping of message_id to ItemHandler. This contains handlers that are bound to a message or custom_id."""
+        """A mapping of message_id to ItemHandler. This contains handlers that are bound to a message."""
 
     @property
     def app(self) -> AppT:
@@ -209,6 +209,7 @@ class Client(t.Generic[AppT]):
     def start_view(
         self,
         view: View[te.Self],
+        *,
         bind_to: hikari.UndefinedNoneOr[hikari.SnowflakeishOr[hikari.PartialMessage]] = hikari.UNDEFINED,
     ) -> None:
         """Add a view to this client and start it.
