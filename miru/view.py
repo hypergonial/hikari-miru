@@ -14,7 +14,7 @@ from miru.exceptions import HandlerFullError
 from .abc.item import DecoratedItem, ViewItem
 from .abc.item_handler import ItemHandler
 from .button import Button
-from .context.view import ViewContext
+from .context.view import AutodeferOptions, ViewContext
 from .internal.types import ClientT, ViewResponseBuildersT
 from .select import ChannelSelect, MentionableSelect, RoleSelect, TextSelect, UserSelect
 
@@ -86,9 +86,11 @@ class View(
 
         cls._view_children = children
 
-    def __init__(self, *, timeout: float | int | datetime.timedelta | None = 120.0, autodefer: bool = True) -> None:
+    def __init__(
+        self, *, timeout: float | int | datetime.timedelta | None = 120.0, autodefer: bool | AutodeferOptions = True
+    ) -> None:
         super().__init__(timeout=timeout)
-        self._autodefer: bool = autodefer
+        self._autodefer: AutodeferOptions = AutodeferOptions.parse(autodefer)
         self._message: hikari.Message | None = None
         self._input_event: asyncio.Event = asyncio.Event()
 
@@ -118,8 +120,8 @@ class View(
         return self._message is not None
 
     @property
-    def autodefer(self) -> bool:
-        """A boolean indicating if the received interaction should automatically be deferred if not responded to or not."""
+    def autodefer(self) -> AutodeferOptions:
+        """The autodefer configuration of this view."""
         return self._autodefer
 
     @property
@@ -317,8 +319,8 @@ class View(
 
             await item._refresh_state(context)
 
-            if self.autodefer:
-                context._start_autodefer()
+            if self.autodefer.mode.should_autodefer:
+                context._start_autodefer(self.autodefer)
 
             await item.callback(context)
 
