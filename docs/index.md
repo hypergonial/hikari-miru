@@ -1,5 +1,6 @@
 ---
 title: Home
+description: "Welcome to the hikari-miru documentation!"
 hide:
   - navigation
   - toc
