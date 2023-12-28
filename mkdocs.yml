@@ -49,6 +49,7 @@ theme:
     - navigation.expand
     - navigation.indexes
     - navigation.footer
+    - navigation.top
     - content.action.view
     - content.action.edit
     - toc.follow
