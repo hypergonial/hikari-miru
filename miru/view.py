@@ -31,7 +31,7 @@ ViewT = t.TypeVar("ViewT", bound="View[t.Any]")
 
 __all__ = ("View",)
 
-COMPONENT_VIEW_ITEM_MAPPING: t.Mapping[hikari.ComponentType, t.Type[ViewItem[t.Any]]] = {
+_COMPONENT_VIEW_ITEM_MAPPING: t.Mapping[hikari.ComponentType, t.Type[ViewItem[t.Any]]] = {
     hikari.ComponentType.BUTTON: Button,
     hikari.ComponentType.TEXT_SELECT_MENU: TextSelect,
     hikari.ComponentType.CHANNEL_SELECT_MENU: ChannelSelect,
@@ -158,7 +158,7 @@ class View(
         !!! warning
             This function constructs a completely new view based on the information available in the message object.
             Any custom behaviour (such as callbacks) will not be re-created,
-            if you want to access an already running view that is bound to a message, use :obj:`miru.view.get_view` instead.
+            if you want to access an already running view that is bound to a message, use [`Client.get_bound_view()`][miru.client.Client.get_bound_view] instead.
         """
         view = cls(timeout=timeout, autodefer=autodefer)
 
@@ -171,7 +171,7 @@ class View(
             for component in action_row.components:
                 if not isinstance(component.type, hikari.ComponentType):
                     continue  # Unrecognized component types are ignored
-                comp_cls = COMPONENT_VIEW_ITEM_MAPPING[component.type]
+                comp_cls = _COMPONENT_VIEW_ITEM_MAPPING[component.type]
                 view.add_item(comp_cls._from_component(component, row))
 
         return view

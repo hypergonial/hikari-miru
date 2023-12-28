@@ -12,7 +12,7 @@ https://hikari-miru.readthedocs.io/
 from .button import Button, button
 from .client import GW, REST, Client, GatewayClient, RESTClient
 from .context import Context, InteractionResponse, ModalContext, ViewContext
-from .exceptions import BootstrapFailureError, HandlerFullError, ItemAlreadyAttachedError, MiruError, RowFullError
+from .exceptions import HandlerFullError, ItemAlreadyAttachedError, MiruError, RowFullError
 from .internal.about import __author__, __author_email__, __license__, __maintainer__, __url__, __version__
 from .internal.types import ClientT
 from .modal import Modal
@@ -49,7 +49,6 @@ __all__ = (
     "Button",
     "button",
     "MiruError",
-    "BootstrapFailureError",
     "RowFullError",
     "HandlerFullError",
     "ItemAlreadyAttachedError",

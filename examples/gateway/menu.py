@@ -104,6 +104,7 @@ async def buttons(event: hikari.GuildMessageCreateEvent) -> None:
         my_menu = menu.Menu[GW]()  # Create a new Menu
         builder = await my_menu.build_response_async(client, MainScreen(my_menu))
         await builder.send_to_channel(event.channel_id)
+        client.start_view(my_menu)
         # Note: You can also send the menu to an interaction or miru context
         # See the documentation of Menu.send() for more information
 

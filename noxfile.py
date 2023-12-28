@@ -6,7 +6,7 @@ from nox import options
 PATH_TO_PROJECT = os.path.join(".", "miru")
 SCRIPT_PATHS = [PATH_TO_PROJECT, "noxfile.py", os.path.join("docs", "source", "conf.py"), os.path.join(".", "tests")]
 
-options.sessions = ["format_fix", "pyright", "pytest", "sphinx"]
+options.sessions = ["format_fix", "pyright", "pytest", "docs"]
 
 
 @nox.session()
@@ -38,10 +38,19 @@ def pytest(session: nox.Session) -> None:
 
 
 @nox.session()
-def sphinx(session: nox.Session) -> None:
+def docs(session: nox.Session) -> None:
     session.install("-Ur", "doc_requirements.txt")
     session.install("-Ur", "requirements.txt")
-    session.run("python", "-m", "sphinx.cmd.build", "docs/source", "docs/build", "-b", "html")
+    session.install("-U", "black")  # Signature formatting
+    session.run("python", "-m", "mkdocs", "-q", "build")
+
+
+@nox.session()
+def servedocs(session: nox.Session) -> None:
+    session.install("-Ur", "doc_requirements.txt")
+    session.install("-Ur", "requirements.txt")
+    session.install("-U", "black")  # Signature formatting
+    session.run("python", "-m", "mkdocs", "serve")
 
 
 # MIT License

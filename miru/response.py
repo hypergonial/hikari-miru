@@ -37,12 +37,6 @@ class InteractionMessageBuilder(hikari.impl.InteractionMessageBuilder, Mapping[s
         kwargs.pop("flags")
         return kwargs
 
-    def to_crescent_kwargs(self) -> t.Mapping[str, t.Any]:
-        """Convert this builder to kwargs that can be passed to a crescent context's 'respond'."""
-        kwargs = self.to_hikari_kwargs()
-        kwargs.pop("response_type")
-        return kwargs
-
     def __getitem__(self, __key: str) -> Any:
         return self.to_hikari_kwargs()[__key]
 

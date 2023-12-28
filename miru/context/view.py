@@ -16,7 +16,7 @@ if t.TYPE_CHECKING:
     from ..modal import Modal
     from ..view import View
 
-__all__ = ("ViewContext",)
+__all__ = ("ViewContext", "AutodeferOptions", "AutodeferMode")
 
 
 class AutodeferOptions:

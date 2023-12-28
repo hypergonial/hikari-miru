@@ -52,8 +52,6 @@ class Modal(
     ------
     HandlerFullError
         Raised if the modal has more than 25 components attached.
-    BootstrapFailureError
-        Raised if miru.install() was never called before instantiation.
     """
 
     _modal_children: t.Mapping[str, ModalItem[t.Any]] = {}
@@ -175,8 +173,6 @@ class Modal(
         ----------
         error : Exception
             The exception encountered.
-        item : Optional[Item[ModalT]], optional
-            The item this exception originates from, if any.
         context : Optional[Context], optional
             The context associated with this exception, if any.
         """

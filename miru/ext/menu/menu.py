@@ -176,8 +176,6 @@ class Menu(miru.View[miru.ClientT]):
             The screen to start the menu with.
         ephemeral : bool
             Determines if the navigator will be sent ephemerally or not.
-        start_at : int, optional
-            The page index to start at, by default 0
         """
         if self._client is not None:
             raise RuntimeError("Navigator is already bound to a client.")

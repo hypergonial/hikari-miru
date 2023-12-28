@@ -1,12 +1,8 @@
-__all__ = ("MiruError", "BootstrapFailureError", "RowFullError", "HandlerFullError", "ItemAlreadyAttachedError")
+__all__ = ("MiruError", "RowFullError", "HandlerFullError", "ItemAlreadyAttachedError")
 
 
 class MiruError(Exception):
     """Base class for all miru exceptions."""
-
-
-class BootstrapFailureError(MiruError):
-    """Raised when the requested operation requires calling miru.install() beforehand, but was omitted."""
 
 
 class RowFullError(MiruError):

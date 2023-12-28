@@ -90,8 +90,6 @@ class ItemHandler(
     ------
     HandlerFullError
         Raised if the item handler has more than 25 components attached.
-    BootstrapFailureError
-        Raised if miru.install() was never called before instantiation.
     """
 
     def __init__(self, *, timeout: float | int | datetime.timedelta | None = 120.0) -> None:
