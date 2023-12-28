@@ -389,6 +389,28 @@ Then we can adjust our sending logic from the previous example like so:
                 print("Did not receive an answer in time!")
     ```
 
+=== "tanjun"
+
+    ```py
+    @tanjun.as_slash_command("name", "description")
+    async def some_slash_command(ctx: tanjun.abc.SlashContext) -> None:
+        view = PineappleView()  # Create a new view
+        view.add_item(YesButton())  # Add our custom buttons to it
+        # Pass arguments to NoButton
+        view.add_item(NoButton(style=hikari.ButtonStyle.DANGER, label="No"))
+
+        await ctx.respond("Do you put pineapple on your pizza?", components=view)
+
+        client.start_view(view)
+
+        await view.wait()  # Wait until the view is stopped or times out
+
+        if view.answer is not None:
+                print(f"Received an answer! It is: {view.answer}")
+            else:
+                print("Did not receive an answer in time!")
+    ```
+
 === "raw hikari"
 
     ```py
