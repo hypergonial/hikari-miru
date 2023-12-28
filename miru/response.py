@@ -15,8 +15,8 @@ if t.TYPE_CHECKING:
 class InteractionMessageBuilder(hikari.impl.InteractionMessageBuilder, Mapping[str, t.Any]):
     _client: Client[t.Any] | None = attr.field(default=None)
 
-    def to_kwargs(self) -> dict[str, t.Any]:
-        """Convert this builder to kwargs that can be passed to a hikari interaction's create_initial_response."""
+    def to_hikari_kwargs(self) -> dict[str, t.Any]:
+        """Convert this builder to kwargs that can be passed to a hikari interaction's 'create_initial_response'."""
         return {
             "response_type": self.type,
             "flags": self.flags,
@@ -30,14 +30,27 @@ class InteractionMessageBuilder(hikari.impl.InteractionMessageBuilder, Mapping[s
             "role_mentions": self.role_mentions,
         }
 
+    def to_tanjun_kwargs(self) -> t.Mapping[str, t.Any]:
+        """Convert this builder to kwargs that can be passed to a tanjun context's 'respond'."""
+        kwargs = self.to_hikari_kwargs()
+        kwargs.pop("response_type")
+        kwargs.pop("flags")
+        return kwargs
+
+    def to_crescent_kwargs(self) -> t.Mapping[str, t.Any]:
+        """Convert this builder to kwargs that can be passed to a crescent context's 'respond'."""
+        kwargs = self.to_hikari_kwargs()
+        kwargs.pop("response_type")
+        return kwargs
+
     def __getitem__(self, __key: str) -> Any:
-        return self.to_kwargs()[__key]
+        return self.to_hikari_kwargs()[__key]
 
     def __iter__(self) -> Iterator[str]:
-        return self.to_kwargs().__iter__()
+        return self.to_hikari_kwargs().__iter__()
 
     def __len__(self) -> int:
-        return len(self.to_kwargs())
+        return len(self.to_hikari_kwargs())
 
     async def send_to_channel(self, channel: hikari.SnowflakeishOr[hikari.TextableChannel]) -> hikari.Message:
         """Send this builder to a channel. This only works with a GatewayClient.
@@ -134,7 +147,7 @@ class InteractionMessageBuilder(hikari.impl.InteractionMessageBuilder, Mapping[s
 class InteractionDeferredBuilder(hikari.impl.InteractionDeferredBuilder, t.Mapping[str, t.Any]):
     _client: Client[t.Any] | None = attr.field(default=None)
 
-    def to_kwargs(self) -> dict[str, t.Any]:
+    def to_hikari_kwargs(self) -> dict[str, t.Any]:
         """Convert this builder to kwargs that can be passed to a hikari interaction's create_initial_response."""
         return {"response_type": self.type, "flags": self.flags}
 
@@ -157,31 +170,39 @@ class InteractionDeferredBuilder(hikari.impl.InteractionDeferredBuilder, t.Mappi
         await interaction.create_initial_response(response_type=self.type, flags=self.flags)
 
     def __getitem__(self, __key: str) -> Any:
-        return self.to_kwargs()[__key]
+        return self.to_hikari_kwargs()[__key]
 
     def __iter__(self) -> Iterator[str]:
-        return self.to_kwargs().__iter__()
+        return self.to_hikari_kwargs().__iter__()
 
     def __len__(self) -> int:
-        return len(self.to_kwargs())
+        return len(self.to_hikari_kwargs())
 
 
 @attr.define(kw_only=True)
 class InteractionModalBuilder(hikari.impl.InteractionModalBuilder, t.Mapping[str, t.Any]):
     _client: Client[t.Any] | None = attr.field(default=None)
 
-    def to_kwargs(self) -> dict[str, t.Any]:
+    def to_hikari_kwargs(self) -> t.Mapping[str, t.Any]:
         """Convert this builder to kwargs that can be passed to a hikari interaction's create_modal_response."""
         return {"title": self.title, "custom_id": self.custom_id, "components": self.components}
 
+    def to_tanjun_args(self) -> t.Sequence[str]:
+        """Convert this builder to args that can be passed to a tanjun context's create_modal_response."""
+        return (self.title, self.custom_id)
+
+    def to_tanjun_kwargs(self) -> t.Mapping[str, t.Any]:
+        """Convert this builder to kwargs that can be passed to a tanjun context's create_modal_response."""
+        return {"components": self.components}
+
     def __getitem__(self, __key: str) -> Any:
-        return self.to_kwargs()[__key]
+        return self.to_hikari_kwargs()[__key]
 
     def __iter__(self) -> Iterator[str]:
-        return self.to_kwargs().__iter__()
+        return self.to_hikari_kwargs().__iter__()
 
     def __len__(self) -> int:
-        return len(self.to_kwargs())
+        return len(self.to_hikari_kwargs())
 
     async def create_modal_response(self, interaction: hikari.ModalResponseMixin) -> None:
         """Create a modal response from this builder. This only works with a GatewayClient.

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import abc
+import logging
 import typing as t
 
 import hikari
@@ -19,6 +20,8 @@ __all__ = ("Client", "RESTClient", "GatewayClient", "GW", "REST")
 GW: t.TypeAlias = "GatewayClient"
 REST: t.TypeAlias = "RESTClient"
 
+logger = logging.getLogger(__name__)
+
 
 class Client(t.Generic[AppT]):
     """The base class for a miru client.
@@ -29,10 +32,14 @@ class Client(t.Generic[AppT]):
     ----------
     app : AppT
         The currently running app instance that will be used to receive interactions.
+    ignore_unknown_interactions : bool
+        Whether to ignore unknown interactions.
+        If True, unknown interactions will be ignored and no warnings will be logged.
     """
 
-    def __init__(self, app: AppT) -> None:
+    def __init__(self, app: AppT, *, ignore_unknown_interactions: bool = False) -> None:
         self._app = app
+        self._ignore_unknown_interactions = ignore_unknown_interactions
 
         self._handlers: dict[str, ItemHandler[te.Self, t.Any, t.Any, t.Any, t.Any, t.Any]] = {}
         """A mapping of custom_id to ItemHandler. This only contains handlers that are not bound to a message."""
@@ -63,6 +70,14 @@ class Client(t.Generic[AppT]):
         This controls the client response flow, if True, `Client.handle_component_interaction` and `Client.handle_modal_interaction`
         will return interaction response builders to be sent back to Discord, otherwise they will return None.
         """
+
+    @property
+    def ignore_unknown_interactions(self) -> bool:
+        """Whether to ignore unknown interactions.
+
+        If True, unknown interactions will be ignored and no warnings will be logged.
+        """
+        return self._ignore_unknown_interactions
 
     def _associate_message(self, message: hikari.Message, view: View[te.Self]) -> None:
         """Associate a message with a bound view."""
@@ -101,6 +116,11 @@ class Client(t.Generic[AppT]):
 
             fut = await handler._invoke(interaction)
             return await fut if fut is not None else None
+        elif not self._ignore_unknown_interactions:
+            logger.warning(
+                f"Unknown component interaction received for component: '{interaction.custom_id}'. Did you forget to start a view?"
+                "\nYou can disable this warning by setting 'ignore_unknown_interactions' to True in the client constructor."
+            )
 
     async def handle_modal_interaction(self, interaction: hikari.ModalInteraction) -> ModalResponseBuildersT | None:
         """Handle a modal interaction.
@@ -118,6 +138,11 @@ class Client(t.Generic[AppT]):
         if handler := self._handlers.get(interaction.custom_id):
             fut = await handler._invoke(interaction)
             return await fut if fut is not None else None
+        elif not self._ignore_unknown_interactions:
+            logger.warning(
+                f"Unknown modal interaction received for modal: '{interaction.custom_id}'. Did you forget to start a modal?"
+                "\nYou can disable this warning by setting 'ignore_unknown_interactions' to True in the client constructor."
+            )
 
     def clear(self) -> None:
         """Stop all currently running views and modals."""
@@ -259,10 +284,13 @@ class RESTClient(Client[hikari.RESTBotAware]):
     ----------
     app : hikari.RESTBotAware
         The currently running app instance that will be used to receive interactions.
+    ignore_unknown_interactions : bool
+        Whether to ignore unknown interactions.
+        If True, unknown interactions will be ignored and no warnings will be logged.
     """
 
-    def __init__(self, app: hikari.RESTBotAware) -> None:
-        super().__init__(app)
+    def __init__(self, app: hikari.RESTBotAware, *, ignore_unknown_interactions: bool = False) -> None:
+        super().__init__(app, ignore_unknown_interactions=ignore_unknown_interactions)
         self.app.interaction_server.set_listener(hikari.ModalInteraction, self._rest_handle_modal_inter)
         self.app.interaction_server.set_listener(hikari.ComponentInteraction, self._rest_handle_component_inter)
 
@@ -290,10 +318,19 @@ class GatewayClient(Client[hikari.GatewayBotAware]):
         The currently running app instance that will be used to receive interactions.
     stop_bound_on_delete : bool
         Whether to automatically stop bound views when the message it is bound to is deleted.
+    ignore_unknown_interactions : bool
+        Whether to ignore unknown interactions.
+        If True, unknown interactions will be ignored and no warnings will be logged.
     """
 
-    def __init__(self, app: hikari.GatewayBotAware, *, stop_bound_on_delete: bool = True) -> None:
-        super().__init__(app)
+    def __init__(
+        self,
+        app: hikari.GatewayBotAware,
+        *,
+        stop_bound_on_delete: bool = True,
+        ignore_unknown_interactions: bool = False,
+    ) -> None:
+        super().__init__(app, ignore_unknown_interactions=ignore_unknown_interactions)
         self._app.event_manager.subscribe(hikari.InteractionCreateEvent, self._handle_events)
         if stop_bound_on_delete:
             self._app.event_manager.subscribe(hikari.MessageDeleteEvent, self._remove_bound_view)
