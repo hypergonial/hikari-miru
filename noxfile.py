@@ -4,7 +4,7 @@ import nox
 from nox import options
 
 PATH_TO_PROJECT = os.path.join(".", "miru")
-SCRIPT_PATHS = [PATH_TO_PROJECT, "noxfile.py", os.path.join("docs", "source", "conf.py"), os.path.join(".", "tests")]
+SCRIPT_PATHS = [PATH_TO_PROJECT, "noxfile.py", os.path.join(".", "tests")]
 
 options.sessions = ["format_fix", "pyright", "pytest", "docs"]
 
