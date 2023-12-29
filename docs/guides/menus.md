@@ -268,6 +268,7 @@ To set up a menu for the screens we designed above, see this snippet below:
     @arc.slash_command("name", "description")
     async def some_slash_command(ctx: arc.Context[arc.GatewayClient]) -> None:
         my_menu = menu.Menu[miru.GW]()  # Create a new Menu
+        # Pass in the initial screen
         builder = await my_menu.build_response_async(client, MainScreen(my_menu))
         await ctx.respond_with_builder(builder)
         client.start_view(my_menu)
@@ -300,6 +301,7 @@ To set up a menu for the screens we designed above, see this snippet below:
     @tanjun.as_slash_command("name", "description")
     async def some_slash_command(ctx: tanjun.abc.SlashContext) -> None:
         my_menu = menu.Menu[miru.GW]()  # Create a new Menu
+        # Pass in the initial screen
         builder = await my_menu.build_response_async(client, MainScreen(my_menu))
         await ctx.respond_with_builder(builder)
         client.start_view(my_menu)
@@ -320,6 +322,7 @@ To set up a menu for the screens we designed above, see this snippet below:
         if me.id in event.message.user_mentions_ids:
             my_menu = menu.Menu[miru.GW]()  # Create a new Menu
 
+            # Pass in the initial screen
             builder = await my_menu.build_response_async(client, MainScreen(my_menu))
 
             await builder.send_to_channel(event.channel_id)

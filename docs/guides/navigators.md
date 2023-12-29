@@ -21,7 +21,7 @@ The base of any navigator is the [`NavigatorView`][miru.ext.nav.navigator.Naviga
 designed for creating navigators. To get started, it's as easy as creating a new instance of it,
 turning it into a builder, and sending it to a channel or interaction.
 
-The examples below are for a gateway bot, but a REST bot would behave similarly in command handlers that support it:
+The examples below are for a **Gateway** bot, but a **REST** bot would behave similarly in command handlers that support it:
 
 === "arc"
 
@@ -159,7 +159,7 @@ The examples below are for a gateway bot, but a REST bot would behave similarly 
     bot.run()
     ```
 
-=== "raw hikari"
+=== "just hikari"
 
     ```py
     import hikari
@@ -227,36 +227,76 @@ You may use any mix of the built-in and custom navigation buttons in your naviga
 
 Let's define a custom navigation button:
 
-```py
-class MyIndicatorButton(nav.NavButton[miru.GW]):
-    def __init__(self):
-        super().__init__(label="Page: 1", row=1)
+=== "Gateway"
 
-    async def callback(self, ctx: miru.ViewContext[miru.GW]) -> None:
-        await ctx.respond("You clicked me!", flags=hikari.MessageFlag.EPHEMERAL)
+    ```py
+    class MyIndicatorButton(nav.NavButton[miru.GW]):
+        def __init__(self):
+            super().__init__(label="Page: 1", row=1)
 
-    async def before_page_change(self) -> None:
-        # This function is called before the new page is sent by the navigator
-        self.label = f"Page: {self.view.current_page+1}"
-```
+        async def callback(self, ctx: miru.ViewContext[miru.GW]) -> None:
+            await ctx.respond("You clicked me!", flags=hikari.MessageFlag.EPHEMERAL)
+
+        async def before_page_change(self) -> None:
+            # This function is called before the new page is sent by the navigator
+            self.label = f"Page: {self.view.current_page+1}"
+    ```
+
+=== "REST"
+
+    ```py
+    class MyIndicatorButton(nav.NavButton[miru.REST]):
+        def __init__(self):
+            super().__init__(label="Page: 1", row=1)
+
+        async def callback(self, ctx: miru.ViewContext[miru.REST]) -> None:
+            await ctx.respond("You clicked me!", flags=hikari.MessageFlag.EPHEMERAL)
+
+        async def before_page_change(self) -> None:
+            # This function is called before the new page is sent by the navigator
+            self.label = f"Page: {self.view.current_page+1}"
+    ```
 
 Then we can add it to our Navigator before sending:
 
-```py
-embed = hikari.Embed(title="I'm the second page!", description="Also an embed!")
-pages = ["I'm a customized navigator!", embed, "I'm the last page!"]
+=== "Gateway"
 
-# Define our custom buttons for this navigator, keep in mind the order
-# All navigator buttons MUST subclass nav.NavButton
-buttons = [
-    nav.PrevButton[miru.GW](),
-    nav.StopButton[miru.GW](),
-    nav.NextButton[miru.GW](),
-    MyNavButton[miru.GW]()
-]
+    ```py
+    embed = hikari.Embed(title="I'm the second page!", description="Also an embed!")
+    pages = ["I'm a customized navigator!", embed, "I'm the last page!"]
 
-# Pass our list of NavButton to the navigator
-navigator = nav.NavigatorView[miru.GW](pages=pages, buttons=buttons)
+    # Define our custom buttons for this navigator, keep in mind the order
+    # All navigator buttons MUST subclass nav.NavButton
+    buttons = [
+        nav.PrevButton[miru.GW](),
+        nav.StopButton[miru.GW](),
+        nav.NextButton[miru.GW](),
+        MyNavButton[miru.GW]()
+    ]
 
-# ... Send the navigator
-```
+    # Pass our list of NavButton to the navigator
+    navigator = nav.NavigatorView[miru.GW](pages=pages, buttons=buttons)
+
+    # ... Send the navigator
+    ```
+
+=== "REST"
+
+    ```py
+    embed = hikari.Embed(title="I'm the second page!", description="Also an embed!")
+    pages = ["I'm a customized navigator!", embed, "I'm the last page!"]
+
+    # Define our custom buttons for this navigator, keep in mind the order
+    # All navigator buttons MUST subclass nav.NavButton
+    buttons = [
+        nav.PrevButton[miru.REST](),
+        nav.StopButton[miru.REST](),
+        nav.NextButton[miru.REST](),
+        MyNavButton[miru.REST]()
+    ]
+
+    # Pass our list of NavButton to the navigator
+    navigator = nav.NavigatorView[miru.REST](pages=pages, buttons=buttons)
+
+    # ... Send the navigator
+    ```

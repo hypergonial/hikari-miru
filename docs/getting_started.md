@@ -13,7 +13,7 @@ search:
 ## Installation
 
 
-miru can be installed using pip via the following command:
+`miru` can be installed using pip via the following command:
 
 ```sh
 pip install hikari-miru
@@ -31,6 +31,8 @@ To make sure `miru` installed correctly, run the following command:
     ```sh
     python3 -m miru
     ```
+
+It should print basic information about the library to the console.
 
 ## First steps
 
@@ -110,11 +112,11 @@ This is what a basic component menu looks like with miru:
     # Create an instance of our bot. miru supports
     # both 'hikari.GatewayBot' and 'hikari.RESTBot'.
     # You can swap at the top to see an example with RESTBot instead.
-    bot = hikari.GatewayBot("YOUR_TOKEN_HERE")
-    client = miru.GatewayClient(bot)
+    bot = hikari.RESTBot("YOUR_TOKEN_HERE")
+    client = miru.RESTClient(bot)
     ```
 
-Next up, we need to send our view. `miru` has support for all popular command handlers, and naturally raw hikari as well.
+Next up, we need to send our view. `miru` has support for all popular command handlers, and naturally can be used with only hikari as well.
 
 In the examples below, we will use the Gateway variant of our code, but with command handlers that support REST, it will work
 identically, unless otherwise mentioned.
@@ -180,7 +182,7 @@ identically, unless otherwise mentioned.
         client.start_view(view)
     ```
 
-=== "raw hikari"
+=== "just hikari"
 
     ```py
     @bot.listen()
@@ -312,8 +314,8 @@ Below you can see such an example:
             super().__init__(*args, **kwargs)
             self.answer = None
 
-    bot = hikari.GatewayBot("YOUR_TOKEN_HERE")
-    client = miru.GatewayClient(bot)
+    bot = hikari.RESTBot("YOUR_TOKEN_HERE")
+    client = miru.RESTClient(bot)
     ```
 
 Then we can adjust our sending logic from the previous example like so:
@@ -411,7 +413,7 @@ Then we can adjust our sending logic from the previous example like so:
                 print("Did not receive an answer in time!")
     ```
 
-=== "raw hikari"
+=== "just hikari"
 
     ```py
     @bot.listen()

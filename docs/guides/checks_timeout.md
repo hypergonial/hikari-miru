@@ -24,9 +24,7 @@ does not evaluate to a truthy value, the interaction will be ignored.
     class ChecksView(miru.View[miru.GW]):
 
         @miru.button(label="Click me!", style=hikari.ButtonStyle.SUCCESS)
-        async def basic_button(
-            self, button: miru.Button[miru.GW], ctx: miru.ViewContext[miru.GW]
-        ) -> None:
+        async def basic_button(self, button: miru.Button[miru.GW], ctx: miru.ViewContext[miru.GW]) -> None:
             await ctx.respond("You clicked me!")
 
         # Define a custom view check
@@ -46,9 +44,7 @@ does not evaluate to a truthy value, the interaction will be ignored.
     class ChecksView(miru.View[miru.REST]):
 
         @miru.button(label="Click me!", style=hikari.ButtonStyle.SUCCESS)
-        async def basic_button(
-            self, button: miru.Button[miru.REST], ctx: miru.ViewContext[miru.REST]
-        ) -> None:
+        async def basic_button(self, button: miru.Button[miru.REST], ctx: miru.ViewContext[miru.REST]) -> None:
             await ctx.respond("You clicked me!")
 
         # Define a custom view check
@@ -74,9 +70,7 @@ keyword argument passed to views. To execute code when the view times out, you c
     class TimeoutView(miru.View[miru.GW]):
 
         @miru.button(label="Click me!", style=hikari.ButtonStyle.SUCCESS)
-        async def basic_button(
-            self, button: miru.Button[miru.GW], ctx: miru.ViewContext[miru.GW]
-        ) -> None:
+        async def basic_button(self, button: miru.Button[miru.GW], ctx: miru.ViewContext[miru.GW]) -> None:
             await ctx.respond("You clicked me!")
 
         async def on_timeout(self) -> None:
@@ -95,9 +89,7 @@ keyword argument passed to views. To execute code when the view times out, you c
     class TimeoutView(miru.View[miru.REST]):
 
         @miru.button(label="Click me!", style=hikari.ButtonStyle.SUCCESS)
-        async def basic_button(
-            self, button: miru.Button[miru.REST], ctx: miru.ViewContext[miru.REST]
-        ) -> None:
+        async def basic_button(self, button: miru.Button[miru.REST], ctx: miru.ViewContext[miru.REST]) -> None:
             await ctx.respond("You clicked me!")
 
         async def on_timeout(self) -> None:
