@@ -264,7 +264,9 @@ class Modal(
 
     def build_response(self, client: ClientT) -> InteractionModalBuilder:
         """Build the modal response for this modal."""
-        return InteractionModalBuilder(self.title, self.custom_id, list(self.build()), _client=client)
+        builder = InteractionModalBuilder(self.title, self.custom_id, list(self.build()))
+        builder._client = client
+        return builder
 
 
 # MIT License

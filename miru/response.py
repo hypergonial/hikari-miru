@@ -11,9 +11,34 @@ if t.TYPE_CHECKING:
     from .client import Client
 
 
-@attr.define(kw_only=True)
 class InteractionMessageBuilder(hikari.impl.InteractionMessageBuilder, Mapping[str, t.Any]):
-    _client: Client[t.Any] | None = attr.field(default=None)
+    def __init__(
+        self,
+        type: t.Literal[hikari.ResponseType.MESSAGE_CREATE, 4, hikari.ResponseType.MESSAGE_UPDATE, 7],
+        content: hikari.UndefinedOr[str],
+        *,
+        flags: hikari.UndefinedOr[hikari.MessageFlag],
+        embeds: hikari.UndefinedOr[list[hikari.Embed]],
+        components: hikari.UndefinedNoneOr[list[hikari.api.ComponentBuilder]],
+        attachments: hikari.UndefinedNoneOr[list[hikari.Resourceish]],
+        is_tts: hikari.UndefinedOr[bool],
+        mentions_everyone: hikari.UndefinedOr[bool],
+        user_mentions: hikari.UndefinedOr[t.Sequence[hikari.SnowflakeishOr[hikari.PartialUser]] | bool],
+        role_mentions: hikari.UndefinedOr[t.Sequence[hikari.SnowflakeishOr[hikari.PartialRole]] | bool],
+    ) -> None:
+        super().__init__(
+            type=type,
+            flags=flags,
+            content=content,
+            embeds=embeds,
+            components=components,
+            attachments=attachments,
+            is_tts=is_tts,
+            mentions_everyone=mentions_everyone,
+            user_mentions=user_mentions,
+            role_mentions=role_mentions,
+        )
+        self._client: Client[t.Any] | None = None
 
     def to_hikari_kwargs(self) -> dict[str, t.Any]:
         """Convert this builder to kwargs that can be passed to a hikari interaction's 'create_initial_response'."""
@@ -137,8 +162,16 @@ class InteractionMessageBuilder(hikari.impl.InteractionMessageBuilder, Mapping[s
         )
 
 
-@attr.define(kw_only=True)
 class InteractionDeferredBuilder(hikari.impl.InteractionDeferredBuilder, t.Mapping[str, t.Any]):
+    def __init__(
+        self,
+        type: t.Literal[hikari.ResponseType.DEFERRED_MESSAGE_CREATE, 5, hikari.ResponseType.DEFERRED_MESSAGE_UPDATE, 6],
+        *,
+        flags: hikari.UndefinedOr[hikari.MessageFlag],
+    ) -> None:
+        super().__init__(type=type, flags=flags)
+        self._client: Client[t.Any] | None = None
+
     _client: Client[t.Any] | None = attr.field(default=None)
 
     def to_hikari_kwargs(self) -> dict[str, t.Any]:
@@ -173,9 +206,10 @@ class InteractionDeferredBuilder(hikari.impl.InteractionDeferredBuilder, t.Mappi
         return len(self.to_hikari_kwargs())
 
 
-@attr.define(kw_only=True)
 class InteractionModalBuilder(hikari.impl.InteractionModalBuilder, t.Mapping[str, t.Any]):
-    _client: Client[t.Any] | None = attr.field(default=None)
+    def __init__(self, title: str, custom_id: str, components: list[hikari.api.ComponentBuilder]) -> None:
+        super().__init__(title=title, custom_id=custom_id, components=components)
+        self._client: Client[t.Any] | None = None
 
     def to_hikari_kwargs(self) -> t.Mapping[str, t.Any]:
         """Convert this builder to kwargs that can be passed to a hikari interaction's create_modal_response."""

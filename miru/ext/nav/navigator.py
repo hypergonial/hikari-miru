@@ -247,9 +247,11 @@ class NavigatorView(View[ClientT]):
             raise RuntimeError("Navigator is already bound to a client.")
         self.current_page = start_at
         self._ephemeral = ephemeral
-        return InteractionMessageBuilder(
-            hikari.ResponseType.MESSAGE_CREATE, _client=client, **self._get_page_payload(self.pages[start_at])
+        builder = InteractionMessageBuilder(
+            hikari.ResponseType.MESSAGE_CREATE, **self._get_page_payload(self.pages[start_at])
         )
+        builder._client = client
+        return builder
 
 
 @attr.define(slots=True, kw_only=True)

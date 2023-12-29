@@ -182,7 +182,10 @@ class Menu(miru.View[miru.ClientT]):
 
         await self._load_screen(starting_screen)
         self._ephemeral = ephemeral
-        return InteractionMessageBuilder(hikari.ResponseType.MESSAGE_CREATE, _client=client, **self._payload)
+
+        builder = InteractionMessageBuilder(hikari.ResponseType.MESSAGE_CREATE, **self._payload)
+        builder._client = client
+        return builder
 
 
 # MIT License
