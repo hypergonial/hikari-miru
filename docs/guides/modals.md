@@ -9,6 +9,11 @@ search:
 
 # Modals
 
+<figure markdown>
+  ![Modal](../assets/modal.png){ width="650" }
+  <figcaption>A Modal in action</figcaption>
+</figure>
+
 With the release of miru v2.0.0, **modals** are now available to use. They function in a very similar way to
 views, with a few notable exceptions, namely:
 
