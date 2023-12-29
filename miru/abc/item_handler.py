@@ -15,10 +15,10 @@ from .item import Item
 if t.TYPE_CHECKING:
     import typing_extensions as te
 
-__all__ = ("ItemHandler", "ItemArranger")
+__all__ = ("ItemHandler",)
 
 
-class ItemArranger(t.Generic[ItemT]):
+class _ItemArranger(t.Generic[ItemT]):
     """Calculate the position of an item based on it's width, and automatically arrange items if no explicit row is specified.
 
     Used internally by ItemHandler.
@@ -100,7 +100,7 @@ class ItemHandler(
         self._timeout: float | None = float(timeout) if timeout else None
         self._children: list[ItemT] = []
 
-        self._arranger: ItemArranger[ItemT] = ItemArranger()
+        self._arranger: _ItemArranger[ItemT] = _ItemArranger()
         self._stopped: asyncio.Event = asyncio.Event()
         self._timeout_task: asyncio.Task[None] | None = None
         self._running_tasks: t.MutableSequence[asyncio.Task[t.Any]] = []

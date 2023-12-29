@@ -3,7 +3,7 @@
 from .item import *
 from .item_handler import *
 
-__all__ = ("Item", "ItemHandler", "ViewItem", "ModalItem", "DecoratedItem", "ItemArranger")
+__all__ = ("Item", "ItemHandler", "ViewItem", "ModalItem", "DecoratedItem")
 
 # MIT License
 #
