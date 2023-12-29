@@ -14,7 +14,7 @@ Welcome to the documentation for `hikari-miru` is a component handler library fo
 The aim of the library is to simplify and empower component creation and management,
 while abstracting away interaction listeners, timeout handling, checks, and much more. It can be used with any command handler of your choice, or with hikari alone as well!
 
-To get started, see [Getting Started](./getting-started.md).
+To get started, see [Getting Started](./getting_started.md).
 
 ![Discord Buttons](./assets/buttons.png)
 

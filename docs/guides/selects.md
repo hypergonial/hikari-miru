@@ -1,6 +1,6 @@
 ---
-title: Navigators
-description: Learn how to use navigators, and paginate content using buttons.
+title: Select Menus
+description: Learn how to use select menus
 hide:
   - toc
 search:
@@ -9,7 +9,11 @@ search:
 
 # Selects
 
-![Role Select](../assets/select.png)
+<figure markdown>
+  ![Role Select](../assets/select.png){ width="800" }
+  <figcaption>A Role Select</figcaption>
+</figure>
+
 
 One of the most versatile message components provided by Discord are select menus. Users can select from channels, roles, users, or even custom options you provided!
 To get started, you first need to decide which type of select menu would best suit your needs.

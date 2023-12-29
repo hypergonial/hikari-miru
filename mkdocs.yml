@@ -58,6 +58,7 @@ nav:
     - Home: index.md
     - Getting Started: getting_started.md
     - Guides:
+        - guides/index.md
         - guides/editing_items.md
         - guides/selects.md
         - guides/checks_timeout.md
@@ -116,6 +117,8 @@ markdown_extensions:
   - def_list
   - pymdownx.tasklist:
       custom_checkbox: true
+  - attr_list
+  - md_in_html
 
 plugins:
   - autorefs
