@@ -114,7 +114,7 @@ This is what a basic component menu looks like with miru:
     client = miru.GatewayClient(bot)
     ```
 
-Next up, we need to send our view. `miru` has built-in support for most command handlers, and naturally raw hikari as well.
+Next up, we need to send our view. `miru` has support for all popular command handlers, and naturally raw hikari as well.
 
 In the examples below, we will use the Gateway variant of our code, but with command handlers that support REST, it will work
 identically, unless otherwise mentioned.
