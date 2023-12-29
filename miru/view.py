@@ -334,6 +334,7 @@ class View(
         item = next((item for item in self.children if item.custom_id == interaction.custom_id), None)
 
         if not item:
+            logger.debug(f"View received interaction for unknown custom_id '{interaction.custom_id}', ignoring.")
             return
 
         self._reset_timeout()
@@ -343,6 +344,8 @@ class View(
 
         passed = await self.view_check(context)
         if not passed:
+            if self.client.is_rest:
+                return context._resp_builder
             return
 
         assert isinstance(item, ViewItem)

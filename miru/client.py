@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import abc
+import asyncio
 import logging
 import typing as t
 
 import hikari
 
+from .exceptions import NoResponseIssuedError
 from .internal.types import AppT, ModalResponseBuildersT, ViewResponseBuildersT
 from .modal import Modal
 from .view import View
@@ -106,7 +108,6 @@ class Client(t.Generic[AppT]):
         # Check bound views first
         if handler := self._bound_handlers.get(interaction.message.id):
             fut = await handler._invoke(interaction)
-            return await fut if fut is not None else None
 
         # Check unbound or pending bound views
         elif handler := self._handlers.get(interaction.custom_id):
@@ -115,11 +116,24 @@ class Client(t.Generic[AppT]):
                 self._associate_message(interaction.message, handler)
 
             fut = await handler._invoke(interaction)
-            return await fut if fut is not None else None
-        elif not self._ignore_unknown_interactions:
+
+        else:
+            if not self._ignore_unknown_interactions:
+                logger.warning(
+                    f"Unknown component interaction received for component: '{interaction.custom_id}'. Did you forget to start a view?"
+                    "\nYou can disable this warning by setting 'ignore_unknown_interactions' to True in the client constructor."
+                )
+            return
+
+        if fut is None:
+            return
+
+        try:
+            return await asyncio.wait_for(fut, timeout=3.0)
+        except asyncio.TimeoutError:
             logger.warning(
-                f"Unknown component interaction received for component: '{interaction.custom_id}'. Did you forget to start a view?"
-                "\nYou can disable this warning by setting 'ignore_unknown_interactions' to True in the client constructor."
+                f"Timed out waiting for response from component interaction: '{interaction.custom_id}'"
+                f" on message: '{interaction.message.id}'. Did you forget to respond?"
             )
 
     async def handle_modal_interaction(self, interaction: hikari.ModalInteraction) -> ModalResponseBuildersT | None:
@@ -137,11 +151,22 @@ class Client(t.Generic[AppT]):
         """
         if handler := self._handlers.get(interaction.custom_id):
             fut = await handler._invoke(interaction)
-            return await fut if fut is not None else None
-        elif not self._ignore_unknown_interactions:
+        else:
+            if not self._ignore_unknown_interactions:
+                logger.warning(
+                    f"Unknown modal interaction received for modal: '{interaction.custom_id}'. Did you forget to start a modal?"
+                    "\nYou can disable this warning by setting 'ignore_unknown_interactions' to True in the client constructor."
+                )
+            return
+
+        if fut is None:
+            return
+
+        try:
+            return await asyncio.wait_for(fut, timeout=3.0)
+        except asyncio.TimeoutError:
             logger.warning(
-                f"Unknown modal interaction received for modal: '{interaction.custom_id}'. Did you forget to start a modal?"
-                "\nYou can disable this warning by setting 'ignore_unknown_interactions' to True in the client constructor."
+                f"Timed out waiting for response from modal interaction: '{interaction.custom_id}'. Did you forget to respond?"
             )
 
     def clear(self) -> None:
@@ -300,12 +325,14 @@ class RESTClient(Client[hikari.RESTBotAware]):
 
     async def _rest_handle_modal_inter(self, interaction: hikari.ModalInteraction) -> ModalResponseBuildersT:
         builder = await self.handle_modal_interaction(interaction)
-        assert builder is not None
+        if builder is None:
+            raise NoResponseIssuedError(f"No response was issued to modal {interaction.custom_id}.")
         return builder
 
     async def _rest_handle_component_inter(self, interaction: hikari.ComponentInteraction) -> ViewResponseBuildersT:
         builder = await self.handle_component_interaction(interaction)
-        assert builder is not None
+        if builder is None:
+            raise NoResponseIssuedError(f"No response was issued to component {interaction.custom_id}.")
         return builder
 
 

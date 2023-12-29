@@ -17,6 +17,12 @@ class ItemAlreadyAttachedError(MiruError):
     """Raised when an item is already attached to a handler and the requested operation is not possible because of it."""
 
 
+class NoResponseIssuedError(MiruError):
+    """Raised when no response was issued by a handler.
+    Interactions must be responded to or deferred within 3 seconds to avoid this error.
+    """
+
+
 # MIT License
 #
 # Copyright (c) 2022-present hypergonial
