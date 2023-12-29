@@ -9,6 +9,8 @@ search:
 
 # Selects
 
+![Role Select](../assets/select.png)
+
 One of the most versatile message components provided by Discord are select menus. Users can select from channels, roles, users, or even custom options you provided!
 To get started, you first need to decide which type of select menu would best suit your needs.
 

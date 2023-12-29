@@ -16,6 +16,8 @@ while abstracting away interaction listeners, timeout handling, checks, and much
 
 To get started, see [Getting Started](./getting-started.md).
 
+![Discord Buttons](./assets/buttons.png)
+
 ## Useful links
 
 - [GitHub](https://github.com/hypergonial/hikari-miru)
