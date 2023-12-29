@@ -27,7 +27,6 @@ class BasicView(miru.View[GW]):
     @miru.button(label="Click me!", style=hikari.ButtonStyle.SUCCESS)
     async def basic_button(self, button: miru.Button[GW], ctx: miru.ViewContext[GW]) -> None:
         await ctx.respond("You clicked me!")
-        self.client
 
     # Define a new Button that when pressed will stop the view & invalidate all the buttons in this view
     @miru.button(label="Stop me!", style=hikari.ButtonStyle.DANGER)
