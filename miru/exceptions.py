@@ -20,6 +20,8 @@ class ItemAlreadyAttachedError(MiruError):
 class NoResponseIssuedError(MiruError):
     """Raised when no response was issued by a handler.
     Interactions must be responded to or deferred within 3 seconds to avoid this error.
+
+    `miru` tries to automatically defer responses when possible, so this error should rarely occur, unless autodefer is disabled.
     """
 
 
