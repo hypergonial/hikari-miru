@@ -5,6 +5,9 @@
 
 An optional component handler for [hikari](https://github.com/hikari-py/hikari), inspired by discord.py's views.
 
+> [!TIP]
+> Like what you see? Check out [arc](https://arc.hypergonial.com), a command handler with a focus on type-safety and correctness.
+
 ## Installation
 
 To install miru, run the following command:
