@@ -42,22 +42,16 @@ class SelectView(miru.View):
             miru.SelectOption(label="Option 2"),
         ],
     )
-    async def get_text(
-        self, select: miru.TextSelect, ctx: miru.ViewContext
-    ) -> None:
+    async def get_text(self, ctx: miru.ViewContext, select: miru.TextSelect) -> None:
         await ctx.respond(f"You've chosen {select.values[0]}!")
 
     @miru.user_select(placeholder="Select a user!")
-    async def get_users(
-        self, select: miru.UserSelect, ctx: miru.ViewContext
-    ) -> None:
+    async def get_users(self, ctx: miru.ViewContext, select: miru.UserSelect) -> None:
         await ctx.respond(f"You've chosen {select.values[0].mention}!")
 
     # We can control how many options should be selected
     @miru.role_select(placeholder="Select 3-5 roles!", min_values=3, max_values=5)
-    async def get_roles(
-        self, select: miru.RoleSelect, ctx: miru.ViewContext
-    ) -> None:
+    async def get_roles(self, ctx: miru.ViewContext, select: miru.RoleSelect) -> None:
         await ctx.respond(
             f"You've chosen {' '.join([r.mention for r in select.values])}!"
         )
@@ -70,9 +64,7 @@ class SelectView(miru.View):
             hikari.ChannelType.GUILD_NEWS
         ],
     )
-    async def get_channels(
-        self, select: miru.ChannelSelect, ctx: miru.ViewContext
-    ) -> None:
+    async def get_channels(self, ctx: miru.ViewContext, select: miru.ChannelSelect) -> None:
         await ctx.respond(f"You've chosen {select.values[0].mention}!")
 ```
 

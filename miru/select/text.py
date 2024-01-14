@@ -6,8 +6,8 @@ import typing as t
 import hikari
 
 from miru.abc.item import DecoratedItem
+from miru.abc.select import SelectBase
 from miru.context.view import ViewContext
-from miru.select.base import SelectBase
 
 if t.TYPE_CHECKING:
     import typing_extensions as te

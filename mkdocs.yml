@@ -84,6 +84,8 @@ nav:
         - ABC:
             - api_reference/abc/item_handler.md
             - api_reference/abc/item.md
+            - api_reference/abc/context.md
+            - api_reference/abc/select.md
         - ext.nav:
             - api_reference/ext_nav/index.md
             - api_reference/ext_nav/navigator.md
@@ -174,6 +176,9 @@ plugins:
             show_symbol_type_toc: true
             extensions:
                 - griffe_inherited_docstrings
+            filters:
+              - "!^_"
+              - "!^__init_subclass__"
 watch:
   - docs
   - README.md

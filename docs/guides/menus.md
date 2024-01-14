@@ -50,7 +50,7 @@ class MainScreen(menu.Screen):
     # inside Screen subclasses, NOT @miru
     @menu.button(label="Moderation")
     async def moderation(
-        self, button: menu.ScreenButton, ctx: miru.ViewContext
+        self, , ctx: miru.ViewContext, button: menu.ScreenButton
     ) -> None:
         # Add a new screen to the menu stack,
         # the message is updated automatically
@@ -58,7 +58,7 @@ class MainScreen(menu.Screen):
 
     @menu.button(label="Logging")
     async def fun(
-        self, button: menu.ScreenButton, ctx: miru.ViewContext
+        self, ctx: miru.ViewContext, button: menu.ScreenButton
     ) -> None:
         await self.menu.push(LoggingScreen(self.menu))
 
@@ -75,7 +75,7 @@ class ModerationScreen(menu.Screen):
 
     @menu.button(label="Back")
     async def back(
-        self, button: menu.ScreenButton, ctx: miru.ViewContext
+        self, ctx: miru.ViewContext, button: menu.ScreenButton
     ) -> None:
         # Remove the current screen from the menu stack,
         # effectively going back to the previous screen
@@ -83,13 +83,13 @@ class ModerationScreen(menu.Screen):
 
     @menu.button(label="Ban", style=hikari.ButtonStyle.DANGER)
     async def ban(
-        self, button: menu.ScreenButton, ctx: miru.ViewContext
+        self, ctx: miru.ViewContext, button: menu.ScreenButton
     ) -> None:
         await ctx.respond("Hammer time!")
 
     @menu.button(label="Kick", style=hikari.ButtonStyle.SECONDARY)
     async def kick(
-        self, button: menu.ScreenButton, ctx: miru.ViewContext
+        self, ctx: miru.ViewContext, button: menu.ScreenButton
     ) -> None:
         await ctx.respond("Kick!")
 
@@ -113,13 +113,13 @@ class LoggingScreen(menu.Screen):
 
     @menu.button(label="Back")
     async def back(
-        self, button: menu.ScreenButton, ctx: miru.ViewContext
+        self, ctx: miru.ViewContext, button: menu.ScreenButton
     ) -> None:
         await self.menu.pop()
 
     @menu.button(label="Enable", style=hikari.ButtonStyle.DANGER)
     async def enable(
-        self, button: menu.ScreenButton, ctx: miru.ViewContext
+        self, ctx: miru.ViewContext, button: menu.ScreenButton
     ) -> None:
         self.is_enabled = not self.is_enabled
 

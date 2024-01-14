@@ -4,14 +4,13 @@ import typing as t
 
 import hikari
 
-from .base import Context, InteractionResponse
+from miru.abc.context import Context, InteractionResponse
 
 if t.TYPE_CHECKING:
-    from miru import Client
-
-    from ..abc.item import ModalItem
-    from ..internal.types import ModalResponseBuildersT
-    from ..modal import Modal
+    from miru.abc.item import ModalItem
+    from miru.client import Client
+    from miru.internal.types import ModalResponseBuildersT
+    from miru.modal import Modal
 
 __all__ = ("ModalContext",)
 

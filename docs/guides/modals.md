@@ -66,9 +66,7 @@ Now, we will generate an **interaction** through the use of a button so we can s
 class ModalView(miru.View):
     # Create a new button that will invoke our modal
     @miru.button(label="Click me!", style=hikari.ButtonStyle.PRIMARY)
-    async def modal_button(
-        self, button: miru.Button, ctx: miru.ViewContext
-    ) -> None:
+    async def modal_button(self, ctx: miru.ViewContext, button: miru.Button) -> None:
         modal = MyModal(title="Example Title")
         await ctx.respond_with_modal(modal)
 ```

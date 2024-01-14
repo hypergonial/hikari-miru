@@ -27,7 +27,7 @@ class EditView(miru.View):
         self.counter = 0
 
     @miru.button(label="Counter: 0", style=hikari.ButtonStyle.PRIMARY)
-    async def counter_button(self, button: miru.Button, ctx: miru.ViewContext) -> None:
+    async def counter_button(self, ctx: miru.ViewContext, button: miru.Button) -> None:
         self.counter += 1
         # Change the property we want to edit
         button.label = f"Counter: {self.counter}"
@@ -35,7 +35,7 @@ class EditView(miru.View):
         await ctx.edit_response(components=self)
 
     @miru.button(label="Disable Menu", style=hikari.ButtonStyle.DANGER)
-    async def disable_button(self, button: miru.Button, ctx: miru.ViewContext) -> None:
+    async def disable_button(self, ctx: miru.ViewContext, button: miru.Button) -> None:
         # Disable all items attached to the view
         for item in self.children:
             item.disabled = True

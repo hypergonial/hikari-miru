@@ -15,8 +15,8 @@ if t.TYPE_CHECKING:
 
     import typing_extensions as te
 
+    from miru.abc.context import Context
     from miru.client import Client
-    from miru.context import Context
     from miru.ext.nav.items import ViewItem
 
 logger = logging.getLogger(__name__)

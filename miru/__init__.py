@@ -8,9 +8,10 @@ https://miru.hypergonial.com
 """
 
 from miru import abc, ext, select
+from miru.abc.context import InteractionResponse
 from miru.button import Button, button
 from miru.client import Client
-from miru.context import Context, InteractionResponse, ModalContext, ViewContext
+from miru.context import ModalContext, ViewContext
 from miru.exceptions import HandlerFullError, ItemAlreadyAttachedError, MiruError, RowFullError
 from miru.internal.about import __author__, __author_email__, __license__, __maintainer__, __url__, __version__
 from miru.modal import Modal
@@ -18,7 +19,6 @@ from miru.select import (
     ChannelSelect,
     MentionableSelect,
     RoleSelect,
-    SelectBase,
     SelectOption,
     TextSelect,
     UserSelect,
@@ -36,7 +36,6 @@ __all__ = (
     "ext",
     "select",
     "Client",
-    "Context",
     "InteractionResponse",
     "ModalContext",
     "View",
@@ -50,7 +49,6 @@ __all__ = (
     "ItemAlreadyAttachedError",
     "Modal",
     "SelectOption",
-    "SelectBase",
     "TextSelect",
     "text_select",
     "ChannelSelect",

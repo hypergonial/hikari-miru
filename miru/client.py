@@ -24,8 +24,6 @@ logger = logging.getLogger(__name__)
 class GatewayBotLike(hikari.RESTAware, hikari.EventManagerAware, t.Protocol):
     """A type that implements both RESTAware and EventManagerAware."""
 
-    pass
-
 
 class Client:
     """The miru client.

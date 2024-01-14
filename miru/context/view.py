@@ -7,15 +7,14 @@ from contextlib import suppress
 
 import hikari
 
-from .base import Context
+from miru.abc.context import Context
 
 if t.TYPE_CHECKING:
-    from miru import Client
-    from miru.context.base import InteractionResponse
-
-    from ..internal.types import ViewResponseBuildersT
-    from ..modal import Modal
-    from ..view import View
+    from miru.abc.context import InteractionResponse
+    from miru.client import Client
+    from miru.internal.types import ViewResponseBuildersT
+    from miru.modal import Modal
+    from miru.view import View
 
 __all__ = ("ViewContext", "AutodeferOptions", "AutodeferMode")
 

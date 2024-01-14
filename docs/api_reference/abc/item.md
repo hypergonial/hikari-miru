@@ -1,8 +1,8 @@
 ---
 title: Item
-description: Item API reference
+description: Item ABCs API reference
 ---
 
-# Item API Reference
+# Item ABCs API Reference
 
 ::: miru.abc.item

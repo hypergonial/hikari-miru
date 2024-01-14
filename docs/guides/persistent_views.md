@@ -30,11 +30,11 @@ class Persistence(miru.View):
 
     # Providing custom IDs to all items
     @miru.button(label="Button 1", custom_id="my_unique_custom_id_1")
-    async def button_one(self, button: miru.Button, ctx: miru.ViewContext) -> None:
+    async def button_one(self, ctx: miru.ViewContext, button: miru.Button) -> None:
         await ctx.respond("You pressed button 1.")
 
     @miru.button(label="Button 2", custom_id="my_unique_custom_id_2")
-    async def button_two(self, button: miru.Button, ctx: miru.ViewContext) -> None:
+    async def button_two(self, ctx: miru.ViewContext, button: miru.Button) -> None:
         await ctx.respond("You pressed button 2.")
 
 
@@ -96,11 +96,11 @@ class Persistence(miru.View):
 
     # Providing custom IDs to all items
     @miru.button(label="Button 1", custom_id="my_unique_custom_id_1")
-    async def button_one(self, button: miru.Button, ctx: miru.ViewContext) -> None:
+    async def button_one(self, ctx: miru.ViewContext, button: miru.Button) -> None:
         await ctx.respond("You pressed button 1.")
 
     @miru.button(label="Button 2", custom_id="my_unique_custom_id_2")
-    async def button_two(self, button: miru.Button, ctx: miru.ViewContext) -> None:
+    async def button_two(self, ctx: miru.ViewContext, button: miru.Button) -> None:
         await ctx.respond("You pressed button 2.")
 
 

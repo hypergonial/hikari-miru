@@ -1,6 +1,6 @@
 ---
 title: Item Handler
-description: Item Handler API reference
+description: Item Handler ABC API reference
 ---
 
 # Item Handler API Reference

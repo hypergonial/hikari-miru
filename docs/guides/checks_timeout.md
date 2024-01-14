@@ -22,7 +22,7 @@ does not evaluate to a truthy value, the interaction will be ignored.
 class ChecksView(miru.View):
 
     @miru.button(label="Click me!", style=hikari.ButtonStyle.SUCCESS)
-    async def basic_button(self, button: miru.Button, ctx: miru.ViewContext) -> None:
+    async def basic_button(self, ctx: miru.ViewContext, button: miru.Button) -> None:
         await ctx.respond("You clicked me!")
 
     # Define a custom view check
@@ -46,7 +46,7 @@ keyword argument passed to views. To execute code when the view times out, you c
 class TimeoutView(miru.View):
 
     @miru.button(label="Click me!", style=hikari.ButtonStyle.SUCCESS)
-    async def basic_button(self, button: miru.Button, ctx: miru.ViewContext) -> None:
+    async def basic_button(self, ctx: miru.ViewContext, button: miru.Button) -> None:
         await ctx.respond("You clicked me!")
 
     async def on_timeout(self) -> None:

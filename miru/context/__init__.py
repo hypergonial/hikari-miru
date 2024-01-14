@@ -1,16 +1,7 @@
-from .base import Context, InteractionResponse
 from .modal import ModalContext
 from .view import AutodeferMode, AutodeferOptions, ViewContext
 
-__all__ = (
-    "Context",
-    "InteractionResponse",
-    "ModalContext",
-    "ViewContext",
-    "ModalContext",
-    "AutodeferMode",
-    "AutodeferOptions",
-)
+__all__ = ("ModalContext", "ViewContext", "ModalContext", "AutodeferMode", "AutodeferOptions")
 
 # MIT License
 #
