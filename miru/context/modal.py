@@ -4,11 +4,13 @@ import typing as t
 
 import hikari
 
-from ..internal.types import ClientT, ModalResponseBuildersT
 from .base import Context, InteractionResponse
 
 if t.TYPE_CHECKING:
+    from miru import Client
+
     from ..abc.item import ModalItem
+    from ..internal.types import ModalResponseBuildersT
     from ..modal import Modal
 
 __all__ = ("ModalContext",)
@@ -16,29 +18,25 @@ __all__ = ("ModalContext",)
 T = t.TypeVar("T")
 
 
-class ModalContext(Context[ClientT, hikari.ModalInteraction]):
+class ModalContext(Context[hikari.ModalInteraction]):
     """A context object proxying a ModalInteraction received by a miru modal."""
 
     __slots__ = ("_modal", "_values")
 
     def __init__(
-        self,
-        modal: Modal[ClientT],
-        client: ClientT,
-        interaction: hikari.ModalInteraction,
-        values: t.Mapping[ModalItem[ClientT], str],
+        self, modal: Modal, client: Client, interaction: hikari.ModalInteraction, values: t.Mapping[ModalItem, str]
     ) -> None:
         super().__init__(client, interaction)
         self._modal = modal
         self._values = values
 
     @property
-    def modal(self) -> Modal[ClientT]:
+    def modal(self) -> Modal:
         """The modal this context originates from."""
         return self._modal
 
     @property
-    def values(self) -> t.Mapping[ModalItem[ClientT], str]:
+    def values(self) -> t.Mapping[ModalItem, str]:
         """The values received as input for this modal."""
         return self._values
 
@@ -86,7 +84,7 @@ class ModalContext(Context[ClientT, hikari.ModalInteraction]):
             return await self._create_response()
 
     def get_value_by(
-        self, predicate: t.Callable[[ModalItem[ClientT]], bool], default: hikari.UndefinedOr[T] = hikari.UNDEFINED
+        self, predicate: t.Callable[[ModalItem], bool], default: hikari.UndefinedOr[T] = hikari.UNDEFINED
     ) -> T | str:
         """Get the value for the first modal item that matches the given predicate.
 
@@ -94,8 +92,8 @@ class ModalContext(Context[ClientT, hikari.ModalInteraction]):
         ----------
         predicate : Callable[[ModalItem], bool]
             A predicate to match the item.
-        default : hikari.UndefinedOr[T], optional
-            A default value to return if no item was matched, by default hikari.UNDEFINED
+        default : hikari.UndefinedOr[T]
+            A default value to return if no item was matched
 
         Returns
         -------
@@ -122,8 +120,8 @@ class ModalContext(Context[ClientT, hikari.ModalInteraction]):
         ----------
         custom_id : str
             The custom_id of the component.
-        default : hikari.UndefinedOr[T], optional
-            A default value to return if the item was not found, by default hikari.UNDEFINED
+        default : hikari.UndefinedOr[T]
+            A default value to return if the item was not found
 
         Returns
         -------

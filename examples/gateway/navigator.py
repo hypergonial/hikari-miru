@@ -1,11 +1,10 @@
 import hikari
 import miru
 from miru.ext import nav
-from miru import GW
 from miru.ext.nav.items import NavButton
 
 
-class MyNavButton(nav.NavButton[GW]):
+class MyNavButton(nav.NavButton):
     # This is how you can create your own navigator button
     # The extension also comes with the following nav buttons built-in:
     #
@@ -16,7 +15,7 @@ class MyNavButton(nav.NavButton[GW]):
     # NextButton - Goes to next page
     # LastButton - Goes to the last page
 
-    async def callback(self, context: miru.ViewContext[GW]) -> None:
+    async def callback(self, context: miru.ViewContext) -> None:
         await context.respond("You clicked me!", flags=hikari.MessageFlag.EPHEMERAL)
 
     async def before_page_change(self) -> None:
@@ -26,7 +25,7 @@ class MyNavButton(nav.NavButton[GW]):
 
 
 bot = hikari.GatewayBot("...")
-client = miru.GatewayClient(bot)
+client = miru.Client(bot)
 
 
 @bot.listen()
@@ -49,7 +48,7 @@ async def navigator(event: hikari.GuildMessageCreateEvent) -> None:
         pages = ["I'm the first page!", embed, page]
 
         # Define our navigator and pass in our list of pages
-        navigator: nav.NavigatorView[GW] = nav.NavigatorView(pages=pages)
+        navigator: nav.NavigatorView = nav.NavigatorView(pages=pages)
 
         # Note: You can also send the navigator to an interaction or miru context
         # See the documentation of NavigatorView.send() for more information
@@ -63,7 +62,7 @@ async def navigator(event: hikari.GuildMessageCreateEvent) -> None:
         pages = ["I'm a customized navigator!", embed, "I'm the last page!"]
         # Define our custom buttons for this navigator
         # All navigator buttons MUST subclass NavButton
-        buttons: list[NavButton[GW]] = [nav.PrevButton(), nav.StopButton(), nav.NextButton(), MyNavButton(label="Page: 1", row=1)]
+        buttons: list[NavButton] = [nav.PrevButton(), nav.StopButton(), nav.NextButton(), MyNavButton(label="Page: 1", row=1)]
         # Pass our list of NavButton to the navigator
         navigator = nav.NavigatorView(pages=pages, buttons=buttons)
 

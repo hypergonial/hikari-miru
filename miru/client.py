@@ -1,62 +1,92 @@
 from __future__ import annotations
 
-import abc
 import asyncio
 import logging
 import typing as t
 
 import hikari
 
-from .exceptions import NoResponseIssuedError
-from .internal.types import AppT, ModalResponseBuildersT, ViewResponseBuildersT
-from .modal import Modal
-from .view import View
+from miru.exceptions import NoResponseIssuedError
+from miru.modal import Modal
+from miru.view import View
 
 if t.TYPE_CHECKING:
-    import typing_extensions as te
+    from miru.abc.item_handler import ItemHandler
+    from miru.internal.types import ModalResponseBuildersT, ViewResponseBuildersT
 
-    from .abc.item_handler import ItemHandler
+__all__ = ("Client",)
 
-__all__ = ("Client", "RESTClient", "GatewayClient", "GW", "REST")
-
-GW: t.TypeAlias = "GatewayClient"
-REST: t.TypeAlias = "RESTClient"
 
 logger = logging.getLogger(__name__)
 
 
-class Client(t.Generic[AppT]):
-    """The base class for a miru client.
+@t.runtime_checkable
+class GatewayBotLike(hikari.RESTAware, hikari.EventManagerAware, t.Protocol):
+    pass
+
+
+class Client:
+    """The miru client.
 
     It is responsible for handling component and modal interactions and dispatching them to the correct item handler.
 
     Parameters
     ----------
-    app : AppT
+    app : GatewayBotLike | hikari.InteractionServerAware
         The currently running app instance that will be used to receive interactions.
     ignore_unknown_interactions : bool
         Whether to ignore unknown interactions.
         If True, unknown interactions will be ignored and no warnings will be logged.
+    stop_bound_on_delete : bool
+        Whether to automatically stop bound views when the message it is bound to is deleted. This only applies to
+        Gateway bots. When an app without EventManagerAware is used, this will be ignored.
     """
 
-    def __init__(self, app: AppT, *, ignore_unknown_interactions: bool = False) -> None:
+    def __init__(
+        self,
+        app: GatewayBotLike | hikari.InteractionServerAware,
+        *,
+        ignore_unknown_interactions: bool = False,
+        stop_bound_on_delete: bool = True,
+    ) -> None:
         self._app = app
         self._ignore_unknown_interactions = ignore_unknown_interactions
+        self._stop_bound_on_delete = stop_bound_on_delete
+        self._interaction_server: hikari.api.InteractionServer | None = None
+        self._event_manager: hikari.api.EventManager | None = None
+        self._cache: hikari.api.Cache | None = None
 
-        self._handlers: dict[str, ItemHandler[te.Self, t.Any, t.Any, t.Any, t.Any, t.Any]] = {}
+        if isinstance(app, hikari.InteractionServerAware):
+            self._is_rest = True
+            self._interaction_server = app.interaction_server
+            self._interaction_server.set_listener(hikari.ModalInteraction, self._rest_handle_modal_inter)
+            self._interaction_server.set_listener(hikari.ComponentInteraction, self._rest_handle_component_inter)
+        elif isinstance(app, GatewayBotLike):  # pyright: ignore reportUnnecessaryIsInstance
+            self._is_rest = False
+            self._event_manager = app.event_manager
+            self._event_manager.subscribe(hikari.InteractionCreateEvent, self._handle_events)
+            if stop_bound_on_delete:
+                self._event_manager.subscribe(hikari.MessageDeleteEvent, self._remove_bound_view)
+        else:
+            raise TypeError("App must be either InteractionServerAware or GatewayBotLike.")
+
+        if isinstance(app, hikari.CacheAware):
+            self._cache = app.cache
+
+        self._handlers: dict[str, ItemHandler[t.Any, t.Any, t.Any, t.Any, t.Any]] = {}
         """A mapping of custom_id to ItemHandler. This only contains handlers that are not bound to a message."""
 
-        self._bound_handlers: dict[hikari.Snowflakeish, ItemHandler[te.Self, t.Any, t.Any, t.Any, t.Any, t.Any]] = {}
+        self._bound_handlers: dict[hikari.Snowflakeish, ItemHandler[t.Any, t.Any, t.Any, t.Any, t.Any]] = {}
         """A mapping of message_id to ItemHandler. This contains handlers that are bound to a message."""
 
     @property
-    def app(self) -> AppT:
-        """The currently running app instance that will be subscribed to the listener."""
+    def app(self) -> hikari.RESTAware:
+        """The currently running app instance."""
         return self._app
 
     @property
-    def bot(self) -> AppT:
-        """Alias for 'Client.app'. The currently running app instance that will be subscribed to the listener."""
+    def bot(self) -> hikari.RESTAware:
+        """Alias for 'Client.app'. The currently running app instance."""
         return self.app
 
     @property
@@ -65,13 +95,37 @@ class Client(t.Generic[AppT]):
         return self._app.rest
 
     @property
-    @abc.abstractmethod
+    def event_manager(self) -> hikari.api.EventManager:
+        """The event manager instance of the underlying app."""
+        if self._event_manager is None:
+            raise RuntimeError("Cannot access event manager when using a REST app.")
+
+        return self._event_manager
+
+    @property
+    def cache(self) -> hikari.api.Cache:
+        """The cache instance of the underlying app."""
+        if self._cache is None:
+            raise RuntimeError("Cannot access cache when using app is not CacheAware.")
+
+        return self._cache
+
+    @property
+    def interaction_server(self) -> hikari.api.InteractionServer:
+        """The interaction server instance of the underlying app."""
+        if self._interaction_server is None:
+            raise RuntimeError("Cannot access interaction server when using a Gateway app.")
+
+        return self._interaction_server
+
+    @property
     def is_rest(self) -> bool:
         """Whether the app is a rest client or a gateway client.
 
         This controls the client response flow, if True, `Client.handle_component_interaction` and `Client.handle_modal_interaction`
         will return interaction response builders to be sent back to Discord, otherwise they will return None.
         """
+        return self._is_rest
 
     @property
     def ignore_unknown_interactions(self) -> bool:
@@ -81,7 +135,7 @@ class Client(t.Generic[AppT]):
         """
         return self._ignore_unknown_interactions
 
-    def _associate_message(self, message: hikari.Message, view: View[te.Self]) -> None:
+    def _associate_message(self, message: hikari.Message, view: View) -> None:
         """Associate a message with a bound view."""
         view._message = message
         view._message_id = message.id
@@ -89,6 +143,57 @@ class Client(t.Generic[AppT]):
 
         for item in view.children:
             self._handlers.pop(item.custom_id, None)
+
+    async def _rest_handle_modal_inter(self, interaction: hikari.ModalInteraction) -> ModalResponseBuildersT:
+        """Handle a modal interaction.
+
+        Used only under REST flow.
+        """
+        try:
+            builder = await asyncio.wait_for(self.handle_modal_interaction(interaction), timeout=3.0)
+        except asyncio.TimeoutError:
+            raise NoResponseIssuedError(f"Timed out waiting for response from modal {interaction.custom_id}.")
+        if builder is None:
+            raise NoResponseIssuedError(f"No response was issued to modal {interaction.custom_id}.")
+
+        return builder
+
+    async def _rest_handle_component_inter(self, interaction: hikari.ComponentInteraction) -> ViewResponseBuildersT:
+        """Handle a component interaction.
+
+        Used only under REST flow.
+        """
+        try:
+            builder = await asyncio.wait_for(self.handle_component_interaction(interaction), timeout=3.0)
+        except asyncio.TimeoutError:
+            raise NoResponseIssuedError(f"Timed out waiting for response from component {interaction.custom_id}.")
+        if builder is None:
+            raise NoResponseIssuedError(f"No response was issued to component {interaction.custom_id}.")
+
+        return builder
+
+    async def _handle_events(self, event: hikari.InteractionCreateEvent) -> None:
+        """Sort interaction create events and dispatch miru custom events.
+
+        Used only under Gateway flow.
+        """
+        assert self._app is not None
+
+        if not isinstance(event.interaction, (hikari.ComponentInteraction, hikari.ModalInteraction)):
+            return
+
+        if isinstance(event.interaction, hikari.ModalInteraction):
+            await self.handle_modal_interaction(event.interaction)
+        else:
+            await self.handle_component_interaction(event.interaction)
+
+    async def _remove_bound_view(self, event: hikari.MessageDeleteEvent) -> None:
+        """Remove a bound view if the message it is bound to is deleted and stop_bound_on_delete is True.
+
+        Used only under Gateway flow.
+        """
+        if handler := self._bound_handlers.pop(event.message_id, None):
+            handler.stop()
 
     async def handle_component_interaction(
         self, interaction: hikari.ComponentInteraction
@@ -174,7 +279,7 @@ class Client(t.Generic[AppT]):
         self._bound_handlers.clear()
         self._handlers.clear()
 
-    def _add_handler(self, handler: ItemHandler[te.Self, t.Any, t.Any, t.Any, t.Any, t.Any]) -> None:
+    def _add_handler(self, handler: ItemHandler[t.Any, t.Any, t.Any, t.Any, t.Any]) -> None:
         """Add a handler to this client handler."""
         if isinstance(handler, View):
             if handler.is_bound and handler._message_id is not None:
@@ -185,7 +290,7 @@ class Client(t.Generic[AppT]):
         elif isinstance(handler, Modal):
             self._handlers[handler.custom_id] = handler
 
-    def _remove_handler(self, handler: ItemHandler[te.Self, t.Any, t.Any, t.Any, t.Any, t.Any]) -> None:
+    def _remove_handler(self, handler: ItemHandler[t.Any, t.Any, t.Any, t.Any, t.Any]) -> None:
         """Remove a handler from this client."""
         if isinstance(handler, View):
             if handler.is_bound and handler._message_id is not None:
@@ -196,7 +301,7 @@ class Client(t.Generic[AppT]):
         elif isinstance(handler, Modal):
             self._handlers.pop(handler.custom_id, None)
 
-    def get_bound_view(self, message: hikari.SnowflakeishOr[hikari.PartialMessage]) -> View[te.Self] | None:
+    def get_bound_view(self, message: hikari.SnowflakeishOr[hikari.PartialMessage]) -> View | None:
         """Get a bound view that is currently managed by this client.
 
         Parameters
@@ -206,7 +311,7 @@ class Client(t.Generic[AppT]):
 
         Returns
         -------
-        View[te.Self] | None
+        View | None
             The view if found, otherwise None.
         """
         message_id = hikari.Snowflake(message)
@@ -216,7 +321,7 @@ class Client(t.Generic[AppT]):
 
         return handler
 
-    def get_unbound_view(self, custom_id: str) -> View[te.Self] | None:
+    def get_unbound_view(self, custom_id: str) -> View | None:
         """Get a currently running view that is managed by this client.
 
         This will not return bound views.
@@ -237,7 +342,7 @@ class Client(t.Generic[AppT]):
 
         return handler
 
-    def get_modal(self, custom_id: str) -> Modal[te.Self] | None:
+    def get_modal(self, custom_id: str) -> Modal | None:
         """Get a currently running modal that is managed by this client.
 
         Parameters
@@ -247,7 +352,7 @@ class Client(t.Generic[AppT]):
 
         Returns
         -------
-        Modal[te.Self] | None
+        Modal | None
             The modal if found, otherwise None.
         """
         handler = self._handlers.get(custom_id)
@@ -258,7 +363,7 @@ class Client(t.Generic[AppT]):
 
     def start_view(
         self,
-        view: View[te.Self],
+        view: View,
         *,
         bind_to: hikari.UndefinedNoneOr[hikari.SnowflakeishOr[hikari.PartialMessage]] = hikari.UNDEFINED,
     ) -> None:
@@ -266,7 +371,7 @@ class Client(t.Generic[AppT]):
 
         Parameters
         ----------
-        view : View[te.Self]
+        view : View
             The view to start.
         bind_to : hikari.UndefinedNoneOr[hikari.SnowflakeishOr[hikari.PartialMessage]]
             The message to bind the view to. If set to `None`, the view will be unbound.
@@ -291,102 +396,15 @@ class Client(t.Generic[AppT]):
 
         view._client_start_hook(self)
 
-    def start_modal(self, modal: Modal[te.Self]) -> None:
+    def start_modal(self, modal: Modal) -> None:
         """Add a modal to this client and start it.
 
         Parameters
         ----------
-        modal : Modal[te.Self]
+        modal : Modal
             The modal to start.
         """
         modal._client_start_hook(self)
-
-
-class RESTClient(Client[hikari.RESTBotAware]):
-    """The default REST client implementation for miru.
-
-    Parameters
-    ----------
-    app : hikari.RESTBotAware
-        The currently running app instance that will be used to receive interactions.
-    ignore_unknown_interactions : bool
-        Whether to ignore unknown interactions.
-        If True, unknown interactions will be ignored and no warnings will be logged.
-    """
-
-    def __init__(self, app: hikari.RESTBotAware, *, ignore_unknown_interactions: bool = False) -> None:
-        super().__init__(app, ignore_unknown_interactions=ignore_unknown_interactions)
-        self.app.interaction_server.set_listener(hikari.ModalInteraction, self._rest_handle_modal_inter)
-        self.app.interaction_server.set_listener(hikari.ComponentInteraction, self._rest_handle_component_inter)
-
-    @property
-    def is_rest(self) -> bool:
-        return True
-
-    async def _rest_handle_modal_inter(self, interaction: hikari.ModalInteraction) -> ModalResponseBuildersT:
-        builder = await self.handle_modal_interaction(interaction)
-        if builder is None:
-            raise NoResponseIssuedError(f"No response was issued to modal {interaction.custom_id}.")
-        return builder
-
-    async def _rest_handle_component_inter(self, interaction: hikari.ComponentInteraction) -> ViewResponseBuildersT:
-        builder = await self.handle_component_interaction(interaction)
-        if builder is None:
-            raise NoResponseIssuedError(f"No response was issued to component {interaction.custom_id}.")
-        return builder
-
-
-class GatewayClient(Client[hikari.GatewayBotAware]):
-    """The default gateway client implementation for miru.
-
-    Parameters
-    ----------
-    app : hikari.GatewayBotAware
-        The currently running app instance that will be used to receive interactions.
-    stop_bound_on_delete : bool
-        Whether to automatically stop bound views when the message it is bound to is deleted.
-    ignore_unknown_interactions : bool
-        Whether to ignore unknown interactions.
-        If True, unknown interactions will be ignored and no warnings will be logged.
-    """
-
-    def __init__(
-        self,
-        app: hikari.GatewayBotAware,
-        *,
-        stop_bound_on_delete: bool = True,
-        ignore_unknown_interactions: bool = False,
-    ) -> None:
-        super().__init__(app, ignore_unknown_interactions=ignore_unknown_interactions)
-        self._app.event_manager.subscribe(hikari.InteractionCreateEvent, self._handle_events)
-        if stop_bound_on_delete:
-            self._app.event_manager.subscribe(hikari.MessageDeleteEvent, self._remove_bound_view)
-
-    @property
-    def is_rest(self) -> bool:
-        return False
-
-    @property
-    def cache(self) -> hikari.api.Cache:
-        """The cache instance of the underlying app."""
-        return self._app.cache
-
-    async def _handle_events(self, event: hikari.InteractionCreateEvent) -> None:
-        """Sort interaction create events and dispatch miru custom events."""
-        assert self._app is not None
-
-        if not isinstance(event.interaction, (hikari.ComponentInteraction, hikari.ModalInteraction)):
-            return
-
-        if isinstance(event.interaction, hikari.ModalInteraction):
-            await self.handle_modal_interaction(event.interaction)
-        else:
-            await self.handle_component_interaction(event.interaction)
-
-    async def _remove_bound_view(self, event: hikari.MessageDeleteEvent) -> None:
-        """Remove a bound view if the message it is bound to is deleted."""
-        if handler := self._bound_handlers.pop(event.message_id, None):
-            handler.stop()
 
 
 # MIT License

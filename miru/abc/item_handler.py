@@ -8,12 +8,14 @@ import sys
 import typing as t
 from collections.abc import Sequence
 
-from ..exceptions import HandlerFullError, ItemAlreadyAttachedError, RowFullError
-from ..internal.types import BuilderT, ClientT, ContextT, InteractionT, ItemT, RespBuilderT
-from .item import Item
+from miru.abc.item import Item
+from miru.exceptions import HandlerFullError, ItemAlreadyAttachedError, RowFullError
+from miru.internal.types import BuilderT, ContextT, InteractionT, ItemT, RespBuilderT
 
 if t.TYPE_CHECKING:
     import typing_extensions as te
+
+    from miru import Client
 
 __all__ = ("ItemHandler",)
 
@@ -76,15 +78,13 @@ class _ItemArranger(t.Generic[ItemT]):
         self._weights = [0, 0, 0, 0, 0]
 
 
-class ItemHandler(
-    Sequence[BuilderT], abc.ABC, t.Generic[ClientT, BuilderT, RespBuilderT, ContextT, InteractionT, ItemT]
-):
+class ItemHandler(Sequence[BuilderT], abc.ABC, t.Generic[BuilderT, RespBuilderT, ContextT, InteractionT, ItemT]):
     """Abstract base class all item-handlers (e.g. views, modals) inherit from.
 
     Parameters
     ----------
-    timeout : Optional[Union[float, int, datetime.timedelta]], optional
-        The duration after which the item handler times out, in seconds, by default 120.0
+    timeout : Optional[Union[float, int, datetime.timedelta]]
+        The duration after which the item handler times out, in seconds
 
     Raises
     ------
@@ -96,7 +96,7 @@ class ItemHandler(
         if isinstance(timeout, datetime.timedelta):
             timeout = timeout.total_seconds()
 
-        self._client: ClientT | None = None
+        self._client: Client | None = None
         self._timeout: float | None = float(timeout) if timeout else None
         self._children: list[ItemT] = []
 
@@ -144,7 +144,7 @@ class ItemHandler(
         return self._timeout
 
     @property
-    def client(self) -> ClientT:
+    def client(self) -> Client:
         """The client that started this handler."""
         if not self._client:
             raise RuntimeError(
@@ -358,8 +358,8 @@ class ItemHandler(
 
         Parameters
         ----------
-        timeout : Optional[float], optional
-            The amount of time to wait, in seconds, by default None
+        timeout : Optional[float]
+            The amount of time to wait, in seconds
         """
         await asyncio.wait_for(self._stopped.wait(), timeout=timeout)
 

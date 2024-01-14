@@ -7,15 +7,13 @@ import typing as t
 import attr
 import hikari
 
-import miru
-from miru import HandlerFullError, ItemAlreadyAttachedError
-
-from .items import DecoratedScreenItem, ScreenItem
+from miru.exceptions import HandlerFullError, ItemAlreadyAttachedError
+from miru.ext.menu.items import DecoratedScreenItem, ScreenItem
 
 if t.TYPE_CHECKING:
     import typing_extensions as te
 
-    from .menu import Menu
+    from miru.ext.menu.menu import Menu
 
 __all__ = ("ScreenContent", "Screen")
 
@@ -59,7 +57,7 @@ class ScreenContent:
         return d
 
 
-class Screen(abc.ABC, t.Generic[miru.ClientT]):
+class Screen(abc.ABC):
     """A screen in a menu. Acts similarly to a View, although it is not a subclass of it.
 
     Parameters
@@ -69,12 +67,12 @@ class Screen(abc.ABC, t.Generic[miru.ClientT]):
     """
 
     _screen_children: t.Sequence[
-        DecoratedScreenItem[miru.ClientT, te.Self, ScreenItem[miru.ClientT]]
+        DecoratedScreenItem[te.Self, ScreenItem]
     ] = []  # Decorated callbacks that need to be turned into items
 
     def __init_subclass__(cls) -> None:
         """Get decorated callbacks."""
-        children: t.MutableSequence[DecoratedScreenItem[miru.ClientT, te.Self, ScreenItem[miru.ClientT]]] = []
+        children: t.MutableSequence[DecoratedScreenItem[te.Self, ScreenItem]] = []
         for base_cls in reversed(cls.mro()):
             for value in base_cls.__dict__.values():
                 if isinstance(value, DecoratedScreenItem):
@@ -85,9 +83,9 @@ class Screen(abc.ABC, t.Generic[miru.ClientT]):
 
         cls._screen_children = children
 
-    def __init__(self, menu: Menu[miru.ClientT]) -> None:
+    def __init__(self, menu: Menu) -> None:
         self._menu = menu
-        self._children: t.MutableSequence[ScreenItem[miru.ClientT]] = []
+        self._children: t.MutableSequence[ScreenItem] = []
 
         for decorated_item in self._screen_children:
             # Must deepcopy, otherwise multiple views will have the same item reference
@@ -97,12 +95,12 @@ class Screen(abc.ABC, t.Generic[miru.ClientT]):
             setattr(self, decorated_item.name, item)
 
     @property
-    def menu(self) -> Menu[miru.ClientT]:
+    def menu(self) -> Menu:
         """The menu that this screen belongs to."""
         return self._menu
 
     @property
-    def children(self) -> t.Sequence[ScreenItem[miru.ClientT]]:
+    def children(self) -> t.Sequence[ScreenItem]:
         """The items contained in this screen."""
         return self._children
 
@@ -135,7 +133,7 @@ class Screen(abc.ABC, t.Generic[miru.ClientT]):
         """
         raise error
 
-    def add_item(self, item: ScreenItem[miru.ClientT]) -> te.Self:
+    def add_item(self, item: ScreenItem) -> te.Self:
         """Adds a new item to the screen.
 
         Parameters
@@ -168,7 +166,7 @@ class Screen(abc.ABC, t.Generic[miru.ClientT]):
 
         return self
 
-    def remove_item(self, item: ScreenItem[miru.ClientT]) -> te.Self:
+    def remove_item(self, item: ScreenItem) -> te.Self:
         """Removes the specified item from the screen.
 
         Parameters
@@ -203,7 +201,7 @@ class Screen(abc.ABC, t.Generic[miru.ClientT]):
         self._children.clear()
         return self
 
-    def get_item_by(self, predicate: t.Callable[[ScreenItem[miru.ClientT]], bool]) -> ScreenItem[miru.ClientT] | None:
+    def get_item_by(self, predicate: t.Callable[[ScreenItem], bool]) -> ScreenItem | None:
         """Get the first item that matches the given predicate.
 
         Parameters
@@ -222,7 +220,7 @@ class Screen(abc.ABC, t.Generic[miru.ClientT]):
 
         return None
 
-    def get_item_by_id(self, custom_id: str) -> ScreenItem[miru.ClientT] | None:
+    def get_item_by_id(self, custom_id: str) -> ScreenItem | None:
         """Get the first item with the given custom ID.
 
         Parameters

@@ -28,101 +28,54 @@ To add a select menu to your view, you can use the decorator, or call the [`.add
 
 Here's a short example showcasing how select menus work with the decorator syntax:
 
-=== "Gateway"
 
-    ```py
-    import hikari
-    import miru
+```py
+import hikari
+import miru
 
-    class SelectView(miru.View[miru.GW]):
+class SelectView(miru.View):
 
-        @miru.text_select(
-            placeholder="Select me!",
-            options=[
-                miru.SelectOption(label="Option 1"),
-                miru.SelectOption(label="Option 2"),
-            ],
+    @miru.text_select(
+        placeholder="Select me!",
+        options=[
+            miru.SelectOption(label="Option 1"),
+            miru.SelectOption(label="Option 2"),
+        ],
+    )
+    async def get_text(
+        self, select: miru.TextSelect, ctx: miru.ViewContext
+    ) -> None:
+        await ctx.respond(f"You've chosen {select.values[0]}!")
+
+    @miru.user_select(placeholder="Select a user!")
+    async def get_users(
+        self, select: miru.UserSelect, ctx: miru.ViewContext
+    ) -> None:
+        await ctx.respond(f"You've chosen {select.values[0].mention}!")
+
+    # We can control how many options should be selected
+    @miru.role_select(placeholder="Select 3-5 roles!", min_values=3, max_values=5)
+    async def get_roles(
+        self, select: miru.RoleSelect, ctx: miru.ViewContext
+    ) -> None:
+        await ctx.respond(
+            f"You've chosen {' '.join([r.mention for r in select.values])}!"
         )
-        async def get_text(
-            self, select: miru.TextSelect[miru.GW], ctx: miru.ViewContext[miru.GW]
-        ) -> None:
-            await ctx.respond(f"You've chosen {select.values[0]}!")
 
-        @miru.user_select(placeholder="Select a user!")
-        async def get_users(
-            self, select: miru.UserSelect[miru.GW], ctx: miru.ViewContext[miru.GW]
-        ) -> None:
-            await ctx.respond(f"You've chosen {select.values[0].mention}!")
+    # A select where the user can only select text and announcement channels
+    @miru.channel_select(
+        placeholder="Select a text channel!",
+        channel_types=[
+            hikari.ChannelType.GUILD_TEXT,
+            hikari.ChannelType.GUILD_NEWS
+        ],
+    )
+    async def get_channels(
+        self, select: miru.ChannelSelect, ctx: miru.ViewContext
+    ) -> None:
+        await ctx.respond(f"You've chosen {select.values[0].mention}!")
+```
 
-        # We can control how many options should be selected
-        @miru.role_select(placeholder="Select 3-5 roles!", min_values=3, max_values=5)
-        async def get_roles(
-            self, select: miru.RoleSelect[miru.GW], ctx: miru.ViewContext[miru.GW]
-        ) -> None:
-            await ctx.respond(
-                f"You've chosen {' '.join([r.mention for r in select.values])}!"
-            )
-
-        # A select where the user can only select text and announcement channels
-        @miru.channel_select(
-            placeholder="Select a text channel!",
-            channel_types=[
-                hikari.ChannelType.GUILD_TEXT,
-                hikari.ChannelType.GUILD_NEWS
-            ],
-        )
-        async def get_channels(
-            self, select: miru.ChannelSelect[miru.GW], ctx: miru.ViewContext[miru.GW]
-        ) -> None:
-            await ctx.respond(f"You've chosen {select.values[0].mention}!")
-    ```
-
-=== "REST"
-
-    ```py
-    import hikari
-    import miru
-
-    class SelectView(miru.View[miru.REST]):
-
-        @miru.text_select(
-            placeholder="Select me!",
-            options=[
-                miru.SelectOption(label="Option 1"),
-                miru.SelectOption(label="Option 2"),
-            ],
-        )
-        async def get_text(
-            self, select: miru.TextSelect[miru.REST], ctx: miru.ViewContext[miru.REST]
-        ) -> None:
-            await ctx.respond(f"You've chosen {select.values[0]}!")
-
-        @miru.user_select(placeholder="Select a user!")
-        async def get_users(
-            self, select: miru.UserSelect[miru.REST], ctx: miru.ViewContext[miru.REST]
-        ) -> None:
-            await ctx.respond(f"You've chosen {select.values[0].mention}!")
-
-        # We can control how many options should be selected
-        @miru.role_select(placeholder="Select 3-5 roles!", min_values=3, max_values=5)
-        async def get_roles(
-            self, select: miru.RoleSelect[miru.REST], ctx: miru.ViewContext[miru.REST]
-        ) -> None:
-            await ctx.respond(f"You've chosen {' '.join([r.mention for r in select.values])}!")
-
-        # A select where the user can only select text and announcement channels
-        @miru.channel_select(
-            placeholder="Select a text channel!",
-            channel_types=[
-                hikari.ChannelType.GUILD_TEXT,
-                hikari.ChannelType.GUILD_NEWS
-            ],
-        )
-        async def get_channels(
-            self, select: miru.ChannelSelect[miru.REST], ctx: miru.ViewContext[miru.REST]
-        ) -> None:
-            await ctx.respond(f"You've chosen {select.values[0].mention}!")
-    ```
 
 !!! note
     Select menus take up an entire row of a view, meaning that there can be a maximum of 5 per given message.

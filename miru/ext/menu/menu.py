@@ -18,20 +18,20 @@ logger = logging.getLogger(__name__)
 __all__ = ("Menu",)
 
 
-class Menu(miru.View[miru.ClientT]):
+class Menu(miru.View):
     """A menu that can be used to display multiple nested screens of components.
 
     Parameters
     ----------
-    timeout : Optional[Union[float, int, datetime.timedelta]], optional
-        The duration after which the menu times out, in seconds, by default 300.0
-    autodefer : bool, optional
-        If enabled, interactions will be automatically deferred if not responded to within 2 seconds, by default True
+    timeout : Optional[Union[float, int, datetime.timedelta]]
+        The duration after which the menu times out, in seconds
+    autodefer : bool
+        If enabled, interactions will be automatically deferred if not responded to within 2 seconds
     """
 
     def __init__(self, *, timeout: float | int | datetime.timedelta | None = 300.0, autodefer: bool = True):
         super().__init__(timeout=timeout, autodefer=autodefer)
-        self._stack: list[Screen[miru.ClientT]] = []
+        self._stack: list[Screen] = []
         # The interaction that was used to send the menu, if any.
         self._inter: hikari.MessageResponseMixin[t.Any] | None = None
         self._ephemeral: bool = False
@@ -47,7 +47,7 @@ class Menu(miru.View[miru.ClientT]):
         return self._ephemeral
 
     @property
-    def current_screen(self) -> Screen[miru.ClientT]:
+    def current_screen(self) -> Screen:
         """The current screen being displayed."""
         return self._stack[-1]
 
@@ -62,7 +62,7 @@ class Menu(miru.View[miru.ClientT]):
 
         await self.update_message()
 
-    async def _load_screen(self, screen: Screen[miru.ClientT]) -> None:
+    async def _load_screen(self, screen: Screen) -> None:
         """Load a screen into the menu, updating it's state."""
         self.clear_items()
 
@@ -79,8 +79,8 @@ class Menu(miru.View[miru.ClientT]):
 
         Parameters
         ----------
-        new_content : Optional[ScreenContent], optional
-            The new content to use, if left as None, only the components will be updated, by default None
+        new_content : Optional[ScreenContent]
+            The new content to use, if left as None, only the components will be updated
         """
         if self.message is None:
             return
@@ -95,7 +95,7 @@ class Menu(miru.View[miru.ClientT]):
         else:
             await self.message.edit(components=self, **self._payload)
 
-    async def push(self, screen: Screen[miru.ClientT]) -> None:
+    async def push(self, screen: Screen) -> None:
         """Push a screen onto the menu stack and display it.
 
         Parameters
@@ -164,7 +164,7 @@ class Menu(miru.View[miru.ClientT]):
         await self.update_message()
 
     async def build_response_async(
-        self, client: miru.ClientT, starting_screen: Screen[miru.ClientT], ephemeral: bool = False
+        self, client: miru.Client, starting_screen: Screen, ephemeral: bool = False
     ) -> InteractionMessageBuilder:
         """Create a REST response builder out of this Menu.
 

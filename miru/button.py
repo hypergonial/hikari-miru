@@ -5,41 +5,39 @@ import typing as t
 
 import hikari
 
-from .abc.item import DecoratedItem, ViewItem
-from .internal.types import ClientT
+from miru.abc.item import DecoratedItem, ViewItem
 
 if t.TYPE_CHECKING:
     import typing_extensions as te
 
-    from .context import ViewContext
-    from .view import View
+    from miru.context import ViewContext
+    from miru.view import View
 
-    ViewT = t.TypeVar("ViewT", bound="View[t.Any]")
-    ViewContextT = t.TypeVar("ViewContextT", bound="ViewContext[t.Any]")
+    ViewT = t.TypeVar("ViewT", bound="View")
 
 __all__ = ("Button", "button")
 
 
-class Button(ViewItem[ClientT]):
+class Button(ViewItem):
     """A view component representing a button.
 
     Parameters
     ----------
-    style : hikari.ButtonStyle, optional
-        The button's style, by default hikari.ButtonStyle.PRIMARY
-    label : Optional[str], optional
-        The button's label, by default None
-    disabled : bool, optional
-        A boolean determining if the button should be disabled or not, by default False
-    custom_id : Optional[str], optional
-        The custom identifier of the button, by default None
-    url : Optional[str], optional
-        The URL of the button, by default None
-    emoji : Union[hikari.Emoji, str, None], optional
-        The emoji present on the button, by default None
-    row : Optional[int], optional
+    style : hikari.ButtonStyle
+        The button's style
+    label : str | None
+        The button's label
+    disabled : bool
+        A boolean determining if the button should be disabled or not
+    custom_id : str | None
+        The custom identifier of the button
+    url : str | None
+        The URL of the button
+    emoji : hikari.Emoji | str | None
+        The emoji present on the button
+    row : int | None
         The row the button should be in, leave as None for auto-placement.
-    position : Optional[int], optional
+    position : int | None
         The position the button should be in within a row, leave as None for auto-placement.
 
     Raises
@@ -164,27 +162,24 @@ def button(
     emoji: str | hikari.Emoji | None = None,
     row: int | None = None,
     disabled: bool = False,
-) -> t.Callable[
-    [t.Callable[[ViewT, Button[ClientT], ViewContext[ClientT]], t.Awaitable[None]]],
-    DecoratedItem[ClientT, ViewT, Button[ClientT]],
-]:
+) -> t.Callable[[t.Callable[[ViewT, Button, ViewContext], t.Awaitable[None]]], DecoratedItem[ViewT, Button]]:
     """A decorator to transform a coroutine function into a Discord UI Button's callback.
     This must be inside a subclass of View.
 
     Parameters
     ----------
-    label : Optional[str], optional
-        The button's label, by default None
-    custom_id : Optional[str], optional
-        The button's custom identifier, by default None
-    style : hikari.ButtonStyle, optional
-        The style of the button, by default hikari.ButtonStyle.PRIMARY
-    emoji : Optional[Union[str, hikari.Emoji]], optional
-        The emoji shown on the button, by default None
-    row : Optional[int], optional
+    label : str | None
+        The button's label
+    custom_id : str | None
+        The button's custom identifier
+    style : hikari.ButtonStyle
+        The style of the button
+    emoji : str | hikari.Emoji | None
+        The emoji shown on the button
+    row : int | None
         The row the button should be in, leave as None for auto-placement.
-    disabled : bool, optional
-        A boolean determining if the button should be disabled or not, by default False
+    disabled : bool
+        A boolean determining if the button should be disabled or not
 
     Returns
     -------
@@ -192,12 +187,10 @@ def button(
         The decorated callback function.
     """
 
-    def decorator(
-        func: t.Callable[[ViewT, Button[ClientT], ViewContext[ClientT]], t.Awaitable[None]],
-    ) -> DecoratedItem[ClientT, ViewT, Button[ClientT]]:
+    def decorator(func: t.Callable[[ViewT, Button, ViewContext], t.Awaitable[None]]) -> DecoratedItem[ViewT, Button]:
         if not inspect.iscoroutinefunction(func):
             raise TypeError("button must decorate coroutine function.")
-        item: Button[ClientT] = Button(
+        item: Button = Button(
             label=label, custom_id=custom_id, style=style, emoji=emoji, row=row, disabled=disabled, url=None
         )
 

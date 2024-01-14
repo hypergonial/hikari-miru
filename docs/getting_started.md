@@ -45,7 +45,7 @@ This is what a basic component menu looks like with miru:
     import miru
 
     # Define a new custom View that contains 3 items
-    class BasicView(miru.View[miru.GW]):
+    class BasicView(miru.View):
 
         # Define a new TextSelect menu with two options
         @miru.text_select(
@@ -55,18 +55,18 @@ This is what a basic component menu looks like with miru:
                 miru.SelectOption(label="Option 2"),
             ],
         )
-        async def basic_select(self, select: miru.TextSelect[miru.GW], ctx: miru.ViewContext[miru.GW]) -> None:
+        async def basic_select(self, select: miru.TextSelect, ctx: miru.ViewContext) -> None:
             await ctx.respond(f"You've chosen {select.values[0]}!")
 
         # Define a new Button with the Style of success (Green)
         @miru.button(label="Click me!", style=hikari.ButtonStyle.SUCCESS)
-        async def basic_button(self, button: miru.Button[miru.GW], ctx: miru.ViewContext[miru.GW]) -> None:
+        async def basic_button(self, button: miru.Button, ctx: miru.ViewContext) -> None:
             await ctx.respond("You clicked me!")
 
         # Define a new Button that when pressed will stop the view
         # & invalidate all the buttons in this view
         @miru.button(label="Stop me!", style=hikari.ButtonStyle.DANGER)
-        async def stop_button(self, button: miru.Button[miru.GW], ctx: miru.ViewContext[miru.GW]) -> None:
+        async def stop_button(self, button: miru.Button, ctx: miru.ViewContext) -> None:
             self.stop()  # Called to stop the view
 
 
@@ -74,7 +74,7 @@ This is what a basic component menu looks like with miru:
     # both 'hikari.GatewayBot' and 'hikari.RESTBot'.
     # You can swap at the top to see an example with RESTBot instead.
     bot = hikari.GatewayBot("YOUR_TOKEN_HERE")
-    client = miru.GatewayClient(bot)
+    client = miru.Client(bot)
     ```
 
 === "REST"
@@ -84,7 +84,7 @@ This is what a basic component menu looks like with miru:
     import miru
 
     # Define a new custom View that contains 3 items
-    class BasicView(miru.View[miru.REST]):
+    class BasicView(miru.View):
 
         # Define a new TextSelect menu with two options
         @miru.text_select(
@@ -94,18 +94,18 @@ This is what a basic component menu looks like with miru:
                 miru.SelectOption(label="Option 2"),
             ],
         )
-        async def basic_select(self, select: miru.TextSelect[miru.REST], ctx: miru.ViewContext[miru.REST]) -> None:
+        async def basic_select(self, select: miru.TextSelect, ctx: miru.ViewContext) -> None:
             await ctx.respond(f"You've chosen {select.values[0]}!")
 
         # Define a new Button with the Style of success (Green)
         @miru.button(label="Click me!", style=hikari.ButtonStyle.SUCCESS)
-        async def basic_button(self, button: miru.Button[miru.REST], ctx: miru.ViewContext[miru.REST]) -> None:
+        async def basic_button(self, button: miru.Button, ctx: miru.ViewContext) -> None:
             await ctx.respond("You clicked me!")
 
         # Define a new Button that when pressed will stop the view
         # & invalidate all the buttons in this view
         @miru.button(label="Stop me!", style=hikari.ButtonStyle.DANGER)
-        async def stop_button(self, button: miru.Button[miru.REST], ctx: miru.ViewContext[miru.REST]) -> None:
+        async def stop_button(self, button: miru.Button, ctx: miru.ViewContext) -> None:
             self.stop()  # Called to stop the view
 
 
@@ -113,7 +113,7 @@ This is what a basic component menu looks like with miru:
     # both 'hikari.GatewayBot' and 'hikari.RESTBot'.
     # You can swap at the top to see an example with RESTBot instead.
     bot = hikari.RESTBot("YOUR_TOKEN_HERE")
-    client = miru.RESTClient(bot)
+    client = miru.Client(bot)
     ```
 
 Next up, we need to send our view. `miru` has support for all popular command handlers, and naturally can be used with only hikari as well.
@@ -226,14 +226,14 @@ Below you can see such an example:
     import hikari
     import miru
 
-    class YesButton(miru.Button[miru.GW]):
+    class YesButton(miru.Button):
         def __init__(self) -> None:
             # Initialize our button with some pre-defined properties
             super().__init__(style=hikari.ButtonStyle.SUCCESS, label="Yes")
 
         # The callback is the function that gets called when the button is pressed
         # If you are subclassing, you must use the name "callback" when defining it.
-        async def callback(self, ctx: miru.ViewContext[miru.GW]) -> None:
+        async def callback(self, ctx: miru.ViewContext) -> None:
             # You can specify the ephemeral message flag
             # to make your response ephemeral
             await ctx.respond(
@@ -246,12 +246,12 @@ Below you can see such an example:
             self.view.stop()
 
 
-    class NoButton(miru.Button[miru.GW]):
+    class NoButton(miru.Button):
         # Let's leave our arguments dynamic this time, instead of hard-coding them
         def __init__(self, *args, **kwargs) -> None:
             super().__init__(*args, **kwargs)
 
-        async def callback(self, ctx: miru.ViewContext[miru.GW]) -> None:
+        async def callback(self, ctx: miru.ViewContext) -> None:
             await ctx.respond(
                 "This is the only correct answer.",
                 flags=hikari.MessageFlag.EPHEMERAL
@@ -260,13 +260,13 @@ Below you can see such an example:
             self.view.stop()
 
 
-    class PineappleView(miru.View[miru.GW]):
+    class PineappleView(miru.View):
         def __init__(self, *args, **kwargs) -> None:
             super().__init__(*args, **kwargs)
             self.answer = None
 
     bot = hikari.GatewayBot("YOUR_TOKEN_HERE")
-    client = miru.GatewayClient(bot)
+    client = miru.Client(bot)
     ```
 
 === "REST"
@@ -275,14 +275,14 @@ Below you can see such an example:
     import hikari
     import miru
 
-    class YesButton(miru.Button[miru.REST]):
+    class YesButton(miru.Button):
         def __init__(self) -> None:
             # Initialize our button with some pre-defined properties
             super().__init__(style=hikari.ButtonStyle.SUCCESS, label="Yes")
 
         # The callback is the function that gets called when the button is pressed
         # If you are subclassing, you must use the name "callback" when defining it.
-        async def callback(self, ctx: miru.ViewContext[miru.REST]) -> None:
+        async def callback(self, ctx: miru.ViewContext) -> None:
             # You can specify the ephemeral message flag
             # to make your response ephemeral
             await ctx.respond(
@@ -295,12 +295,12 @@ Below you can see such an example:
             self.view.stop()
 
 
-    class NoButton(miru.Button[miru.REST]):
+    class NoButton(miru.Button):
         # Let's leave our arguments dynamic this time, instead of hard-coding them
         def __init__(self, *args, **kwargs) -> None:
             super().__init__(*args, **kwargs)
 
-        async def callback(self, ctx: miru.ViewContext[miru.REST]) -> None:
+        async def callback(self, ctx: miru.ViewContext) -> None:
             await ctx.respond(
                 "This is the only correct answer.",
                 flags=hikari.MessageFlag.EPHEMERAL
@@ -309,13 +309,13 @@ Below you can see such an example:
             self.view.stop()
 
 
-    class PineappleView(miru.View[miru.REST]):
+    class PineappleView(miru.View):
         def __init__(self, *args, **kwargs) -> None:
             super().__init__(*args, **kwargs)
             self.answer = None
 
     bot = hikari.RESTBot("YOUR_TOKEN_HERE")
-    client = miru.RESTClient(bot)
+    client = miru.Client(bot)
     ```
 
 Then we can adjust our sending logic from the previous example like so:

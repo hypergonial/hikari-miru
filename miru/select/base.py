@@ -3,32 +3,31 @@ from __future__ import annotations
 import abc
 import typing as t
 
-from ..abc.item import ViewItem
-from ..internal.types import ClientT
+from miru.abc.item import ViewItem
 
 if t.TYPE_CHECKING:
     import hikari
     import typing_extensions as te
 
-    from ..view import View
+    from miru.view import View
 
-    ViewT = t.TypeVar("ViewT", bound="View[t.Any]")
+    ViewT = t.TypeVar("ViewT", bound="View")
 
 __all__ = ("SelectBase",)
 
 
-class SelectBase(ViewItem[ClientT], abc.ABC):
+class SelectBase(ViewItem, abc.ABC):
     """A view component representing some type of select menu. All types of selects derive from this class.
 
     Parameters
     ----------
-    custom_id : Optional[str], optional
-        The custom identifier of the select menu, by default None
-    placeholder : Optional[str], optional
-        Placeholder text displayed on the select menu, by default None
-    disabled : bool, optional
-        A boolean determining if the select menu should be disabled or not, by default False
-    row : Optional[int], optional
+    custom_id : str | None
+        The custom identifier of the select menu
+    placeholder : str | None
+        Placeholder text displayed on the select menu
+    disabled : bool
+        A boolean determining if the select menu should be disabled or not
+    row : int | None
         The row the select menu should be in, leave as None for auto-placement.
 
     Raises

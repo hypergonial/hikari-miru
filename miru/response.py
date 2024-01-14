@@ -4,11 +4,10 @@ import typing as t
 from collections.abc import Mapping
 from typing import Any, Iterator
 
-import attr
 import hikari
 
 if t.TYPE_CHECKING:
-    from .client import Client
+    from miru.client import Client
 
 
 class InteractionMessageBuilder(hikari.impl.InteractionMessageBuilder, Mapping[str, t.Any]):
@@ -38,7 +37,7 @@ class InteractionMessageBuilder(hikari.impl.InteractionMessageBuilder, Mapping[s
             user_mentions=user_mentions,
             role_mentions=role_mentions,
         )
-        self._client: Client[t.Any] | None = None
+        self._client: Client | None = None
 
     def to_hikari_kwargs(self) -> dict[str, t.Any]:
         """Convert this builder to kwargs that can be passed to a hikari interaction's 'create_initial_response'."""
@@ -170,9 +169,7 @@ class InteractionDeferredBuilder(hikari.impl.InteractionDeferredBuilder, t.Mappi
         flags: hikari.UndefinedOr[hikari.MessageFlag],
     ) -> None:
         super().__init__(type=type, flags=flags)
-        self._client: Client[t.Any] | None = None
-
-    _client: Client[t.Any] | None = attr.field(default=None)
+        self._client: Client | None = None
 
     def to_hikari_kwargs(self) -> dict[str, t.Any]:
         """Convert this builder to kwargs that can be passed to a hikari interaction's create_initial_response."""
@@ -209,7 +206,7 @@ class InteractionDeferredBuilder(hikari.impl.InteractionDeferredBuilder, t.Mappi
 class InteractionModalBuilder(hikari.impl.InteractionModalBuilder, t.Mapping[str, t.Any]):
     def __init__(self, title: str, custom_id: str, components: list[hikari.api.ComponentBuilder]) -> None:
         super().__init__(title=title, custom_id=custom_id, components=components)
-        self._client: Client[t.Any] | None = None
+        self._client: Client | None = None
 
     def to_hikari_kwargs(self) -> t.Mapping[str, t.Any]:
         """Convert this builder to kwargs that can be passed to a hikari interaction's create_modal_response."""

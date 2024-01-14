@@ -24,16 +24,16 @@ it will, by default, print the exception and traceback to the console.
     import hikari
     import miru
 
-    class ErrorView(miru.View[miru.GW]):
+    class ErrorView(miru.View):
 
         @miru.button(label="Click me!", style=hikari.ButtonStyle.SUCCESS)
-        async def basic_button(self, button: miru.Button[miru.GW], ctx: miru.ViewContext[miru.GW]) -> None:
+        async def basic_button(self, button: miru.Button, ctx: miru.ViewContext) -> None:
             await ctx.respond("You clicked me!")
 
         # Create a button that raises an exception
         @miru.button(label="Error", style=hikari.ButtonStyle.DANGER)
         async def error_button(
-            self, button: miru.Button[miru.GW], ctx: miru.ViewContext[miru.GW]
+            self, button: miru.Button, ctx: miru.ViewContext
         ) -> None:
             raise RuntimeError("I'm an error!")
 
@@ -44,8 +44,8 @@ it will, by default, print the exception and traceback to the console.
         async def on_error(
             self,
             error: Exception,
-            item: miru.ViewItem[miru.GW] | None = None,
-            ctx: miru.ViewContext[miru.GW] | None = None
+            item: miru.ViewItem | None = None,
+            ctx: miru.ViewContext | None = None
         ) -> None:
             # ctx is only passed if the error is raised in an item callback
             if ctx is not None:
@@ -58,15 +58,15 @@ it will, by default, print the exception and traceback to the console.
     import hikari
     import miru
 
-    class ErrorView(miru.View[miru.REST]):
+    class ErrorView(miru.View):
 
         @miru.button(label="Click me!", style=hikari.ButtonStyle.SUCCESS)
-        async def basic_button(self, button: miru.Button[miru.REST], ctx: miru.ViewContext[miru.REST]) -> None:
+        async def basic_button(self, button: miru.Button, ctx: miru.ViewContext) -> None:
             await ctx.respond("You clicked me!")
 
         # Create a button that raises an exception
         @miru.button(label="Error", style=hikari.ButtonStyle.DANGER)
-        async def error_button(self, button: miru.Button[miru.REST], ctx: miru.ViewContext[miru.REST]) -> None:
+        async def error_button(self, button: miru.Button, ctx: miru.ViewContext) -> None:
             raise RuntimeError("I'm an error!")
 
         # Define our custom error-handler
@@ -76,8 +76,8 @@ it will, by default, print the exception and traceback to the console.
         async def on_error(
             self,
             error: Exception,
-            item: miru.ViewItem[miru.REST] | None = None,
-            ctx: miru.ViewContext[miru.REST] | None = None
+            item: miru.ViewItem | None = None,
+            ctx: miru.ViewContext | None = None
         ) -> None:
             # ctx is only passed if the error is raised in an item callback
             if ctx is not None:

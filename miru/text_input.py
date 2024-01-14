@@ -4,42 +4,40 @@ import typing as t
 
 import hikari
 
+from miru.abc.item import ModalItem
 from miru.context.modal import ModalContext
 
-from .abc.item import ModalItem
-from .internal.types import ClientT
-
 if t.TYPE_CHECKING:
-    from .modal import Modal
+    from miru.modal import Modal
 
-ModalT = t.TypeVar("ModalT", bound="Modal[t.Any]")
+ModalT = t.TypeVar("ModalT", bound="Modal")
 
 __all__ = ("TextInput",)
 
 
-class TextInput(ModalItem[ClientT]):
+class TextInput(ModalItem):
     """A text input field that can be used in modals.
 
     Parameters
     ----------
     label : str
         The label above the text input field.
-    style : hikari.TextInputStyle, optional
-        The style of the text input, by default hikari.TextInputStyle.SHORT
-    placeholder : Optional[str], optional
-        Placeholder content in the text input, by default None
-    value : Optional[str], optional
-        Pre-filled content of the input field, by default None
-    required : bool, optional
-        If the text input is required for modal submission, by default False
-    min_length : Optional[int], optional
-        The minimum required input length of the text input, by default None
-    max_length : Optional[int], optional
-        The maximum allowed input length of the text input, by default None
-    custom_id : Optional[str], optional
-        The custom identifier of the text input, by default None
-    row : Optional[int], optional
-        The row of the text input, by default None
+    style : hikari.TextInputStyle
+        The style of the text input
+    placeholder : Optional[str]
+        Placeholder content in the text input
+    value : Optional[str]
+        Pre-filled content of the input field
+    required : bool
+        If the text input is required for modal submission
+    min_length : Optional[int]
+        The minimum required input length of the text input
+    max_length : Optional[int]
+        The maximum allowed input length of the text input
+    custom_id : Optional[str]
+        The custom identifier of the text input
+    row : Optional[int]
+        The row of the text input
     """
 
     def __init__(
@@ -150,7 +148,7 @@ class TextInput(ModalItem[ClientT]):
             max_length=self.max_length or 4000,
         )
 
-    async def _refresh_state(self, context: ModalContext[ClientT]) -> None:
+    async def _refresh_state(self, context: ModalContext) -> None:
         assert isinstance(context, ModalContext)
         self._value = context.values.get(self)
 

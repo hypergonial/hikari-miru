@@ -5,17 +5,16 @@ import typing as t
 
 import hikari
 
-from ..abc.item import DecoratedItem
-from ..context.view import ViewContext
-from ..internal.types import ClientT
-from .base import SelectBase
+from miru.abc.item import DecoratedItem
+from miru.context.view import ViewContext
+from miru.select.base import SelectBase
 
 if t.TYPE_CHECKING:
     import typing_extensions as te
 
-    from ..view import View
+    from miru.view import View
 
-    ViewT = t.TypeVar("ViewT", bound="View[t.Any]")
+    ViewT = t.TypeVar("ViewT", bound="View")
 
 __all__ = ("SelectOption", "TextSelect", "text_select")
 
@@ -39,14 +38,14 @@ class SelectOption:
         ----------
         label : str
             The option's label.
-        value : Optional[str], optional
+        value : str | None
             The internal value of the option, if None, uses label.
-        description : Optional[str], optional
-            The description of the option, by default None
-        emoji : Optional[Union[str, hikari.Emoji]], optional
-            The emoji of the option, by default None
-        is_default : bool, optional
-            A boolean determining of the option is default or not, by default False
+        description : str | None
+            The description of the option
+        emoji : str | hikari.Emoji | None
+            The emoji of the option
+        is_default : bool
+            A boolean determining of the option is default or not
         """
         self.label: str = label
         self.value: str = value or label
@@ -64,24 +63,24 @@ class SelectOption:
         )
 
 
-class TextSelect(SelectBase[ClientT]):
+class TextSelect(SelectBase):
     """A view component representing a text select menu.
 
     Parameters
     ----------
-    options : Sequence[Union[hikari.SelectMenuOption, SelectOption]]
+    options : t.Sequence[hikari.SelectMenuOption | SelectOption]
         A sequence of select menu options that this select menu should use.
-    custom_id : Optional[str], optional
-        The custom identifier of the select menu, by default None
-    placeholder : Optional[str], optional
-        Placeholder text displayed on the select menu, by default None
-    min_values : int, optional
-        The minimum values a user has to select before it can be sent, by default 1
-    max_values : int, optional
-        The maximum values a user can select, by default 1
-    disabled : bool, optional
-        A boolean determining if the select menu should be disabled or not, by default False
-    row : Optional[int], optional
+    custom_id : str | None
+        The custom identifier of the select menu
+    placeholder : str | None
+        Placeholder text displayed on the select menu
+    min_values : int
+        The minimum values a user has to select before it can be sent
+    max_values : int
+        The maximum values a user can select
+    disabled : bool
+        A boolean determining if the select menu should be disabled or not
+    row : int | None
         The row the select menu should be in, leave as None for auto-placement.
 
     Raises
@@ -178,7 +177,7 @@ class TextSelect(SelectBase[ClientT]):
     def values(self) -> t.Sequence[str]:
         return self._values
 
-    async def _refresh_state(self, context: ViewContext[ClientT]) -> None:
+    async def _refresh_state(self, context: ViewContext) -> None:
         assert isinstance(context, ViewContext)
         self._values = context.interaction.values
 
@@ -192,28 +191,25 @@ def text_select(
     max_values: int = 1,
     disabled: bool = False,
     row: int | None = None,
-) -> t.Callable[
-    [t.Callable[[ViewT, TextSelect[ClientT], ViewContext[ClientT]], t.Awaitable[None]]],
-    DecoratedItem[ClientT, ViewT, TextSelect[ClientT]],
-]:
+) -> t.Callable[[t.Callable[[ViewT, TextSelect, ViewContext], t.Awaitable[None]]], DecoratedItem[ViewT, TextSelect]]:
     """A decorator to transform a function into a Discord UI TextSelectMenu's callback.
     This must be inside a subclass of View.
 
     Parameters
     ----------
-    options : Sequence[Union[hikari.SelectMenuOption, SelectOption]]
+    options : t.Sequence[hikari.SelectMenuOption | SelectOption]
         A sequence of select menu options that this select menu should use.
-    custom_id : Optional[str], optional
-        The custom ID of the select menu, by default None
-    placeholder : Optional[str], optional
-        Placeholder text displayed on the select menu, by default None
-    min_values : int, optional
-        The minimum number of values that can be selected. Defaults to 1.
-    max_values : int, optional
-        The maximum number of values that can be selected. Defaults to 1.
-    disabled : bool, optional
-        Whether the select menu is disabled. Defaults to False.
-    row : Optional[int], optional
+    custom_id : str | None
+        The custom ID of the select menu.
+    placeholder : str | None
+        Placeholder text displayed on the select menu.
+    min_values : int
+        The minimum number of values that can be selected.
+    max_values : int
+        The maximum number of values that can be selected.
+    disabled : bool
+        Whether the select menu is disabled.
+    row : int | None
         The row the select should be in, leave as None for auto-placement.
 
     Returns
@@ -228,12 +224,12 @@ def text_select(
     """
 
     def decorator(
-        func: t.Callable[[ViewT, TextSelect[ClientT], ViewContext[ClientT]], t.Awaitable[None]],
-    ) -> DecoratedItem[ClientT, ViewT, TextSelect[ClientT]]:
+        func: t.Callable[[ViewT, TextSelect, ViewContext], t.Awaitable[None]],
+    ) -> DecoratedItem[ViewT, TextSelect]:
         if not inspect.iscoroutinefunction(func):
             raise TypeError("text_select must decorate coroutine function.")
 
-        item: TextSelect[ClientT] = TextSelect(
+        item: TextSelect = TextSelect(
             options=options,
             custom_id=custom_id,
             placeholder=placeholder,

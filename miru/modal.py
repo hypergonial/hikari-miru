@@ -8,13 +8,12 @@ import typing as t
 
 import hikari
 
+from miru.abc.item import ModalItem
+from miru.abc.item_handler import ItemHandler
+from miru.context.modal import ModalContext
 from miru.exceptions import HandlerFullError
+from miru.internal.types import ModalResponseBuildersT
 from miru.response import InteractionModalBuilder
-
-from .abc.item import ModalItem
-from .abc.item_handler import ItemHandler
-from .context.modal import ModalContext
-from .internal.types import ClientT, ModalResponseBuildersT
 
 if t.TYPE_CHECKING:
     import asyncio
@@ -22,19 +21,14 @@ if t.TYPE_CHECKING:
 
     import typing_extensions as te
 
-ModalContextT = t.TypeVar("ModalContextT", bound=ModalContext[t.Any])
+    from miru.client import Client
 
 __all__ = ("Modal",)
 
 
 class Modal(
     ItemHandler[
-        ClientT,
-        hikari.impl.ModalActionRowBuilder,
-        ModalResponseBuildersT,
-        ModalContext[ClientT],
-        hikari.ModalInteraction,
-        ModalItem[ClientT],
+        hikari.impl.ModalActionRowBuilder, ModalResponseBuildersT, ModalContext, hikari.ModalInteraction, ModalItem
     ]
 ):
     """Represents a Discord Modal.
@@ -45,8 +39,8 @@ class Modal(
         The title of the modal, appears on the top of the modal dialog box.
     custom_id : str
         The custom identifier of the modal, identifies the modal through interactions.
-    timeout : Optional[Union[float, int, datetime.timedelta]], optional
-        The duration after which the modal times out, in seconds, by default 300.0
+    timeout : Optional[Union[float, int, datetime.timedelta]]
+        The duration after which the modal times out, in seconds
 
     Raises
     ------
@@ -54,15 +48,15 @@ class Modal(
         Raised if the modal has more than 25 components attached.
     """
 
-    _modal_children: t.Mapping[str, ModalItem[t.Any]] = {}
+    _modal_children: t.Mapping[str, ModalItem] = {}
 
     def __init_subclass__(cls) -> None:
         """Get ModalItem classvars."""
-        children: t.MutableMapping[str, ModalItem[ClientT]] = {}
+        children: t.MutableMapping[str, ModalItem] = {}
         for base_cls in reversed(cls.mro()):
             for name, value in base_cls.__dict__.items():
                 if isinstance(value, ModalItem):
-                    children[name] = value  # type: ignore
+                    children[name] = value
 
         if len(children) > 25:
             raise HandlerFullError("Modal cannot have more than 25 components attached.")
@@ -75,7 +69,7 @@ class Modal(
 
         self._title: str = title
         self._custom_id: str = custom_id or os.urandom(16).hex()
-        self._values: t.Mapping[ModalItem[ClientT], str] | None = None
+        self._values: t.Mapping[ModalItem, str] | None = None
 
         if len(self._title) > 100:
             raise ValueError("Modal title is too long. Maximum 100 characters.")
@@ -113,7 +107,7 @@ class Modal(
         self._custom_id = value
 
     @property
-    def values(self) -> t.Mapping[ModalItem[ClientT], str] | None:
+    def values(self) -> t.Mapping[ModalItem, str] | None:
         """The input values received by this modal."""
         return self._values
 
@@ -121,7 +115,7 @@ class Modal(
     def _builder(self) -> t.Type[hikari.impl.ModalActionRowBuilder]:
         return hikari.impl.ModalActionRowBuilder
 
-    def add_item(self, item: ModalItem[ClientT]) -> te.Self:
+    def add_item(self, item: ModalItem) -> te.Self:
         """Adds a new item to the modal.
 
         Parameters
@@ -149,7 +143,7 @@ class Modal(
         """
         return super().add_item(item)
 
-    async def modal_check(self, context: ModalContext[ClientT]) -> bool:
+    async def modal_check(self, context: ModalContext) -> bool:
         """Called before any callback in the modal is called. Must evaluate to a truthy value to pass.
         Override for custom check logic.
 
@@ -165,7 +159,7 @@ class Modal(
         """
         return True
 
-    async def on_error(self, error: Exception, context: ModalContext[ClientT] | None = None) -> None:
+    async def on_error(self, error: Exception, context: ModalContext | None = None) -> None:
         """Called when an error occurs in a callback function.
         Override for custom error-handling logic.
 
@@ -173,14 +167,14 @@ class Modal(
         ----------
         error : Exception
             The exception encountered.
-        context : Optional[Context], optional
+        context : Optional[Context]
             The context associated with this exception, if any.
         """
         print(f"Ignoring exception in modal {self}:", file=sys.stderr)
 
         traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
 
-    async def callback(self, context: ModalContext[ClientT]) -> None:
+    async def callback(self, context: ModalContext) -> None:
         """Called when the modal is submitted.
 
         Parameters
@@ -193,18 +187,18 @@ class Modal(
     def get_context(
         self,
         interaction: hikari.ModalInteraction,
-        values: t.Mapping[ModalItem[ClientT], str],
+        values: t.Mapping[ModalItem, str],
         *,
-        cls: t.Type[ModalContext[ClientT]] = ModalContext,
-    ) -> ModalContext[ClientT]:
+        cls: t.Type[ModalContext] = ModalContext,
+    ) -> ModalContext:
         """Get the context for this modal. Override this function to provide a custom context object.
 
         Parameters
         ----------
         interaction : hikari.ModalInteraction
             The interaction to construct the context from.
-        cls : Optional[Type[ModalContext]], optional
-            The class to use for the context, by default ModalContext.
+        cls : Optional[Type[ModalContext]]
+            The class to use for the context
         values : Mapping[ModalItem, str]
             The values received by this modal, mapped to the items they belong to.
 
@@ -215,7 +209,7 @@ class Modal(
         """
         return cls(self, self.client, interaction, values)
 
-    async def _handle_callback(self, context: ModalContext[ClientT]) -> None:
+    async def _handle_callback(self, context: ModalContext) -> None:
         """Handle the callback of the modal. Separate task in case the modal is stopped in the callback."""
         try:
             await self.callback(context)
@@ -256,13 +250,13 @@ class Modal(
             # I can't take it anymore
             return context._resp_builder  # type: ignore
 
-    def _client_start_hook(self, client: ClientT) -> None:
+    def _client_start_hook(self, client: Client) -> None:
         """Called when the client adds the modal to itself."""
         self._client = client
         self._client._add_handler(self)
         self._timeout_task = self._create_task(self._handle_timeout())
 
-    def build_response(self, client: ClientT) -> InteractionModalBuilder:
+    def build_response(self, client: Client) -> InteractionModalBuilder:
         """Build the modal response for this modal."""
         builder = InteractionModalBuilder(self.title, self.custom_id, list(self.build()))
         builder._client = client

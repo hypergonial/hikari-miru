@@ -2,7 +2,6 @@ import hikari
 import pytest
 
 import miru
-from miru import GW
 
 
 def test_placeholder_length() -> None:
@@ -19,7 +18,7 @@ def test_select_option_length() -> None:
 
 def test_select_build() -> None:
     """Test that the select is built correctly."""
-    select: miru.TextSelect[GW] = miru.TextSelect(
+    select: miru.TextSelect = miru.TextSelect(
         options=[miru.SelectOption(label="amongus")],
         custom_id="test",
         placeholder="test",
@@ -47,7 +46,7 @@ def test_select_build() -> None:
 
 def test_select_from_hikari() -> None:
     """Test that the select is built correctly from a hikari component."""
-    select: miru.TextSelect[GW] = miru.TextSelect._from_component(
+    select: miru.TextSelect = miru.TextSelect._from_component(
         hikari.TextSelectMenuComponent(
             type=hikari.ComponentType.TEXT_SELECT_MENU,
             custom_id="test",

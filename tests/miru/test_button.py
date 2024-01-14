@@ -2,10 +2,9 @@ import hikari
 import pytest
 
 import miru
-from miru import GW
 
 bot = hikari.GatewayBot("amongus")
-client = miru.GatewayClient(bot)
+client = miru.Client(bot)
 
 
 def test_custom_id_and_url() -> None:
@@ -23,19 +22,19 @@ def test_label_and_emoji() -> None:
 
 def test_url_style_override() -> None:
     """Test that url style is overridden."""
-    button = miru.Button[GW](url="https://google.com")
+    button = miru.Button(url="https://google.com")
     assert button.style == hikari.ButtonStyle.LINK
 
 
 def test_emoji_parse() -> None:
     """Test that emoji is parsed correctly."""
-    button = miru.Button[GW](emoji="<:FoxPray:1005399743314272286>")
+    button = miru.Button(emoji="<:FoxPray:1005399743314272286>")
     assert button.emoji == hikari.Emoji.parse("<:FoxPray:1005399743314272286>")
 
 
 def test_build() -> None:
     """Test that the button is built correctly."""
-    button = miru.Button[GW](
+    button = miru.Button(
         label="test",
         emoji="<:FoxPray:1005399743314272286>",
         custom_id="test",
@@ -61,7 +60,7 @@ def test_build() -> None:
 
 def test_from_hikari() -> None:
     """Test that the button is built correctly from a hikari component."""
-    button = miru.Button[GW]._from_component(
+    button = miru.Button._from_component(
         hikari.ButtonComponent(
             type=hikari.ComponentType.BUTTON,
             style=hikari.ButtonStyle.PRIMARY,

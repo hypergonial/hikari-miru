@@ -7,12 +7,13 @@ from contextlib import suppress
 
 import hikari
 
-from ..internal.types import ClientT, ViewResponseBuildersT
 from .base import Context
 
 if t.TYPE_CHECKING:
+    from miru import Client
     from miru.context.base import InteractionResponse
 
+    from ..internal.types import ViewResponseBuildersT
     from ..modal import Modal
     from ..view import View
 
@@ -62,12 +63,12 @@ class AutodeferMode(enum.IntEnum):
         return self is not self.OFF
 
 
-class ViewContext(Context[ClientT, hikari.ComponentInteraction]):
+class ViewContext(Context[hikari.ComponentInteraction]):
     """A context object proxying a ComponentInteraction for a view item."""
 
     __slots__ = "_view"
 
-    def __init__(self, view: View[ClientT], client: ClientT, interaction: hikari.ComponentInteraction) -> None:
+    def __init__(self, view: View, client: Client, interaction: hikari.ComponentInteraction) -> None:
         super().__init__(client, interaction)
         self._view = view
         self._autodefer_task: asyncio.Task[None] | None = None
@@ -105,7 +106,7 @@ class ViewContext(Context[ClientT, hikari.ComponentInteraction]):
             await super()._create_response()
 
     @property
-    def view(self) -> View[ClientT]:
+    def view(self) -> View:
         """The view this context originates from."""
         return self._view
 
@@ -114,7 +115,7 @@ class ViewContext(Context[ClientT, hikari.ComponentInteraction]):
         """The message object for the view this context is proxying."""
         return self._interaction.message
 
-    async def respond_with_modal(self, modal: Modal[ClientT]) -> None:
+    async def respond_with_modal(self, modal: Modal) -> None:
         """Respond to this interaction with a modal."""
         if self._issued_response:
             raise RuntimeError("Interaction was already responded to.")

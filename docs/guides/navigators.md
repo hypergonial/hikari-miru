@@ -34,7 +34,7 @@ The examples below are for a **Gateway** bot, but a **REST** bot would behave si
 
     bot = hikari.GatewayBot("TOKEN")
 
-    client = miru.GatewayClient(bot)
+    client = miru.Client(bot)
     arc_client = arc.GatewayClient(bot)
 
     @arc_client.include
@@ -81,7 +81,7 @@ The examples below are for a **Gateway** bot, but a **REST** bot would behave si
 
     bot = lightbulb.BotApp("TOKEN")
 
-    client = miru.GatewayClient(bot)
+    client = miru.Client(bot)
 
     @bot.command
     @lightbulb.command("name", "description", auto_defer=False)
@@ -128,7 +128,7 @@ The examples below are for a **Gateway** bot, but a **REST** bot would behave si
     bot = hikari.GatewayBot("TOKEN")
 
     tanjun_client = tanjun.Client.from_gateway_bot(bot)
-    client = miru.GatewayClient(bot)
+    client = miru.Client(bot)
 
     @tanjun.as_slash_command("name", "description")
     async def some_slash_command(ctx: tanjun.abc.SlashContext) -> None:
@@ -169,7 +169,7 @@ The examples below are for a **Gateway** bot, but a **REST** bot would behave si
 
     bot = hikari.GatewayBot("...")
 
-    client = miru.GatewayClient(bot)
+    client = miru.Client(bot)
 
     @bot.listen()
     async def navigator(event: hikari.MessageCreateEvent) -> None:
@@ -227,76 +227,36 @@ You may use any mix of the built-in and custom navigation buttons in your naviga
 
 Let's define a custom navigation button:
 
-=== "Gateway"
+```py
+class MyIndicatorButton(nav.NavButton):
+    def __init__(self):
+        super().__init__(label="Page: 1", row=1)
 
-    ```py
-    class MyIndicatorButton(nav.NavButton[miru.GW]):
-        def __init__(self):
-            super().__init__(label="Page: 1", row=1)
+    async def callback(self, ctx: miru.ViewContext) -> None:
+        await ctx.respond("You clicked me!", flags=hikari.MessageFlag.EPHEMERAL)
 
-        async def callback(self, ctx: miru.ViewContext[miru.GW]) -> None:
-            await ctx.respond("You clicked me!", flags=hikari.MessageFlag.EPHEMERAL)
-
-        async def before_page_change(self) -> None:
-            # This function is called before the new page is sent by the navigator
-            self.label = f"Page: {self.view.current_page+1}"
-    ```
-
-=== "REST"
-
-    ```py
-    class MyIndicatorButton(nav.NavButton[miru.REST]):
-        def __init__(self):
-            super().__init__(label="Page: 1", row=1)
-
-        async def callback(self, ctx: miru.ViewContext[miru.REST]) -> None:
-            await ctx.respond("You clicked me!", flags=hikari.MessageFlag.EPHEMERAL)
-
-        async def before_page_change(self) -> None:
-            # This function is called before the new page is sent by the navigator
-            self.label = f"Page: {self.view.current_page+1}"
-    ```
+    async def before_page_change(self) -> None:
+        # This function is called before the new page is sent by the navigator
+        self.label = f"Page: {self.view.current_page+1}"
+```
 
 Then we can add it to our Navigator before sending:
 
-=== "Gateway"
+```py
+embed = hikari.Embed(title="I'm the second page!", description="Also an embed!")
+pages = ["I'm a customized navigator!", embed, "I'm the last page!"]
 
-    ```py
-    embed = hikari.Embed(title="I'm the second page!", description="Also an embed!")
-    pages = ["I'm a customized navigator!", embed, "I'm the last page!"]
+# Define our custom buttons for this navigator, keep in mind the order
+# All navigator buttons MUST subclass nav.NavButton
+buttons = [
+    nav.PrevButton(),
+    nav.StopButton(),
+    nav.NextButton(),
+    MyNavButton()
+]
 
-    # Define our custom buttons for this navigator, keep in mind the order
-    # All navigator buttons MUST subclass nav.NavButton
-    buttons = [
-        nav.PrevButton[miru.GW](),
-        nav.StopButton[miru.GW](),
-        nav.NextButton[miru.GW](),
-        MyNavButton[miru.GW]()
-    ]
+# Pass our list of NavButton to the navigator
+navigator = nav.NavigatorView(pages=pages, buttons=buttons)
 
-    # Pass our list of NavButton to the navigator
-    navigator = nav.NavigatorView[miru.GW](pages=pages, buttons=buttons)
-
-    # ... Send the navigator
-    ```
-
-=== "REST"
-
-    ```py
-    embed = hikari.Embed(title="I'm the second page!", description="Also an embed!")
-    pages = ["I'm a customized navigator!", embed, "I'm the last page!"]
-
-    # Define our custom buttons for this navigator, keep in mind the order
-    # All navigator buttons MUST subclass nav.NavButton
-    buttons = [
-        nav.PrevButton[miru.REST](),
-        nav.StopButton[miru.REST](),
-        nav.NextButton[miru.REST](),
-        MyNavButton[miru.REST]()
-    ]
-
-    # Pass our list of NavButton to the navigator
-    navigator = nav.NavigatorView[miru.REST](pages=pages, buttons=buttons)
-
-    # ... Send the navigator
-    ```
+# ... Send the navigator
+```

@@ -11,8 +11,8 @@ import miru
 from miru.abc import ViewItem
 
 if t.TYPE_CHECKING:
-    from .menu import Menu
-    from .screen import Screen
+    from miru.ext.menu.menu import Menu
+    from miru.ext.menu.screen import Screen
 
 __all__ = (
     "ScreenItem",
@@ -30,12 +30,12 @@ __all__ = (
     "mentionable_select",
 )
 
-ScreenT = t.TypeVar("ScreenT", bound="Screen[t.Any]")
-ScreenItemT = t.TypeVar("ScreenItemT", bound="ScreenItem[t.Any]")
+ScreenT = t.TypeVar("ScreenT", bound="Screen")
+ScreenItemT = t.TypeVar("ScreenItemT", bound="ScreenItem")
 
 
-class ScreenItem(ViewItem[miru.ClientT], abc.ABC):
-    """A baseclass for all screen items. Screen requires instances of this class as it's items."""
+class ScreenItem(ViewItem, abc.ABC):
+    """A base class for all screen items. Screen requires instances of this class as it's items."""
 
     def __init__(
         self,
@@ -47,67 +47,65 @@ class ScreenItem(ViewItem[miru.ClientT], abc.ABC):
         width: int = 1,
     ) -> None:
         super().__init__(custom_id=custom_id, row=row, width=width, position=position, disabled=disabled)
-        self._handler: Menu[miru.ClientT] | None = None  # type: ignore
-        self._screen: Screen[miru.ClientT] | None = None
+        self._handler: Menu | None = None  # type: ignore
+        self._screen: Screen | None = None
 
     @property
-    def view(self) -> Menu[miru.ClientT]:
+    def view(self) -> Menu:
         """The view this item is attached to."""
         if not self._handler:
             raise AttributeError(f"{type(self).__name__} hasn't been attached to a view yet")
         return self._handler
 
     @property
-    def menu(self) -> Menu[miru.ClientT]:
+    def menu(self) -> Menu:
         """The menu this item is attached to. Alias for `view`."""
         return self.view
 
     @property
-    def screen(self) -> Screen[miru.ClientT]:
+    def screen(self) -> Screen:
         """The screen this item is attached to."""
         if not self._screen:
             raise AttributeError(f"{type(self).__name__} hasn't been attached to a screen yet")
         return self._screen
 
 
-class ScreenButton(miru.Button[miru.ClientT], ScreenItem[miru.ClientT]):
+class ScreenButton(miru.Button, ScreenItem):
     """A base class for all screen buttons."""
 
 
-class ScreenTextSelect(miru.TextSelect[miru.ClientT], ScreenItem[miru.ClientT]):
+class ScreenTextSelect(miru.TextSelect, ScreenItem):
     """A base class for all screen text selects."""
 
 
-class ScreenUserSelect(miru.UserSelect[miru.ClientT], ScreenItem[miru.ClientT]):
+class ScreenUserSelect(miru.UserSelect, ScreenItem):
     """A base class for all screen user selects."""
 
 
-class ScreenRoleSelect(miru.RoleSelect[miru.ClientT], ScreenItem[miru.ClientT]):
+class ScreenRoleSelect(miru.RoleSelect, ScreenItem):
     """A base class for all screen role selects."""
 
 
-class ScreenChannelSelect(miru.ChannelSelect[miru.ClientT], ScreenItem[miru.ClientT]):
+class ScreenChannelSelect(miru.ChannelSelect, ScreenItem):
     """A base class for all screen channel selects."""
 
 
-class ScreenMentionableSelect(miru.MentionableSelect[miru.ClientT], ScreenItem[miru.ClientT]):
+class ScreenMentionableSelect(miru.MentionableSelect, ScreenItem):
     """A base class for all screen mentionable selects."""
 
 
-class DecoratedScreenItem(t.Generic[miru.ClientT, ScreenT, ScreenItemT]):
+class DecoratedScreenItem(t.Generic[ScreenT, ScreenItemT]):
     """A partial item made using a decorator."""
 
     __slots__ = ("item", "callback")
 
     def __init__(
-        self,
-        item: ScreenItemT,
-        callback: t.Callable[[ScreenT, ScreenItemT, miru.ViewContext[miru.ClientT]], t.Awaitable[None]],
+        self, item: ScreenItemT, callback: t.Callable[[ScreenT, ScreenItemT, miru.ViewContext], t.Awaitable[None]]
     ) -> None:
         self.item = item
         self.callback = callback
 
-    def build(self, screen: Screen[miru.ClientT]) -> ScreenItemT:
+    def build(self, screen: Screen) -> ScreenItemT:
         """Convert a DecoratedScreenItem into a ViewItem.
 
         Parameters
@@ -135,7 +133,7 @@ class DecoratedScreenItem(t.Generic[miru.ClientT, ScreenT, ScreenItemT]):
         """
         return self.callback.__name__
 
-    def __call__(self, screen: ScreenT, item: ScreenItemT, context: miru.ViewContext[miru.ClientT]) -> t.Any:
+    def __call__(self, screen: ScreenT, item: ScreenItemT, context: miru.ViewContext) -> t.Any:
         return self.callback(screen, item, context)
 
 
@@ -148,26 +146,26 @@ def button(
     row: int | None = None,
     disabled: bool = False,
 ) -> t.Callable[
-    [t.Callable[[ScreenT, ScreenButton[miru.ClientT], miru.ViewContext[miru.ClientT]], t.Awaitable[None]]],
-    DecoratedScreenItem[miru.ClientT, ScreenT, ScreenButton[miru.ClientT]],
+    [t.Callable[[ScreenT, ScreenButton, miru.ViewContext], t.Awaitable[None]]],
+    DecoratedScreenItem[ScreenT, ScreenButton],
 ]:
     """A decorator to transform a coroutine function into a Discord UI Button's callback.
     This must be inside a subclass of Screen.
 
     Parameters
     ----------
-    label : Optional[str], optional
-        The button's label, by default None
-    custom_id : Optional[str], optional
-        The button's custom ID, by default None
-    style : hikari.ButtonStyle, optional
-        The style of the button, by default hikari.ButtonStyle.PRIMARY
-    emoji : Optional[Union[str, hikari.Emoji]], optional
-        The emoji shown on the button, by default None
-    row : Optional[int], optional
+    label : Optional[str]
+        The button's label
+    custom_id : Optional[str]
+        The button's custom ID
+    style : hikari.ButtonStyle
+        The style of the button
+    emoji : Optional[Union[str, hikari.Emoji]]
+        The emoji shown on the button
+    row : Optional[int]
         The row the button should be in, leave as None for auto-placement.
-    disabled : bool, optional
-        A boolean determining if the button should be disabled or not, by default False
+    disabled : bool
+        A boolean determining if the button should be disabled or not
 
     Returns
     -------
@@ -181,11 +179,11 @@ def button(
     """
 
     def decorator(
-        func: t.Callable[[ScreenT, ScreenButton[miru.ClientT], miru.ViewContext[miru.ClientT]], t.Awaitable[None]],
-    ) -> DecoratedScreenItem[miru.ClientT, ScreenT, ScreenButton[miru.ClientT]]:
+        func: t.Callable[[ScreenT, ScreenButton, miru.ViewContext], t.Awaitable[None]],
+    ) -> DecoratedScreenItem[ScreenT, ScreenButton]:
         if not inspect.iscoroutinefunction(func):
             raise TypeError("button must decorate coroutine function.")
-        item: ScreenButton[miru.ClientT] = ScreenButton(
+        item: ScreenButton = ScreenButton(
             label=label, custom_id=custom_id, style=style, emoji=emoji, row=row, disabled=disabled, url=None
         )
 
@@ -204,27 +202,27 @@ def channel_select(
     disabled: bool = False,
     row: int | None = None,
 ) -> t.Callable[
-    [t.Callable[[ScreenT, ScreenChannelSelect[miru.ClientT], miru.ViewContext[miru.ClientT]], t.Awaitable[None]]],
-    DecoratedScreenItem[miru.ClientT, ScreenT, ScreenChannelSelect[miru.ClientT]],
+    [t.Callable[[ScreenT, ScreenChannelSelect, miru.ViewContext], t.Awaitable[None]]],
+    DecoratedScreenItem[ScreenT, ScreenChannelSelect],
 ]:
     """A decorator to transform a function into a Discord UI ChannelSelectMenu's callback.
     This must be inside a subclass of Screen.
 
     Parameters
     ----------
-    channel_types : Sequence[hikari.ChannelType], optional
+    channel_types : Sequence[hikari.ChannelType]
         A sequence of channel types to filter the select menu by. Defaults to (hikari.ChannelType.GUILD_TEXT,).
-    custom_id : Optional[str], optional
+    custom_id : Optional[str]
         The custom ID for the select menu. Defaults to None.
-    placeholder : Optional[str], optional
+    placeholder : Optional[str]
         The placeholder text for the channel select menu. Defaults to None.
-    min_values : int, optional
+    min_values : int
         The minimum number of values that can be selected. Defaults to 1.
-    max_values : int, optional
+    max_values : int
         The maximum number of values that can be selected. Defaults to 1.
-    disabled : bool, optional
+    disabled : bool
         Whether the channel select menu is disabled or not. Defaults to False.
-    row : Optional[int], optional
+    row : Optional[int]
         The row the select should be in, leave as None for auto-placement.
 
     Returns
@@ -239,14 +237,12 @@ def channel_select(
     """
 
     def decorator(
-        func: t.Callable[
-            [ScreenT, ScreenChannelSelect[miru.ClientT], miru.ViewContext[miru.ClientT]], t.Awaitable[None]
-        ],
-    ) -> DecoratedScreenItem[miru.ClientT, ScreenT, ScreenChannelSelect[miru.ClientT]]:
+        func: t.Callable[[ScreenT, ScreenChannelSelect, miru.ViewContext], t.Awaitable[None]],
+    ) -> DecoratedScreenItem[ScreenT, ScreenChannelSelect]:
         if not inspect.iscoroutinefunction(func):
             raise TypeError("channel_select must decorate coroutine function.")
 
-        item: ScreenChannelSelect[miru.ClientT] = ScreenChannelSelect(
+        item: ScreenChannelSelect = ScreenChannelSelect(
             channel_types=channel_types,
             custom_id=custom_id,
             placeholder=placeholder,
@@ -269,25 +265,25 @@ def mentionable_select(
     disabled: bool = False,
     row: int | None = None,
 ) -> t.Callable[
-    [t.Callable[[ScreenT, ScreenMentionableSelect[miru.ClientT], miru.ViewContext[miru.ClientT]], t.Awaitable[None]]],
-    DecoratedScreenItem[miru.ClientT, ScreenT, ScreenMentionableSelect[miru.ClientT]],
+    [t.Callable[[ScreenT, ScreenMentionableSelect, miru.ViewContext], t.Awaitable[None]]],
+    DecoratedScreenItem[ScreenT, ScreenMentionableSelect],
 ]:
     """A decorator to transform a function into a Discord UI MentionableSelectMenu's callback.
     This must be inside a subclass of Screen.
 
     Parameters
     ----------
-    custom_id : Optional[str], optional
-        The custom ID for the select menu, by default None
-    placeholder : Optional[str], optional
-        The placeholder text to display when no option is selected, by default None
-    min_values : int, optional
-        The minimum number of values that can be selected, by default 1
-    max_values : int, optional
-        The maximum number of values that can be selected, by default 1
-    disabled : bool, optional
-        Whether the mentionable select menu is disabled, by default False
-    row : Optional[int], optional
+    custom_id : Optional[str]
+        The custom ID for the select menu
+    placeholder : Optional[str]
+        The placeholder text to display when no option is selected
+    min_values : int
+        The minimum number of values that can be selected
+    max_values : int
+        The maximum number of values that can be selected
+    disabled : bool
+        Whether the mentionable select menu is disabled
+    row : Optional[int]
         The row the select should be in, leave as None for auto-placement.
 
     Returns
@@ -302,14 +298,12 @@ def mentionable_select(
     """
 
     def decorator(
-        func: t.Callable[
-            [ScreenT, ScreenMentionableSelect[miru.ClientT], miru.ViewContext[miru.ClientT]], t.Awaitable[None]
-        ],
-    ) -> DecoratedScreenItem[miru.ClientT, ScreenT, ScreenMentionableSelect[miru.ClientT]]:
+        func: t.Callable[[ScreenT, ScreenMentionableSelect, miru.ViewContext], t.Awaitable[None]],
+    ) -> DecoratedScreenItem[ScreenT, ScreenMentionableSelect]:
         if not inspect.iscoroutinefunction(func):
             raise TypeError("mentionable_select must decorate coroutine function.")
 
-        item: ScreenMentionableSelect[miru.ClientT] = ScreenMentionableSelect(
+        item: ScreenMentionableSelect = ScreenMentionableSelect(
             custom_id=custom_id,
             placeholder=placeholder,
             min_values=min_values,
@@ -331,26 +325,26 @@ def role_select(
     disabled: bool = False,
     row: int | None = None,
 ) -> t.Callable[
-    [t.Callable[[ScreenT, ScreenRoleSelect[miru.ClientT], miru.ViewContext[miru.ClientT]], t.Awaitable[None]]],
-    DecoratedScreenItem[miru.ClientT, ScreenT, ScreenRoleSelect[miru.ClientT]],
+    [t.Callable[[ScreenT, ScreenRoleSelect, miru.ViewContext], t.Awaitable[None]]],
+    DecoratedScreenItem[ScreenT, ScreenRoleSelect],
 ]:
     """A decorator to transform a function into a Discord UI RoleSelectMenu's callback.
     This must be inside a subclass of Screen.
 
     Parameters
     ----------
-    custom_id : Optional[str], optional
-        The custom ID for the select menu, by default None
-    placeholder : Optional[str], optional
-        The placeholder text to display when no roles are selected, by default None
-    min_values : int, optional
-        The minimum number of roles that can be selected, by default 1
-    max_values : int, optional
-        The maximum number of roles that can be selected, by default 1
-    disabled : bool, optional
-        Whether the select menu is disabled or not, by default False
-    row : Optional[int], optional
-        The row number to place the select menu in, by default None
+    custom_id : Optional[str]
+        The custom ID for the select menu
+    placeholder : Optional[str]
+        The placeholder text to display when no roles are selected
+    min_values : int
+        The minimum number of roles that can be selected
+    max_values : int
+        The maximum number of roles that can be selected
+    disabled : bool
+        Whether the select menu is disabled or not
+    row : Optional[int]
+        The row number to place the select menu in
 
     Returns
     -------
@@ -364,12 +358,12 @@ def role_select(
     """
 
     def decorator(
-        func: t.Callable[[ScreenT, ScreenRoleSelect[miru.ClientT], miru.ViewContext[miru.ClientT]], t.Awaitable[None]],
-    ) -> DecoratedScreenItem[miru.ClientT, ScreenT, ScreenRoleSelect[miru.ClientT]]:
+        func: t.Callable[[ScreenT, ScreenRoleSelect, miru.ViewContext], t.Awaitable[None]],
+    ) -> DecoratedScreenItem[ScreenT, ScreenRoleSelect]:
         if not inspect.iscoroutinefunction(func):
             raise TypeError("role_select must decorate coroutine function.")
 
-        item: ScreenRoleSelect[miru.ClientT] = ScreenRoleSelect(
+        item: ScreenRoleSelect = ScreenRoleSelect(
             custom_id=custom_id,
             placeholder=placeholder,
             min_values=min_values,
@@ -392,8 +386,8 @@ def text_select(
     disabled: bool = False,
     row: int | None = None,
 ) -> t.Callable[
-    [t.Callable[[ScreenT, ScreenTextSelect[miru.ClientT], miru.ViewContext[miru.ClientT]], t.Awaitable[None]]],
-    DecoratedScreenItem[miru.ClientT, ScreenT, ScreenTextSelect[miru.ClientT]],
+    [t.Callable[[ScreenT, ScreenTextSelect, miru.ViewContext], t.Awaitable[None]]],
+    DecoratedScreenItem[ScreenT, ScreenTextSelect],
 ]:
     """A decorator to transform a function into a Discord UI TextSelectMenu's callback.
     This must be inside a subclass of Screen.
@@ -402,18 +396,18 @@ def text_select(
     ----------
     options : Sequence[Union[hikari.SelectMenuOption, miru.SelectOption]]
         The options to add to the select menu.
-    custom_id : Optional[str], optional
-        The custom ID for the select menu, by default None
-    placeholder : Optional[str], optional
-        The placeholder text to display when no options are selected, by default None
-    min_values : int, optional
-        The minimum number of options that can be selected, by default 1
-    max_values : int, optional
-        The maximum number of options that can be selected, by default 1
-    disabled : bool, optional
-        Whether the select menu is disabled or not, by default False
-    row : Optional[int], optional
-        The row number to place the select menu in, by default None
+    custom_id : Optional[str]
+        The custom ID for the select menu
+    placeholder : Optional[str]
+        The placeholder text to display when no options are selected
+    min_values : int
+        The minimum number of options that can be selected
+    max_values : int
+        The maximum number of options that can be selected
+    disabled : bool
+        Whether the select menu is disabled or not
+    row : Optional[int]
+        The row number to place the select menu in
 
     Returns
     -------
@@ -422,12 +416,12 @@ def text_select(
     """
 
     def decorator(
-        func: t.Callable[[ScreenT, ScreenTextSelect[miru.ClientT], miru.ViewContext[miru.ClientT]], t.Awaitable[None]],
-    ) -> DecoratedScreenItem[miru.ClientT, ScreenT, ScreenTextSelect[miru.ClientT]]:
+        func: t.Callable[[ScreenT, ScreenTextSelect, miru.ViewContext], t.Awaitable[None]],
+    ) -> DecoratedScreenItem[ScreenT, ScreenTextSelect]:
         if not inspect.iscoroutinefunction(func):
             raise TypeError("text_select must decorate coroutine function.")
 
-        item: ScreenTextSelect[miru.ClientT] = ScreenTextSelect(
+        item: ScreenTextSelect = ScreenTextSelect(
             options=options,
             custom_id=custom_id,
             placeholder=placeholder,
@@ -450,26 +444,26 @@ def user_select(
     disabled: bool = False,
     row: int | None = None,
 ) -> t.Callable[
-    [t.Callable[[ScreenT, ScreenUserSelect[miru.ClientT], miru.ViewContext[miru.ClientT]], t.Awaitable[None]]],
-    DecoratedScreenItem[miru.ClientT, ScreenT, ScreenUserSelect[miru.ClientT]],
+    [t.Callable[[ScreenT, ScreenUserSelect, miru.ViewContext], t.Awaitable[None]]],
+    DecoratedScreenItem[ScreenT, ScreenUserSelect],
 ]:
     """A decorator to transform a function into a Discord UI UserSelectMenu's callback.
     This must be inside a subclass of Screen.
 
     Parameters
     ----------
-    custom_id : Optional[str], optional
-        The custom ID for the select menu, by default None
-    placeholder : Optional[str], optional
-        The placeholder text to display when no users are selected, by default None
-    min_values : int, optional
-        The minimum number of users that can be selected, by default 1
-    max_values : int, optional
-        The maximum number of users that can be selected, by default 1
-    disabled : bool, optional
-        Whether the select menu is disabled or not, by default False
-    row : Optional[int], optional
-        The row number to place the select menu in, by default None
+    custom_id : Optional[str]
+        The custom ID for the select menu
+    placeholder : Optional[str]
+        The placeholder text to display when no users are selected
+    min_values : int
+        The minimum number of users that can be selected
+    max_values : int
+        The maximum number of users that can be selected
+    disabled : bool
+        Whether the select menu is disabled or not
+    row : Optional[int]
+        The row number to place the select menu in
 
     Returns
     -------
@@ -478,12 +472,12 @@ def user_select(
     """
 
     def decorator(
-        func: t.Callable[[ScreenT, ScreenUserSelect[miru.ClientT], miru.ViewContext[miru.ClientT]], t.Awaitable[None]],
-    ) -> DecoratedScreenItem[miru.ClientT, ScreenT, ScreenUserSelect[miru.ClientT]]:
+        func: t.Callable[[ScreenT, ScreenUserSelect, miru.ViewContext], t.Awaitable[None]],
+    ) -> DecoratedScreenItem[ScreenT, ScreenUserSelect]:
         if not inspect.iscoroutinefunction(func):
             raise TypeError("user_select must decorate coroutine function.")
 
-        item: ScreenUserSelect[miru.ClientT] = ScreenUserSelect(
+        item: ScreenUserSelect = ScreenUserSelect(
             custom_id=custom_id,
             placeholder=placeholder,
             min_values=min_values,

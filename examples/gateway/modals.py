@@ -1,25 +1,24 @@
 import hikari
 import miru
-from miru import GW
 
 
-class MyModal(miru.Modal[GW]):
+class MyModal(miru.Modal):
     # Define our modal items
     # You can also use Modal.add_item() to add items to the modal after instantiation, just like with views.
-    name = miru.TextInput[GW](label="Name", placeholder="Enter your name!", required=True)
-    bio = miru.TextInput[GW](label="Biography", value="Pre-filled content!", style=hikari.TextInputStyle.PARAGRAPH)
+    name = miru.TextInput(label="Name", placeholder="Enter your name!", required=True)
+    bio = miru.TextInput(label="Biography", value="Pre-filled content!", style=hikari.TextInputStyle.PARAGRAPH)
 
     # The callback function is called after the user hits 'Submit'
-    async def callback(self, context: miru.ModalContext[GW]) -> None:
+    async def callback(self, context: miru.ModalContext) -> None:
         # You can also access the values using ctx.values, Modal.values, or use ctx.get_value_by_id()
         await context.respond(f"Your name: `{self.name.value}`\nYour bio: ```{self.bio.value}```")
 
 
-class ModalView(miru.View[GW]):
+class ModalView(miru.View):
 
     # Create a new button that will invoke our modal
     @miru.button(label="Click me!", style=hikari.ButtonStyle.PRIMARY)
-    async def modal_button(self, button: miru.Button[GW], context: miru.ViewContext[GW]) -> None:
+    async def modal_button(self, button: miru.Button, context: miru.ViewContext) -> None:
         modal = MyModal(title="Example Title")
         # You may also use the builder provided by Modal to send the modal to an arbitrary interaction.
         # Keep in mind that modals can only be sent in response to interactions.
@@ -32,7 +31,7 @@ class ModalView(miru.View[GW]):
 
 
 bot = hikari.GatewayBot("...")
-client = miru.GatewayClient(bot)
+client = miru.Client(bot)
 
 
 @bot.listen()

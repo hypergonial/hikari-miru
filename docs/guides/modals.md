@@ -29,57 +29,30 @@ views, with a few notable exceptions, namely:
 
 Let's create our first modal:
 
-=== "Gateway"
 
-    ```py
-    class MyModal(miru.Modal[miru.GW]):
+```py
+class MyModal(miru.Modal):
 
-        name = miru.TextInput[miru.GW](
-            label="Name",
-            placeholder="Type your name!",
-            required=True
+    name = miru.TextInput(
+        label="Name",
+        placeholder="Type your name!",
+        required=True
+    )
+
+    bio = miru.TextInput(
+        label="Biography",
+        value="Pre-filled content!",
+        style=hikari.TextInputStyle.PARAGRAPH
+    )
+
+    # The callback function is called after the user hits 'Submit'
+    async def callback(self, ctx: miru.ModalContext) -> None:
+        # You can also access the values using ctx.values,
+        # Modal.values, or use ctx.get_value_by_id()
+        await ctx.respond(
+            f"Your name: `{self.name.value}`\nYour bio: ```{self.bio.value}```"
         )
-
-        bio = miru.TextInput[miru.GW](
-            label="Biography",
-            value="Pre-filled content!",
-            style=hikari.TextInputStyle.PARAGRAPH
-        )
-
-        # The callback function is called after the user hits 'Submit'
-        async def callback(self, ctx: miru.ModalContext[miru.GW]) -> None:
-            # You can also access the values using ctx.values,
-            # Modal.values, or use ctx.get_value_by_id()
-            await ctx.respond(
-                f"Your name: `{self.name.value}`\nYour bio: ```{self.bio.value}```"
-            )
-    ```
-
-=== "REST"
-
-    ```py
-    class MyModal(miru.Modal[miru.REST]):
-
-        name = miru.TextInput[miru.REST](
-            label="Name",
-            placeholder="Type your name!",
-            required=True
-        )
-
-        bio = miru.TextInput[miru.REST](
-            label="Biography",
-            value="Pre-filled content!",
-            style=hikari.TextInputStyle.PARAGRAPH
-        )
-
-        # The callback function is called after the user hits 'Submit'
-        async def callback(self, ctx: miru.ModalContext[miru.REST]) -> None:
-            # You can also access the values using ctx.values,
-            # Modal.values, or use ctx.get_value_by_id()
-            await ctx.respond(
-                f"Your name: `{self.name.value}`\nYour bio: ```{self.bio.value}```"
-            )
-    ```
+```
 
 
 There is also an alternative way to add items to a modal, through the [`Modal.add_item`][miru.modal.Modal.add_item] method, similarly to views.
@@ -89,32 +62,16 @@ There is also an alternative way to add items to a modal, through the [`Modal.ad
 
 Now, we will generate an **interaction** through the use of a button so we can send the user our modal:
 
-=== "Gateway"
-
-    ```py
-    class ModalView(miru.View[miru.GW]):
-        # Create a new button that will invoke our modal
-        @miru.button(label="Click me!", style=hikari.ButtonStyle.PRIMARY)
-        async def modal_button(
-            self, button: miru.Button[miru.GW], ctx: miru.ViewContext[miru.GW]
-        ) -> None:
-            modal = MyModal(title="Example Title")
-            await ctx.respond_with_modal(modal)
-    ```
-
-=== "REST"
-
-    ```py
-    class ModalView(miru.View[miru.REST]):
-        # Create a new button that will invoke our modal
-        @miru.button(label="Click me!", style=hikari.ButtonStyle.PRIMARY)
-        async def modal_button(
-            self, button: miru.Button[miru.REST], ctx: miru.ViewContext[miru.REST]
-        ) -> None:
-            modal = MyModal(title="Example Title")
-            await ctx.respond_with_modal(modal)
-    ```
-
+```py
+class ModalView(miru.View):
+    # Create a new button that will invoke our modal
+    @miru.button(label="Click me!", style=hikari.ButtonStyle.PRIMARY)
+    async def modal_button(
+        self, button: miru.Button, ctx: miru.ViewContext
+    ) -> None:
+        modal = MyModal(title="Example Title")
+        await ctx.respond_with_modal(modal)
+```
 
 Combining the above code with the modal we created earlier, you should now have a basic working example where the user can click the button,
 get prompted with a modal, and then submit their input. For more information on modals, please see the [`Modal`][miru.modal.Modal] API reference.

@@ -14,18 +14,18 @@ import miru
 # If this is false, calling client.start_view with bind_to=None will fail.
 
 bot = hikari.GatewayBot("...")
-client = miru.GatewayClient(bot)
+client = miru.Client(bot)
 
-class Persistence(miru.View[miru.GW]):
+class Persistence(miru.View):
     def __init__(self) -> None:
         super().__init__(timeout=None)  # Setting timeout to None
 
     @miru.button(label="Button 1", custom_id="my_unique_custom_id_1")
-    async def button_one(self, button: miru.Button[miru.GW], ctx: miru.ViewContext[miru.GW]) -> None:
+    async def button_one(self, button: miru.Button, ctx: miru.ViewContext) -> None:
         await ctx.respond("You pressed button 1.")
 
     @miru.button(label="Button 2", custom_id="my_unique_custom_id_2")
-    async def button_two(self, button: miru.Button[miru.GW], ctx: miru.ViewContext[miru.GW]) -> None:
+    async def button_two(self, button: miru.Button, ctx: miru.ViewContext) -> None:
         await ctx.respond("You pressed button 2.")
 
 

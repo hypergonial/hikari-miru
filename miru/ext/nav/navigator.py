@@ -6,39 +6,37 @@ import typing as t
 import attr
 import hikari
 
-from miru import ClientT
+from miru.ext.nav.items import FirstButton, IndicatorButton, LastButton, NavButton, NavItem, NextButton, PrevButton
+from miru.response import InteractionMessageBuilder
 from miru.view import View
-
-from ...response import InteractionMessageBuilder
-from .items import FirstButton, IndicatorButton, LastButton, NavButton, NavItem, NextButton, PrevButton
 
 if t.TYPE_CHECKING:
     import datetime
 
     import typing_extensions as te
 
+    from miru.client import Client
     from miru.context import Context
-
-    from .items import ViewItem
+    from miru.ext.nav.items import ViewItem
 
 logger = logging.getLogger(__name__)
 
 __all__ = ("NavigatorView", "Page")
 
 
-class NavigatorView(View[ClientT]):
+class NavigatorView(View):
     """A specialized view built for paginated button-menus, navigators.
 
     Parameters
     ----------
-    pages : List[Union[str, hikari.Embed, Sequence[hikari.Embed], Page]]
+    pages : list[str | hikari.Embed | t.Sequence[hikari.Embed] | Page]
         A list of strings, embeds or page objects that this navigator should paginate.
-    buttons : Optional[List[NavButton[NavigatorViewT]]], optional
-        A list of navigation buttons to override the default ones with, by default None
-    timeout : Optional[Union[float, int, datetime.timedelta]], optional
-        The duration after which the view times out, in seconds, by default 120.0
-    autodefer : bool, optional
-        If enabled, interactions will be automatically deferred if not responded to within 2 seconds, by default True
+    buttons : list[NavButton] | None
+        A list of navigation buttons to override the default ones with
+    timeout : float | int | datetime.timedelta | None
+        The duration after which the view times out, in seconds
+    autodefer : bool
+        If enabled, interactions will be automatically deferred if not responded to within 2 seconds
 
     Raises
     ------
@@ -50,7 +48,7 @@ class NavigatorView(View[ClientT]):
         self,
         *,
         pages: t.Sequence[str | hikari.Embed | t.Sequence[hikari.Embed] | Page],
-        buttons: t.Sequence[NavButton[ClientT]] | None = None,
+        buttons: t.Sequence[NavButton] | None = None,
         timeout: float | int | datetime.timedelta | None = 120.0,
         autodefer: bool = True,
     ) -> None:
@@ -95,8 +93,8 @@ class NavigatorView(View[ClientT]):
         return self._ephemeral
 
     @property
-    def children(self) -> t.Sequence[NavItem[ClientT]]:
-        return t.cast(t.Sequence[NavItem[ClientT]], super().children)
+    def children(self) -> t.Sequence[NavItem]:
+        return t.cast(t.Sequence[NavItem], super().children)
 
     async def on_timeout(self) -> None:
         if self.message is None:
@@ -110,7 +108,7 @@ class NavigatorView(View[ClientT]):
         else:
             await self.message.edit(components=self)
 
-    def get_default_buttons(self) -> t.Sequence[NavButton[ClientT]]:
+    def get_default_buttons(self) -> t.Sequence[NavButton]:
         """Returns the default set of buttons.
 
         Returns
@@ -120,12 +118,12 @@ class NavigatorView(View[ClientT]):
         """
         return [FirstButton(), PrevButton(), IndicatorButton(), NextButton(), LastButton()]
 
-    def add_item(self, item: ViewItem[ClientT]) -> te.Self:
+    def add_item(self, item: ViewItem) -> te.Self:
         """Adds a new item to the navigator. Item must be of type NavItem.
 
         Parameters
         ----------
-        item : Item[MessageActionRowBuilder]
+        item : ViewItem
             An instance of NavItem
 
         Raises
@@ -183,15 +181,15 @@ class NavigatorView(View[ClientT]):
     def is_persistent(self) -> bool:
         return super().is_persistent and not self.ephemeral
 
-    async def send_page(self, context: Context[t.Any, t.Any], page_index: int | None = None) -> None:
+    async def send_page(self, context: Context[t.Any], page_index: int | None = None) -> None:
         """Send a page, editing the original message.
 
         Parameters
         ----------
         context : Context
             The context object that should be used to send this page
-        page_index : Optional[int], optional
-            The index of the page to send, if not specified, sends the current page, by default None
+        page_index : Optional[int]
+            The index of the page to send, if not specified, sends the current page
         """
         if page_index is not None:
             self.current_page = page_index
@@ -209,7 +207,7 @@ class NavigatorView(View[ClientT]):
 
     async def swap_pages(
         self,
-        context: Context[t.Any, t.Any],
+        context: Context[t.Any],
         new_pages: t.Sequence[str | hikari.Embed | t.Sequence[hikari.Embed] | Page],
         start_at: int = 0,
     ) -> None:
@@ -222,8 +220,8 @@ class NavigatorView(View[ClientT]):
             The context object that should be used to send the updated pages
         new_pages : Sequence[Union[str, Embed, Sequence[Embed] | Page]]
             The new sequence of pages to swap to
-        start_at : int, optional
-            The page to start at, by default 0
+        start_at : int
+            The page to start at
         """
         if not new_pages:
             raise ValueError(f"Expected at least one page to be passed to {type(self).__name__}.")
@@ -231,8 +229,8 @@ class NavigatorView(View[ClientT]):
         self._pages = new_pages
         await self.send_page(context, page_index=start_at)
 
-    def build_response(self, client: ClientT, start_at: int = 0, ephemeral: bool = False) -> InteractionMessageBuilder:
-        """Create a REST response builder out of this Navigator.
+    def build_response(self, client: Client, start_at: int = 0, ephemeral: bool = False) -> InteractionMessageBuilder:
+        """Create a response builder out of this Navigator.
 
         Parameters
         ----------
@@ -240,8 +238,8 @@ class NavigatorView(View[ClientT]):
             The client instance to use to build the response
         ephemeral : bool
             Determines if the navigator will be sent ephemerally or not.
-        start_at : int, optional
-            The page index to start at, by default 0
+        start_at : int
+            The page index to start at
         """
         if self._client is not None:
             raise RuntimeError("Navigator is already bound to a client.")

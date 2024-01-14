@@ -9,7 +9,8 @@ import typing as t
 import attr
 import hikari
 
-from ..internal.types import ClientT
+if t.TYPE_CHECKING:
+    from miru import Client
 
 InteractionT = t.TypeVar("InteractionT", "hikari.ComponentInteraction", "hikari.ModalInteraction")
 
@@ -80,8 +81,8 @@ class InteractionResponse:
 
     __slots__ = ("_context", "_message", "_delete_after_task")
 
-    def __init__(self, context: Context[ClientT, InteractionT], message: hikari.Message | None = None) -> None:
-        self._context: Context[ClientT, InteractionT] = context
+    def __init__(self, context: Context[InteractionT], message: hikari.Message | None = None) -> None:
+        self._context: Context[InteractionT] = context
         self._message: hikari.Message | None = message
         self._delete_after_task: asyncio.Task[None] | None = None
 
@@ -156,25 +157,25 @@ class InteractionResponse:
 
         Parameters
         ----------
-        content : undefined.UndefinedOr[t.Any], optional
+        content : undefined.UndefinedOr[t.Any]
             The content of the message. Anything passed here will be cast to str.
-        attachment : undefined.UndefinedOr[hikari.Resourceish], optional
+        attachment : undefined.UndefinedOr[hikari.Resourceish]
             An attachment to add to this message.
-        attachments : undefined.UndefinedOr[t.Sequence[hikari.Resourceish]], optional
+        attachments : undefined.UndefinedOr[t.Sequence[hikari.Resourceish]]
             A sequence of attachments to add to this message.
-        component : undefined.UndefinedOr[hikari.api.special_endpoints.ComponentBuilder], optional
+        component : undefined.UndefinedOr[hikari.api.special_endpoints.ComponentBuilder]
             A component to add to this message.
-        components : undefined.UndefinedOr[t.Sequence[hikari.api.special_endpoints.ComponentBuilder]], optional
+        components : undefined.UndefinedOr[t.Sequence[hikari.api.special_endpoints.ComponentBuilder]]
             A sequence of components to add to this message.
-        embed : undefined.UndefinedOr[hikari.Embed], optional
+        embed : undefined.UndefinedOr[hikari.Embed]
             An embed to add to this message.
-        embeds : undefined.UndefinedOr[t.Sequence[hikari.Embed]], optional
+        embeds : undefined.UndefinedOr[t.Sequence[hikari.Embed]]
             A sequence of embeds to add to this message.
-        mentions_everyone : undefined.UndefinedOr[bool], optional
+        mentions_everyone : undefined.UndefinedOr[bool]
             If True, mentioning @everyone will be allowed.
-        user_mentions : undefined.UndefinedOr[[hikari.SnowflakeishSequence[hikari.PartialUser] | bool], optional
+        user_mentions : undefined.UndefinedOr[[hikari.SnowflakeishSequence[hikari.PartialUser] | bool]
             The set of allowed user mentions in this message. Set to True to allow all.
-        role_mentions : undefined.UndefinedOr[[hikari.SnowflakeishSequence[hikari.PartialRole] | bool], optional
+        role_mentions : undefined.UndefinedOr[[hikari.SnowflakeishSequence[hikari.PartialRole] | bool]
             The set of allowed role mentions in this message. Set to True to allow all.
 
         Returns
@@ -212,7 +213,7 @@ class InteractionResponse:
         return await self._context._create_response(message)
 
 
-class Context(abc.ABC, t.Generic[ClientT, InteractionT]):
+class Context(abc.ABC, t.Generic[InteractionT]):
     """An abstract base class for context objects that proxying a Discord interaction."""
 
     __slots__ = (
@@ -226,7 +227,7 @@ class Context(abc.ABC, t.Generic[ClientT, InteractionT]):
         "_created_at",
     )
 
-    def __init__(self, client: ClientT, interaction: InteractionT) -> None:
+    def __init__(self, client: Client, interaction: InteractionT) -> None:
         self._interaction: InteractionT = interaction
         self._client = client
         self._responses: t.MutableSequence[InteractionResponse] = []
@@ -262,7 +263,7 @@ class Context(abc.ABC, t.Generic[ClientT, InteractionT]):
         return self._responses
 
     @property
-    def client(self) -> ClientT:
+    def client(self) -> Client:
         """The client that loaded miru."""
         return self._client
 
@@ -370,31 +371,31 @@ class Context(abc.ABC, t.Generic[ClientT, InteractionT]):
 
         Parameters
         ----------
-        content : hikari.UndefinedOr[Any], optional
+        content : hikari.UndefinedOr[Any]
             The content of the message. Anything passed here will be cast to str.
-        tts : hikari.UndefinedOr[bool], optional
+        tts : hikari.UndefinedOr[bool]
             If the message should be tts or not.
-        attachment : hikari.UndefinedOr[hikari.Resourceish], optional
+        attachment : hikari.UndefinedOr[hikari.Resourceish]
             An attachment to add to this message.
-        attachments : hikari.UndefinedOr[t.Sequence[hikari.Resourceish]], optional
+        attachments : hikari.UndefinedOr[t.Sequence[hikari.Resourceish]]
             A sequence of attachments to add to this message.
-        component : hikari.UndefinedOr[hikari.api.special_endpoints.ComponentBuilder], optional
+        component : hikari.UndefinedOr[hikari.api.special_endpoints.ComponentBuilder]
             A component to add to this message.
-        components : hikari.UndefinedOr[t.Sequence[hikari.api.special_endpoints.ComponentBuilder]], optional
+        components : hikari.UndefinedOr[t.Sequence[hikari.api.special_endpoints.ComponentBuilder]]
             A sequence of components to add to this message.
-        embed : hikari.UndefinedOr[hikari.Embed], optional
+        embed : hikari.UndefinedOr[hikari.Embed]
             An embed to add to this message.
-        embeds : hikari.UndefinedOr[Sequence[hikari.Embed]], optional
+        embeds : hikari.UndefinedOr[Sequence[hikari.Embed]]
             A sequence of embeds to add to this message.
-        mentions_everyone : hikari.UndefinedOr[bool], optional
+        mentions_everyone : hikari.UndefinedOr[bool]
             If True, mentioning @everyone will be allowed.
-        user_mentions : hikari.UndefinedOr[Union[hikari.SnowflakeishSequence[hikari.PartialUser], bool]], optional
+        user_mentions : hikari.UndefinedOr[Union[hikari.SnowflakeishSequence[hikari.PartialUser], bool]]
             The set of allowed user mentions in this message. Set to True to allow all.
-        role_mentions : hikari.UndefinedOr[Union[hikari.SnowflakeishSequence[hikari.PartialRole], bool]], optional
+        role_mentions : hikari.UndefinedOr[Union[hikari.SnowflakeishSequence[hikari.PartialRole], bool]]
             The set of allowed role mentions in this message. Set to True to allow all.
-        flags : Union[hikari.UndefinedType, int, hikari.MessageFlag], optional
+        flags : Union[hikari.UndefinedType, int, hikari.MessageFlag]
             Message flags that should be included with this message.
-        delete_after: hikari.undefinedOr[Union[float, int, datetime.timedelta]], optional
+        delete_after: hikari.undefinedOr[Union[float, int, datetime.timedelta]]
             Delete the response after the specified delay.
 
         Returns
@@ -467,29 +468,29 @@ class Context(abc.ABC, t.Generic[ClientT, InteractionT]):
 
         Parameters
         ----------
-        content : hikari.UndefinedOr[Any], optional
+        content : hikari.UndefinedOr[Any]
             The content of the message. Anything passed here will be cast to str.
-        tts : hikari.UndefinedOr[bool], optional
+        tts : hikari.UndefinedOr[bool]
             If the message should be tts or not.
-        attachment : hikari.UndefinedOr[hikari.Resourceish], optional
+        attachment : hikari.UndefinedOr[hikari.Resourceish]
             An attachment to add to this message.
-        attachments : hikari.UndefinedOr[t.Sequence[hikari.Resourceish]], optional
+        attachments : hikari.UndefinedOr[t.Sequence[hikari.Resourceish]]
             A sequence of attachments to add to this message.
-        component : hikari.UndefinedOr[hikari.api.special_endpoints.ComponentBuilder], optional
+        component : hikari.UndefinedOr[hikari.api.special_endpoints.ComponentBuilder]
             A component to add to this message.
-        components : hikari.UndefinedOr[t.Sequence[hikari.api.special_endpoints.ComponentBuilder]], optional
+        components : hikari.UndefinedOr[t.Sequence[hikari.api.special_endpoints.ComponentBuilder]]
             A sequence of components to add to this message.
-        embed : hikari.UndefinedOr[hikari.Embed], optional
+        embed : hikari.UndefinedOr[hikari.Embed]
             An embed to add to this message.
-        embeds : hikari.UndefinedOr[Sequence[hikari.Embed]], optional
+        embeds : hikari.UndefinedOr[Sequence[hikari.Embed]]
             A sequence of embeds to add to this message.
-        mentions_everyone : hikari.UndefinedOr[bool], optional
+        mentions_everyone : hikari.UndefinedOr[bool]
             If True, mentioning @everyone will be allowed.
-        user_mentions : hikari.UndefinedOr[Union[hikari.SnowflakeishSequence[hikari.PartialUser], bool]], optional
+        user_mentions : hikari.UndefinedOr[Union[hikari.SnowflakeishSequence[hikari.PartialUser], bool]]
             The set of allowed user mentions in this message. Set to True to allow all.
-        role_mentions : hikari.UndefinedOr[Union[hikari.SnowflakeishSequence[hikari.PartialRole], bool]], optional
+        role_mentions : hikari.UndefinedOr[Union[hikari.SnowflakeishSequence[hikari.PartialRole], bool]]
             The set of allowed role mentions in this message. Set to True to allow all.
-        flags : Union[hikari.UndefinedType, int, hikari.MessageFlag], optional
+        flags : Union[hikari.UndefinedType, int, hikari.MessageFlag]
             Message flags that should be included with this message.
 
         Returns
@@ -559,10 +560,10 @@ class Context(abc.ABC, t.Generic[ClientT, InteractionT]):
 
         Parameters
         ----------
-        response_type : hikari.ResponseType, optional
+        response_type : hikari.ResponseType
             The response-type of this defer action. Defaults to DEFERRED_MESSAGE_UPDATE.
-        flags : Union[int, hikari.MessageFlag, None], optional
-            Message flags that should be included with this defer request, by default None
+        flags : Union[int, hikari.MessageFlag, None]
+            Message flags that should be included with this defer request
 
         Raises
         ------

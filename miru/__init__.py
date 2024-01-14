@@ -1,22 +1,20 @@
 """A component handler for hikari, with support for modals and views.
 
-To get started, you will want to call `miru.install` with an instance of your bot.
-
 GitHub:
 https://github.com/hypergonial/hikari-miru
 
 Documentation:
-https://hikari-miru.readthedocs.io/
+https://miru.hypergonial.com
 """
 
-from .button import Button, button
-from .client import GW, REST, Client, GatewayClient, RESTClient
-from .context import Context, InteractionResponse, ModalContext, ViewContext
-from .exceptions import HandlerFullError, ItemAlreadyAttachedError, MiruError, RowFullError
-from .internal.about import __author__, __author_email__, __license__, __maintainer__, __url__, __version__
-from .internal.types import ClientT
-from .modal import Modal
-from .select import (
+from miru import abc, ext, select
+from miru.button import Button, button
+from miru.client import Client
+from miru.context import Context, InteractionResponse, ModalContext, ViewContext
+from miru.exceptions import HandlerFullError, ItemAlreadyAttachedError, MiruError, RowFullError
+from miru.internal.about import __author__, __author_email__, __license__, __maintainer__, __url__, __version__
+from miru.modal import Modal
+from miru.select import (
     ChannelSelect,
     MentionableSelect,
     RoleSelect,
@@ -30,16 +28,14 @@ from .select import (
     text_select,
     user_select,
 )
-from .text_input import TextInput
-from .view import View
+from miru.text_input import TextInput
+from miru.view import View
 
 __all__ = (
-    "ClientT",
+    "abc",
+    "ext",
+    "select",
     "Client",
-    "GatewayClient",
-    "GW",
-    "REST",
-    "RESTClient",
     "Context",
     "InteractionResponse",
     "ModalContext",

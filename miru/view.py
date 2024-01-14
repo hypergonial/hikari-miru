@@ -9,29 +9,29 @@ import typing as t
 
 import hikari
 
+from miru.abc.item import DecoratedItem, ViewItem
+from miru.abc.item_handler import ItemHandler
+from miru.button import Button
+from miru.context.view import AutodeferOptions, ViewContext
 from miru.exceptions import HandlerFullError
-
-from .abc.item import DecoratedItem, ViewItem
-from .abc.item_handler import ItemHandler
-from .button import Button
-from .context.view import AutodeferOptions, ViewContext
-from .internal.types import ClientT, ViewResponseBuildersT
-from .select import ChannelSelect, MentionableSelect, RoleSelect, TextSelect, UserSelect
+from miru.internal.types import ViewResponseBuildersT
+from miru.select import ChannelSelect, MentionableSelect, RoleSelect, TextSelect, UserSelect
 
 if t.TYPE_CHECKING:
     import datetime
 
     import typing_extensions as te
 
+    from miru.client import Client
+
 
 logger = logging.getLogger(__name__)
 
-ViewContextT = t.TypeVar("ViewContextT", bound=ViewContext[t.Any])
-ViewT = t.TypeVar("ViewT", bound="View[t.Any]")
+ViewT = t.TypeVar("ViewT", bound="View")
 
 __all__ = ("View",)
 
-_COMPONENT_VIEW_ITEM_MAPPING: t.Mapping[hikari.ComponentType, t.Type[ViewItem[t.Any]]] = {
+_COMPONENT_VIEW_ITEM_MAPPING: t.Mapping[hikari.ComponentType, t.Type[ViewItem]] = {
     hikari.ComponentType.BUTTON: Button,
     hikari.ComponentType.TEXT_SELECT_MENU: TextSelect,
     hikari.ComponentType.CHANNEL_SELECT_MENU: ChannelSelect,
@@ -44,22 +44,17 @@ _COMPONENT_VIEW_ITEM_MAPPING: t.Mapping[hikari.ComponentType, t.Type[ViewItem[t.
 
 class View(
     ItemHandler[
-        ClientT,
-        hikari.impl.MessageActionRowBuilder,
-        ViewResponseBuildersT,
-        ViewContext[ClientT],
-        hikari.ComponentInteraction,
-        ViewItem[ClientT],
+        hikari.impl.MessageActionRowBuilder, ViewResponseBuildersT, ViewContext, hikari.ComponentInteraction, ViewItem
     ]
 ):
     """Represents a set of Discord UI components attached to a message.
 
     Parameters
     ----------
-    timeout : Optional[Union[float, int, datetime.timedelta]], optional
-        The duration after which the view times out, in seconds, by default 120.0
-    autodefer : bool | AutodeferOptions, optional
-        If enabled, interactions will be automatically deferred if not responded to within 2 seconds, by default True
+    timeout : Optional[Union[float, int, datetime.timedelta]]
+        The duration after which the view times out, in seconds
+    autodefer : bool | AutodeferOptions
+        If enabled, interactions will be automatically deferred if not responded to within 2 seconds
         You may also pass an instance of [miru.AutodeferOptions][miru.context.view.AutodeferOptions] to customize the autodefer behaviour.
 
     Raises
@@ -71,12 +66,12 @@ class View(
     """
 
     _view_children: t.ClassVar[
-        t.MutableSequence[DecoratedItem[t.Any, te.Self, ViewItem[t.Any]]]
+        t.MutableSequence[DecoratedItem[te.Self, ViewItem]]
     ] = []  # Decorated callbacks that need to be turned into items
 
     def __init_subclass__(cls) -> None:
         """Get decorated callbacks."""
-        children: t.MutableSequence[DecoratedItem[ClientT, te.Self, ViewItem[ClientT]]] = []
+        children: t.MutableSequence[DecoratedItem[te.Self, ViewItem]] = []
         for base_cls in reversed(cls.mro()):
             for value in base_cls.__dict__.values():
                 if isinstance(value, DecoratedItem):
@@ -145,10 +140,10 @@ class View(
         ----------
         message : hikari.Message
             The message to read components from
-        timeout : Optional[float], optional
-            The timeout of the created view, by default 120
-        autodefer : bool, optional
-            If enabled, interactions will be automatically deferred if not responded to within 2 seconds, by default True
+        timeout : Optional[float]
+            The timeout of the created view
+        autodefer : bool
+            If enabled, interactions will be automatically deferred if not responded to within 2 seconds
 
         Returns
         -------
@@ -191,7 +186,7 @@ class View(
         self.client._remove_handler(self)
         self.client._add_handler(self)
 
-    def add_item(self, item: ViewItem[ClientT]) -> te.Self:
+    def add_item(self, item: ViewItem) -> te.Self:
         """Adds a new item to the view.
 
         Parameters
@@ -219,7 +214,7 @@ class View(
         self._refresh_client_customid_list()
         return self
 
-    def remove_item(self, item: ViewItem[ClientT]) -> te.Self:
+    def remove_item(self, item: ViewItem) -> te.Self:
         """Removes an item from the view.
 
         Parameters
@@ -253,7 +248,7 @@ class View(
         self._refresh_client_customid_list()
         return self
 
-    async def view_check(self, context: ViewContext[ClientT]) -> bool:
+    async def view_check(self, context: ViewContext) -> bool:
         """Called before any callback in the view is called. Must evaluate to a truthy value to pass.
         Override for custom check logic.
 
@@ -270,7 +265,7 @@ class View(
         return True
 
     async def on_error(
-        self, error: Exception, item: ViewItem[ClientT] | None = None, context: ViewContext[ClientT] | None = None
+        self, error: Exception, item: ViewItem | None = None, context: ViewContext | None = None
     ) -> None:
         """Called when an error occurs in a callback function or the built-in timeout function.
         Override for custom error-handling logic.
@@ -279,9 +274,9 @@ class View(
         ----------
         error : Exception
             The exception encountered.
-        item : Optional[MessageItem[ViewT]], optional
+        item : Optional[MessageItem[ViewT]]
             The item this exception originates from, if any.
-        context : Optional[Context], optional
+        context : Optional[Context]
             The context associated with this exception, if any.
         """
         if item:
@@ -292,16 +287,16 @@ class View(
         traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
 
     def get_context(
-        self, interaction: hikari.ComponentInteraction, *, cls: t.Type[ViewContext[ClientT]] = ViewContext
-    ) -> ViewContext[ClientT]:
+        self, interaction: hikari.ComponentInteraction, *, cls: t.Type[ViewContext] = ViewContext
+    ) -> ViewContext:
         """Get the context for this view. Override this function to provide a custom context object.
 
         Parameters
         ----------
         interaction : hikari.ComponentInteraction
             The interaction to construct the context from.
-        cls : Type[ViewContext], optional
-            The class to use for the context, by default ViewContext.
+        cls : Type[ViewContext]
+            The class to use for the context
 
         Returns
         -------
@@ -310,7 +305,7 @@ class View(
         """
         return cls(self, self.client, interaction)
 
-    async def _handle_callback(self, item: ViewItem[ClientT], context: ViewContext[ClientT]) -> None:
+    async def _handle_callback(self, item: ViewItem, context: ViewContext) -> None:
         """Handle the callback of a view item. Separate task in case the view is stopped in the callback."""
         try:
             if not self._message or (self._message.id == context.message.id):
@@ -365,12 +360,12 @@ class View(
 
         Parameters
         ----------
-        timeout : Optional[float], optional
-            The amount of time to wait for input, in seconds, by default None
+        timeout : Optional[float]
+            The amount of time to wait for input, in seconds
         """
         await asyncio.wait_for(self._input_event.wait(), timeout=timeout)
 
-    def _client_start_hook(self, client: ClientT) -> None:
+    def _client_start_hook(self, client: Client) -> None:
         """Called when a client wants to add the view itself."""
         self._client = client
 

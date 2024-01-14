@@ -1,7 +1,6 @@
 import hikari
 import miru
 from miru.ext import menu
-from miru import GW
 
 # The `menu` extension is designed to make creating complex nested menus easy via Discord components.
 #
@@ -10,7 +9,7 @@ from miru import GW
 # - The `ScreenContent` is used to store the message payload (content, embeds etc.) of the screen.
 
 
-class MainScreen(menu.Screen[GW]):
+class MainScreen(menu.Screen):
     # This method must be overridden in your screen classes
     # This is where you would fetch data from a database, etc. to display on your screen
     async def build_content(self) -> menu.ScreenContent:
@@ -24,15 +23,15 @@ class MainScreen(menu.Screen[GW]):
 
     # Note: You should always use @menu decorators inside Screen subclasses, NOT @miru
     @menu.button(label="Moderation")
-    async def moderation(self, button: menu.ScreenButton[GW], ctx: miru.ViewContext[GW]) -> None:
+    async def moderation(self, button: menu.ScreenButton, ctx: miru.ViewContext) -> None:
         # Add a new screen to the menu stack, the message is updated automatically
         await self.menu.push(ModerationScreen(self.menu))
 
     @menu.button(label="Logging")
-    async def logging(self, button: menu.ScreenButton[GW], ctx: miru.ViewContext[GW]) -> None:
+    async def logging(self, button: menu.ScreenButton, ctx: miru.ViewContext) -> None:
         await self.menu.push(LoggingScreen(self.menu))
 
-class ModerationScreen(menu.Screen[GW]):
+class ModerationScreen(menu.Screen):
     async def build_content(self) -> menu.ScreenContent:
         return menu.ScreenContent(
             embed=hikari.Embed(
@@ -43,21 +42,21 @@ class ModerationScreen(menu.Screen[GW]):
         )
 
     @menu.button(label="Back")
-    async def back(self, button: menu.ScreenButton[GW], ctx: miru.ViewContext[GW]) -> None:
+    async def back(self, button: menu.ScreenButton, ctx: miru.ViewContext) -> None:
         # Remove the current screen from the menu stack,
         # effectively going back to the previous screen
         await self.menu.pop()
 
     @menu.button(label="Ban", style=hikari.ButtonStyle.DANGER)
-    async def ban(self, button: menu.ScreenButton[GW], ctx: miru.ViewContext[GW]) -> None:
+    async def ban(self, button: menu.ScreenButton, ctx: miru.ViewContext) -> None:
         await ctx.respond("Hammer time!")
 
     @menu.button(label="Kick", style=hikari.ButtonStyle.SECONDARY)
-    async def kick(self, button: menu.ScreenButton[GW], ctx: miru.ViewContext[GW]) -> None:
+    async def kick(self, button: menu.ScreenButton, ctx: miru.ViewContext) -> None:
         await ctx.respond("Kick!")
 
-class LoggingScreen(menu.Screen[GW]):
-    def __init__(self, menu: menu.Menu[GW]) -> None:
+class LoggingScreen(menu.Screen):
+    def __init__(self, menu: menu.Menu) -> None:
         super().__init__(menu)
         # Your screens can store state in the class instance
         # But keep in mind that the instance will be
@@ -75,11 +74,11 @@ class LoggingScreen(menu.Screen[GW]):
 
 
     @menu.button(label="Back")
-    async def back(self, button: menu.ScreenButton[GW], ctx: miru.ViewContext[GW]) -> None:
+    async def back(self, button: menu.ScreenButton, ctx: miru.ViewContext) -> None:
         await self.menu.pop()
 
     @menu.button(label="Enable", style=hikari.ButtonStyle.DANGER)
-    async def enable(self, button: menu.ScreenButton[GW], ctx: miru.ViewContext[GW]) -> None:
+    async def enable(self, button: menu.ScreenButton, ctx: miru.ViewContext) -> None:
         self.is_enabled = not self.is_enabled
         button.style = hikari.ButtonStyle.SUCCESS if self.is_enabled else hikari.ButtonStyle.DANGER
         button.label = "Disable" if self.is_enabled else "Enable"
@@ -87,7 +86,7 @@ class LoggingScreen(menu.Screen[GW]):
         await self.menu.update_message()
 
 bot = hikari.GatewayBot("...")
-client = miru.GatewayClient(bot)
+client = miru.Client(bot)
 
 
 @bot.listen()
@@ -101,7 +100,7 @@ async def buttons(event: hikari.GuildMessageCreateEvent) -> None:
 
     # If the bot is mentioned
     if me.id in event.message.user_mentions_ids:
-        my_menu = menu.Menu[GW]()  # Create a new Menu
+        my_menu = menu.Menu()  # Create a new Menu
         builder = await my_menu.build_response_async(client, MainScreen(my_menu))
         await builder.send_to_channel(event.channel_id)
         client.start_view(my_menu)

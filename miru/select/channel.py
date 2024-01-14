@@ -5,39 +5,38 @@ import typing as t
 
 import hikari
 
-from ..abc.item import DecoratedItem
-from ..internal.types import ClientT
-from .base import SelectBase
+from miru.abc.item import DecoratedItem
+from miru.select.base import SelectBase
 
 if t.TYPE_CHECKING:
     import typing_extensions as te
 
-    from ..context.view import ViewContext
-    from ..view import View
+    from miru.context.view import ViewContext
+    from miru.view import View
 
-    ViewT = t.TypeVar("ViewT", bound="View[t.Any]")
+    ViewT = t.TypeVar("ViewT", bound="View")
 
 __all__ = ("ChannelSelect", "channel_select")
 
 
-class ChannelSelect(SelectBase[ClientT]):
+class ChannelSelect(SelectBase):
     """A view component representing a select menu of channels.
 
     Parameters
     ----------
-    channel_types : Sequence[Union[int, hikari.ChannelType]], optional
-        A sequence of channel types to filter the select menu by, by default (hikari.ChannelType.GUILD_TEXT,)
-    custom_id : Optional[str], optional
-        The custom identifier of the select menu, by default None
-    placeholder : Optional[str], optional
-        Placeholder text displayed on the select menu, by default None
-    min_values : int, optional
-        The minimum values a user has to select before it can be sent, by default 1
-    max_values : int, optional
-        The maximum values a user can select, by default 1
-    disabled : bool, optional
-        A boolean determining if the select menu should be disabled or not, by default False
-    row : Optional[int], optional
+    channel_types : t.Sequence[int | hikari.ChannelType]
+        A sequence of channel types to filter the select menu by
+    custom_id : str | None
+        The custom identifier of the select menu
+    placeholder : str | None
+        Placeholder text displayed on the select menu
+    min_values : int
+        The minimum values a user has to select before it can be sent
+    max_values : int
+        The maximum values a user can select
+    disabled : bool
+        A boolean determining if the select menu should be disabled or not
+    row : int | None
         The row the select menu should be in, leave as None for auto-placement.
     """
 
@@ -108,7 +107,7 @@ class ChannelSelect(SelectBase[ClientT]):
             channel_types=self.channel_types,
         )
 
-    async def _refresh_state(self, context: ViewContext[ClientT]) -> None:
+    async def _refresh_state(self, context: ViewContext) -> None:
         hikari.ComponentInteraction
         if context.interaction.resolved is None:
             self._values = ()
@@ -126,48 +125,46 @@ def channel_select(
     disabled: bool = False,
     row: int | None = None,
 ) -> t.Callable[
-    [t.Callable[[ViewT, ChannelSelect[ClientT], ViewContext[ClientT]], t.Awaitable[None]]],
-    DecoratedItem[ClientT, ViewT, ChannelSelect[ClientT]],
+    [t.Callable[[ViewT, ChannelSelect, ViewContext], t.Awaitable[None]]], DecoratedItem[ViewT, ChannelSelect]
 ]:
     """A decorator to transform a function into a Discord UI ChannelSelectMenu's callback.
     This must be inside a subclass of View.
 
     Parameters
     ----------
-    channel_types : Sequence[Union[int, hikari.ChannelType]], optional
-        A sequence of channel types to filter the select menu by. Defaults to (hikari.ChannelType.GUILD_TEXT,).
-    custom_id : Optional[str], optional
-        The custom ID of the select menu. Defaults to None.
-    placeholder: Optional[str], optional
-        The placeholder to display when nothing is selected. Defaults to None.
-    min_values : int, optional
-        The minimum number of values that can be selected. Defaults to 1.
-    max_values : int, optional
-        The maximum number of values that can be selected. Defaults to 1.
-    disabled : bool, optional
-        Whether the select menu is disabled. Defaults to False.
-    row : Optional[int], optional
+    channel_types : t.Sequence[int | hikari.ChannelType]
+        A sequence of channel types to filter the select menu by.
+    custom_id : str | None
+        The custom ID of the select menu
+    placeholder: str | None
+        The placeholder to display when nothing is selected
+    min_values : int
+        The minimum number of values that can be selected
+    max_values : int
+        The maximum number of values that can be selected
+    disabled : bool
+        Whether the select menu is disabled
+    row : int | None
         The row the select should be in, leave as None for auto-placement.
 
     Returns
     -------
-    Callable[[Callable[[ViewT, ChannelSelect, ViewContextT], Awaitable[None]]], DecoratedItem[ViewT, ChannelSelect, ViewContextT]]
+    t.Callable[[Callable[[ViewT, ChannelSelect, ViewContextT], Awaitable[None]]], DecoratedItem[ViewT, ChannelSelect, ViewContextT]]
         The decorated function.
 
     Raises
     ------
     TypeError
         If the decorated function is not a coroutine function.
-
     """
 
     def decorator(
-        func: t.Callable[[ViewT, ChannelSelect[ClientT], ViewContext[ClientT]], t.Awaitable[None]],
-    ) -> DecoratedItem[ClientT, ViewT, ChannelSelect[ClientT]]:
+        func: t.Callable[[ViewT, ChannelSelect, ViewContext], t.Awaitable[None]],
+    ) -> DecoratedItem[ViewT, ChannelSelect]:
         if not inspect.iscoroutinefunction(func):
             raise TypeError("channel_select must decorate coroutine function.")
 
-        item: ChannelSelect[ClientT] = ChannelSelect(
+        item: ChannelSelect = ChannelSelect(
             channel_types=channel_types,
             custom_id=custom_id,
             placeholder=placeholder,
