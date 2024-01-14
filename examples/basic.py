@@ -1,8 +1,6 @@
 import hikari
 import miru
 
-from miru import GW
-
 # This is a basic example demonstrating how to create a simple component-based menu.
 # This example uses decorators to create the components, if you want to use variables
 # instead of static values for the component properties, check out the subclassed example.
@@ -32,9 +30,6 @@ class BasicView(miru.View):
     @miru.button(label="Stop me!", style=hikari.ButtonStyle.DANGER)
     async def stop_button(self, button: miru.Button, ctx: miru.ViewContext) -> None:
         self.stop()  # Called to stop the view
-
-
-
 
 
 @bot.listen()

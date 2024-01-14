@@ -4,7 +4,7 @@ Welcome to the examples! The aim of these short snippets of code are to demonstr
 
 ## Running examples
 
-To run and test the examples, simply insert your bot token in into the constructor of `hikari.GatewayBot(...)` by replacing the `...`, then run the example using the following command:
+To run and test the examples, simply insert your bot token in into the constructor of `hikari.GatewayBot(...)`/`hikari.RESTBot(...)` by replacing the `...`, then run the example using the following command:
 
 ```sh
 python example_name.py

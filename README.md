@@ -29,6 +29,9 @@ import hikari
 import miru
 
 
+bot = hikari.GatewayBot(token="...")
+client = miru.Client(bot) # Wrap the bot in a miru client
+
 class MyView(miru.View):
 
     @miru.button(label="Rock", emoji="\N{ROCK}", style=hikari.ButtonStyle.PRIMARY)
@@ -48,10 +51,6 @@ class MyView(miru.View):
         self.stop() # Stop listening for interactions
 
 
-bot = hikari.GatewayBot(token="...")
-miru.install(bot) # Load miru and attach it to the bot instance.
-
-
 @bot.listen()
 async def buttons(event: hikari.GuildMessageCreateEvent) -> None:
 
@@ -63,11 +62,10 @@ async def buttons(event: hikari.GuildMessageCreateEvent) -> None:
 
     # If the bot is mentioned
     if me.id in event.message.user_mentions_ids:
-        view = MyView(timeout=60)  # Create a new view
-        message = await event.message.respond("Rock Paper Scissors!", components=view)
-        await view.start(message)  # Start listening for interactions
-        await view.wait() # Optionally, wait until the view times out or gets stopped
-        await event.message.respond("Thank you for playing!")
+        view = MyView()  # Create a new view
+        # Send the view as message components
+        await event.message.respond("Rock Paper Scissors!", components=view)
+        client.start_view(view) # Attach to the client & start it
 
 bot.run()
 ```
