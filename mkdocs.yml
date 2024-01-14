@@ -38,6 +38,7 @@ theme:
         icon: octicons/moon-24
         name: Switch to light mode
   features:
+    - content.tabs.link
     - search.highlight
     - search.suggest
     - search.share
@@ -46,13 +47,14 @@ theme:
     - navigation.instant
     - navigation.instant.progress
     - navigation.tabs
-    - navigation.expand
     - navigation.indexes
     - navigation.footer
     - navigation.top
     - content.action.view
     - content.action.edit
+    - content.tooltips
     - toc.follow
+
 
 nav:
     - Home: index.md
@@ -66,6 +68,7 @@ nav:
         - guides/modals.md
         - guides/navigators.md
         - guides/menus.md
+        - guides/migrating_from_v3.md
     - API Reference:
         - api_reference/index.md
         - api_reference/client.md
@@ -96,6 +99,8 @@ nav:
         - changelogs/v1.md
 
 
+
+
 markdown_extensions:
   - admonition
   - pymdownx.details
@@ -119,29 +124,55 @@ markdown_extensions:
       custom_checkbox: true
   - attr_list
   - md_in_html
+  - tables
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
 
 plugins:
   - autorefs
   - search
   - social
+  - privacy
+  - glightbox:
+      touchNavigation: true
+      loop: false
+      effect: zoom
+      slide_effect: slide
+      width: 100%
+      height: auto
+      zoomable: true
+      draggable: true
+      auto_caption: false
+      caption_position: bottom
+      skip_classes:
+         - no-lightbox
   - mkdocstrings:
       default_handler: python
       handlers:
         python:
           import:
-            - https://docs.python.org/3.11/objects.inv
+            - https://docs.python.org/3.10/objects.inv
             - https://docs.hikari-py.dev/en/latest/objects.inv
+            - https://alluka.cursed.solutions/objects.inv
           options:
+            heading_level: 3
             annotations_path: source
+            members_order: source
+            group_by_category: true
             docstring_section_style: spacy
             docstring_style: numpy
-            inherited_members: false
+            inherited_members: true
             merge_init_into_class: true
             separate_signature: true
             show_signature_annotations: true
             show_source: false
             show_submodules: false
-
+            signature_crossrefs: true
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            extensions:
+                - griffe_inherited_docstrings
 watch:
   - docs
   - README.md

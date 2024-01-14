@@ -1,6 +1,7 @@
 import typing as t
 
 import hikari
+
 import miru
 
 # This example demonstrates an alternative syntax to creating and adding new components.
@@ -40,7 +41,6 @@ client = miru.Client(bot)
 
 @bot.listen()
 async def buttons(event: hikari.GuildMessageCreateEvent) -> None:
-
     # Do not process messages from bots or webhooks
     if not event.is_human:
         return

@@ -1,4 +1,5 @@
 import hikari
+
 import miru
 from miru.ext import menu
 
@@ -18,7 +19,7 @@ class MainScreen(menu.Screen):
                 title="Welcome to the Miru Menu example!",
                 description="This is an example of the Miru Menu extension.",
                 color=0x00FF00,
-            ),
+            )
         )
 
     # Note: You should always use @menu decorators inside Screen subclasses, NOT @miru
@@ -31,14 +32,11 @@ class MainScreen(menu.Screen):
     async def logging(self, ctx: miru.ViewContext, button: menu.ScreenButton) -> None:
         await self.menu.push(LoggingScreen(self.menu))
 
+
 class ModerationScreen(menu.Screen):
     async def build_content(self) -> menu.ScreenContent:
         return menu.ScreenContent(
-            embed=hikari.Embed(
-                title="Moderation",
-                description="This is the moderation screen!",
-                color=0x00FF00,
-            ),
+            embed=hikari.Embed(title="Moderation", description="This is the moderation screen!", color=0x00FF00)
         )
 
     @menu.button(label="Back")
@@ -55,6 +53,7 @@ class ModerationScreen(menu.Screen):
     async def kick(self, ctx: miru.ViewContext, button: menu.ScreenButton) -> None:
         await ctx.respond("Kick!")
 
+
 class LoggingScreen(menu.Screen):
     def __init__(self, menu: menu.Menu) -> None:
         super().__init__(menu)
@@ -65,13 +64,8 @@ class LoggingScreen(menu.Screen):
 
     async def build_content(self) -> menu.ScreenContent:
         return menu.ScreenContent(
-            embed=hikari.Embed(
-                title="Logging",
-                description="This is the logging screen!",
-                color=0x00FF00,
-            ),
+            embed=hikari.Embed(title="Logging", description="This is the logging screen!", color=0x00FF00)
         )
-
 
     @menu.button(label="Back")
     async def back(self, ctx: miru.ViewContext, button: menu.ScreenButton) -> None:
@@ -85,13 +79,13 @@ class LoggingScreen(menu.Screen):
         # Update the message the menu is attached to with the new state of components.
         await self.menu.update_message()
 
+
 bot = hikari.GatewayBot("...")
 client = miru.Client(bot)
 
 
 @bot.listen()
 async def buttons(event: hikari.GuildMessageCreateEvent) -> None:
-
     # Do not process messages from bots or webhooks
     if not event.is_human:
         return

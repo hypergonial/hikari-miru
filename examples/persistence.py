@@ -1,4 +1,5 @@
 import hikari
+
 import miru
 
 # If you want your components to work and persist after an application restart,
@@ -15,6 +16,7 @@ import miru
 
 bot = hikari.GatewayBot("...")
 client = miru.Client(bot)
+
 
 class Persistence(miru.View):
     def __init__(self) -> None:
@@ -42,7 +44,6 @@ async def startup_views(event: hikari.StartedEvent) -> None:
 
 @bot.listen()
 async def buttons(event: hikari.GuildMessageCreateEvent) -> None:
-
     # Do not process messages from bots or webhooks
     if not event.is_human:
         return
@@ -53,8 +54,7 @@ async def buttons(event: hikari.GuildMessageCreateEvent) -> None:
     if me.id in event.message.user_mentions_ids:
         view = Persistence()
         await event.message.respond(
-            "This is a persistent component menu, and works after bot restarts!",
-            components=view,
+            "This is a persistent component menu, and works after bot restarts!", components=view
         )
         # Persistent views do not need to be started, as starting one listener will handle all views of the same type.
 

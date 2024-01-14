@@ -1,3 +1,7 @@
-ruff==0.1.9
-pyright==1.1.343
+ruff==0.1.13
+pyright==1.1.345
 nox==2023.4.22
+typing_extensions==4.9.0
+pytest==7.4.4
+pytest-asyncio==0.23.3
+slotscheck==0.17.1

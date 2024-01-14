@@ -1,4 +1,5 @@
 import hikari
+
 import miru
 
 
@@ -15,7 +16,6 @@ class MyModal(miru.Modal):
 
 
 class ModalView(miru.View):
-
     # Create a new button that will invoke our modal
     @miru.button(label="Click me!", style=hikari.ButtonStyle.PRIMARY)
     async def modal_button(self, context: miru.ViewContext, button: miru.Button) -> None:
@@ -36,7 +36,6 @@ client = miru.Client(bot)
 
 @bot.listen()
 async def modals(event: hikari.GuildMessageCreateEvent) -> None:
-
     # Do not process messages from bots or webhooks
     if not event.is_human:
         return

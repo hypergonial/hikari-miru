@@ -1,4 +1,5 @@
 import hikari
+
 import miru
 
 # This is a basic example demonstrating how to create a simple component-based menu.
@@ -8,15 +9,11 @@ import miru
 bot = hikari.GatewayBot("...")
 client = miru.Client(bot)
 
-class BasicView(miru.View):
 
+class BasicView(miru.View):
     # Define a new TextSelect menu with two options
     @miru.text_select(
-        placeholder="Select me!",
-        options=[
-            miru.SelectOption(label="Option 1"),
-            miru.SelectOption(label="Option 2"),
-        ],
+        placeholder="Select me!", options=[miru.SelectOption(label="Option 1"), miru.SelectOption(label="Option 2")]
     )
     async def basic_select(self, ctx: miru.ViewContext, select: miru.TextSelect) -> None:
         await ctx.respond(f"You've chosen {select.values[0]}!")
@@ -34,7 +31,6 @@ class BasicView(miru.View):
 
 @bot.listen()
 async def buttons(event: hikari.GuildMessageCreateEvent) -> None:
-
     # Do not process messages from bots or webhooks
     if not event.is_human:
         return

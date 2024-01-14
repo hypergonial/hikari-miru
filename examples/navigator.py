@@ -1,4 +1,5 @@
 import hikari
+
 import miru
 from miru.ext import nav
 from miru.ext.nav.items import NavButton
@@ -30,7 +31,6 @@ client = miru.Client(bot)
 
 @bot.listen()
 async def navigator(event: hikari.GuildMessageCreateEvent) -> None:
-
     # Do not process messages from bots or webhooks
     if not event.is_human:
         return
@@ -62,7 +62,12 @@ async def navigator(event: hikari.GuildMessageCreateEvent) -> None:
         pages = ["I'm a customized navigator!", embed, "I'm the last page!"]
         # Define our custom buttons for this navigator
         # All navigator buttons MUST subclass NavButton
-        buttons: list[NavButton] = [nav.PrevButton(), nav.StopButton(), nav.NextButton(), MyNavButton(label="Page: 1", row=1)]
+        buttons: list[NavButton] = [
+            nav.PrevButton(),
+            nav.StopButton(),
+            nav.NextButton(),
+            MyNavButton(label="Page: 1", row=1),
+        ]
         # Pass our list of NavButton to the navigator
         navigator = nav.NavigatorView(pages=pages, buttons=buttons)
 
