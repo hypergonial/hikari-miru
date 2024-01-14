@@ -18,7 +18,7 @@ class ModalView(miru.View):
 
     # Create a new button that will invoke our modal
     @miru.button(label="Click me!", style=hikari.ButtonStyle.PRIMARY)
-    async def modal_button(self, button: miru.Button, context: miru.ViewContext) -> None:
+    async def modal_button(self, context: miru.ViewContext, button: miru.Button) -> None:
         modal = MyModal(title="Example Title")
         # You may also use the builder provided by Modal to send the modal to an arbitrary interaction.
         # Keep in mind that modals can only be sent in response to interactions.

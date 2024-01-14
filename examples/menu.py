@@ -23,12 +23,12 @@ class MainScreen(menu.Screen):
 
     # Note: You should always use @menu decorators inside Screen subclasses, NOT @miru
     @menu.button(label="Moderation")
-    async def moderation(self, button: menu.ScreenButton, ctx: miru.ViewContext) -> None:
+    async def moderation(self, ctx: miru.ViewContext, button: menu.ScreenButton) -> None:
         # Add a new screen to the menu stack, the message is updated automatically
         await self.menu.push(ModerationScreen(self.menu))
 
     @menu.button(label="Logging")
-    async def logging(self, button: menu.ScreenButton, ctx: miru.ViewContext) -> None:
+    async def logging(self, ctx: miru.ViewContext, button: menu.ScreenButton) -> None:
         await self.menu.push(LoggingScreen(self.menu))
 
 class ModerationScreen(menu.Screen):
@@ -42,17 +42,17 @@ class ModerationScreen(menu.Screen):
         )
 
     @menu.button(label="Back")
-    async def back(self, button: menu.ScreenButton, ctx: miru.ViewContext) -> None:
+    async def back(self, ctx: miru.ViewContext, button: menu.ScreenButton) -> None:
         # Remove the current screen from the menu stack,
         # effectively going back to the previous screen
         await self.menu.pop()
 
     @menu.button(label="Ban", style=hikari.ButtonStyle.DANGER)
-    async def ban(self, button: menu.ScreenButton, ctx: miru.ViewContext) -> None:
+    async def ban(self, ctx: miru.ViewContext, button: menu.ScreenButton) -> None:
         await ctx.respond("Hammer time!")
 
     @menu.button(label="Kick", style=hikari.ButtonStyle.SECONDARY)
-    async def kick(self, button: menu.ScreenButton, ctx: miru.ViewContext) -> None:
+    async def kick(self, ctx: miru.ViewContext, button: menu.ScreenButton) -> None:
         await ctx.respond("Kick!")
 
 class LoggingScreen(menu.Screen):
@@ -74,11 +74,11 @@ class LoggingScreen(menu.Screen):
 
 
     @menu.button(label="Back")
-    async def back(self, button: menu.ScreenButton, ctx: miru.ViewContext) -> None:
+    async def back(self, ctx: miru.ViewContext, button: menu.ScreenButton) -> None:
         await self.menu.pop()
 
     @menu.button(label="Enable", style=hikari.ButtonStyle.DANGER)
-    async def enable(self, button: menu.ScreenButton, ctx: miru.ViewContext) -> None:
+    async def enable(self, ctx: miru.ViewContext, button: menu.ScreenButton) -> None:
         self.is_enabled = not self.is_enabled
         button.style = hikari.ButtonStyle.SUCCESS if self.is_enabled else hikari.ButtonStyle.DANGER
         button.label = "Disable" if self.is_enabled else "Enable"

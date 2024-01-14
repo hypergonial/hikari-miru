@@ -18,17 +18,17 @@ class BasicView(miru.View):
             miru.SelectOption(label="Option 2"),
         ],
     )
-    async def basic_select(self, select: miru.TextSelect, ctx: miru.ViewContext) -> None:
+    async def basic_select(self, ctx: miru.ViewContext, select: miru.TextSelect) -> None:
         await ctx.respond(f"You've chosen {select.values[0]}!")
 
     # Define a new Button with the Style of success (Green)
     @miru.button(label="Click me!", style=hikari.ButtonStyle.SUCCESS)
-    async def basic_button(self, button: miru.Button, ctx: miru.ViewContext) -> None:
+    async def basic_button(self, ctx: miru.ViewContext, button: miru.Button) -> None:
         await ctx.respond("You clicked me!")
 
     # Define a new Button that when pressed will stop the view & invalidate all the buttons in this view
     @miru.button(label="Stop me!", style=hikari.ButtonStyle.DANGER)
-    async def stop_button(self, button: miru.Button, ctx: miru.ViewContext) -> None:
+    async def stop_button(self, ctx: miru.ViewContext, button: miru.Button) -> None:
         self.stop()  # Called to stop the view
 
 

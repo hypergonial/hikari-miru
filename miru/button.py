@@ -162,7 +162,7 @@ def button(
     emoji: str | hikari.Emoji | None = None,
     row: int | None = None,
     disabled: bool = False,
-) -> t.Callable[[t.Callable[[ViewT, Button, ViewContext], t.Awaitable[None]]], DecoratedItem[ViewT, Button]]:
+) -> t.Callable[[t.Callable[[ViewT, ViewContext, Button], t.Awaitable[None]]], DecoratedItem[ViewT, Button]]:
     """A decorator to transform a coroutine function into a Discord UI Button's callback.
     This must be inside a subclass of View.
 
@@ -183,11 +183,11 @@ def button(
 
     Returns
     -------
-    Callable[[Callable[[ViewT, Button, ViewContextT], Awaitable[None]]], DecoratedItem[ViewT, Button, ViewContextT]]
+    Callable[[Callable[[ViewT, ViewContext, Button], Awaitable[None]]], DecoratedItem[ViewT, Button]]
         The decorated callback function.
     """
 
-    def decorator(func: t.Callable[[ViewT, Button, ViewContext], t.Awaitable[None]]) -> DecoratedItem[ViewT, Button]:
+    def decorator(func: t.Callable[[ViewT, ViewContext, Button], t.Awaitable[None]]) -> DecoratedItem[ViewT, Button]:
         if not inspect.iscoroutinefunction(func):
             raise TypeError("button must decorate coroutine function.")
         item: Button = Button(

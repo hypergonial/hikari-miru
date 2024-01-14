@@ -191,7 +191,7 @@ def text_select(
     max_values: int = 1,
     disabled: bool = False,
     row: int | None = None,
-) -> t.Callable[[t.Callable[[ViewT, TextSelect, ViewContext], t.Awaitable[None]]], DecoratedItem[ViewT, TextSelect]]:
+) -> t.Callable[[t.Callable[[ViewT, ViewContext, TextSelect], t.Awaitable[None]]], DecoratedItem[ViewT, TextSelect]]:
     """A decorator to transform a function into a Discord UI TextSelectMenu's callback.
     This must be inside a subclass of View.
 
@@ -214,7 +214,7 @@ def text_select(
 
     Returns
     -------
-    Callable[[Callable[[ViewT, TextSelect, ViewContextT], Awaitable[None]]], DecoratedItem[ViewT, TextSelect, ViewContextT]]
+    Callable[[Callable[[ViewT, ViewContext, TextSelect], Awaitable[None]]], DecoratedItem[ViewT, TextSelect]]
         The decorated function.
 
     Raises
@@ -224,7 +224,7 @@ def text_select(
     """
 
     def decorator(
-        func: t.Callable[[ViewT, TextSelect, ViewContext], t.Awaitable[None]],
+        func: t.Callable[[ViewT, ViewContext, TextSelect], t.Awaitable[None]],
     ) -> DecoratedItem[ViewT, TextSelect]:
         if not inspect.iscoroutinefunction(func):
             raise TypeError("text_select must decorate coroutine function.")

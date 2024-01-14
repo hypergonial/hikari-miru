@@ -4,7 +4,6 @@ import abc
 import os
 import typing as t
 from abc import abstractmethod
-from functools import partial
 
 from miru.exceptions import ItemAlreadyAttachedError
 from miru.internal.types import BuilderT, ContextT, HandlerT, ViewItemT, ViewT
@@ -154,7 +153,7 @@ class ViewItem(Item["hikari.impl.MessageActionRowBuilder", "ViewContext", "View"
         """Converts the passed hikari component into a miru ViewItem."""
         ...
 
-    async def callback(self, context: ViewContext) -> None:
+    async def callback(self, context: ViewContext, /) -> None:
         """The component's callback, gets called when the component receives an interaction.
 
         Parameters
@@ -210,12 +209,12 @@ class DecoratedItem(t.Generic[ViewT, ViewItemT]):
     __slots__ = ("item", "callback")
 
     def __init__(
-        self, item: ViewItemT, callback: t.Callable[[ViewT, ViewItemT, ViewContext], t.Awaitable[None]]
+        self, item: ViewItemT, callback: t.Callable[[ViewT, ViewContext, ViewItemT], t.Coroutine[t.Any, t.Any, None]]
     ) -> None:
         self.item = item
         self.callback = callback
 
-    def build(self, view: View) -> ViewItemT:
+    def build(self, view: ViewT) -> ViewItemT:
         """Convert a DecoratedItem into a ViewItem.
 
         Parameters
@@ -228,7 +227,7 @@ class DecoratedItem(t.Generic[ViewT, ViewItemT]):
         ViewItem[ViewT]
             The converted item.
         """
-        self.item.callback = partial(self.callback, view, self.item)  # type: ignore[assignment]
+        self.item.callback = lambda ctx: self.callback(view, ctx, self.item)
 
         return self.item
 
@@ -243,9 +242,9 @@ class DecoratedItem(t.Generic[ViewT, ViewItemT]):
         """
         return self.callback.__name__
 
-    def __call__(self, view: ViewT, item: ViewItemT, context: ViewContext) -> t.Awaitable[None]:
+    def __call__(self, view: ViewT, context: ViewContext, item: ViewItemT, /) -> t.Awaitable[None]:
         """Call the callback this DecoratedItem wraps."""
-        return self.callback(view, item, context)
+        return self.callback(view, context, item)
 
 
 # MIT License
