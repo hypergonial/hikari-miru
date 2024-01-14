@@ -142,7 +142,7 @@ returning to `MainScreen`. You may also create more complex, nested navigation, 
     You should always use `ScreenItem` inside `Screen`, such as `ScreenButton` instead of `Button`.
 
     The `@menu` decorators create `ScreenItem`s, but you can also create them via subclassing and then calling
-    `Screen.add_item()`, similarly to how it is showcased in the [Subclassing](../getting-started.md#subclassing) section of this guide.
+    `Screen.add_item()`, similarly to how it is showcased in the [Subclassing](../getting_started.md#subclassing) section of this guide.
 
 ## Menu
 

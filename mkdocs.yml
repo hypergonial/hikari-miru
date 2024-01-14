@@ -66,6 +66,7 @@ nav:
         - guides/checks_timeout.md
         - guides/error_handling.md
         - guides/modals.md
+        - guides/persistent_views.md
         - guides/navigators.md
         - guides/menus.md
         - guides/migrating_from_v3.md

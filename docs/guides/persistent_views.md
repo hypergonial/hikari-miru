@@ -20,7 +20,8 @@ the same results regardless of the context.
 The limitations for this way of handling persistent views are that you cannot edit the view during runtime,
 as unbound views have no concept of what message they are attached to.
 
-
+!!! note
+    This example is for Gateway bots, but it can be applied to work with REST bots in a similar manner.
 
 ```py
 class Persistence(miru.View):
