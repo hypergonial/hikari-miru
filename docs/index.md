@@ -16,7 +16,10 @@ while abstracting away interaction listeners, timeout handling, checks, and much
 
 To get started, see [Getting Started](./getting_started.md).
 
-![Discord Buttons](./assets/buttons.png)
+<figure markdown>
+  ![Discord Buttons](./assets/buttons.png)
+  <figcaption></figcaption>
+</figure>
 
 ## Useful links
 
