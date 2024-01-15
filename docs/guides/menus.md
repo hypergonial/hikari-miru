@@ -142,7 +142,7 @@ To set up a menu for the screens we designed above, see this snippet below:
     ```py
     @arc_client.include
     @arc.slash_command("name", "description")
-    async def some_slash_command(ctx: arc.Context[arc.GatewayClient]) -> None:
+    async def some_slash_command(ctx: arc.GatewayContext) -> None:
         my_menu = menu.Menu()  # Create a new Menu
         # Pass in the initial screen
         builder = await my_menu.build_response_async(client, MainScreen(my_menu))

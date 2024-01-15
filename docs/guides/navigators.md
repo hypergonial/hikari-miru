@@ -39,7 +39,7 @@ The examples below are for a **Gateway** bot, but a **REST** bot would behave si
 
     @arc_client.include
     @arc.slash_command("name", "description")
-    async def my_command(ctx: arc.Context[arc.GatewayClient]) -> None:
+    async def my_command(ctx: arc.GatewayContext) -> None:
         embed = hikari.Embed(
             title="I'm the second page!",
             description="Also an embed!"

@@ -91,7 +91,7 @@ Next up, we need to send our view. `miru` has support for all popular command ha
     ```py
     @arc_client.include
     @arc.slash_command("name", "description")
-    async def some_slash_command(ctx: arc.Context[arc.GatewayClient]) -> None:
+    async def some_slash_command(ctx: arc.GatewayContext) -> None:
         # Create a new instance of our view
         view = BasicView()
         await ctx.respond("Hello miru!", components=view)
@@ -239,7 +239,7 @@ Then we can adjust our sending logic from the previous example like so:
     ```py
     @arc_client.include
     @arc.slash_command("name", "description")
-    async def some_slash_command(ctx: arc.Context[arc.GatewayClient]) -> None:
+    async def some_slash_command(ctx: arc.GatewayContext) -> None:
         view = PineappleView()  # Create a new view
         view.add_item(YesButton())  # Add our custom buttons to it
         # Pass arguments to NoButton

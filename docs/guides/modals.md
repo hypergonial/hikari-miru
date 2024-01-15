@@ -81,7 +81,7 @@ If you want to use modals in slash commands, you need to turn it into a builder,
     ```py
     @arc_client.include
     @arc.slash_command("name", "description")
-    async def some_slash_command(ctx: arc.Context[arc.GatewayClient]) -> None:
+    async def some_slash_command(ctx: arc.GatewayContext) -> None:
         modal = MyModal(title="Example Title")
 
         builder = modal.build_response(client)
