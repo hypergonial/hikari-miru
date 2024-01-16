@@ -10,8 +10,12 @@ search:
 
 # Getting Started
 
-## Installation
+This guide assumes that you already have a basic bot with [`hikari`](https://github.com/hikari-py/hikari) (and perharps a command handler of your choice) set up and running. It **does not** cover how to create a bot from scratch.
 
+??? tip "Help! I don't have a bot yet!"
+    If you're completely new to making Discord bots, and haven't started coding yet, you can check out [`arc`](https://arc.hypergonial.com/) and it's [getting started](https://arc.hypergonial.com/getting_started/) guide. It covers the basics of how to create a Discord bot using it and `hikari` from scratch, and provides a good starting point for adding components to your bot.
+
+## Installation
 
 `miru` can be installed using pip via the following command:
 
