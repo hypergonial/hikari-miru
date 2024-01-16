@@ -21,7 +21,7 @@ views, with a few notable exceptions, namely:
 
 - Modal items do not have individual callbacks, instead the entire modal has one singular callback.
 
-- Modals only accept [`ModalItem`][miru.abc.item.ModalItem], and pass [`ModalContext`][miru.context.modal.ModalContext] when the callback is triggered.
+- Modals only accept [`ModalItem`][miru.abc.item.ModalItem]s (currently this only includes [`TextInput`][miru.text_input.TextInput]), and pass [`ModalContext`][miru.context.modal.ModalContext] when the callback is triggered.
 
 
 !!! note
@@ -55,10 +55,10 @@ class MyModal(miru.Modal):
 ```
 
 
-There is also an alternative way to add items to a modal, through the [`Modal.add_item`][miru.modal.Modal.add_item] method, similarly to views.
+There is also an alternative way to add items to a modal, through the [`Modal.add_item()`][miru.modal.Modal.add_item] method, similarly to views.
 
 !!! warning
-    Please be careful when naming your modal item variables. They cannot shadow existing modal properties such as **title** or **custom_id**.
+    Please be careful when naming your modal item class variables. They cannot shadow existing modal properties such as **title** or **custom_id**.
 
 Now, we will generate an **interaction** through the use of a button so we can send the user our modal:
 
@@ -72,41 +72,93 @@ class ModalView(miru.View):
 ```
 
 Combining the above code with the modal we created earlier, you should now have a basic working example where the user can click the button,
-get prompted with a modal, and then submit their input. For more information on modals, please see the [`Modal`][miru.modal.Modal] API reference.
+get prompted with a modal, and then submit their input.
 
-If you want to use modals in slash commands, you need to turn it into a builder, then send it as a response to the relevant interaction:
+If you want to use modals in **slash commands**, you need to turn it into a builder, then send it as a response to the relevant interaction:
+
+=== "just hikari"
+
+    === "Gateway"
+
+        ```py
+        @bot.listen()
+        async def handle_commands(event: hikari.InteractionCreateEvent) -> None:
+            # Ignore other types of interactions
+            if not isinstance(event.interaction, hikari.CommandInteraction):
+                return
+
+            modal = MyModal(title="Example Title")
+            builder = modal.build_response(client)
+
+            # Send the modal as a response to the interaction
+            await builder.create_modal_response(event.interaction)
+
+            client.start_modal(modal)
+        ```
+
+
+
+    === "REST"
+
+        ```py
+        # Let's assume this is a RESTBot's CommandInteraction callback
+        async def handle_commands(interaction: hikari.CommandInteraction):
+            modal = MyModal(title="Example Title")
+
+            builder = modal.build_response(client)
+
+            # The builder is a valid REST response builder
+            yield builder
+
+            client.start_modal(modal)
+        ```
 
 === "arc"
 
-    ```py
-    @arc_client.include
-    @arc.slash_command("name", "description")
-    async def some_slash_command(ctx: arc.GatewayContext) -> None:
-        modal = MyModal(title="Example Title")
+    === "Gateway"
 
-        builder = modal.build_response(client)
-        # arc has a built-in way to respond with a builder
-        await ctx.respond_with_builder(builder)
+        ```py
+        @arc_client.include
+        @arc.slash_command("name", "description")
+        async def some_slash_command(ctx: arc.GatewayContext) -> None:
+            modal = MyModal(title="Example Title")
+            builder = modal.build_response(client)
 
-        client.start_modal(modal)
-    ```
+            # arc has a built-in way to respond with a builder
+            await ctx.respond_with_builder(builder)
+
+            client.start_modal(modal)
+        ```
+
+    === "REST"
+
+        ```py
+        @arc_client.include
+        @arc.slash_command("name", "description")
+        async def some_slash_command(ctx: arc.RESTContext) -> None:
+            modal = MyModal(title="Example Title")
+            builder = modal.build_response(client)
+
+            # arc has a built-in way to respond with a builder
+            await ctx.respond_with_builder(builder)
+
+            client.start_modal(modal)
+        ```
 
 === "crescent"
 
-    Crescent does not currently support modals.
-    <!---
     ```py
     @crescent_client.include
     @crescent.command("name", "description")
     class SomeSlashCommand:
         async def callback(self, ctx: crescent.Context) -> None:
             modal = MyModal(title="Example Title")
-
             builder = modal.build_response(client)
-            # Add modal func from crescent when exists
+
+            # crescent has a built-in way to respond with a builder
+            await ctx.respond_with_builder(builder)
             client.start_modal(modal)
     ```
-    --->
 
 === "lightbulb"
 
@@ -116,8 +168,8 @@ If you want to use modals in slash commands, you need to turn it into a builder,
     @lightbulb.implements(lightbulb.SlashCommand)
     async def some_slash_command(ctx: lightbulb.SlashContext) -> None:
         modal = MyModal(title="Example Title")
-
         builder = modal.build_response(client)
+
         await builder.create_modal_response(ctx.interaction)
 
         client.start_modal(modal)
@@ -129,8 +181,8 @@ If you want to use modals in slash commands, you need to turn it into a builder,
     @tanjun.as_slash_command("name", "description")
     async def some_slash_command(ctx: tanjun.abc.SlashContext) -> None:
         modal = MyModal(title="Example Title")
-
         builder = modal.build_response(client)
+
         # the builder has specific adapters for tanjun
         await ctx.create_modal_response(
             *builder.to_tanjun_args(),
@@ -139,3 +191,8 @@ If you want to use modals in slash commands, you need to turn it into a builder,
 
         client.start_modal(modal)
     ```
+
+For more information on modals, please see the [`Modal`][miru.modal.Modal] API reference.
+
+!!! warning
+    A modal **must** be sent as the initial response to an **interaction**. You **cannot** defer before sending a modal.

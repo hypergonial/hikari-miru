@@ -137,22 +137,89 @@ it will automatically update it's message and build the corresponding screen's c
 
 To set up a menu for the screens we designed above, see this snippet below:
 
+=== "just hikari"
+
+    === "Gateway"
+
+        ```py
+        @bot.listen()
+        async def buttons(event: hikari.MessageCreateEvent) -> None:
+            # Do not process messages from bots or webhooks
+            if not event.is_human:
+                return
+
+            me = bot.get_me()
+
+            # If the bot is mentioned
+            if me.id in event.message.user_mentions_ids:
+                my_menu = menu.Menu()  # Create a new Menu
+
+                # Pass in the initial screen
+                builder = await my_menu.build_response_async(client, MainScreen(my_menu))
+
+                await builder.send_to_channel(event.channel_id)
+
+                client.start_view(my_menu)
+        ```
+
+    === "REST"
+
+        ```py
+        # Let's assume this is a RESTBot's CommandInteraction callback
+        async def handle_command(interaction: hikari.CommandInteraction):
+            my_menu = menu.Menu()  # Create a new Menu
+
+            # Pass in the initial screen
+            builder = await my_menu.build_response_async(client, MainScreen(my_menu))
+
+            # The builder is a valid REST response builder
+            yield builder
+
+            # Assign the view to the client and start it
+            client.start_view(my_menu)s
+        ```
+
 === "arc"
 
-    ```py
-    @arc_client.include
-    @arc.slash_command("name", "description")
-    async def some_slash_command(ctx: arc.GatewayContext) -> None:
-        my_menu = menu.Menu()  # Create a new Menu
-        # Pass in the initial screen
-        builder = await my_menu.build_response_async(client, MainScreen(my_menu))
-        await ctx.respond_with_builder(builder)
-        client.start_view(my_menu)
-    ```
+    === "Gateway"
+
+        ```py
+        @arc_client.include
+        @arc.slash_command("name", "description")
+        async def some_slash_command(ctx: arc.GatewayContext) -> None:
+            my_menu = menu.Menu()  # Create a new Menu
+            # Pass in the initial screen
+            builder = await my_menu.build_response_async(client, MainScreen(my_menu))
+            await ctx.respond_with_builder(builder)
+            client.start_view(my_menu)
+        ```
+
+    === "REST"
+
+        ```py
+        @arc_client.include
+        @arc.slash_command("name", "description")
+        async def some_slash_command(ctx: arc.RESTContext) -> None:
+            my_menu = menu.Menu()  # Create a new Menu
+            # Pass in the initial screen
+            builder = await my_menu.build_response_async(client, MainScreen(my_menu))
+            await ctx.respond_with_builder(builder)
+            client.start_view(my_menu)
+        ```
 
 === "crescent"
 
-    Crescent is not yet supported.
+    ```py
+    @crescent_client.include
+    @crescent.command("name", "description")
+    class SomeSlashCommand:
+        async def callback(self, ctx: crescent.Context) -> None:
+            # Create a new instance of our view
+            view = BasicView()
+            builder = await my_menu.build_response_async(client, MainScreen(my_menu))
+            await ctx.respond_with_builder(builder)
+            client.start_view(my_menu)
+    ```
 
 === "lightbulb"
 
@@ -181,29 +248,6 @@ To set up a menu for the screens we designed above, see this snippet below:
         builder = await my_menu.build_response_async(client, MainScreen(my_menu))
         await ctx.respond_with_builder(builder)
         client.start_view(my_menu)
-    ```
-
-=== "raw hikari"
-
-    ```py
-    @bot.listen()
-    async def buttons(event: hikari.MessageCreateEvent) -> None:
-        # Do not process messages from bots or webhooks
-        if not event.is_human:
-            return
-
-        me = bot.get_me()
-
-        # If the bot is mentioned
-        if me.id in event.message.user_mentions_ids:
-            my_menu = menu.Menu()  # Create a new Menu
-
-            # Pass in the initial screen
-            builder = await my_menu.build_response_async(client, MainScreen(my_menu))
-
-            await builder.send_to_channel(event.channel_id)
-
-            client.start_view(my_menu)
     ```
 
 

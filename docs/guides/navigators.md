@@ -21,54 +21,273 @@ The base of any navigator is the [`NavigatorView`][miru.ext.nav.navigator.Naviga
 designed for creating navigators. To get started, it's as easy as creating a new instance of it,
 turning it into a builder, and sending it to a channel or interaction.
 
-The examples below are for a **Gateway** bot, but a **REST** bot would behave similarly in command handlers that support it:
+=== "just hikari"
+
+    === "Gateway"
+
+        ```py
+        import hikari
+        import miru
+        # Import the navigation module
+        from miru.ext import nav
+
+        bot = hikari.GatewayBot("...")
+
+        client = miru.Client(bot)
+
+        @bot.listen()
+        async def navigator(event: hikari.MessageCreateEvent) -> None:
+
+            # Do not process messages from bots or webhooks
+            if not event.is_human:
+                return
+
+            me = bot.get_me()
+
+            # If the bot is mentioned
+            if me.id in event.message.user_mentions_ids:
+                embed = hikari.Embed(
+                    title="I'm the second page!",
+                    description="Also an embed!"
+                )
+
+                # A Page object can be used to further customize the page payload
+                page = nav.Page(
+                    content="I'm the last page!",
+                    embed=hikari.Embed(title="I also have an embed!")
+                )
+
+                # The list of pages this navigator should paginate through
+                # This should be a list that contains
+                # 'str', 'hikari.Embed', or 'nav.Page' objects.
+                pages = ["I'm the first page!", embed, page]
+
+                # Define our navigator and pass in our list of pages
+                navigator = nav.NavigatorView(pages=pages)
+
+                builder = nav.build_response(client)
+                await builder.send_to_channel(event.channel_id)
+                client.start_view(nav)
+
+
+        bot.run()
+        ```
+
+    === "REST"
+
+        ```py
+        async def handle_command(interaction: hikari.CommandInteraction):
+            embed = hikari.Embed(
+                title="I'm the second page!",
+                description="Also an embed!"
+            )
+
+            # A Page object can be used to further customize the page payload
+            page = nav.Page(
+                content="I'm the last page!",
+                embed=hikari.Embed(title="I also have an embed!")
+            )
+
+            # The list of pages this navigator should paginate through
+            # This should be a list that contains
+            # 'str', 'hikari.Embed', or 'nav.Page' objects.
+            pages = ["I'm the first page!", embed, page]
+
+            # Define our navigator and pass in our list of pages
+            navigator = nav.NavigatorView(pages=pages)
+
+            builder = nav.build_response(client)
+            yield builder
+            client.start_view(nav)
+
+
+        async def create_commands(bot: hikari.RESTBot) -> None:
+            application = await bot.rest.fetch_application()
+
+            await bot.rest.set_application_commands(
+                application=application.id,
+                commands=[
+                    bot.rest.slash_command_builder("test", "My first test command!"),
+                ],
+            )
+
+        bot.add_startup_callback(create_commands)
+        bot.set_listener(hikari.CommandInteraction, handle_command)
+
+        bot.run()
+        ```
 
 === "arc"
 
-    ```py
-    import arc
-    import hikari
-    import miru
-    # Import the navigation module
-    from miru.ext import nav
+    === "Gateway"
 
-    bot = hikari.GatewayBot("TOKEN")
+        ```py
+        import arc
+        import hikari
+        import miru
+        # Import the navigation module
+        from miru.ext import nav
 
-    client = miru.Client(bot)
-    arc_client = arc.GatewayClient(bot)
+        bot = hikari.GatewayBot("TOKEN")
 
-    @arc_client.include
-    @arc.slash_command("name", "description")
-    async def my_command(ctx: arc.GatewayContext) -> None:
-        embed = hikari.Embed(
-            title="I'm the second page!",
-            description="Also an embed!"
-        )
-        # A Page object can be used to further customize the page payload
-        page = nav.Page(
-            content="I'm the last page!",
-            embed=hikari.Embed(title="I also have an embed!")
-        )
+        client = miru.Client(bot)
+        arc_client = arc.GatewayClient(bot)
 
-        # The list of pages this navigator should paginate through
-        # This should be a list that contains
-        # 'str', 'hikari.Embed', or 'nav.Page' objects.
-        pages = ["I'm the first page!", embed, page]
+        @arc_client.include
+        @arc.slash_command("name", "description")
+        async def my_command(ctx: arc.GatewayContext) -> None:
+            embed = hikari.Embed(
+                title="I'm the second page!",
+                description="Also an embed!"
+            )
+            # A Page object can be used to further customize the page payload
+            page = nav.Page(
+                content="I'm the last page!",
+                embed=hikari.Embed(title="I also have an embed!")
+            )
 
-        # Define our navigator and pass in our list of pages
-        navigator = nav.NavigatorView(pages=pages)
+            # The list of pages this navigator should paginate through
+            # This should be a list that contains
+            # 'str', 'hikari.Embed', or 'nav.Page' objects.
+            pages = ["I'm the first page!", embed, page]
 
-        builder = nav.build_response(client)
-        await ctx.respond_with_builder(builder)
-        client.start_view(nav)
+            # Define our navigator and pass in our list of pages
+            navigator = nav.NavigatorView(pages=pages)
+
+            builder = nav.build_response(client)
+            await ctx.respond_with_builder(builder)
+            client.start_view(nav)
 
 
-    bot.run()
-    ```
+        bot.run()
+        ```
+
+    === "REST"
+
+        ```py
+        import arc
+        import hikari
+        import miru
+        # Import the navigation module
+        from miru.ext import nav
+
+        bot = hikari.RESTBot("TOKEN")
+
+        client = miru.Client(bot)
+        arc_client = arc.RESTClient(bot)
+
+        @arc_client.include
+        @arc.slash_command("name", "description")
+        async def my_command(ctx: arc.RESTContext) -> None:
+            embed = hikari.Embed(
+                title="I'm the second page!",
+                description="Also an embed!"
+            )
+            # A Page object can be used to further customize the page payload
+            page = nav.Page(
+                content="I'm the last page!",
+                embed=hikari.Embed(title="I also have an embed!")
+            )
+
+            # The list of pages this navigator should paginate through
+            # This should be a list that contains
+            # 'str', 'hikari.Embed', or 'nav.Page' objects.
+            pages = ["I'm the first page!", embed, page]
+
+            # Define our navigator and pass in our list of pages
+            navigator = nav.NavigatorView(pages=pages)
+
+            builder = nav.build_response(client)
+            await ctx.respond_with_builder(builder)
+            client.start_view(nav)
+
+
+        bot.run()
+        ```
 
 === "crescent"
 
-    Crescent is not yet supported.
+    === "Gateway"
+
+        ```py
+        import crescent
+        import hikari
+        import miru
+
+        bot = hikari.GatewayBot("TOKEN")
+
+        client = miru.Client(bot)
+        crescent_client = crescent.Client(bot)
+
+        @crescent_client.include
+        @crescent.command("name", "description")
+        class SomeSlashCommand:
+            async def callback(self, ctx: crescent.Context) -> None:
+                embed = hikari.Embed(
+                    title="I'm the second page!",
+                    description="Also an embed!"
+                )
+                # A Page object can be used to further customize the page payload
+                page = nav.Page(
+                    content="I'm the last page!",
+                    embed=hikari.Embed(title="I also have an embed!")
+                )
+
+                # The list of pages this navigator should paginate through
+                # This should be a list that contains
+                # 'str', 'hikari.Embed', or 'nav.Page' objects.
+                pages = ["I'm the first page!", embed, page]
+
+                # Define our navigator and pass in our list of pages
+                navigator = nav.NavigatorView(pages=pages)
+
+                builder = nav.build_response(client)
+                await ctx.respond_with_builder(builder)
+                client.start_view(nav)
+
+        bot.run()
+        ```
+
+    === "REST"
+
+        ```py
+        import crescent
+        import hikari
+        import miru
+
+        bot = hikari.RESTBot("TOKEN")
+
+        client = miru.Client(bot)
+        crescent_client = crescent.Client(bot)
+
+        @crescent_client.include
+        @crescent.command("name", "description")
+        class SomeSlashCommand:
+            async def callback(self, ctx: crescent.Context) -> None:
+                embed = hikari.Embed(
+                    title="I'm the second page!",
+                    description="Also an embed!"
+                )
+                # A Page object can be used to further customize the page payload
+                page = nav.Page(
+                    content="I'm the last page!",
+                    embed=hikari.Embed(title="I also have an embed!")
+                )
+
+                # The list of pages this navigator should paginate through
+                # This should be a list that contains
+                # 'str', 'hikari.Embed', or 'nav.Page' objects.
+                pages = ["I'm the first page!", embed, page]
+
+                # Define our navigator and pass in our list of pages
+                navigator = nav.NavigatorView(pages=pages)
+
+                builder = nav.build_response(client)
+                await ctx.respond_with_builder(builder)
+                client.start_view(nav)
+
+        bot.run()
+        ```
 
 === "lightbulb"
 
@@ -118,75 +337,26 @@ The examples below are for a **Gateway** bot, but a **REST** bot would behave si
 
 === "tanjun"
 
-    ```py
-    import hikari
-    import miru
-    import tanjun
+    === "Gateway"
 
-    from miru.ext import nav
+        ```py
+        import hikari
+        import miru
+        import tanjun
+        # Import the navigation module
+        from miru.ext import nav
 
-    bot = hikari.GatewayBot("TOKEN")
+        bot = hikari.GatewayBot("TOKEN")
 
-    tanjun_client = tanjun.Client.from_gateway_bot(bot)
-    client = miru.Client(bot)
+        tanjun_client = tanjun.Client.from_gateway_bot(bot)
+        client = miru.Client(bot)
 
-    @tanjun.as_slash_command("name", "description")
-    async def some_slash_command(ctx: tanjun.abc.SlashContext) -> None:
-        embed = hikari.Embed(
-            title="I'm the second page!",
-            description="Also an embed!"
-        )
-        # A Page object can be used to further customize the page payload
-        page = nav.Page(
-            content="I'm the last page!",
-            embed=hikari.Embed(title="I also have an embed!")
-        )
-
-        # The list of pages this navigator should paginate through
-        # This should be a list that contains
-        # 'str', 'hikari.Embed', or 'nav.Page' objects.
-        pages = ["I'm the first page!", embed, page]
-
-        # Define our navigator and pass in our list of pages
-        navigator = nav.NavigatorView(pages=pages)
-
-        builder = nav.build_response(client)
-        # the builder has specific adapters for tanjun
-        await ctx.respond(**builder.to_tanjun_kwargs())
-        client.start_view(nav)
-
-
-    bot.run()
-    ```
-
-=== "just hikari"
-
-    ```py
-    import hikari
-    import miru
-    # Import the navigation module
-    from miru.ext import nav
-
-    bot = hikari.GatewayBot("...")
-
-    client = miru.Client(bot)
-
-    @bot.listen()
-    async def navigator(event: hikari.MessageCreateEvent) -> None:
-
-        # Do not process messages from bots or webhooks
-        if not event.is_human:
-            return
-
-        me = bot.get_me()
-
-        # If the bot is mentioned
-        if me.id in event.message.user_mentions_ids:
+        @tanjun.as_slash_command("name", "description")
+        async def some_slash_command(ctx: tanjun.abc.SlashContext) -> None:
             embed = hikari.Embed(
                 title="I'm the second page!",
                 description="Also an embed!"
             )
-
             # A Page object can be used to further customize the page payload
             page = nav.Page(
                 content="I'm the last page!",
@@ -202,12 +372,56 @@ The examples below are for a **Gateway** bot, but a **REST** bot would behave si
             navigator = nav.NavigatorView(pages=pages)
 
             builder = nav.build_response(client)
-            await builder.send_to_channel(event.channel_id)
+            # the builder has specific adapters for tanjun
+            await ctx.respond(**builder.to_tanjun_kwargs())
             client.start_view(nav)
 
 
-    bot.run()
-    ```
+        bot.run()
+        ```
+
+    === "REST"
+
+        ```py
+        import hikari
+        import miru
+        import tanjun
+        # Import the navigation module
+        from miru.ext import nav
+
+        bot = hikari.RESTBot("TOKEN")
+
+        tanjun_client = tanjun.Client.from_rest_bot(bot)
+        client = miru.Client(bot)
+
+        @tanjun.as_slash_command("name", "description")
+        async def some_slash_command(ctx: tanjun.abc.SlashContext) -> None:
+            embed = hikari.Embed(
+                title="I'm the second page!",
+                description="Also an embed!"
+            )
+            # A Page object can be used to further customize the page payload
+            page = nav.Page(
+                content="I'm the last page!",
+                embed=hikari.Embed(title="I also have an embed!")
+            )
+
+            # The list of pages this navigator should paginate through
+            # This should be a list that contains
+            # 'str', 'hikari.Embed', or 'nav.Page' objects.
+            pages = ["I'm the first page!", embed, page]
+
+            # Define our navigator and pass in our list of pages
+            navigator = nav.NavigatorView(pages=pages)
+
+            builder = nav.build_response(client)
+            # the builder has specific adapters for tanjun
+            await ctx.respond(**builder.to_tanjun_kwargs())
+            client.start_view(nav)
+
+
+        bot.run()
+        ```
 
 ## Customizing Navigation Buttons
 

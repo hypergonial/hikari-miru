@@ -217,7 +217,7 @@ Next up, we need to send our view, containing our components, in response to som
 
         ```py
         # This function will handle the interactions received
-        async def handle_command(interaction: hikari.CommandInteraction) -> hikari.api.InteractionMessageBuilder:
+        async def handle_command(interaction: hikari.CommandInteraction):
             # Create a new instance of our view
             view = BasicView()
 
@@ -428,7 +428,7 @@ Then we can adjust our sending logic from the previous example like so:
     === "REST"
 
         ```py hl_lines="2-5 17-22"
-        async def handle_command(interaction: hikari.CommandInteraction) -> hikari.api.InteractionMessageBuilder:
+        async def handle_command(interaction: hikari.CommandInteraction):
             view = PineappleView()  # Create a new view
             view.add_item(YesButton())  # Add our custom buttons to it
             # Pass arguments to NoButton

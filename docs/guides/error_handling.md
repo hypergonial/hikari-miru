@@ -47,5 +47,3 @@ class ErrorView(miru.View):
         if ctx is not None:
             await ctx.respond(f"Oh no! This error occured: {error}")
 ```
-
-
