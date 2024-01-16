@@ -9,7 +9,7 @@
 
 </div>
 
-An optional component handler for [hikari](https://github.com/hikari-py/hikari), inspired by discord.py's views.
+A component handler for [hikari](https://github.com/hikari-py/hikari), aimed at making the creation & management of Discord UI components easy.
 
 > [!TIP]
 > Like what you see? Check out [arc](https://arc.hypergonial.com), a command handler with a focus on type-safety and correctness.
@@ -34,9 +34,11 @@ python3 -m miru
 import hikari
 import miru
 
-
+# REST bots are also supported
 bot = hikari.GatewayBot(token="...")
-client = miru.Client(bot) # Wrap the bot in a miru client
+
+# Wrap the bot in a miru client
+client = miru.Client(bot)
 
 class MyView(miru.View):
 
@@ -76,7 +78,7 @@ async def buttons(event: hikari.GuildMessageCreateEvent) -> None:
 bot.run()
 ```
 
-For more examples see [examples](https://github.com/hypergonial/hikari-miru/tree/main/examples), or refer to the [documentation](https://hikari-miru.readthedocs.io/en/latest/).
+To get started with `miru`, see the [documentation](https://miru.hypergonial.com), or the [examples](https://github.com/hypergonial/hikari-miru/tree/main/examples).
 
 ## Extensions
 
@@ -97,6 +99,6 @@ See [Contributing](./CONTRIBUTING.md)
 
 ## Links
 
-- [**Documentation**](https://hikari-miru.readthedocs.io/en/latest/index.html)
+- [**Documentation**](https://miru.hypergonial.com)
 - [**Examples**](https://github.com/hypergonial/hikari-miru/tree/main/examples)
 - [**License**](https://github.com/hypergonial/hikari-miru/blob/main/LICENSE)
