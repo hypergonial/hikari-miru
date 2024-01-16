@@ -1,9 +1,13 @@
+# hikari-miru
+
+<div align="center">
+
 [![PyPI](https://img.shields.io/pypi/v/hikari-miru)](https://pypi.org/project/hikari-miru)
 [![CI](https://github.com/hypergonial/hikari-miru/actions/workflows/ci.yml/badge.svg)](https://github.com/hypergonial/hikari-miru/actions/workflows/ci.yml)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/charliermarsh/ruff/main/assets/badge/v1.json)](https://github.com/charliermarsh/ruff)
 ![Pyright](https://badgen.net/badge/Pyright/strict/2A6DB2)
 
-# hikari-miru
+</div>
 
 An optional component handler for [hikari](https://github.com/hikari-py/hikari), inspired by discord.py's views.
 
