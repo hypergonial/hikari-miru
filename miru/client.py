@@ -19,7 +19,12 @@ if t.TYPE_CHECKING:
     import typing_extensions as te
 
     from miru.abc.item_handler import ItemHandler
-    from miru.internal.types import ModalResponseBuildersT, ViewResponseBuildersT
+    from miru.internal.types import (
+        ModalResponseBuildersT,
+        ResponseBuildersT,
+        UnhandledCompInterHookT,
+        UnhandledModalInterHookT,
+    )
 
 __all__ = ("Client",)
 
@@ -65,6 +70,8 @@ class Client:
         "_handlers",
         "_bound_handlers",
         "_is_rest",
+        "_unhandled_comp_hook",
+        "_unhandled_modal_hook",
     )
 
     def __init__(
@@ -82,6 +89,8 @@ class Client:
         self._event_manager: hikari.api.EventManager | None = None
         self._cache: hikari.api.Cache | None = None
         self._injector: alluka.abc.Client = injector or alluka.Client()
+        self._unhandled_comp_hook: UnhandledCompInterHookT | None = None
+        self._unhandled_modal_hook: UnhandledModalInterHookT | None = None
 
         if isinstance(app, hikari.InteractionServerAware):
             self._is_rest = True
@@ -280,7 +289,7 @@ class Client:
 
         return builder
 
-    async def _rest_handle_component_inter(self, interaction: hikari.ComponentInteraction) -> ViewResponseBuildersT:
+    async def _rest_handle_component_inter(self, interaction: hikari.ComponentInteraction) -> ResponseBuildersT:
         """Handle a component interaction.
 
         Used only under REST flow.
@@ -339,9 +348,7 @@ class Client:
         elif isinstance(handler, Modal):
             self._handlers.pop(handler.custom_id, None)
 
-    async def handle_component_interaction(
-        self, interaction: hikari.ComponentInteraction
-    ) -> ViewResponseBuildersT | None:
+    async def handle_component_interaction(self, interaction: hikari.ComponentInteraction) -> ResponseBuildersT | None:
         """Handle a component interaction.
 
         Parameters
@@ -367,10 +374,14 @@ class Client:
             fut = await handler._invoke(interaction)
 
         else:
-            if not self._ignore_unknown_interactions:
+            if self._unhandled_comp_hook is not None:
+                return await self._unhandled_comp_hook(interaction)
+
+            elif not self._ignore_unknown_interactions:
                 logger.warning(
                     f"Unknown component interaction received for component: '{interaction.custom_id}'. Did you forget to start a view?"
-                    "\nYou can disable this warning by setting 'ignore_unknown_interactions' to True in the client constructor."
+                    "\nYou can disable this warning by setting 'ignore_unknown_interactions' to True in the client constructor, or"
+                    " by setting a unhandled component interaction hook."
                 )
             return
 
@@ -401,10 +412,14 @@ class Client:
         if handler := self._handlers.get(interaction.custom_id):
             fut = await handler._invoke(interaction)
         else:
-            if not self._ignore_unknown_interactions:
+            if self._unhandled_modal_hook is not None:
+                return await self._unhandled_modal_hook(interaction)
+
+            elif not self._ignore_unknown_interactions:
                 logger.warning(
                     f"Unknown modal interaction received for modal: '{interaction.custom_id}'. Did you forget to start a modal?"
-                    "\nYou can disable this warning by setting 'ignore_unknown_interactions' to True in the client constructor."
+                    "\nYou can disable this warning by setting 'ignore_unknown_interactions' to True in the client constructor, or"
+                    " by setting a unhandled modal interaction hook."
                 )
             return
 
@@ -482,6 +497,106 @@ class Client:
             return None
 
         return handler
+
+    @t.overload
+    def set_unhandled_component_interaction_hook(self, hook: UnhandledCompInterHookT) -> te.Self:
+        ...
+
+    @t.overload
+    def set_unhandled_component_interaction_hook(self) -> t.Callable[[UnhandledCompInterHookT], te.Self]:
+        ...
+
+    def set_unhandled_component_interaction_hook(
+        self, hook: UnhandledCompInterHookT | None = None
+    ) -> te.Self | t.Callable[[UnhandledCompInterHookT], te.Self]:
+        """Decorator to set the callback to be called for unhandled component interactions.
+
+        This will be called when a component interaction is received that is not
+        handled by any of the currently running views.
+
+        Parameters
+        ----------
+        hook : UnhandledCompInterHookT
+            The function to set as the hook.
+
+        Returns
+        -------
+        te.Self
+            The client for chaining calls.
+
+        Examples
+        --------
+        ```py
+        @client.set_unhandled_component_interaction_hook
+        async def unhandled_comp_hook(inter: hikari.ComponentInteraction) -> None:
+            await inter.create_initial_response("❌ Something went wrong!")
+        ```
+
+        Or, as a function:
+
+        ```py
+        client.set_unhandled_component_interaction_hook(unhandled_comp_hook)
+        ```
+        """
+
+        def decorator(hook: UnhandledCompInterHookT) -> te.Self:
+            self._unhandled_comp_hook = hook
+            return self
+
+        if hook is not None:
+            return decorator(hook)
+
+        return decorator
+
+    @t.overload
+    def set_unhandled_modal_interaction_hook(self, hook: UnhandledModalInterHookT) -> te.Self:
+        ...
+
+    @t.overload
+    def set_unhandled_modal_interaction_hook(self) -> t.Callable[[UnhandledModalInterHookT], te.Self]:
+        ...
+
+    def set_unhandled_modal_interaction_hook(
+        self, hook: UnhandledModalInterHookT | None = None
+    ) -> te.Self | t.Callable[[UnhandledModalInterHookT], te.Self]:
+        """Decorator to set the callback to be called for unhandled modal interactions.
+
+        This will be called when a modal interaction is received that is not
+        handled by any of the currently running modals.
+
+        Parameters
+        ----------
+        hook : UnhandledModalInterHookT
+            The function to set as the hook.
+
+        Returns
+        -------
+        te.Self
+            The client for chaining calls.
+
+        Examples
+        --------
+        ```py
+        @client.set_unhandled_modal_interaction_hook
+        async def unhandled_modal_hook(inter: hikari.ModalInteraction) -> None:
+            await inter.create_initial_response("❌ Something went wrong!")
+        ```
+
+        Or, as a function:
+
+        ```py
+        client.set_unhandled_modal_interaction_hook(unhandled_modal_hook)
+        ```
+        """
+
+        def decorator(hook: UnhandledModalInterHookT) -> te.Self:
+            self._unhandled_modal_hook = hook
+            return self
+
+        if hook is not None:
+            return decorator(hook)
+
+        return decorator
 
     def start_view(
         self,
