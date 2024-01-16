@@ -345,6 +345,9 @@ A more advanced way to use `miru` is to create our own custom classes of buttons
 This allows us to customize to a great degree their behaviour, pass variables dynamically, add or remove
 items on the fly, and more!
 
+??? question "Help! What are classes, and how do they work?"
+    If you're not sure how classes & subclassing work in Python, check out this [guide from Real Python](https://realpython.com/python3-object-oriented-programming/) on the subject.
+
 Below you can see such an example:
 
 ```py
