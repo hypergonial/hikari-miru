@@ -172,14 +172,13 @@ class Client:
             Whether to automatically stop bound views when the message it is bound to is deleted. This only applies to
             Gateway bots. When an app without EventManagerAware is used, this will be ignored.
 
-        !!! note
-            This convenience method only works if the Tanjun client was created with a bot object,
-            not constructed manually.
-
         Returns
         -------
         Client
             The created client.
+
+        !!! note
+            This convenience method only works if the Tanjun client was created with a bot object, not constructed manually.
 
         Raises
         ------
@@ -696,10 +695,10 @@ class Client:
 
         See Also
         --------
-        - [`Client.get_type_dependency`][arc.client.Client.get_type_dependency]
+        - [`Client.get_type_dependency`][miru.client.Client.get_type_dependency]
             A method to get dependencies for the client.
 
-        - [`Client.inject_dependencies`][arc.client.Client.inject_dependencies]
+        - [`Client.inject_dependencies`][miru.client.Client.inject_dependencies]
             A decorator to inject dependencies into arbitrary functions.
         """
         self._injector.set_type_dependency(type_, instance)
@@ -740,7 +739,7 @@ class Client:
 
         See Also
         --------
-        - [`Client.set_type_dependency`][arc.client.Client.set_type_dependency]
+        - [`Client.set_type_dependency`][miru.client.Client.set_type_dependency]
             A method to set dependencies for the client.
         """
 

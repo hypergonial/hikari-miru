@@ -6,6 +6,8 @@ copyright: Copyright &copy; 2023 hypergonial
 edit_uri: edit/main/docs/
 theme:
   name: material
+  font:
+    code: JetBrains Mono
   icon:
     logo: fontawesome/solid/book
     repo: fontawesome/brands/github

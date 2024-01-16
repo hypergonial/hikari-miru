@@ -71,37 +71,222 @@ class BasicView(miru.View):
         self.stop()  # Called to stop the view
 ```
 
-Then you can instantiate your bot class, and create a miru [Client][miru.client.Client] from it.
+!!! note "A note on usage with command handlers"
+    `miru` has support for the following command handlers:
 
-=== "Gateway"
+    - [`arc`](https://arc.hypergonial.com/)
+    - [`crescent`](https://github.com/hikari-crescent/hikari-crescent)
+    - [`lightbulb`](https://hikari-lightbulb.readthedocs.io/en/latest/)
+    - [`tanjun`](https://tanjun.cursed.solutions/)
 
-    ```py
-    bot = hikari.GatewayBot("YOUR_TOKEN_HERE")
-    client = miru.Client(bot)
-    ```
+    It can also be used **without a command handler**, if preferred. Other command handlers may work, but there was no consideration made to support them.
 
-=== "REST"
+??? question "What is a command handler?"
+    Command handlers typically extend `hikari` with additional functionality to make it easier to define and manage commands. They also usually ship with a plethora of utility functions to make bot creation easier. Their use is **not necessary**, but is *recommended* for newcomers. If you need help picking a command handler for your bot, see [this repository](https://github.com/parafoxia/hikari-intro) for a comparison.
 
-    ```py
-    bot = hikari.RESTBot("YOUR_TOKEN_HERE")
-    client = miru.Client(bot)
-    ```
+To proceed, you can instantiate your bot class, and create a miru [Client][miru.client.Client] from it:
 
-Next up, we need to send our view. `miru` has support for all popular command handlers, and naturally can be used with only hikari as well.
+=== "just hikari"
+
+    === "Gateway"
+
+        ```py
+        bot = hikari.GatewayBot("YOUR_TOKEN_HERE")
+        client = miru.Client(bot)
+        ```
+
+    === "REST"
+
+        ```py
+        bot = hikari.RESTBot("YOUR_TOKEN_HERE")
+        client = miru.Client(bot)
+        ```
 
 === "arc"
 
-    ```py
-    @arc_client.include
-    @arc.slash_command("name", "description")
-    async def some_slash_command(ctx: arc.GatewayContext) -> None:
-        # Create a new instance of our view
-        view = BasicView()
-        await ctx.respond("Hello miru!", components=view)
+    `miru` has specific support for `arc` clients, and can share registered type dependencies set by it for injection:
 
-        # Assign the view to the client and start it
-        client.start_view(view)
+    === "Gateway"
+
+        ```py
+        bot = hikari.GatewayBot("YOUR_TOKEN_HERE")
+        arc_client = arc.GatewayClient(bot)
+        client = miru.Client.from_arc(arc_client)
+        ```
+
+    === "REST"
+
+        ```py
+        bot = hikari.RESTBot("YOUR_TOKEN_HERE")
+        arc_client = arc.RESTClient(bot)
+        client = miru.Client.from_arc(arc_client)
+        ```
+
+=== "crescent"
+
+    === "Gateway"
+
+        ```py
+        bot = hikari.GatewayBot("YOUR_TOKEN_HERE")
+        crescent_client = crescent.Client(bot)
+        client = miru.Client(bot)
+        ```
+
+    === "REST"
+
+        ```py
+        bot = hikari.RESTBot("YOUR_TOKEN_HERE")
+        crescent_client = crescent.Client(bot)
+        client = miru.Client(bot)
+        ```
+
+=== "lightbulb"
+
+    ```py
+    bot = lightbulb.BotApp("YOUR_TOKEN_HERE")
+    client = miru.Client(bot)
     ```
+
+    !!! note
+        `lightbulb` only supports Gateway bots.
+
+=== "tanjun"
+
+    `miru` has specific support for **Tanjun** clients, and can share registered type dependencies set by it for injection:
+
+    === "Gateway"
+
+        ```py
+        bot = hikari.GatewayBot("YOUR_TOKEN_HERE")
+        tanjun_client = tanjun.Client.from_gateway_bot(...)
+        client = miru.Client.from_tanjun(tanjun_client)
+        ```
+
+    === "REST"
+
+        ```py
+        bot = hikari.RESTBot("YOUR_TOKEN_HERE")
+        tanjun_client = tanjun.Client.from_rest_bot(...)
+        client = miru.Client.from_tanjun(tanjun_client)
+        ```
+
+
+??? question "What is the difference between a Gateway and a REST bot?"
+
+    There are two main ways for a bot to connect to Discord & receive interactions, via either a **GatewayBot** or a **RESTBot**.
+
+    A bot connected to the [**Gateway**](https://discord.com/developers/docs/topics/gateway "Discord's fancy way of saying WebSocket") needs to maintain a constant connection to Discord's servers through a [WebSocket](https://en.wikipedia.org/wiki/WebSocket "A way of establishing realtime two-way communication between client & server"),
+    and in turn receives **events** that inform it about things happening on Discord in real time (messages being sent, channels being created etc...).
+    **Interactions** are also delivered to a bot of this type through the Gateway as events. In addition, Gateway bots typically have a [*cache*][miru.client.Client.cache] and can manage complex state.
+    This model is ideal for bots that need to do things other than just responding to interactions, such as reading and responding to messages sent by users, or acting on other server events (e.g. a moderation bot).
+
+    A **RESTBot** however, isn't constantly connected to Discord, instead, you're expected to host a small HTTP server, and Discord will send **interactions** to your server
+    by making HTTP `POST` requests to it. RESTBots **only receive interactions** from Discord, they **do not receive events** or other types of data. They are ideal for bots that manage little to no state,
+    and rely only on users invoking the bot via slash commands. Setting up a RESTBot however is slightly more complicated compared to a GatewayBot, as it requires a publically accessible [domain](https://en.wikipedia.org/wiki/Domain_name "A domain name, like 'www.example.com'") with [TLS](https://en.wikipedia.org/wiki/Transport_Layer_Security "Transport Layer Security (site with https://)") for Discord to be able to send interactions to your webserver.
+
+    For more information about **interactions**, see the brief explainer found in [`arc`'s documentation](https://arc.hypergonial.com/guides/interactions/).
+
+Next up, we need to send our view, containing our components, in response to something:
+
+=== "just hikari"
+
+    === "Gateway"
+
+        ```py
+        @bot.listen()
+        async def buttons(event: hikari.MessageCreateEvent) -> None:
+
+            # Ignore bots or webhooks pinging us
+            if not event.is_human:
+                return
+
+            me = bot.get_me()
+
+            # If the bot is mentioned
+            if me.id in event.message.user_mentions_ids:
+                # Create a new instance of our view
+                view = BasicView()
+                await event.message.respond("Hello miru!", components=view)
+                # Assign the view to the client and start it
+                client.start_view(view)
+
+        bot.run()
+        ```
+
+    === "REST"
+
+        ```py
+        # This function will handle the interactions received
+        async def handle_command(interaction: hikari.CommandInteraction) -> hikari.api.InteractionMessageBuilder:
+            # Create a new instance of our view
+            view = BasicView()
+
+            builder = interaction.build_response().set_content("Hello miru!")
+
+            for action_row in view.build():
+                builder.add_component(action_row)
+
+            yield builder
+
+            # Assign the view to the client and start it
+            client.start_view(view)
+
+
+        # Register the commands on startup.
+        #
+        # Note that this is not a nice way to manage this, as it is quite spammy
+        # to do it every time the bot is started. You can either use a command handler
+        # or only run this code in a script using `RESTApp` or add checks to not update
+        # the commands if there were no changes
+        async def create_commands(bot: hikari.RESTBot) -> None:
+            application = await bot.rest.fetch_application()
+
+            await bot.rest.set_application_commands(
+                application=application.id,
+                commands=[
+                    bot.rest.slash_command_builder("test", "My first test command!"),
+                ],
+            )
+
+        bot.add_startup_callback(create_commands)
+        bot.set_listener(hikari.CommandInteraction, handle_command)
+
+        bot.run()
+        ```
+
+        !!! tip
+            In the case of `RESTBot`, it is *recommended* to use a command handler, so that you don't have to deal with manually
+            registering commands and building responses yourself.
+
+=== "arc"
+
+    === "Gateway"
+
+        ```py
+        @arc_client.include
+        @arc.slash_command("name", "description")
+        async def some_slash_command(ctx: arc.GatewayContext) -> None:
+            # Create a new instance of our view
+            view = BasicView()
+            await ctx.respond("Hello miru!", components=view)
+
+            # Assign the view to the client and start it
+            client.start_view(view)
+        ```
+
+    === "REST"
+
+        ```py
+        @arc_client.include
+        @arc.slash_command("name", "description")
+        async def some_slash_command(ctx: arc.RESTContext) -> None:
+            # Create a new instance of our view
+            view = BasicView()
+            await ctx.respond("Hello miru!", components=view)
+
+            # Assign the view to the client and start it
+            client.start_view(view)
+        ```
 
 === "crescent"
 
@@ -109,7 +294,6 @@ Next up, we need to send our view. `miru` has support for all popular command ha
     @crescent_client.include
     @crescent.command("name", "description")
     class SomeSlashCommand:
-
         async def callback(self, ctx: crescent.Context) -> None:
             # Create a new instance of our view
             view = BasicView()
@@ -134,9 +318,6 @@ Next up, we need to send our view. `miru` has support for all popular command ha
         client.start_view(view)
     ```
 
-    !!! note
-        Lightbulb only supports Gateway bots.
-
 === "tanjun"
 
     ```py
@@ -150,32 +331,6 @@ Next up, we need to send our view. `miru` has support for all popular command ha
         client.start_view(view)
     ```
 
-=== "just hikari"
-
-    ```py
-    @bot.listen()
-    async def buttons(event: hikari.MessageCreateEvent) -> None:
-
-        # Ignore bots or webhooks pinging us
-        if not event.is_human:
-            return
-
-        me = bot.get_me()
-
-        # If the bot is mentioned
-        if me.id in event.message.user_mentions_ids:
-            # Create a new instance of our view
-            view = BasicView()
-            await event.message.respond("Hello miru!", components=view)
-            # Assign the view to the client and start it
-            client.start_view(view)
-
-    bot.run()
-    ```
-
-    !!! note
-        This is Gateway-only, however you can implement slash commands using only
-        hikari for REST, but that is outside the scope of this guide.
 
 If you run this code, you should see some basic logging information, and your bot will be online!
 Mentioning the bot in any channel should make the bot send the component menu defined above!
@@ -189,13 +344,11 @@ items on the fly, and more!
 Below you can see such an example:
 
 ```py
-import hikari
-import miru
-
 class YesButton(miru.Button):
     def __init__(self) -> None:
         # Initialize our button with some pre-defined properties
         super().__init__(style=hikari.ButtonStyle.SUCCESS, label="Yes")
+        self.value = True
 
     # The callback is the function that gets called when the button is pressed
     # If you are subclassing, you must use the name "callback" when defining it.
@@ -208,7 +361,7 @@ class YesButton(miru.Button):
         )
         # You can access the view an item is attached to
         # by accessing it's view property
-        self.view.answer = True
+        self.view.answer = self.value
         self.view.stop()
 
 
@@ -216,13 +369,14 @@ class NoButton(miru.Button):
     # Let's leave our arguments dynamic this time, instead of hard-coding them
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
+        self.value = False
 
     async def callback(self, ctx: miru.ViewContext) -> None:
         await ctx.respond(
             "This is the only correct answer.",
             flags=hikari.MessageFlag.EPHEMERAL
         )
-        self.view.answer = False
+        self.view.answer = self.value
         self.view.stop()
 
 
@@ -230,39 +384,141 @@ class PineappleView(miru.View):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.answer = None
-
-bot = hikari.GatewayBot("YOUR_TOKEN_HERE")
-client = miru.Client(bot)
 ```
 
 Then we can adjust our sending logic from the previous example like so:
 
-=== "arc"
+=== "just hikari"
 
-    ```py
-    @arc_client.include
-    @arc.slash_command("name", "description")
-    async def some_slash_command(ctx: arc.GatewayContext) -> None:
-        view = PineappleView()  # Create a new view
-        view.add_item(YesButton())  # Add our custom buttons to it
-        # Pass arguments to NoButton
-        view.add_item(NoButton(style=hikari.ButtonStyle.DANGER, label="No"))
+    === "Gateway"
 
-        await ctx.respond("Do you put pineapple on your pizza?", components=view)
+        ```py hl_lines="10-13 22-27"
+        @bot.listen()
+        async def some_listener(event: hikari.MessageCreateEvent) -> None:
 
-        client.start_view(view)
+            if not event.is_human:
+                return
 
-        await view.wait()  # Wait until the view is stopped or times out
+            me = bot.get_me()
 
-        if view.answer is not None:
+            if me.id in event.message.user_mentions_ids:
+                view = PineappleView()  # Create a new view
+                view.add_item(YesButton())  # Add our custom buttons to it
+                # Pass arguments to NoButton
+                view.add_item(NoButton(style=hikari.ButtonStyle.DANGER, label="No"))
+
+                await event.message.respond(
+                    "Do you put pineapple on your pizza?",
+                    components=view
+                )
+
+                client.start_view(view)
+
+                await view.wait()  # Wait until the view is stopped or times out
+
+                if view.answer is not None:
+                    print(f"Received an answer! It is: {view.answer}")
+                else:
+                    print("Did not receive an answer in time!")
+
+
+        bot.run()
+        ```
+
+    === "REST"
+
+        ```py hl_lines="2-5 17-22"
+        async def handle_command(interaction: hikari.CommandInteraction) -> hikari.api.InteractionMessageBuilder:
+            view = PineappleView()  # Create a new view
+            view.add_item(YesButton())  # Add our custom buttons to it
+            # Pass arguments to NoButton
+            view.add_item(NoButton(style=hikari.ButtonStyle.DANGER, label="No"))
+
+            builder = interaction.build_response().set_content("Do you put pineapple on your pizza?")
+
+            for action_row in view.build():
+                builder.add_component(action_row)
+
+            yield builder
+
+            # Assign the view to the client and start it
+            client.start_view(view)
+
+            await view.wait()  # Wait until the view is stopped or times out
+
+            if view.answer is not None:
                 print(f"Received an answer! It is: {view.answer}")
             else:
                 print("Did not receive an answer in time!")
-    ```
+
+
+        async def create_commands(bot: hikari.RESTBot) -> None:
+            application = await bot.rest.fetch_application()
+
+            await bot.rest.set_application_commands(
+                application=application.id,
+                commands=[
+                    bot.rest.slash_command_builder("test", "My first test command!"),
+                ],
+            )
+
+        bot.add_startup_callback(create_commands)
+        bot.set_listener(hikari.CommandInteraction, handle_command)
+
+        bot.run()
+        ```
+
+=== "arc"
+
+    === "Gateway"
+
+        ```py hl_lines="4-7 13-18"
+        @arc_client.include
+        @arc.slash_command("name", "description")
+        async def some_slash_command(ctx: arc.GatewayContext) -> None:
+            view = PineappleView()  # Create a new view
+            view.add_item(YesButton())  # Add our custom buttons to it
+            # Pass arguments to NoButton
+            view.add_item(NoButton(style=hikari.ButtonStyle.DANGER, label="No"))
+
+            await ctx.respond("Do you put pineapple on your pizza?", components=view)
+
+            client.start_view(view)
+
+            await view.wait()  # Wait until the view is stopped or times out
+
+            if view.answer is not None:
+                    print(f"Received an answer! It is: {view.answer}")
+                else:
+                    print("Did not receive an answer in time!")
+        ```
+
+    === "REST"
+
+        ```py hl_lines="4-7 13-18"
+        @arc_client.include
+        @arc.slash_command("name", "description")
+        async def some_slash_command(ctx: arc.RESTContext) -> None:
+            view = PineappleView()  # Create a new view
+            view.add_item(YesButton())  # Add our custom buttons to it
+            # Pass arguments to NoButton
+            view.add_item(NoButton(style=hikari.ButtonStyle.DANGER, label="No"))
+
+            await ctx.respond("Do you put pineapple on your pizza?", components=view)
+
+            client.start_view(view)
+
+            await view.wait()  # Wait until the view is stopped or times out
+
+            if view.answer is not None:
+                    print(f"Received an answer! It is: {view.answer}")
+                else:
+                    print("Did not receive an answer in time!")
+        ```
 
 === "crescent"
 
-    ```py
+    ```py hl_lines="5-8 14-19"
     @crescent_client.include
     @crescent.command("name", "description")
     class SomeSlashCommand:
@@ -286,7 +542,7 @@ Then we can adjust our sending logic from the previous example like so:
 
 === "lightbulb"
 
-    ```py
+    ```py hl_lines="5-8 14-19"
     @lightbulb_bot.command()
     @lightbulb.command("name", "description", auto_defer=False)
     @lightbulb.implements(lightbulb.SlashCommand)
@@ -310,7 +566,7 @@ Then we can adjust our sending logic from the previous example like so:
 
 === "tanjun"
 
-    ```py
+    ```py hl_lines="3-6 12-17"
     @tanjun.as_slash_command("name", "description")
     async def some_slash_command(ctx: tanjun.abc.SlashContext) -> None:
         view = PineappleView()  # Create a new view
@@ -328,41 +584,6 @@ Then we can adjust our sending logic from the previous example like so:
                 print(f"Received an answer! It is: {view.answer}")
             else:
                 print("Did not receive an answer in time!")
-    ```
-
-=== "just hikari"
-
-    ```py
-    @bot.listen()
-    async def some_listener(event: hikari.MessageCreateEvent) -> None:
-
-        if not event.is_human:
-            return
-
-        me = bot.get_me()
-
-        if me.id in event.message.user_mentions_ids:
-            view = PineappleView()  # Create a new view
-            view.add_item(YesButton())  # Add our custom buttons to it
-            # Pass arguments to NoButton
-            view.add_item(NoButton(style=hikari.ButtonStyle.DANGER, label="No"))
-
-            await event.message.respond(
-                "Do you put pineapple on your pizza?",
-                components=view
-            )
-
-            client.start_view(view)
-
-            await view.wait()  # Wait until the view is stopped or times out
-
-            if view.answer is not None:
-                print(f"Received an answer! It is: {view.answer}")
-            else:
-                print("Did not receive an answer in time!")
-
-
-    bot.run()
     ```
 
 Running this code and mentioning the bot in a channel it can see should similarly yield a component menu.
