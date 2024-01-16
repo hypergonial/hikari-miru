@@ -383,7 +383,12 @@ class NoButton(miru.Button):
 class PineappleView(miru.View):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self.answer = None
+        self.answer: bool | None = None
+
+        # Add our custom buttons
+        self.add_item(YesButton())
+        # Pass arguments to NoButton
+        self.add_item(NoButton(style=hikari.ButtonStyle.DANGER, label="No"))
 ```
 
 Then we can adjust our sending logic from the previous example like so:
@@ -402,10 +407,7 @@ Then we can adjust our sending logic from the previous example like so:
             me = bot.get_me()
 
             if me.id in event.message.user_mentions_ids:
-                view = PineappleView()  # Create a new view
-                view.add_item(YesButton())  # Add our custom buttons to it
-                # Pass arguments to NoButton
-                view.add_item(NoButton(style=hikari.ButtonStyle.DANGER, label="No"))
+                view = PineappleView()  # Create the view
 
                 await event.message.respond(
                     "Do you put pineapple on your pizza?",
@@ -414,7 +416,8 @@ Then we can adjust our sending logic from the previous example like so:
 
                 client.start_view(view)
 
-                await view.wait()  # Wait until the view is stopped or times out
+                # You can also wait until the view is stopped or times out
+                await view.wait()
 
                 if view.answer is not None:
                     print(f"Received an answer! It is: {view.answer}")
@@ -429,10 +432,8 @@ Then we can adjust our sending logic from the previous example like so:
 
         ```py hl_lines="2-5 17-22"
         async def handle_command(interaction: hikari.CommandInteraction):
-            view = PineappleView()  # Create a new view
-            view.add_item(YesButton())  # Add our custom buttons to it
-            # Pass arguments to NoButton
-            view.add_item(NoButton(style=hikari.ButtonStyle.DANGER, label="No"))
+            view = PineappleView()  # Create the view
+
 
             builder = interaction.build_response().set_content("Do you put pineapple on your pizza?")
 
@@ -444,7 +445,8 @@ Then we can adjust our sending logic from the previous example like so:
             # Assign the view to the client and start it
             client.start_view(view)
 
-            await view.wait()  # Wait until the view is stopped or times out
+            # You can also wait until the view is stopped or times out
+            await view.wait()
 
             if view.answer is not None:
                 print(f"Received an answer! It is: {view.answer}")
@@ -476,16 +478,14 @@ Then we can adjust our sending logic from the previous example like so:
         @arc_client.include
         @arc.slash_command("name", "description")
         async def some_slash_command(ctx: arc.GatewayContext) -> None:
-            view = PineappleView()  # Create a new view
-            view.add_item(YesButton())  # Add our custom buttons to it
-            # Pass arguments to NoButton
-            view.add_item(NoButton(style=hikari.ButtonStyle.DANGER, label="No"))
+            view = PineappleView()  # Create the view
 
             await ctx.respond("Do you put pineapple on your pizza?", components=view)
 
             client.start_view(view)
 
-            await view.wait()  # Wait until the view is stopped or times out
+            # You can also wait until the view is stopped or times out
+            await view.wait()
 
             if view.answer is not None:
                     print(f"Received an answer! It is: {view.answer}")
@@ -499,16 +499,14 @@ Then we can adjust our sending logic from the previous example like so:
         @arc_client.include
         @arc.slash_command("name", "description")
         async def some_slash_command(ctx: arc.RESTContext) -> None:
-            view = PineappleView()  # Create a new view
-            view.add_item(YesButton())  # Add our custom buttons to it
-            # Pass arguments to NoButton
-            view.add_item(NoButton(style=hikari.ButtonStyle.DANGER, label="No"))
+            view = PineappleView()  # Create the view
 
             await ctx.respond("Do you put pineapple on your pizza?", components=view)
 
             client.start_view(view)
 
-            await view.wait()  # Wait until the view is stopped or times out
+            # You can also wait until the view is stopped or times out
+            await view.wait()
 
             if view.answer is not None:
                     print(f"Received an answer! It is: {view.answer}")
@@ -523,16 +521,14 @@ Then we can adjust our sending logic from the previous example like so:
     @crescent.command("name", "description")
     class SomeSlashCommand:
         async def callback(self, ctx: crescent.Context) -> None:
-            view = PineappleView()  # Create a new view
-            view.add_item(YesButton())  # Add our custom buttons to it
-            # Pass arguments to NoButton
-            view.add_item(NoButton(style=hikari.ButtonStyle.DANGER, label="No"))
+            view = PineappleView()  # Create the view
 
             await ctx.respond("Do you put pineapple on your pizza?", components=view)
 
             client.start_view(view)
 
-            await view.wait()  # Wait until the view is stopped or times out
+            # You can also wait until the view is stopped or times out
+            await view.wait()
 
             if view.answer is not None:
                     print(f"Received an answer! It is: {view.answer}")
@@ -547,16 +543,14 @@ Then we can adjust our sending logic from the previous example like so:
     @lightbulb.command("name", "description", auto_defer=False)
     @lightbulb.implements(lightbulb.SlashCommand)
     async def some_slash_command(ctx: lightbulb.SlashContext) -> None:
-        view = PineappleView()  # Create a new view
-        view.add_item(YesButton())  # Add our custom buttons to it
-        # Pass arguments to NoButton
-        view.add_item(NoButton(style=hikari.ButtonStyle.DANGER, label="No"))
+        view = PineappleView()  # Create the view
 
         await ctx.respond("Do you put pineapple on your pizza?", components=view)
 
         client.start_view(view)
 
-        await view.wait()  # Wait until the view is stopped or times out
+        # You can also wait until the view is stopped or times out
+        await view.wait()
 
         if view.answer is not None:
                 print(f"Received an answer! It is: {view.answer}")
@@ -569,16 +563,14 @@ Then we can adjust our sending logic from the previous example like so:
     ```py hl_lines="3-6 12-17"
     @tanjun.as_slash_command("name", "description")
     async def some_slash_command(ctx: tanjun.abc.SlashContext) -> None:
-        view = PineappleView()  # Create a new view
-        view.add_item(YesButton())  # Add our custom buttons to it
-        # Pass arguments to NoButton
-        view.add_item(NoButton(style=hikari.ButtonStyle.DANGER, label="No"))
+        view = PineappleView()  # Create the view
 
         await ctx.respond("Do you put pineapple on your pizza?", components=view)
 
         client.start_view(view)
 
-        await view.wait()  # Wait until the view is stopped or times out
+        # You can also wait until the view is stopped or times out
+        await view.wait()
 
         if view.answer is not None:
                 print(f"Received an answer! It is: {view.answer}")
