@@ -11,6 +11,7 @@ import hikari
 
 if t.TYPE_CHECKING:
     from miru import Client
+    from miru.internal.types import ResponseBuildersT
 
 InteractionT = t.TypeVar("InteractionT", "hikari.ComponentInteraction", "hikari.ModalInteraction")
 
@@ -445,6 +446,88 @@ class Context(abc.ABC, t.Generic[InteractionT]):
             if delete_after:
                 response.delete_after(delete_after)
             return response
+
+    @t.overload
+    async def respond_with_builder(self, builder: hikari.api.InteractionModalBuilder) -> None:
+        ...
+
+    @t.overload
+    async def respond_with_builder(
+        self, builder: hikari.api.InteractionMessageBuilder | hikari.api.InteractionDeferredBuilder
+    ) -> InteractionResponse:
+        ...
+
+    async def respond_with_builder(self, builder: ResponseBuildersT) -> InteractionResponse | None:
+        """Respond to the interaction with a builder. This method will try to turn the builder into a valid
+        response or followup, depending on the builder type and interaction state.
+
+        Parameters
+        ----------
+        builder : ResponseBuilderT
+            The builder to respond with.
+
+        Returns
+        -------
+        InteractionResponse | None
+            A proxy object representing the response to the interaction. Will be None if the builder is a modal builder.
+
+        Raises
+        ------
+        RuntimeError
+            The interaction was already issued an initial response and the builder can only be used for initial responses.
+        """
+        async with self._response_lock:
+            if self._issued_response and not isinstance(builder, hikari.api.InteractionMessageBuilder):
+                raise RuntimeError("This interaction was already issued an initial response.")
+
+            if self.client.is_rest and not self._issued_response:
+                self._resp_builder.set_result(builder)
+                self._issued_response = True
+                if not isinstance(builder, hikari.api.InteractionModalBuilder):
+                    return await self._create_response()
+                return
+
+            if isinstance(builder, hikari.api.InteractionMessageBuilder):
+                if not self._issued_response:
+                    await self.interaction.create_initial_response(
+                        response_type=hikari.ResponseType.MESSAGE_CREATE,
+                        content=builder.content,
+                        tts=builder.is_tts,
+                        components=builder.components,
+                        attachments=builder.attachments,
+                        embeds=builder.embeds,
+                        mentions_everyone=builder.mentions_everyone,
+                        user_mentions=builder.user_mentions,
+                        role_mentions=builder.role_mentions,
+                        flags=builder.flags,
+                    )
+                else:
+                    await self.interaction.execute(
+                        content=builder.content,
+                        tts=builder.is_tts,
+                        components=builder.components or hikari.UNDEFINED,
+                        attachments=builder.attachments or hikari.UNDEFINED,
+                        embeds=builder.embeds or hikari.UNDEFINED,
+                        mentions_everyone=builder.mentions_everyone,
+                        user_mentions=builder.user_mentions,
+                        role_mentions=builder.role_mentions,
+                        flags=builder.flags,
+                    )
+            elif isinstance(builder, hikari.api.InteractionDeferredBuilder):
+                await self.interaction.create_initial_response(
+                    response_type=hikari.ResponseType.DEFERRED_MESSAGE_CREATE, flags=builder.flags
+                )
+            else:
+                if isinstance(self.interaction, hikari.ModalInteraction):
+                    raise RuntimeError("Cannot create a new modal response to a modal interaction.")
+
+                await self.interaction.create_modal_response(
+                    title=builder.title, custom_id=builder.custom_id, components=builder.components or hikari.UNDEFINED
+                )
+
+            self._issued_response = True
+            if not isinstance(builder, hikari.api.InteractionModalBuilder):
+                return await self._create_response()
 
     async def edit_response(
         self,

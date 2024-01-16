@@ -39,8 +39,9 @@ class ModalContext(Context[hikari.ModalInteraction]):
         """The values received as input for this modal."""
         return self._values
 
-    async def respond_with_builder(self, builder: ModalResponseBuildersT) -> InteractionResponse:
-        """Respond to this interaction with a response builder.
+    async def respond_with_builder(self, builder: ModalResponseBuildersT) -> InteractionResponse:  # pyright: ignore reportIncompatibleMethodOverride
+        """Respond to the interaction with a builder. This method will try to turn the builder into a valid
+        response or followup, depending on the builder type and interaction state.
 
         Parameters
         ----------
@@ -49,38 +50,15 @@ class ModalContext(Context[hikari.ModalInteraction]):
 
         Returns
         -------
-        InteractionResponse | None
-            The response that was sent. This is None if the interaction created a modal.
+        InteractionResponse
+            The response that was sent.
 
         Raises
         ------
         RuntimeError
             The interaction was already responded to.
         """
-        if self._issued_response:
-            raise RuntimeError("Interaction was already responded to.")
-
-        async with self._response_lock:
-            if self.client.is_rest:
-                self._resp_builder.set_result(builder)
-            else:
-                if isinstance(builder, hikari.api.InteractionDeferredBuilder):
-                    await self._interaction.create_initial_response(response_type=builder.type, flags=builder.flags)
-                else:
-                    await self._interaction.create_initial_response(
-                        response_type=builder.type,
-                        flags=builder.flags,
-                        content=builder.content,
-                        embeds=builder.embeds,
-                        components=builder.components,
-                        attachments=builder.attachments,
-                        tts=builder.is_tts,
-                        mentions_everyone=builder.mentions_everyone,
-                        user_mentions=builder.user_mentions,
-                        role_mentions=builder.role_mentions,
-                    )
-            self._issued_response = True
-            return await self._create_response()
+        return await super().respond_with_builder(builder)
 
     def get_value_by(
         self, predicate: t.Callable[[ModalItem], bool], default: hikari.UndefinedOr[T] = hikari.UNDEFINED

@@ -12,7 +12,6 @@ from miru.abc.context import Context
 if t.TYPE_CHECKING:
     from miru.abc.context import InteractionResponse
     from miru.client import Client
-    from miru.internal.types import ViewResponseBuildersT
     from miru.modal import Modal
     from miru.view import View
 
@@ -130,58 +129,6 @@ class ViewContext(Context[hikari.ComponentInteraction]):
                 )
             self.client.start_modal(modal)
             self._issued_response = True
-
-    async def respond_with_builder(self, builder: ViewResponseBuildersT) -> InteractionResponse | None:
-        """Respond to this interaction with a response builder.
-
-        Parameters
-        ----------
-        builder : ViewResponseBuildersT
-            The builder to respond with.
-
-        Returns
-        -------
-        InteractionResponse | None
-            The response that was sent. This is None if the builder created a modal.
-
-        Raises
-        ------
-        RuntimeError
-            The interaction was already responded to.
-        """
-        if self._issued_response:
-            raise RuntimeError("Interaction was already responded to.")
-
-        async with self._response_lock:
-            if self.client.is_rest:
-                self._resp_builder.set_result(builder)
-            else:
-                if isinstance(builder, hikari.api.InteractionDeferredBuilder):
-                    await self._interaction.create_initial_response(response_type=builder.type, flags=builder.flags)
-                elif isinstance(builder, hikari.api.InteractionMessageBuilder):
-                    await self._interaction.create_initial_response(
-                        response_type=builder.type,
-                        flags=builder.flags,
-                        content=builder.content,
-                        embeds=builder.embeds,
-                        components=builder.components,
-                        attachments=builder.attachments,
-                        tts=builder.is_tts,
-                        mentions_everyone=builder.mentions_everyone,
-                        user_mentions=builder.user_mentions,
-                        role_mentions=builder.role_mentions,
-                    )
-                else:
-                    await self._interaction.create_modal_response(
-                        title=builder.title, custom_id=builder.custom_id, components=builder.components
-                    )
-
-            resp = (
-                await self._create_response() if not isinstance(builder, hikari.api.InteractionModalBuilder) else None
-            )
-
-            self._issued_response = True
-            return resp
 
 
 # MIT License

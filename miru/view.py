@@ -14,7 +14,7 @@ from miru.abc.item_handler import ItemHandler
 from miru.button import Button
 from miru.context.view import AutodeferOptions, ViewContext
 from miru.exceptions import HandlerFullError
-from miru.internal.types import ViewResponseBuildersT
+from miru.internal.types import ResponseBuildersT
 from miru.select import ChannelSelect, MentionableSelect, RoleSelect, TextSelect, UserSelect
 
 if t.TYPE_CHECKING:
@@ -44,7 +44,7 @@ _COMPONENT_VIEW_ITEM_MAPPING: t.Mapping[hikari.ComponentType, t.Type[ViewItem]] 
 
 class View(
     ItemHandler[
-        hikari.impl.MessageActionRowBuilder, ViewResponseBuildersT, ViewContext, hikari.ComponentInteraction, ViewItem
+        hikari.impl.MessageActionRowBuilder, ResponseBuildersT, ViewContext, hikari.ComponentInteraction, ViewItem
     ]
 ):
     """Represents a set of Discord UI components attached to a message.
@@ -326,7 +326,7 @@ class View(
         except Exception as error:
             await self.on_error(error, item, context)
 
-    async def _invoke(self, interaction: hikari.ComponentInteraction) -> asyncio.Future[ViewResponseBuildersT] | None:
+    async def _invoke(self, interaction: hikari.ComponentInteraction) -> asyncio.Future[ResponseBuildersT] | None:
         """Process incoming interactions."""
         item = next((item for item in self.children if item.custom_id == interaction.custom_id), None)
 
