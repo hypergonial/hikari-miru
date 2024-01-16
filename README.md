@@ -1,5 +1,7 @@
 [![PyPI](https://img.shields.io/pypi/v/hikari-miru)](https://pypi.org/project/hikari-miru)
-[![Documentation Status](https://readthedocs.org/projects/hikari-miru/badge/?version=latest)](https://hikari-miru.readthedocs.io/en/latest/?badge=latest)
+[![CI](https://github.com/hypergonial/hikari-miru/actions/workflows/ci.yml/badge.svg)](https://github.com/hypergonial/hikari-miru/actions/workflows/ci.yml)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/charliermarsh/ruff/main/assets/badge/v1.json)](https://github.com/charliermarsh/ruff)
+![Pyright](https://badgen.net/badge/Pyright/strict/2A6DB2)
 
 # hikari-miru
 
