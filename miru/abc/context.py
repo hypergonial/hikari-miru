@@ -320,6 +320,11 @@ class Context(abc.ABC, t.Generic[InteractionT]):
         else:
             return datetime.datetime.now() - self._created_at <= datetime.timedelta(seconds=3)
 
+    @property
+    def issued_response(self) -> bool:
+        """Whether this interaction was already issued an initial response."""
+        return self._issued_response
+
     async def _create_response(self, message: hikari.Message | None = None) -> InteractionResponse:
         """Create a new response and add it to the list of tracked responses."""
         response = InteractionResponse(self, message)
