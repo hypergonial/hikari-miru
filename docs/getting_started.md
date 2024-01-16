@@ -19,6 +19,9 @@ search:
 pip install hikari-miru
 ```
 
+!!! note
+    Please note that `miru` requires a Python version of **at least 3.10**.
+
 To make sure `miru` installed correctly, run the following command:
 
 === "Windows"

@@ -1,11 +1,14 @@
 """Abstract types used by the miru."""
 
+from alluka.abc import Client as Injector
+
 from .context import *
 from .item import *
 from .item_handler import *
 from .select import *
 
 __all__ = (
+    "Injector",
     "Item",
     "ItemHandler",
     "ViewItem",

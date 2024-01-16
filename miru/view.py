@@ -24,12 +24,12 @@ if t.TYPE_CHECKING:
 
     from miru.client import Client
 
+__all__ = ("View",)
 
 logger = logging.getLogger(__name__)
 
 ViewT = t.TypeVar("ViewT", bound="View")
 
-__all__ = ("View",)
 
 _COMPONENT_VIEW_ITEM_MAPPING: t.Mapping[hikari.ComponentType, t.Type[ViewItem]] = {
     hikari.ComponentType.BUTTON: Button,
@@ -319,7 +319,9 @@ class View(
             if self.autodefer.mode.should_autodefer:
                 context._start_autodefer(self.autodefer)
 
-            await item.callback(context)
+            assert self._client is not None
+
+            await self._client._injector.call_with_async_di(item.callback, context)
 
         except Exception as error:
             await self.on_error(error, item, context)

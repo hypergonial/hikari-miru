@@ -7,6 +7,9 @@ Documentation:
 https://miru.hypergonial.com
 """
 
+from alluka import Client as Injector
+from alluka import inject
+
 from miru import abc, ext, select
 from miru.abc.context import InteractionResponse
 from miru.button import Button, button
@@ -32,6 +35,8 @@ from miru.text_input import TextInput
 from miru.view import View
 
 __all__ = (
+    "Injector",
+    "inject",
     "abc",
     "ext",
     "select",

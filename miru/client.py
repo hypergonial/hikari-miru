@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import asyncio
+import functools
+import inspect
 import logging
 import typing as t
 
+import alluka
 import hikari
 
 from miru.exceptions import NoResponseIssuedError
@@ -11,6 +14,10 @@ from miru.modal import Modal
 from miru.view import View
 
 if t.TYPE_CHECKING:
+    import arc
+    import tanjun
+    import typing_extensions as te
+
     from miru.abc.item_handler import ItemHandler
     from miru.internal.types import ModalResponseBuildersT, ViewResponseBuildersT
 
@@ -19,10 +26,13 @@ __all__ = ("Client",)
 
 logger = logging.getLogger(__name__)
 
+T = t.TypeVar("T")
+P = t.ParamSpec("P")
+
 
 @t.runtime_checkable
 class GatewayBotLike(hikari.RESTAware, hikari.EventManagerAware, t.Protocol):
-    """A type that implements both RESTAware and EventManagerAware."""
+    """A type that implements both `RESTAware` and `EventManagerAware`."""
 
 
 class Client:
@@ -40,7 +50,22 @@ class Client:
     stop_bound_on_delete : bool
         Whether to automatically stop bound views when the message it is bound to is deleted. This only applies to
         Gateway bots. When an app without EventManagerAware is used, this will be ignored.
+    injector : alluka.Client | None
+        The injector to use for dependency injection. If None, a new injector will be created.
     """
+
+    __slots__: t.Sequence[str] = (
+        "_app",
+        "_ignore_unknown_interactions",
+        "_stop_bound_on_delete",
+        "_interaction_server",
+        "_event_manager",
+        "_cache",
+        "_injector",
+        "_handlers",
+        "_bound_handlers",
+        "_is_rest",
+    )
 
     def __init__(
         self,
@@ -48,6 +73,7 @@ class Client:
         *,
         ignore_unknown_interactions: bool = False,
         stop_bound_on_delete: bool = True,
+        injector: alluka.abc.Client | None = None,
     ) -> None:
         self._app = app
         self._ignore_unknown_interactions = ignore_unknown_interactions
@@ -55,6 +81,7 @@ class Client:
         self._interaction_server: hikari.api.InteractionServer | None = None
         self._event_manager: hikari.api.EventManager | None = None
         self._cache: hikari.api.Cache | None = None
+        self._injector: alluka.abc.Client = injector or alluka.Client()
 
         if isinstance(app, hikari.InteractionServerAware):
             self._is_rest = True
@@ -73,11 +100,101 @@ class Client:
         if isinstance(app, hikari.CacheAware):
             self._cache = app.cache
 
+        self._injector.set_type_dependency(Client, self)
+
+        if type(self) is not Client:
+            self._injector.set_type_dependency(type(self), self)
+
         self._handlers: dict[str, ItemHandler[t.Any, t.Any, t.Any, t.Any, t.Any]] = {}
         """A mapping of custom_id to ItemHandler. This only contains handlers that are not bound to a message."""
 
         self._bound_handlers: dict[hikari.Snowflakeish, ItemHandler[t.Any, t.Any, t.Any, t.Any, t.Any]] = {}
         """A mapping of message_id to ItemHandler. This contains handlers that are bound to a message."""
+
+    @classmethod
+    def from_arc(
+        cls,
+        client: arc.abc.Client[t.Any],
+        *,
+        ignore_unknown_interactions: bool = False,
+        stop_bound_on_delete: bool = True,
+    ) -> te.Self:
+        """Create a new client from an arc client, using it's dependency injector.
+        This can be used to share dependencies between the arc client and the miru client.
+
+        Parameters
+        ----------
+        client : arc.abc.Client[t.Any]
+            The arc client to create the miru client from.
+        ignore_unknown_interactions : bool
+            Whether to ignore unknown interactions.
+            If True, unknown interactions will be ignored and no warnings will be logged.
+        stop_bound_on_delete : bool
+            Whether to automatically stop bound views when the message it is bound to is deleted. This only applies to
+            Gateway bots. When an app without EventManagerAware is used, this will be ignored.
+
+        Returns
+        -------
+        Client
+            The created client.
+        """
+        return cls(
+            client.app,
+            ignore_unknown_interactions=ignore_unknown_interactions,
+            stop_bound_on_delete=stop_bound_on_delete,
+            injector=client.injector,
+        )
+
+    @classmethod
+    def from_tanjun(
+        cls, client: tanjun.abc.Client, *, ignore_unknown_interactions: bool = False, stop_bound_on_delete: bool = True
+    ) -> te.Self:
+        """Create a new client from a Tanjun client, using it's dependency injector.
+        This can be used to share dependencies between the Tanjun client and the miru client.
+
+        Parameters
+        ----------
+        client : tanjun.Client
+            The Tanjun client to create the miru client from.
+        ignore_unknown_interactions : bool
+            Whether to ignore unknown interactions.
+            If True, unknown interactions will be ignored and no warnings will be logged.
+        stop_bound_on_delete : bool
+            Whether to automatically stop bound views when the message it is bound to is deleted. This only applies to
+            Gateway bots. When an app without EventManagerAware is used, this will be ignored.
+
+        !!! note
+            This convenience method only works if the Tanjun client was created with a bot object,
+            not constructed manually.
+
+        Returns
+        -------
+        Client
+            The created client.
+
+        Raises
+        ------
+        RuntimeError
+            If no `RESTAware` dependency was declared in the Tanjun client injector.
+            Tanjun automatically sets this if the client was created with a bot object.
+        RuntimeError
+            If the located `RESTAware` dependency is not a valid application for miru.
+            A valid application is either a `GatewayBotLike` or `InteractionServerAware`.
+        """
+        app = client.get_type_dependency(hikari.RESTAware)
+
+        if isinstance(app, alluka.abc.Undefined):
+            raise RuntimeError("Could not resolve a RESTAware dependency from Tanjun client injector.")
+
+        if not isinstance(app, (GatewayBotLike, hikari.InteractionServerAware)):
+            raise RuntimeError("Could not resolve a valid application dependency from Tanjun client injector.")
+
+        return cls(
+            app,
+            ignore_unknown_interactions=ignore_unknown_interactions,
+            stop_bound_on_delete=stop_bound_on_delete,
+            injector=client.injector,
+        )
 
     @property
     def app(self) -> hikari.RESTAware:
@@ -134,6 +251,11 @@ class Client:
         If True, unknown interactions will be ignored and no warnings will be logged.
         """
         return self._ignore_unknown_interactions
+
+    @property
+    def injector(self) -> alluka.abc.Client:
+        """The injector used for dependency injection."""
+        return self._injector
 
     def _associate_message(self, message: hikari.Message, view: View) -> None:
         """Associate a message with a bound view."""
@@ -194,6 +316,28 @@ class Client:
         """
         if handler := self._bound_handlers.pop(event.message_id, None):
             handler.stop()
+
+    def _add_handler(self, handler: ItemHandler[t.Any, t.Any, t.Any, t.Any, t.Any]) -> None:
+        """Add a handler to this client handler."""
+        if isinstance(handler, View):
+            if handler.is_bound and handler._message_id is not None:
+                self._bound_handlers[handler._message_id] = handler
+            else:
+                for custom_id in (item.custom_id for item in handler.children):
+                    self._handlers[custom_id] = handler
+        elif isinstance(handler, Modal):
+            self._handlers[handler.custom_id] = handler
+
+    def _remove_handler(self, handler: ItemHandler[t.Any, t.Any, t.Any, t.Any, t.Any]) -> None:
+        """Remove a handler from this client."""
+        if isinstance(handler, View):
+            if handler.is_bound and handler._message_id is not None:
+                self._bound_handlers.pop(handler._message_id, None)
+            else:
+                for custom_id in (item.custom_id for item in handler.children):
+                    self._handlers.pop(custom_id, None)
+        elif isinstance(handler, Modal):
+            self._handlers.pop(handler.custom_id, None)
 
     async def handle_component_interaction(
         self, interaction: hikari.ComponentInteraction
@@ -278,28 +422,6 @@ class Client:
         """Stop all currently running views and modals."""
         self._bound_handlers.clear()
         self._handlers.clear()
-
-    def _add_handler(self, handler: ItemHandler[t.Any, t.Any, t.Any, t.Any, t.Any]) -> None:
-        """Add a handler to this client handler."""
-        if isinstance(handler, View):
-            if handler.is_bound and handler._message_id is not None:
-                self._bound_handlers[handler._message_id] = handler
-            else:
-                for custom_id in (item.custom_id for item in handler.children):
-                    self._handlers[custom_id] = handler
-        elif isinstance(handler, Modal):
-            self._handlers[handler.custom_id] = handler
-
-    def _remove_handler(self, handler: ItemHandler[t.Any, t.Any, t.Any, t.Any, t.Any]) -> None:
-        """Remove a handler from this client."""
-        if isinstance(handler, View):
-            if handler.is_bound and handler._message_id is not None:
-                self._bound_handlers.pop(handler._message_id, None)
-            else:
-                for custom_id in (item.custom_id for item in handler.children):
-                    self._handlers.pop(custom_id, None)
-        elif isinstance(handler, Modal):
-            self._handlers.pop(handler.custom_id, None)
 
     def get_bound_view(self, message: hikari.SnowflakeishOr[hikari.PartialMessage]) -> View | None:
         """Get a bound view that is currently managed by this client.
@@ -405,6 +527,128 @@ class Client:
             The modal to start.
         """
         modal._client_start_hook(self)
+
+    def get_type_dependency(self, type_: t.Type[T]) -> T | hikari.UndefinedType:
+        """Get a type dependency for this client.
+
+        Parameters
+        ----------
+        type_ : t.Type[T]
+            The type of the dependency.
+
+        Returns
+        -------
+        T | hikari.UndefinedType
+            The instance of the dependency, if it exists.
+        """
+        return self._injector.get_type_dependency(type_, default=hikari.UNDEFINED)
+
+    def set_type_dependency(self, type_: t.Type[T], instance: T) -> te.Self:
+        """Set a type dependency for this client. This can then be injected into miru callbacks.
+
+        Parameters
+        ----------
+        type_ : t.Type[T]
+            The type of the dependency.
+        instance : T
+            The instance of the dependency.
+
+        Returns
+        -------
+        te.Self
+            The client for chaining calls.
+
+        Examples
+        --------
+        ```py
+        class MyDependency:
+            def __init__(self, value: str):
+                self.value = value
+
+        client.set_type_dependency(MyDependency, MyDependency("Hello!"))
+
+        class MyView(miru.View):
+
+            @miru.button(label="My Button")
+            def my_button(
+                self,
+                ctx: miru.ViewContext,
+                button: miru.Button,
+                dep: MyDependency = miru.inject()
+            ) -> None:
+                await ctx.respond(dep.value) # Sends "Hello!"
+        ```
+
+        See Also
+        --------
+        - [`Client.get_type_dependency`][arc.client.Client.get_type_dependency]
+            A method to get dependencies for the client.
+
+        - [`Client.inject_dependencies`][arc.client.Client.inject_dependencies]
+            A decorator to inject dependencies into arbitrary functions.
+        """
+        self._injector.set_type_dependency(type_, instance)
+        return self
+
+    @t.overload
+    def inject_dependencies(self, func: t.Callable[P, T]) -> t.Callable[P, T]:
+        ...
+
+    @t.overload
+    def inject_dependencies(self) -> t.Callable[[t.Callable[P, T]], t.Callable[P, T]]:
+        ...
+
+    def inject_dependencies(
+        self, func: t.Callable[P, T] | None = None
+    ) -> t.Callable[P, T] | t.Callable[[t.Callable[P, T]], t.Callable[P, T]]:
+        """Decorator to inject dependencies into the decorated function.
+
+        !!! note
+            Item callbacks are automatically injected with dependencies,
+            thus this decorator is not needed for them.
+
+        Examples
+        --------
+        ```py
+        class MyDependency:
+            def __init__(self, value: str):
+                self.value = value
+
+        client.set_type_dependency(MyDependency, MyDependency("Hello!"))
+
+        @client.inject_dependencies
+        def my_func(dep: MyDependency = miru.inject()) -> None:
+            print(dep.value)
+
+        my_func() # Prints "Hello!"
+        ```
+
+        See Also
+        --------
+        - [`Client.set_type_dependency`][arc.client.Client.set_type_dependency]
+            A method to set dependencies for the client.
+        """
+
+        def decorator(func: t.Callable[P, T]) -> t.Callable[P, T]:
+            if inspect.iscoroutinefunction(func):
+
+                @functools.wraps(func)
+                async def decorator_async(*args: P.args, **kwargs: P.kwargs) -> T:
+                    return await self.injector.call_with_async_di(func, *args, **kwargs)
+
+                return decorator_async  # pyright: ignore reportGeneralTypeIssues
+            else:
+
+                @functools.wraps(func)
+                def decorator_inner(*args: P.args, **kwargs: P.kwargs) -> T:
+                    return self.injector.call_with_di(func, *args, **kwargs)
+
+                return decorator_inner
+
+        if func is not None:
+            return decorator(func)
+
+        return decorator
 
 
 # MIT License
