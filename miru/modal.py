@@ -212,8 +212,7 @@ class Modal(
     async def _handle_callback(self, context: ModalContext) -> None:
         """Handle the callback of the modal. Separate task in case the modal is stopped in the callback."""
         try:
-            assert self._client is not None
-            await self._client._injector.call_with_async_di(self.callback, context)
+            await self.callback(context)
         except Exception as error:
             await self.on_error(error, context)
 

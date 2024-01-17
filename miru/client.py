@@ -642,20 +642,42 @@ class Client:
         """
         modal._client_start_hook(self)
 
-    def get_type_dependency(self, type_: t.Type[T]) -> T | hikari.UndefinedType:
+    @t.overload
+    def get_type_dependency(self, type_: t.Type[T]) -> T:
+        ...
+
+    @t.overload
+    def get_type_dependency(self, type_: t.Type[T], *, default: T) -> T:
+        ...
+
+    def get_type_dependency(self, type_: t.Type[T], *, default: T | None = None) -> T:
         """Get a type dependency for this client.
 
         Parameters
         ----------
         type_ : t.Type[T]
             The type of the dependency.
+        default : T | None
+            The default value to return if the dependency does not exist.
+            If not specified, a `KeyError` will be raised.
 
         Returns
         -------
-        T | hikari.UndefinedType
-            The instance of the dependency, if it exists.
+        T
+            The instance of the dependency, or the default value if it does not exist.
+
+        Raises
+        ------
+        KeyError
+            If the dependency does not exist and no default was specified.
         """
-        return self._injector.get_type_dependency(type_, default=hikari.UNDEFINED)
+        if default is None:
+            value = self._injector.get_type_dependency(type_)
+            if isinstance(value, alluka.abc.Undefined):
+                raise KeyError(f"Could not resolve dependency of type {type_}.")
+            return value
+        else:
+            return self._injector.get_type_dependency(type_, default=default)
 
     def set_type_dependency(self, type_: t.Type[T], instance: T) -> te.Self:
         """Set a type dependency for this client. This can then be injected into miru callbacks.
@@ -675,22 +697,24 @@ class Client:
         Examples
         --------
         ```py
-        class MyDependency:
-            def __init__(self, value: str):
+        class Counter:
+            def __init__(self, value: int = 0) -> None:
                 self.value = value
 
-        client.set_type_dependency(MyDependency, MyDependency("Hello!"))
+        client.set_type_dependency(Counter, Counter(0))
 
-        class MyView(miru.View):
 
-            @miru.button(label="My Button")
-            def my_button(
+        class SomeView(miru.View):
+            @miru.button(label="Counter!", style=hikari.ButtonStyle.PRIMARY)
+            @client.inject_dependencies
+            async def counter_button(
                 self,
                 ctx: miru.ViewContext,
                 button: miru.Button,
-                dep: MyDependency = miru.inject()
+                counter: Counter = miru.inject(),
             ) -> None:
-                await ctx.respond(dep.value) # Sends "Hello!"
+                counter.value += 1
+                await ctx.respond(f"Counter is {counter.value}")
         ```
 
         See Also
@@ -717,24 +741,27 @@ class Client:
     ) -> t.Callable[P, T] | t.Callable[[t.Callable[P, T]], t.Callable[P, T]]:
         """Decorator to inject dependencies into the decorated function.
 
-        !!! note
-            Item callbacks are automatically injected with dependencies,
-            thus this decorator is not needed for them.
-
         Examples
         --------
         ```py
-        class MyDependency:
-            def __init__(self, value: str):
+        class Counter:
+            def __init__(self, value: int = 0) -> None:
                 self.value = value
 
-        client.set_type_dependency(MyDependency, MyDependency("Hello!"))
+        client.set_type_dependency(Counter, Counter(0))
 
-        @client.inject_dependencies
-        def my_func(dep: MyDependency = miru.inject()) -> None:
-            print(dep.value)
 
-        my_func() # Prints "Hello!"
+        class SomeView(miru.View):
+            @miru.button(label="Counter!", style=hikari.ButtonStyle.PRIMARY)
+            @client.inject_dependencies
+            async def counter_button(
+                self,
+                ctx: miru.ViewContext,
+                button: miru.Button,
+                counter: Counter = miru.inject(),
+            ) -> None:
+                counter.value += 1
+                await ctx.respond(f"Counter is {counter.value}")
         ```
 
         See Also

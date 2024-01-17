@@ -319,9 +319,7 @@ class View(
             if self.autodefer.mode.should_autodefer:
                 context._start_autodefer(self.autodefer)
 
-            assert self._client is not None
-
-            await self._client._injector.call_with_async_di(item.callback, context)
+            await item.callback(context)
 
         except Exception as error:
             await self.on_error(error, item, context)
