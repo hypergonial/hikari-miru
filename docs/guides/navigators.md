@@ -425,8 +425,8 @@ turning it into a builder, and sending it to a channel or interaction.
 
 ## Customizing Navigation Buttons
 
-If you would like to customize the buttons used by the navigator, you can pass buttons via the `buttons=` keyword-only
-argument. This should be a list of [`NavButton`][miru.ext.nav.items.NavButton].
+If you would like to customize the items used by the navigator, you can pass buttons & selects via the `items=` keyword-only
+argument. This should be a sequence of [`NavItem`][miru.ext.nav.items.NavItem].
 
 There are also some built-in navigation buttons, these are:
 
@@ -461,8 +461,8 @@ embed = hikari.Embed(title="I'm the second page!", description="Also an embed!")
 pages = ["I'm a customized navigator!", embed, "I'm the last page!"]
 
 # Define our custom buttons for this navigator, keep in mind the order
-# All navigator buttons MUST subclass nav.NavButton
-buttons = [
+# All navigator items MUST subclass nav.NavItem
+items: list[nav.NavItem] = [
     nav.PrevButton(),
     nav.StopButton(),
     nav.NextButton(),
@@ -470,7 +470,7 @@ buttons = [
 ]
 
 # Pass our list of NavButton to the navigator
-navigator = nav.NavigatorView(pages=pages, buttons=buttons)
+navigator = nav.NavigatorView(pages=pages, items=items)
 
 # ... Send the navigator
 ```

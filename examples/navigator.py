@@ -2,7 +2,6 @@ import hikari
 
 import miru
 from miru.ext import nav
-from miru.ext.nav.items import NavButton
 
 
 class MyNavButton(nav.NavButton):
@@ -51,8 +50,8 @@ async def navigator(event: hikari.GuildMessageCreateEvent) -> None:
         navigator: nav.NavigatorView = nav.NavigatorView(pages=pages)
 
         # Note: You can also send the navigator to an interaction or miru context
-        # See the documentation of NavigatorView.send() for more information
-        builder = navigator.build_response_async(client)
+        # See the documentation of MessageBuilder for more information
+        builder = await navigator.build_response_async(client)
         await builder.send_to_channel(event.channel_id)
         client.start_view(navigator)
 
@@ -61,17 +60,18 @@ async def navigator(event: hikari.GuildMessageCreateEvent) -> None:
         embed = hikari.Embed(title="I'm the second page!", description="Also an embed!")
         pages = ["I'm a customized navigator!", embed, "I'm the last page!"]
         # Define our custom buttons for this navigator
-        # All navigator buttons MUST subclass NavButton
-        buttons: list[NavButton] = [
+        # All navigator items MUST subclass NavItem
+        # All miru items have a 'Nav' counterpart
+        buttons: list[nav.NavItem] = [
             nav.PrevButton(),
             nav.StopButton(),
             nav.NextButton(),
             MyNavButton(label="Page: 1", row=1),
         ]
         # Pass our list of NavButton to the navigator
-        navigator = nav.NavigatorView(pages=pages, buttons=buttons)
-
-        await navigator.build_response_async(client).send_to_channel(event.channel_id)
+        navigator = nav.NavigatorView(pages=pages, items=buttons)
+        builder = await navigator.build_response_async(client)
+        await builder.send_to_channel(event.channel_id)
         client.start_view(navigator)
 
 

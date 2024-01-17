@@ -48,7 +48,9 @@ class NavItem(ViewItem, abc.ABC):
         self._handler: NavigatorView | None = None  # type: ignore
 
     async def before_page_change(self) -> None:
-        """Called when the navigator is about to transition to the next page. Also called when a builder is created out of this view."""
+        """Called when the navigator is about to transition to the next page.
+        Also called when a builder is created out of the navigator this item is attached to.
+        """
         pass
 
     @property

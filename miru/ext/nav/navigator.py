@@ -5,15 +5,16 @@ import typing as t
 
 import attr
 import hikari
+import typing_extensions as te
 
 from miru.ext.nav.items import FirstButton, IndicatorButton, LastButton, NavButton, NavItem, NextButton, PrevButton
+from miru.internal.deprecation import warn_deprecate
+from miru.internal.version import Version
 from miru.response import MessageBuilder
 from miru.view import View
 
 if t.TYPE_CHECKING:
     import datetime
-
-    import typing_extensions as te
 
     from miru.abc.context import Context
     from miru.client import Client
@@ -44,11 +45,35 @@ class NavigatorView(View):
         One or more pages are not an instance of str or hikari.Embed
     """
 
+    @t.overload
+    def __init__(
+        self,
+        *,
+        pages: t.Sequence[str | hikari.Embed | t.Sequence[hikari.Embed] | Page],
+        items: t.Sequence[NavItem] | None = None,
+        timeout: float | int | datetime.timedelta | None = 120.0,
+        autodefer: bool = True,
+    ) -> None:
+        ...
+
+    @te.deprecated("Use 'items=' instead of 'buttons='. 'buttons=' will be removed in version v4.2.0.")
+    @t.overload
     def __init__(
         self,
         *,
         pages: t.Sequence[str | hikari.Embed | t.Sequence[hikari.Embed] | Page],
         buttons: t.Sequence[NavButton] | None = None,
+        timeout: float | int | datetime.timedelta | None = 120.0,
+        autodefer: bool = True,
+    ) -> None:
+        ...
+
+    def __init__(
+        self,
+        *,
+        pages: t.Sequence[str | hikari.Embed | t.Sequence[hikari.Embed] | Page],
+        buttons: t.Sequence[NavButton] | None = None,
+        items: t.Sequence[NavItem] | None = None,
         timeout: float | int | datetime.timedelta | None = 120.0,
         autodefer: bool = True,
     ) -> None:
@@ -59,7 +84,13 @@ class NavigatorView(View):
         self._inter: hikari.MessageResponseMixin[t.Any] | None = None
         super().__init__(timeout=timeout, autodefer=autodefer)
 
+        if items is not None:
+            for item in items:
+                self.add_item(item)
+
         if buttons is not None:
+            warn_deprecate(what="passing 'buttons=' to NavigatorView", when=Version(4, 2, 0), use_instead="items=")
+
             for button in buttons:
                 self.add_item(button)
         else:
@@ -231,6 +262,11 @@ class NavigatorView(View):
 
     async def build_response_async(self, client: Client, start_at: int = 0, ephemeral: bool = False) -> MessageBuilder:
         """Create a response builder out of this Navigator.
+        This also invokes all [`before_page_change()`][miru.ext.nav.items.NavItem.before_page_change] methods.
+
+        !!! tip
+            If it takes too long to invoke all `before_page_change()` methods, you may want to
+            defer the interaction before calling this method.
 
         Parameters
         ----------

@@ -371,10 +371,16 @@ class View(
         """Called when a client wants to add the view itself."""
         self._client = client
 
+        if not self.children:
+            logger.warning(
+                f"View '{type(self).__name__}' has no items attached. Ignoring '{type(client).__name__}.start_view()' call."
+            )
+            return
+
         # Optimize URL-button-only views by not adding to listener
         if all((isinstance(item, Button) and item.url is not None) for item in self.children):
             logger.warning(
-                f"View {type(self).__name__} only contains link buttons. Ignoring '{type(client).__name__}.start_view()' call."
+                f"View '{type(self).__name__}' only contains link buttons. Ignoring '{type(client).__name__}.start_view()' call."
             )
             return
 
