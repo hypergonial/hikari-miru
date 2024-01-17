@@ -13,7 +13,7 @@ from miru.abc.item_handler import ItemHandler
 from miru.context.modal import ModalContext
 from miru.exceptions import HandlerFullError
 from miru.internal.types import ModalResponseBuildersT
-from miru.response import InteractionModalBuilder
+from miru.response import ModalBuilder
 
 if t.TYPE_CHECKING:
     import asyncio
@@ -256,9 +256,9 @@ class Modal(
         self._client._add_handler(self)
         self._timeout_task = self._create_task(self._handle_timeout())
 
-    def build_response(self, client: Client) -> InteractionModalBuilder:
+    def build_response(self, client: Client) -> ModalBuilder:
         """Build the modal response for this modal."""
-        builder = InteractionModalBuilder(self.title, self.custom_id, list(self.build()))
+        builder = ModalBuilder(self.title, self.custom_id, list(self.build()))
         builder._client = client
         return builder
 

@@ -7,23 +7,31 @@ from typing import Any, Iterator
 import hikari
 
 if t.TYPE_CHECKING:
+    import tanjun
+
     from miru.client import Client
 
 
-class InteractionMessageBuilder(hikari.impl.InteractionMessageBuilder, Mapping[str, t.Any]):
+class MessageBuilder(hikari.impl.InteractionMessageBuilder, Mapping[str, t.Any]):
+    """A builder that represents a message payload.
+
+    This adapter object can be used to create a message response in both REST and Gateway contexts.
+    It should not be instantiated directly, it is created by special view types.
+    """
+
     def __init__(
         self,
         type: t.Literal[hikari.ResponseType.MESSAGE_CREATE, 4, hikari.ResponseType.MESSAGE_UPDATE, 7],
-        content: hikari.UndefinedOr[str],
+        content: str | hikari.UndefinedType,
         *,
-        flags: hikari.UndefinedOr[hikari.MessageFlag],
-        embeds: hikari.UndefinedOr[list[hikari.Embed]],
-        components: hikari.UndefinedNoneOr[list[hikari.api.ComponentBuilder]],
-        attachments: hikari.UndefinedNoneOr[list[hikari.Resourceish]],
-        is_tts: hikari.UndefinedOr[bool],
-        mentions_everyone: hikari.UndefinedOr[bool],
-        user_mentions: hikari.UndefinedOr[t.Sequence[hikari.SnowflakeishOr[hikari.PartialUser]] | bool],
-        role_mentions: hikari.UndefinedOr[t.Sequence[hikari.SnowflakeishOr[hikari.PartialRole]] | bool],
+        flags: hikari.MessageFlag | hikari.UndefinedType,
+        embeds: list[hikari.Embed] | hikari.UndefinedType,
+        components: list[hikari.api.ComponentBuilder] | hikari.UndefinedType | None,
+        attachments: list[hikari.Resourceish] | hikari.UndefinedType | None,
+        is_tts: bool | hikari.UndefinedType,
+        mentions_everyone: bool | hikari.UndefinedType,
+        user_mentions: t.Sequence[hikari.Snowflakeish | hikari.PartialUser] | bool | hikari.UndefinedType,
+        role_mentions: t.Sequence[hikari.Snowflakeish | hikari.PartialRole] | bool | hikari.UndefinedType,
     ) -> None:
         super().__init__(
             type=type,
@@ -53,13 +61,6 @@ class InteractionMessageBuilder(hikari.impl.InteractionMessageBuilder, Mapping[s
             "user_mentions": self.user_mentions,
             "role_mentions": self.role_mentions,
         }
-
-    def to_tanjun_kwargs(self) -> t.Mapping[str, t.Any]:
-        """Convert this builder to kwargs that can be passed to a tanjun context's 'respond'."""
-        kwargs = self.to_hikari_kwargs()
-        kwargs.pop("response_type")
-        kwargs.pop("flags")
-        return kwargs
 
     def __getitem__(self, __key: str) -> Any:
         return self.to_hikari_kwargs()[__key]
@@ -104,17 +105,14 @@ class InteractionMessageBuilder(hikari.impl.InteractionMessageBuilder, Mapping[s
         )
 
     async def create_initial_response(self, interaction: hikari.MessageResponseMixin[t.Any]) -> None:
-        """Create an initial response from this builder. This only works with a GatewayClient.
+        """Create an initial response from this builder. This only works in a Gateway context.
+
+        When using a REST bot, this object can be returned directly from the REST interaction callback.
 
         Parameters
         ----------
         interaction : hikari.MessageResponseMixin
             The interaction to respond to.
-
-        Returns
-        -------
-        hikari.Message
-            The message that was sent.
 
         Raises
         ------
@@ -131,6 +129,24 @@ class InteractionMessageBuilder(hikari.impl.InteractionMessageBuilder, Mapping[s
             components=self.components or hikari.UNDEFINED,
             attachments=self.attachments or hikari.UNDEFINED,
             tts=self.is_tts,
+            mentions_everyone=self.mentions_everyone,
+            user_mentions=self.user_mentions,
+            role_mentions=self.role_mentions,
+        )
+
+    async def respond_with_tanjun(self, context: tanjun.abc.Context) -> None:
+        """Respond to a tanjun context with this builder. This works in both Gateway and REST contexts.
+
+        Parameters
+        ----------
+        context : tanjun.abc.Context
+            The context to respond to.
+        """
+        await context.respond(
+            content=self.content,
+            embeds=self.embeds or hikari.UNDEFINED,
+            components=self.components or hikari.UNDEFINED,
+            attachments=self.attachments or hikari.UNDEFINED,
             mentions_everyone=self.mentions_everyone,
             user_mentions=self.user_mentions,
             role_mentions=self.role_mentions,
@@ -161,12 +177,14 @@ class InteractionMessageBuilder(hikari.impl.InteractionMessageBuilder, Mapping[s
         )
 
 
-class InteractionDeferredBuilder(hikari.impl.InteractionDeferredBuilder, t.Mapping[str, t.Any]):
+class DeferredResponseBuilder(hikari.impl.InteractionDeferredBuilder, t.Mapping[str, t.Any]):
+    """A builder that represents a deferred response payload."""
+
     def __init__(
         self,
         type: t.Literal[hikari.ResponseType.DEFERRED_MESSAGE_CREATE, 5, hikari.ResponseType.DEFERRED_MESSAGE_UPDATE, 6],
         *,
-        flags: hikari.UndefinedOr[hikari.MessageFlag],
+        flags: hikari.MessageFlag | hikari.UndefinedType,
     ) -> None:
         super().__init__(type=type, flags=flags)
         self._client: Client | None = None
@@ -193,6 +211,16 @@ class InteractionDeferredBuilder(hikari.impl.InteractionDeferredBuilder, t.Mappi
 
         await interaction.create_initial_response(response_type=self.type, flags=self.flags)
 
+    async def respond_with_tanjun(self, context: tanjun.abc.AppCommandContext) -> None:
+        """Respond to a tanjun context with this builder. This works in both Gateway and REST contexts.
+
+        Parameters
+        ----------
+        context : tanjun.abc.AppCommandContext
+            The context to respond to.
+        """
+        await context.defer(flags=self.flags)
+
     def __getitem__(self, __key: str) -> Any:
         return self.to_hikari_kwargs()[__key]
 
@@ -203,7 +231,13 @@ class InteractionDeferredBuilder(hikari.impl.InteractionDeferredBuilder, t.Mappi
         return len(self.to_hikari_kwargs())
 
 
-class InteractionModalBuilder(hikari.impl.InteractionModalBuilder, t.Mapping[str, t.Any]):
+class ModalBuilder(hikari.impl.InteractionModalBuilder, t.Mapping[str, t.Any]):
+    """A builder that represents a modal payload. This can only be used as an initial response to an interaction.
+
+    This adapter object can be used to create a modal response in both REST and Gateway contexts.
+    It should not be instantiated directly, it is created by modal objects.
+    """
+
     def __init__(self, title: str, custom_id: str, components: list[hikari.api.ComponentBuilder]) -> None:
         super().__init__(title=title, custom_id=custom_id, components=components)
         self._client: Client | None = None
@@ -211,14 +245,6 @@ class InteractionModalBuilder(hikari.impl.InteractionModalBuilder, t.Mapping[str
     def to_hikari_kwargs(self) -> t.Mapping[str, t.Any]:
         """Convert this builder to kwargs that can be passed to a hikari interaction's create_modal_response."""
         return {"title": self.title, "custom_id": self.custom_id, "components": self.components}
-
-    def to_tanjun_args(self) -> t.Sequence[str]:
-        """Convert this builder to args that can be passed to a tanjun context's create_modal_response."""
-        return (self.title, self.custom_id)
-
-    def to_tanjun_kwargs(self) -> t.Mapping[str, t.Any]:
-        """Convert this builder to kwargs that can be passed to a tanjun context's create_modal_response."""
-        return {"components": self.components}
 
     def __getitem__(self, __key: str) -> Any:
         return self.to_hikari_kwargs()[__key]
@@ -246,6 +272,16 @@ class InteractionModalBuilder(hikari.impl.InteractionModalBuilder, t.Mapping[str
             raise RuntimeError("This method can only be called in a Gateway context.")
 
         await interaction.create_modal_response(title=self.title, custom_id=self.custom_id, components=self.components)
+
+    async def respond_with_tanjun(self, context: tanjun.abc.AppCommandContext) -> None:
+        """Respond to a tanjun context with this builder. This works in both Gateway and REST contexts.
+
+        Parameters
+        ----------
+        context : tanjun.abc.AppCommandContext
+            The context to respond to.
+        """
+        await context.create_modal_response(self.title, self.custom_id, components=self.components)
 
 
 # MIT License

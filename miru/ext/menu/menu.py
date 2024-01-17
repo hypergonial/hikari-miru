@@ -6,7 +6,7 @@ import typing as t
 import hikari
 
 import miru
-from miru.response import InteractionMessageBuilder
+from miru.response import MessageBuilder
 
 if t.TYPE_CHECKING:
     import datetime
@@ -165,7 +165,7 @@ class Menu(miru.View):
 
     async def build_response_async(
         self, client: miru.Client, starting_screen: Screen, ephemeral: bool = False
-    ) -> InteractionMessageBuilder:
+    ) -> MessageBuilder:
         """Create a REST response builder out of this Menu.
 
         Parameters
@@ -183,7 +183,7 @@ class Menu(miru.View):
         await self._load_screen(starting_screen)
         self._ephemeral = ephemeral
 
-        builder = InteractionMessageBuilder(hikari.ResponseType.MESSAGE_CREATE, **self._payload)
+        builder = MessageBuilder(hikari.ResponseType.MESSAGE_CREATE, **self._payload)
         builder._client = client
         return builder
 

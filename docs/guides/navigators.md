@@ -373,7 +373,7 @@ turning it into a builder, and sending it to a channel or interaction.
 
             builder = nav.build_response(client)
             # the builder has specific adapters for tanjun
-            await ctx.respond(**builder.to_tanjun_kwargs())
+            await builder.respond_with_tanjun(ctx)
             client.start_view(nav)
 
 
@@ -416,7 +416,7 @@ turning it into a builder, and sending it to a channel or interaction.
 
             builder = nav.build_response(client)
             # the builder has specific adapters for tanjun
-            await ctx.respond(**builder.to_tanjun_kwargs())
+            await builder.respond_with_tanjun(ctx)
             client.start_view(nav)
 
 

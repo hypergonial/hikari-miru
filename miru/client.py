@@ -161,6 +161,9 @@ class Client:
         """Create a new client from a Tanjun client, using it's dependency injector.
         This can be used to share dependencies between the Tanjun client and the miru client.
 
+        !!! note
+            This convenience method only works if the Tanjun client was created with a bot object, not constructed manually.
+
         Parameters
         ----------
         client : tanjun.Client
@@ -176,9 +179,6 @@ class Client:
         -------
         Client
             The created client.
-
-        !!! note
-            This convenience method only works if the Tanjun client was created with a bot object, not constructed manually.
 
         Raises
         ------

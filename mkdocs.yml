@@ -82,6 +82,7 @@ nav:
         - api_reference/view.md
         - api_reference/modal.md
         - api_reference/context.md
+        - api_reference/response.md
         - api_reference/exceptions.md
         - ABC:
             - api_reference/abc/item_handler.md
@@ -159,6 +160,7 @@ plugins:
           import:
             - https://docs.python.org/3.10/objects.inv
             - https://docs.hikari-py.dev/en/latest/objects.inv
+            - https://tanjun.cursed.solutions/objects.inv
             - https://alluka.cursed.solutions/objects.inv
           options:
             heading_level: 3

@@ -7,7 +7,7 @@ import attr
 import hikari
 
 from miru.ext.nav.items import FirstButton, IndicatorButton, LastButton, NavButton, NavItem, NextButton, PrevButton
-from miru.response import InteractionMessageBuilder
+from miru.response import MessageBuilder
 from miru.view import View
 
 if t.TYPE_CHECKING:
@@ -229,7 +229,7 @@ class NavigatorView(View):
         self._pages = new_pages
         await self.send_page(context, page_index=start_at)
 
-    def build_response(self, client: Client, start_at: int = 0, ephemeral: bool = False) -> InteractionMessageBuilder:
+    def build_response(self, client: Client, start_at: int = 0, ephemeral: bool = False) -> MessageBuilder:
         """Create a response builder out of this Navigator.
 
         Parameters
@@ -245,9 +245,7 @@ class NavigatorView(View):
             raise RuntimeError("Navigator is already bound to a client.")
         self.current_page = start_at
         self._ephemeral = ephemeral
-        builder = InteractionMessageBuilder(
-            hikari.ResponseType.MESSAGE_CREATE, **self._get_page_payload(self.pages[start_at])
-        )
+        builder = MessageBuilder(hikari.ResponseType.MESSAGE_CREATE, **self._get_page_payload(self.pages[start_at]))
         builder._client = client
         return builder
 

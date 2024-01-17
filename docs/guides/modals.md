@@ -184,10 +184,7 @@ If you want to use modals in **slash commands**, you need to turn it into a buil
         builder = modal.build_response(client)
 
         # the builder has specific adapters for tanjun
-        await ctx.create_modal_response(
-            *builder.to_tanjun_args(),
-            **builder.to_tanjun_kwargs()
-        )
+        await builder.respond_with_tanjun(ctx)
 
         client.start_modal(modal)
     ```
