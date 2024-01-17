@@ -19,13 +19,15 @@ A component handler for [hikari](https://github.com/hikari-py/hikari), aimed at 
 To install miru, run the following command:
 
 ```sh
-python3 -m pip install -U hikari-miru
+pip install -U hikari-miru
 ```
 
 To check if miru has successfully installed or not, run the following:
 
 ```sh
 python3 -m miru
+# On Windows you may need to run:
+py -m miru
 ```
 
 ## Usage
