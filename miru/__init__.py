@@ -18,7 +18,7 @@ from miru.context import ModalContext, ViewContext
 from miru.exceptions import HandlerFullError, ItemAlreadyAttachedError, MiruError, RowFullError
 from miru.internal.about import __author__, __author_email__, __license__, __maintainer__, __url__, __version__
 from miru.modal import Modal
-from miru.response import MessageBuilder, ModalBuilder
+from miru.response import DeferredResponseBuilder, MessageBuilder, ModalBuilder
 from miru.select import (
     ChannelSelect,
     MentionableSelect,
@@ -68,6 +68,7 @@ __all__ = (
     "TextInput",
     "MessageBuilder",
     "ModalBuilder",
+    "DeferredResponseBuilder",
     "__version__",
     "__author__",
     "__author_email__",
