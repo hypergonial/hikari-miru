@@ -65,9 +65,9 @@ turning it into a builder, and sending it to a channel or interaction.
                 # Define our navigator and pass in our list of pages
                 navigator = nav.NavigatorView(pages=pages)
 
-                builder = nav.build_response(client)
+                builder = await navigator.build_response_async(client)
                 await builder.send_to_channel(event.channel_id)
-                client.start_view(nav)
+                client.start_view(navigator)
 
 
         bot.run()
@@ -96,9 +96,9 @@ turning it into a builder, and sending it to a channel or interaction.
             # Define our navigator and pass in our list of pages
             navigator = nav.NavigatorView(pages=pages)
 
-            builder = nav.build_response(client)
+            builder = await navigator.build_response_async(client)
             yield builder
-            client.start_view(nav)
+            client.start_view(navigator)
 
 
         async def create_commands(bot: hikari.RESTBot) -> None:
@@ -130,8 +130,8 @@ turning it into a builder, and sending it to a channel or interaction.
 
         bot = hikari.GatewayBot("TOKEN")
 
-        client = miru.Client(bot)
         arc_client = arc.GatewayClient(bot)
+        client = miru.Client.from_arc(arc_client)
 
         @arc_client.include
         @arc.slash_command("name", "description")
@@ -154,9 +154,9 @@ turning it into a builder, and sending it to a channel or interaction.
             # Define our navigator and pass in our list of pages
             navigator = nav.NavigatorView(pages=pages)
 
-            builder = nav.build_response(client)
+            builder = await navigator.build_response_async(client)
             await ctx.respond_with_builder(builder)
-            client.start_view(nav)
+            client.start_view(navigator)
 
 
         bot.run()
@@ -173,8 +173,8 @@ turning it into a builder, and sending it to a channel or interaction.
 
         bot = hikari.RESTBot("TOKEN")
 
-        client = miru.Client(bot)
         arc_client = arc.RESTClient(bot)
+        client = miru.Client.from_arc(arc_client)
 
         @arc_client.include
         @arc.slash_command("name", "description")
@@ -197,9 +197,9 @@ turning it into a builder, and sending it to a channel or interaction.
             # Define our navigator and pass in our list of pages
             navigator = nav.NavigatorView(pages=pages)
 
-            builder = nav.build_response(client)
+            builder = await navigator.build_response_async(client)
             await ctx.respond_with_builder(builder)
-            client.start_view(nav)
+            client.start_view(navigator)
 
 
         bot.run()
@@ -241,9 +241,9 @@ turning it into a builder, and sending it to a channel or interaction.
                 # Define our navigator and pass in our list of pages
                 navigator = nav.NavigatorView(pages=pages)
 
-                builder = nav.build_response(client)
+                builder = await navigator.build_response_async(client)
                 await ctx.respond_with_builder(builder)
-                client.start_view(nav)
+                client.start_view(navigator)
 
         bot.run()
         ```
@@ -282,9 +282,9 @@ turning it into a builder, and sending it to a channel or interaction.
                 # Define our navigator and pass in our list of pages
                 navigator = nav.NavigatorView(pages=pages)
 
-                builder = nav.build_response(client)
+                builder = await navigator.build_response_async(client)
                 await ctx.respond_with_builder(builder)
-                client.start_view(nav)
+                client.start_view(navigator)
 
         bot.run()
         ```
@@ -324,12 +324,12 @@ turning it into a builder, and sending it to a channel or interaction.
         # Define our navigator and pass in our list of pages
         navigator = nav.NavigatorView(pages=pages)
 
-        builder = nav.build_response(client)
+        builder = await navigator.build_response_async(client)
         await builder.create_initial_response(ctx.interaction)
         # Or in a prefix command:
         # await builder.send_to_channel(ctx.channel_id)
 
-        client.start_view(nav)
+        client.start_view(navigator)
 
 
     bot.run()
@@ -349,7 +349,7 @@ turning it into a builder, and sending it to a channel or interaction.
         bot = hikari.GatewayBot("TOKEN")
 
         tanjun_client = tanjun.Client.from_gateway_bot(bot)
-        client = miru.Client(bot)
+        client = miru.Client.from_tanjun(tanjun_client)
 
         @tanjun.as_slash_command("name", "description")
         async def some_slash_command(ctx: tanjun.abc.SlashContext) -> None:
@@ -371,10 +371,10 @@ turning it into a builder, and sending it to a channel or interaction.
             # Define our navigator and pass in our list of pages
             navigator = nav.NavigatorView(pages=pages)
 
-            builder = nav.build_response(client)
+            builder = await navigator.build_response_async(client)
             # the builder has specific adapters for tanjun
             await builder.respond_with_tanjun(ctx)
-            client.start_view(nav)
+            client.start_view(navigator)
 
 
         bot.run()
@@ -392,7 +392,7 @@ turning it into a builder, and sending it to a channel or interaction.
         bot = hikari.RESTBot("TOKEN")
 
         tanjun_client = tanjun.Client.from_rest_bot(bot)
-        client = miru.Client(bot)
+        client = miru.Client.from_tanjun(tanjun_client)
 
         @tanjun.as_slash_command("name", "description")
         async def some_slash_command(ctx: tanjun.abc.SlashContext) -> None:
@@ -414,10 +414,10 @@ turning it into a builder, and sending it to a channel or interaction.
             # Define our navigator and pass in our list of pages
             navigator = nav.NavigatorView(pages=pages)
 
-            builder = nav.build_response(client)
+            builder = await navigator.build_response_async(client)
             # the builder has specific adapters for tanjun
             await builder.respond_with_tanjun(ctx)
-            client.start_view(nav)
+            client.start_view(navigator)
 
 
         bot.run()

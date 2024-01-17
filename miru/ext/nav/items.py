@@ -7,12 +7,12 @@ import hikari
 
 from miru.abc.item import ViewItem
 from miru.button import Button
+from miru.context import ViewContext  # noqa: TCH001 Needed for DI
 from miru.modal import Modal
 from miru.select import ChannelSelect, MentionableSelect, RoleSelect, TextSelect, UserSelect
 from miru.text_input import TextInput
 
 if t.TYPE_CHECKING:
-    from miru.context import ViewContext
     from miru.ext.nav.navigator import NavigatorView
 
 __all__ = (
@@ -48,7 +48,7 @@ class NavItem(ViewItem, abc.ABC):
         self._handler: NavigatorView | None = None  # type: ignore
 
     async def before_page_change(self) -> None:
-        """Called when the navigator is about to transition to the next page. Also called before the first page is sent."""
+        """Called when the navigator is about to transition to the next page. Also called when a builder is created out of this view."""
         pass
 
     @property

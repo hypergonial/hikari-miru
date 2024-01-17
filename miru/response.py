@@ -22,24 +22,28 @@ class MessageBuilder(hikari.impl.InteractionMessageBuilder, Mapping[str, t.Any])
     def __init__(
         self,
         type: t.Literal[hikari.ResponseType.MESSAGE_CREATE, 4, hikari.ResponseType.MESSAGE_UPDATE, 7],
-        content: str | hikari.UndefinedType,
+        content: str | hikari.UndefinedType = hikari.UNDEFINED,
         *,
-        flags: hikari.MessageFlag | hikari.UndefinedType,
-        embeds: list[hikari.Embed] | hikari.UndefinedType,
-        components: list[hikari.api.ComponentBuilder] | hikari.UndefinedType | None,
-        attachments: list[hikari.Resourceish] | hikari.UndefinedType | None,
-        is_tts: bool | hikari.UndefinedType,
-        mentions_everyone: bool | hikari.UndefinedType,
-        user_mentions: t.Sequence[hikari.Snowflakeish | hikari.PartialUser] | bool | hikari.UndefinedType,
-        role_mentions: t.Sequence[hikari.Snowflakeish | hikari.PartialRole] | bool | hikari.UndefinedType,
+        flags: hikari.MessageFlag | hikari.UndefinedType = hikari.UNDEFINED,
+        embeds: t.Sequence[hikari.Embed] | hikari.UndefinedType | None = hikari.UNDEFINED,
+        components: t.Sequence[hikari.api.ComponentBuilder] | hikari.UndefinedType | None = hikari.UNDEFINED,
+        attachments: t.Sequence[hikari.Resourceish] | hikari.UndefinedType | None = hikari.UNDEFINED,
+        is_tts: bool | hikari.UndefinedType = hikari.UNDEFINED,
+        mentions_everyone: bool | hikari.UndefinedType = hikari.UNDEFINED,
+        user_mentions: t.Sequence[hikari.Snowflakeish | hikari.PartialUser]
+        | bool
+        | hikari.UndefinedType = hikari.UNDEFINED,
+        role_mentions: t.Sequence[hikari.Snowflakeish | hikari.PartialRole]
+        | bool
+        | hikari.UndefinedType = hikari.UNDEFINED,
     ) -> None:
         super().__init__(
             type=type,
             flags=flags,
             content=content,
-            embeds=embeds,
-            components=components,
-            attachments=attachments,
+            embeds=list(embeds) if embeds not in (hikari.UNDEFINED, None) else embeds,
+            components=list(components) if components not in (hikari.UNDEFINED, None) else components,
+            attachments=list(attachments) if attachments not in (hikari.UNDEFINED, None) else attachments,
             is_tts=is_tts,
             mentions_everyone=mentions_everyone,
             user_mentions=user_mentions,
@@ -184,7 +188,7 @@ class DeferredResponseBuilder(hikari.impl.InteractionDeferredBuilder, t.Mapping[
         self,
         type: t.Literal[hikari.ResponseType.DEFERRED_MESSAGE_CREATE, 5, hikari.ResponseType.DEFERRED_MESSAGE_UPDATE, 6],
         *,
-        flags: hikari.MessageFlag | hikari.UndefinedType,
+        flags: hikari.MessageFlag | hikari.UndefinedType = hikari.UNDEFINED,
     ) -> None:
         super().__init__(type=type, flags=flags)
         self._client: Client | None = None
@@ -238,8 +242,8 @@ class ModalBuilder(hikari.impl.InteractionModalBuilder, t.Mapping[str, t.Any]):
     It should not be instantiated directly, it is created by modal objects.
     """
 
-    def __init__(self, title: str, custom_id: str, components: list[hikari.api.ComponentBuilder]) -> None:
-        super().__init__(title=title, custom_id=custom_id, components=components)
+    def __init__(self, title: str, custom_id: str, components: t.Sequence[hikari.api.ComponentBuilder]) -> None:
+        super().__init__(title=title, custom_id=custom_id, components=list(components))
         self._client: Client | None = None
 
     def to_hikari_kwargs(self) -> t.Mapping[str, t.Any]:

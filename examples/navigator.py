@@ -52,7 +52,7 @@ async def navigator(event: hikari.GuildMessageCreateEvent) -> None:
 
         # Note: You can also send the navigator to an interaction or miru context
         # See the documentation of NavigatorView.send() for more information
-        builder = navigator.build_response(client)
+        builder = navigator.build_response_async(client)
         await builder.send_to_channel(event.channel_id)
         client.start_view(navigator)
 
@@ -71,7 +71,7 @@ async def navigator(event: hikari.GuildMessageCreateEvent) -> None:
         # Pass our list of NavButton to the navigator
         navigator = nav.NavigatorView(pages=pages, buttons=buttons)
 
-        await navigator.build_response(client).send_to_channel(event.channel_id)
+        await navigator.build_response_async(client).send_to_channel(event.channel_id)
         client.start_view(navigator)
 
 
