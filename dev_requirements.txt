@@ -1,5 +1,5 @@
 ruff==0.1.13
-pyright==1.1.345
+pyright==1.1.347
 nox==2023.4.22
 typing_extensions==4.9.0
 pytest==7.4.4
