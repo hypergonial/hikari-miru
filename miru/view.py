@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 ViewT = t.TypeVar("ViewT", bound="View")
 
 
-_COMPONENT_VIEW_ITEM_MAPPING: t.Mapping[hikari.ComponentType, t.Type[ViewItem]] = {
+_COMPONENT_VIEW_ITEM_MAPPING: t.Mapping[hikari.ComponentType, type[ViewItem]] = {
     hikari.ComponentType.BUTTON: Button,
     hikari.ComponentType.TEXT_SELECT_MENU: TextSelect,
     hikari.ComponentType.CHANNEL_SELECT_MENU: ChannelSelect,
@@ -122,7 +122,7 @@ class View(
         return self._autodefer
 
     @property
-    def _builder(self) -> t.Type[hikari.impl.MessageActionRowBuilder]:
+    def _builder(self) -> type[hikari.impl.MessageActionRowBuilder]:
         return hikari.impl.MessageActionRowBuilder
 
     @classmethod
@@ -287,7 +287,7 @@ class View(
         traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
 
     def get_context(
-        self, interaction: hikari.ComponentInteraction, *, cls: t.Type[ViewContext] = ViewContext
+        self, interaction: hikari.ComponentInteraction, *, cls: type[ViewContext] = ViewContext
     ) -> ViewContext:
         """Get the context for this view. Override this function to provide a custom context object.
 

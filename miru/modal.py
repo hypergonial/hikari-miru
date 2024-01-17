@@ -112,7 +112,7 @@ class Modal(
         return self._values
 
     @property
-    def _builder(self) -> t.Type[hikari.impl.ModalActionRowBuilder]:
+    def _builder(self) -> type[hikari.impl.ModalActionRowBuilder]:
         return hikari.impl.ModalActionRowBuilder
 
     def add_item(self, item: ModalItem) -> te.Self:
@@ -189,7 +189,7 @@ class Modal(
         interaction: hikari.ModalInteraction,
         values: t.Mapping[ModalItem, str],
         *,
-        cls: t.Type[ModalContext] = ModalContext,
+        cls: type[ModalContext] = ModalContext,
     ) -> ModalContext:
         """Get the context for this modal. Override this function to provide a custom context object.
 

@@ -643,19 +643,19 @@ class Client:
         modal._client_start_hook(self)
 
     @t.overload
-    def get_type_dependency(self, type_: t.Type[T]) -> T:
+    def get_type_dependency(self, type_: type[T]) -> T:
         ...
 
     @t.overload
-    def get_type_dependency(self, type_: t.Type[T], *, default: T) -> T:
+    def get_type_dependency(self, type_: type[T], *, default: T) -> T:
         ...
 
-    def get_type_dependency(self, type_: t.Type[T], *, default: T | None = None) -> T:
+    def get_type_dependency(self, type_: type[T], *, default: T | None = None) -> T:
         """Get a type dependency for this client.
 
         Parameters
         ----------
-        type_ : t.Type[T]
+        type_ : type[T]
             The type of the dependency.
         default : T | None
             The default value to return if the dependency does not exist.
@@ -679,12 +679,12 @@ class Client:
         else:
             return self._injector.get_type_dependency(type_, default=default)
 
-    def set_type_dependency(self, type_: t.Type[T], instance: T) -> te.Self:
+    def set_type_dependency(self, type_: type[T], instance: T) -> te.Self:
         """Set a type dependency for this client. This can then be injected into miru callbacks.
 
         Parameters
         ----------
-        type_ : t.Type[T]
+        type_ : type[T]
             The type of the dependency.
         instance : T
             The instance of the dependency.
