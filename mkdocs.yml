@@ -163,6 +163,7 @@ plugins:
             - https://docs.hikari-py.dev/en/latest/objects.inv
             - https://tanjun.cursed.solutions/objects.inv
             - https://alluka.cursed.solutions/objects.inv
+            - https://arc.hypergonial.com/objects.inv
           options:
             heading_level: 3
             annotations_path: source
