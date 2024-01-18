@@ -423,6 +423,9 @@ turning it into a builder, and sending it to a channel or interaction.
         bot.run()
         ```
 
+!!! tip
+    If you want to send a navigator in response to a `miru` item being interacted with, you may use [`Context.respond_with_builder()`][miru.abc.context.Context.respond_with_builder].
+
 ## Customizing Navigation Buttons
 
 If you would like to customize the items used by the navigator, you can pass buttons & selects via the `items=` keyword-only

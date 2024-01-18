@@ -75,9 +75,9 @@ Since in v4 everything is tied to the [`Client`][miru.client.Client], views need
 
 ## Sending modals, navigators
 
-`Modal.send()`, `NavigatorView.send()` have been removed.
+`Modal.send()` has been removed.
 
-Due to the changes required to support REST bots, it is no longer possible to put modals & navigator views in control of sending, due to the many ways these objects can be sent as a response.
+Due to the changes required to support REST bots, it is no longer possible to put modals themselves in control of sending, due to the many ways they can now be sent as a response.
 
 Therefore, this responsibility is now in the hands of the user. This *does* add some extra complexity, however it also allows for much greater control over how these objects are sent, and thus better compatibility with other libraries.
 
@@ -101,35 +101,62 @@ Therefore, this responsibility is now in the hands of the user. This *does* add 
     await modal.send(interaction)
     ```
 
-For more information on how to use these builders with each of the major command handler frameworks, please see the updated [modal](./modals.md) and [navigator](./navigators.md) guides.
+For more information on how to use these builders with each of the major command handler frameworks, please see the updated [modal](./modals.md) guide.
 
-## Sending menus
+## Sending navigators & menus
 
-`Menu.send()` has been removed.
+`NavigatorView.send()`, `Menu.send()` have been removed.
 
-Similarly to modals & navigators, menus are also now turned into builders. However, since menu payloads are built asynchronously, you need to use [`Menu.build_response_async()`][miru.ext.menu.menu.Menu.build_response_async] instead. If you're handling an interaction, you may also need to defer beforehand if building your initial screen takes a long time.
+Similarly to modals, menus & navigators are also now turned into builders. However, since the payloads are built asynchronously, you need to use [`Menu.build_response_async()`][miru.ext.menu.menu.Menu.build_response_async] and [`NavigatorView.build_response_async()`][miru.ext.nav.NavigatorView.build_response_async] respectively, instead. If you're handling an interaction, you may also need to defer beforehand if building your initial screen takes a long time.
 
 === "v4"
 
-    ```py
-    menu = menu.Menu(...)
-    # This returns a custom InteractionMessageBuilder
-    # It can be returned in REST callbacks
-    builder = await menu.build_response_async()
+    === "NavigatorView"
 
-    # Or you can use some of the custom methods it has
-    await builder.create_initial_response(interaction)
-    # Or
-    await builder.send_to_channel(channel_id)
+        ```py
+        navigator = nav.NavigatorView(...)
+        # This returns a custom InteractionMessageBuilder
+        # It can be returned in REST callbacks
+        builder = await navigator.build_response_async()
 
-    client.start_view(menu)
-    ```
+        # Or you can use some of the custom methods it has
+        await builder.create_initial_response(interaction)
+        # Or
+        await builder.send_to_channel(channel_id)
+
+        client.start_view(navigator)
+        ```
+
+    === "Menu"
+
+        ```py
+        my_menu = menu.Menu(...)
+        # This returns a custom InteractionMessageBuilder
+        # It can be returned in REST callbacks
+        builder = await my_menu.build_response_async()
+
+        # Or you can use some of the custom methods it has
+        await builder.create_initial_response(interaction)
+        # Or
+        await builder.send_to_channel(channel_id)
+
+        client.start_view(my_menu)
+        ```
 
 === "v3"
 
-    ```py
-    modal = menu.Menu(...)
-    await menu.send(channel_id | interaction)
-    ```
+    === "NavigatorView"
 
-For more information on how to use these builders with each of the major command handler frameworks, please see the updated [menu](./menus.md) guide.
+        ```py
+        navigator = nav.NavigatorView(...)
+        await navigator.send(channel_id | interaction)
+        ```
+
+    === "Menu"
+
+        ```py
+        my_menu = menu.Menu(...)
+        await my_menu.send(channel_id | interaction)
+        ```
+
+For more information on how to use these builders with each of the major command handler frameworks, please see the updated [menu](./menus.md) and [navigator](./navigators.md) guides.

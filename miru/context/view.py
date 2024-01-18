@@ -114,13 +114,26 @@ class ViewContext(Context[hikari.ComponentInteraction]):
         return self._interaction.message
 
     async def respond_with_modal(self, modal: Modal) -> None:
-        """Respond to this interaction with a modal."""
+        """Respond to this interaction with a modal.
+
+        This is effectively the same as:
+        ```py
+        builder = modal.build_response(client)
+        await ctx.respond_with_builder(builder)
+        client.start_modal(modal)
+        ```
+
+        Parameters
+        ----------
+        modal : Modal
+            The modal to respond with.
+        """
         if self._issued_response:
             raise RuntimeError("Interaction was already responded to.")
 
-        async with self._response_lock:
-            builder = modal.build_response(self.client)
+        builder = modal.build_response(self.client)
 
+        async with self._response_lock:
             if self.client.is_rest:
                 self._resp_builder.set_result(builder)
             else:

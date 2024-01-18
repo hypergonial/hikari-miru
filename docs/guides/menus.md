@@ -250,6 +250,8 @@ To set up a menu for the screens we designed above, see this snippet below:
         client.start_view(my_menu)
     ```
 
+!!! tip
+    If you want to send a menu in response to a `miru` item being interacted with, you may use [`Context.respond_with_builder()`][miru.abc.context.Context.respond_with_builder].
 
 !!! note
     Menus do not support persistence.
