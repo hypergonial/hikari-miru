@@ -86,8 +86,8 @@ To get started with `miru`, see the [documentation](https://miru.hypergonial.com
 
 miru has two extensions built-in:
 
-- [`ext.nav`](https://hikari-miru.readthedocs.io/en/latest/guides/navigators.html) - To make it easier to build navigators (sometimes called paginators).
-- [`ext.menu`](https://hikari-miru.readthedocs.io/en/latest/guides/menus.html) - To make it easier to create nested menus.
+- [`ext.nav`](https://miru.hypergonial.com/guides/navigators/) - To make it easier to build navigators (sometimes called paginators).
+- [`ext.menu`](https://miru.hypergonial.com/guides/menus/) - To make it easier to create nested menus.
 
 Check the corresponding documentation and the [examples](https://github.com/hypergonial/hikari-miru/tree/main/examples) on how to use them.
 

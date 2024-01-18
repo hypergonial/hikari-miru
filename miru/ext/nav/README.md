@@ -18,7 +18,10 @@ async def navigator(event: hikari.GuildMessageCreateEvent) -> None:
         embed = hikari.Embed(title="I'm the second page!", description="Also an embed!")
         pages = ["I'm the first page!", embed, "I'm the last page!"]
         navigator = nav.NavigatorView(pages=pages)
-        await navigator.send(event.channel_id)
+
+        builder = await navigator.build_response_async(client)
+        await builder.send_to_channel(event.channel_id)
+        client.start_view(navigator)
 ```
 
-For more examples see the [detailed example](https://github.com/hypergonial/hikari-miru/tree/main/examples/navigator.py), or refer to the [documentation](https://hikari-miru.readthedocs.io/en/latest/guides/navigators.html).
+For more examples refer to the [documentation](https://miru.hypergonial.com/guides/navigators/) or see the [detailed example](https://github.com/hypergonial/hikari-miru/tree/main/examples/navigator.py).
