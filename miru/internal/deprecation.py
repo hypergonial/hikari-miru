@@ -1,14 +1,13 @@
 from __future__ import annotations
 
-import typing as t
 from warnings import warn
 
-from .version import CURRENT_VERSION, Version
+from miru.internal.version import CURRENT_VERSION, Version
 
 __all__ = ("warn_deprecate",)
 
 
-def warn_deprecate(*, what: str, when: Version, use_instead: t.Optional[str] = None) -> None:
+def warn_deprecate(*, what: str, when: Version, use_instead: str | None = None) -> None:
     """Warn about a deprecation.
 
     Parameters
@@ -17,8 +16,8 @@ def warn_deprecate(*, what: str, when: Version, use_instead: t.Optional[str] = N
         The name of the object that is being deprecated.
     when : Version
         The version in which the object will be removed.
-    use_instead : Optional[str], optional
-        The object's name that should be used instead, by default None
+    use_instead : Optional[str]
+        The object's name that should be used instead
     """
     if when < CURRENT_VERSION:
         raise DeprecationWarning(

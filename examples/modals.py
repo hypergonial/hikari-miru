@@ -1,4 +1,5 @@
 import hikari
+
 import miru
 
 
@@ -9,31 +10,32 @@ class MyModal(miru.Modal):
     bio = miru.TextInput(label="Biography", value="Pre-filled content!", style=hikari.TextInputStyle.PARAGRAPH)
 
     # The callback function is called after the user hits 'Submit'
-    async def callback(self, ctx: miru.ModalContext) -> None:
+    async def callback(self, context: miru.ModalContext) -> None:
         # You can also access the values using ctx.values, Modal.values, or use ctx.get_value_by_id()
-        await ctx.respond(f"Your name: `{self.name.value}`\nYour bio: ```{self.bio.value}```")
+        await context.respond(f"Your name: `{self.name.value}`\nYour bio: ```{self.bio.value}```")
 
 
 class ModalView(miru.View):
-
     # Create a new button that will invoke our modal
     @miru.button(label="Click me!", style=hikari.ButtonStyle.PRIMARY)
-    async def modal_button(self, button: miru.Button, ctx: miru.ViewContext) -> None:
+    async def modal_button(self, context: miru.ViewContext, button: miru.Button) -> None:
         modal = MyModal(title="Example Title")
-        # You may also use Modal.send(interaction) if not working with a miru context object. (e.g. slash commands)
+        # You may also use the builder provided by Modal to send the modal to an arbitrary interaction.
         # Keep in mind that modals can only be sent in response to interactions.
-        await ctx.respond_with_modal(modal)
+        await context.respond_with_modal(modal)
+
         # OR
-        # await modal.send(ctx.interaction)
+        # builder = modal.build_response(client)
+        # await builder.create_modal_response(interaction)
+        # client.start_modal(modal)
 
 
 bot = hikari.GatewayBot("...")
-miru.install(bot)
+client = miru.Client(bot)
 
 
 @bot.listen()
 async def modals(event: hikari.GuildMessageCreateEvent) -> None:
-
     # Do not process messages from bots or webhooks
     if not event.is_human:
         return
@@ -43,8 +45,8 @@ async def modals(event: hikari.GuildMessageCreateEvent) -> None:
     # If the bot is mentioned
     if me.id in event.message.user_mentions_ids:
         view = ModalView()
-        message = await event.message.respond("This button triggers a modal!", components=view)
-        await view.start(message)
+        await event.message.respond("This button triggers a modal!", components=view)
+        client.start_view(view)
 
 
 bot.run()

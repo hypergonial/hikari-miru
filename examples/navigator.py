@@ -1,4 +1,5 @@
 import hikari
+
 import miru
 from miru.ext import nav
 
@@ -14,8 +15,8 @@ class MyNavButton(nav.NavButton):
     # NextButton - Goes to next page
     # LastButton - Goes to the last page
 
-    async def callback(self, ctx: miru.ViewContext) -> None:
-        await ctx.respond("You clicked me!", flags=hikari.MessageFlag.EPHEMERAL)
+    async def callback(self, context: miru.ViewContext) -> None:
+        await context.respond("You clicked me!", flags=hikari.MessageFlag.EPHEMERAL)
 
     async def before_page_change(self) -> None:
         # This function is called before the new page is sent by
@@ -24,12 +25,11 @@ class MyNavButton(nav.NavButton):
 
 
 bot = hikari.GatewayBot("...")
-miru.install(bot)
+client = miru.Client(bot)
 
 
 @bot.listen()
 async def navigator(event: hikari.GuildMessageCreateEvent) -> None:
-
     # Do not process messages from bots or webhooks
     if not event.is_human:
         return
@@ -47,23 +47,32 @@ async def navigator(event: hikari.GuildMessageCreateEvent) -> None:
         pages = ["I'm the first page!", embed, page]
 
         # Define our navigator and pass in our list of pages
-        navigator = nav.NavigatorView(pages=pages)
+        navigator: nav.NavigatorView = nav.NavigatorView(pages=pages)
 
         # Note: You can also send the navigator to an interaction or miru context
-        # See the documentation of NavigatorView.send() for more information
-        await navigator.send(event.channel_id)
+        # See the documentation of MessageBuilder for more information
+        builder = await navigator.build_response_async(client)
+        await builder.send_to_channel(event.channel_id)
+        client.start_view(navigator)
 
     # Otherwise we annoy everyone with our custom navigator instead
     else:
         embed = hikari.Embed(title="I'm the second page!", description="Also an embed!")
         pages = ["I'm a customized navigator!", embed, "I'm the last page!"]
         # Define our custom buttons for this navigator
-        # All navigator buttons MUST subclass NavButton
-        buttons = [nav.PrevButton(), nav.StopButton(), nav.NextButton(), MyNavButton(label="Page: 1", row=1)]
+        # All navigator items MUST subclass NavItem
+        # All miru items have a 'Nav' counterpart
+        buttons: list[nav.NavItem] = [
+            nav.PrevButton(),
+            nav.StopButton(),
+            nav.NextButton(),
+            MyNavButton(label="Page: 1", row=1),
+        ]
         # Pass our list of NavButton to the navigator
-        navigator = nav.NavigatorView(pages=pages, buttons=buttons)
-
-        await navigator.send(event.channel_id)
+        navigator = nav.NavigatorView(pages=pages, items=buttons)
+        builder = await navigator.build_response_async(client)
+        await builder.send_to_channel(event.channel_id)
+        client.start_view(navigator)
 
 
 bot.run()

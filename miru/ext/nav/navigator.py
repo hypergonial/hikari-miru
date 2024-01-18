@@ -5,18 +5,20 @@ import typing as t
 
 import attr
 import hikari
+import typing_extensions as te
 
-from miru.context import Context
+from miru.ext.nav.items import FirstButton, IndicatorButton, LastButton, NavButton, NavItem, NextButton, PrevButton
+from miru.internal.deprecation import warn_deprecate
+from miru.internal.version import Version
+from miru.response import MessageBuilder
 from miru.view import View
-
-from .items import FirstButton, IndicatorButton, LastButton, NavButton, NavItem, NextButton, PrevButton
 
 if t.TYPE_CHECKING:
     import datetime
 
-    import typing_extensions as te
-
-    from miru.abc import Item
+    from miru.abc.context import Context
+    from miru.client import Client
+    from miru.context.view import AutodeferOptions
 
 logger = logging.getLogger(__name__)
 
@@ -28,14 +30,14 @@ class NavigatorView(View):
 
     Parameters
     ----------
-    pages : List[Union[str, hikari.Embed, Sequence[hikari.Embed], Page]]
+    pages : list[str | hikari.Embed | t.Sequence[hikari.Embed] | Page]
         A list of strings, embeds or page objects that this navigator should paginate.
-    buttons : Optional[List[NavButton[NavigatorViewT]]], optional
-        A list of navigation buttons to override the default ones with, by default None
-    timeout : Optional[Union[float, int, datetime.timedelta]], optional
-        The duration after which the view times out, in seconds, by default 120.0
-    autodefer : bool, optional
-        If enabled, interactions will be automatically deferred if not responded to within 2 seconds, by default True
+    buttons : list[NavButton] | None
+        A list of navigation buttons to override the default ones with
+    timeout : float | int | datetime.timedelta | None
+        The duration after which the view times out, in seconds
+    autodefer : bool | AutodeferOptions
+        If enabled, interactions will be automatically deferred if not responded to within 2 seconds
 
     Raises
     ------
@@ -43,22 +45,52 @@ class NavigatorView(View):
         One or more pages are not an instance of str or hikari.Embed
     """
 
+    @t.overload
     def __init__(
         self,
         *,
-        pages: t.Sequence[t.Union[str, hikari.Embed, t.Sequence[hikari.Embed], Page]],
-        buttons: t.Optional[t.Sequence[NavButton]] = None,
-        timeout: t.Optional[t.Union[float, int, datetime.timedelta]] = 120.0,
-        autodefer: bool = True,
+        pages: t.Sequence[str | hikari.Embed | t.Sequence[hikari.Embed] | Page],
+        items: t.Sequence[NavItem] | None = None,
+        timeout: float | int | datetime.timedelta | None = 120.0,
+        autodefer: bool | AutodeferOptions = True,
     ) -> None:
-        self._pages: t.Sequence[t.Union[str, hikari.Embed, t.Sequence[hikari.Embed], Page]] = pages
+        ...
+
+    @te.deprecated("Use 'items=' instead of 'buttons='. 'buttons=' will be removed in version v4.2.0.")
+    @t.overload
+    def __init__(
+        self,
+        *,
+        pages: t.Sequence[str | hikari.Embed | t.Sequence[hikari.Embed] | Page],
+        buttons: t.Sequence[NavButton] | None = None,
+        timeout: float | int | datetime.timedelta | None = 120.0,
+        autodefer: bool | AutodeferOptions = True,
+    ) -> None:
+        ...
+
+    def __init__(
+        self,
+        *,
+        pages: t.Sequence[str | hikari.Embed | t.Sequence[hikari.Embed] | Page],
+        buttons: t.Sequence[NavButton] | None = None,
+        items: t.Sequence[NavItem] | None = None,
+        timeout: float | int | datetime.timedelta | None = 120.0,
+        autodefer: bool | AutodeferOptions = True,
+    ) -> None:
+        self._pages: t.Sequence[str | hikari.Embed | t.Sequence[hikari.Embed] | Page] = pages
         self._current_page: int = 0
         self._ephemeral: bool = False
         # The last interaction received, used for inter-based handling
-        self._inter: t.Optional[hikari.MessageResponseMixin[t.Any]] = None
+        self._inter: hikari.MessageResponseMixin[t.Any] | None = None
         super().__init__(timeout=timeout, autodefer=autodefer)
 
+        if items is not None:
+            for item in items:
+                self.add_item(item)
+
         if buttons is not None:
+            warn_deprecate(what="passing 'buttons=' to NavigatorView", when=Version(4, 2, 0), use_instead="items=")
+
             for button in buttons:
                 self.add_item(button)
         else:
@@ -70,7 +102,7 @@ class NavigatorView(View):
             raise ValueError(f"Expected at least one page to be passed to {type(self).__name__}.")
 
     @property
-    def pages(self) -> t.Sequence[t.Union[str, hikari.Embed, t.Sequence[hikari.Embed], Page]]:
+    def pages(self) -> t.Sequence[str | hikari.Embed | t.Sequence[hikari.Embed] | Page]:
         """The pages the navigator is iterating through."""
         return self._pages
 
@@ -81,9 +113,6 @@ class NavigatorView(View):
 
     @current_page.setter
     def current_page(self, value: int) -> None:
-        if not isinstance(value, int):
-            raise TypeError("Expected type int for property current_page.")
-
         # Ensure this value is always correct
         self._current_page = max(0, min(value, len(self.pages) - 1))
 
@@ -107,7 +136,7 @@ class NavigatorView(View):
 
         if self._inter is not None:
             await self._inter.edit_message(self.message, components=self)
-        else:
+        elif not self._ephemeral:
             await self.message.edit(components=self)
 
     def get_default_buttons(self) -> t.Sequence[NavButton]:
@@ -115,17 +144,17 @@ class NavigatorView(View):
 
         Returns
         -------
-        List[NavButton[NavigatorViewT]]
+        List[NavButton]
             A list of the default navigation buttons.
         """
         return [FirstButton(), PrevButton(), IndicatorButton(), NextButton(), LastButton()]
 
-    def add_item(self, item: Item[hikari.impl.MessageActionRowBuilder]) -> te.Self:
+    def add_item(self, item: NavItem) -> te.Self:  # pyright: ignore reportIncompatibleMethodOverride
         """Adds a new item to the navigator. Item must be of type NavItem.
 
         Parameters
         ----------
-        item : Item[MessageActionRowBuilder]
+        item : ViewItem
             An instance of NavItem
 
         Raises
@@ -138,17 +167,17 @@ class NavigatorView(View):
         ItemHandler
             The item handler the item was added to.
         """
-        if not isinstance(item, NavItem):
-            raise TypeError(f"Expected type 'NavItem' for parameter item, not '{type(item).__name__}'.")
-
         return super().add_item(item)
 
+    def remove_item(self, item: NavItem) -> te.Self:  # pyright: ignore reportIncompatibleMethodOverride
+        return super().remove_item(item)
+
     def _get_page_payload(
-        self, page: t.Union[str, hikari.Embed, t.Sequence[hikari.Embed], Page]
+        self, page: str | hikari.Embed | t.Sequence[hikari.Embed] | Page
     ) -> t.MutableMapping[str, t.Any]:
         """Get the page content that is to be sent."""
         if isinstance(page, Page):
-            d: t.Dict[str, t.Any] = page._build_payload()
+            d: dict[str, t.Any] = page._build_payload()
             d["components"] = self
             if self.ephemeral:
                 d["flags"] = hikari.MessageFlag.EPHEMERAL
@@ -183,15 +212,15 @@ class NavigatorView(View):
     def is_persistent(self) -> bool:
         return super().is_persistent and not self.ephemeral
 
-    async def send_page(self, context: Context[t.Any], page_index: t.Optional[int] = None) -> None:
+    async def send_page(self, context: Context[t.Any], page_index: int | None = None) -> None:
         """Send a page, editing the original message.
 
         Parameters
         ----------
         context : Context
             The context object that should be used to send this page
-        page_index : Optional[int], optional
-            The index of the page to send, if not specified, sends the current page, by default None
+        page_index : Optional[int]
+            The index of the page to send, if not specified, sends the current page
         """
         if page_index is not None:
             self.current_page = page_index
@@ -199,8 +228,7 @@ class NavigatorView(View):
         page = self.pages[self.current_page]
 
         for item in self.children:
-            if isinstance(item, NavItem):
-                await item.before_page_change()
+            await item.before_page_change()
 
         payload = self._get_page_payload(page)
 
@@ -211,7 +239,7 @@ class NavigatorView(View):
     async def swap_pages(
         self,
         context: Context[t.Any],
-        new_pages: t.Sequence[t.Union[str, hikari.Embed, t.Sequence[hikari.Embed], Page]],
+        new_pages: t.Sequence[str | hikari.Embed | t.Sequence[hikari.Embed] | Page],
         start_at: int = 0,
     ) -> None:
         """Swap out the pages of the navigator to the newly provided pages.
@@ -223,8 +251,8 @@ class NavigatorView(View):
             The context object that should be used to send the updated pages
         new_pages : Sequence[Union[str, Embed, Sequence[Embed] | Page]]
             The new sequence of pages to swap to
-        start_at : int, optional
-            The page to start at, by default 0
+        start_at : int
+            The page to start at
         """
         if not new_pages:
             raise ValueError(f"Expected at least one page to be passed to {type(self).__name__}.")
@@ -232,88 +260,46 @@ class NavigatorView(View):
         self._pages = new_pages
         await self.send_page(context, page_index=start_at)
 
-    async def start(
-        self,
-        message: t.Optional[
-            t.Union[
-                hikari.SnowflakeishOr[hikari.PartialMessage], t.Awaitable[hikari.SnowflakeishOr[hikari.PartialMessage]]
-            ]
-        ] = None,
-        *,
-        start_at: int = 0,
-    ) -> None:
-        """Start up the navigator listener. This should not be called directly, use send() instead.
+    async def build_response_async(
+        self, client: Client, *, start_at: int = 0, ephemeral: bool = False
+    ) -> MessageBuilder:
+        """Create a response builder out of this Navigator.
+        This also invokes all [`before_page_change()`][miru.ext.nav.items.NavItem.before_page_change] methods.
+
+        !!! tip
+            If it takes too long to invoke all `before_page_change()` methods, you may want to
+            defer the interaction before calling this method.
 
         Parameters
         ----------
-        message : Union[hikari.Message, Awaitable[hikari.Message]]
-            If provided, the view will be bound to this message, and if the
-            message is edited with a new view, this view will be stopped.
-            Unbound views do not support message editing with additional views.
-        start_at : int, optional
-            The page index to start at, by default 0
-        """
-        await super().start(message)
-        self.current_page = start_at
-
-    async def send(
-        self,
-        to: t.Union[hikari.SnowflakeishOr[hikari.TextableChannel], hikari.MessageResponseMixin[t.Any], Context[t.Any]],
-        *,
-        start_at: int = 0,
-        ephemeral: bool = False,
-        responded: bool = False,
-    ) -> None:
-        """Start up the navigator, send the first page, and start listening for interactions.
-
-        Parameters
-        ----------
-        to : Union[hikari.SnowflakeishOr[hikari.PartialChannel], hikari.MessageResponseMixin[Any], miru.Context]
-            The channel, interaction, or miru context to send the navigator to.
-        start_at : int
-            If provided, the page number to start the pagination at.
+        client : Client
+            The client instance to use to build the response
         ephemeral : bool
-            If an interaction or context was provided, determines if the navigator will be sent ephemerally or not.
-            This is ignored if a channel was provided, as regular messages cannot be ephemeral.
-        responded : bool
-            If an interaction was provided, determines if the interaction was previously acknowledged or not.
-            This is ignored if a channel or context was provided.
+            Determines if the navigator will be sent ephemerally or not.
+        start_at : int
+            The page index to start at
         """
-        self._ephemeral = ephemeral if isinstance(to, (hikari.MessageResponseMixin, Context)) else False
+        if self._client is not None:
+            raise RuntimeError("Navigator is already bound to a client.")
 
-        for item in self.children:
-            if isinstance(item, NavItem):
-                await item.before_page_change()
-
-        if self.ephemeral and self.timeout and self.timeout > 900:
+        if ephemeral and self.timeout is not None and self.timeout > 900:
             logger.warning(
-                f"Using a timeout value longer than 900 seconds (Used {self.timeout}) in ephemeral navigator {type(self).__name__} may cause on_timeout to fail."
+                "Ephemeral navigators with a timeout greater than 15 minutes will fail. "
+                "Consider lowering the timeout."
             )
 
-        payload = self._get_page_payload(self.pages[start_at])
+        self.current_page = start_at
+        self._ephemeral = ephemeral
 
-        if isinstance(to, (int, hikari.TextableChannel)):
-            channel = hikari.Snowflake(to)
-            message = await self.app.rest.create_message(channel, **payload)
-        elif isinstance(to, Context):
-            self._inter = to.interaction
-            resp = await to.respond(**payload)
-            message = await resp.retrieve_message()
-        else:
-            self._inter = to
-            if not responded:
-                await to.create_initial_response(hikari.ResponseType.MESSAGE_CREATE, **payload)
-                message = await to.fetch_initial_response()
-            else:
-                message = await to.execute(**payload)
+        for item in self.children:
+            await item.before_page_change()
 
-        if self.is_persistent and not self.is_bound:
-            return  # Do not start the view if unbound persistent
-
-        await self.start(message, start_at=start_at)
+        builder = MessageBuilder(hikari.ResponseType.MESSAGE_CREATE, **self._get_page_payload(self.pages[start_at]))
+        builder._client = client
+        return builder
 
 
-@attr.define(slots=True)
+@attr.define(slots=True, kw_only=True)
 class Page:
     """Allows for the building of more complex pages for use with NavigatorView."""
 
@@ -329,13 +315,13 @@ class Page:
     """A sequence of embeds to add to this page."""
     mentions_everyone: hikari.UndefinedOr[bool] = hikari.UNDEFINED
     """If True, mentioning @everyone will be allowed in this page's message."""
-    user_mentions: hikari.UndefinedOr[t.Union[hikari.SnowflakeishSequence[hikari.PartialUser], bool]] = hikari.UNDEFINED
+    user_mentions: hikari.UndefinedOr[hikari.SnowflakeishSequence[hikari.PartialUser] | bool] = hikari.UNDEFINED
     """The set of allowed user mentions in this page's message. Set to True to allow all."""
-    role_mentions: hikari.UndefinedOr[t.Union[hikari.SnowflakeishSequence[hikari.PartialRole], bool]] = hikari.UNDEFINED
+    role_mentions: hikari.UndefinedOr[hikari.SnowflakeishSequence[hikari.PartialRole] | bool] = hikari.UNDEFINED
     """The set of allowed role mentions in this page's message. Set to True to allow all."""
 
-    def _build_payload(self) -> t.Dict[str, t.Any]:
-        d: t.Dict[str, t.Any] = {
+    def _build_payload(self) -> dict[str, t.Any]:
+        d: dict[str, t.Any] = {
             "content": self.content or None,
             "attachments": self.attachments or None,
             "embeds": self.embeds or None,

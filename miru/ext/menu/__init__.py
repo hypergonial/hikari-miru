@@ -1,4 +1,5 @@
 from .items import (
+    InteractiveScreenItem,
     ScreenButton,
     ScreenChannelSelect,
     ScreenItem,
@@ -19,6 +20,7 @@ __all__ = (
     "Screen",
     "ScreenContent",
     "ScreenItem",
+    "InteractiveScreenItem",
     "ScreenButton",
     "ScreenTextSelect",
     "ScreenChannelSelect",

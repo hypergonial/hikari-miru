@@ -5,16 +5,17 @@ import typing as t
 
 import hikari
 
-from ..abc.item import DecoratedItem
-from ..context.view import ViewContext
-from .base import SelectBase
+from miru.abc.item import DecoratedItem
+from miru.abc.select import SelectBase
+from miru.context.view import ViewContext
 
 if t.TYPE_CHECKING:
-    from ..context.base import Context
-    from ..view import View
+    import typing_extensions as te
+
+    from miru.context.view import AutodeferOptions
+    from miru.view import View
 
     ViewT = t.TypeVar("ViewT", bound="View")
-    ViewContextT = t.TypeVar("ViewContextT", bound=ViewContext)
 
 __all__ = ("SelectOption", "TextSelect", "text_select")
 
@@ -27,9 +28,9 @@ class SelectOption:
     def __init__(
         self,
         label: str,
-        value: t.Optional[str] = None,
-        description: t.Optional[str] = None,
-        emoji: t.Optional[t.Union[str, hikari.Emoji]] = None,
+        value: str | None = None,
+        description: str | None = None,
+        emoji: str | hikari.Emoji | None = None,
         is_default: bool = False,
     ) -> None:
         """A more lenient way to instantiate select options.
@@ -38,19 +39,19 @@ class SelectOption:
         ----------
         label : str
             The option's label.
-        value : Optional[str], optional
+        value : str | None
             The internal value of the option, if None, uses label.
-        description : Optional[str], optional
-            The description of the option, by default None
-        emoji : Optional[Union[str, hikari.Emoji]], optional
-            The emoji of the option, by default None
-        is_default : bool, optional
-            A boolean determining of the option is default or not, by default False
+        description : str | None
+            The description of the option
+        emoji : str | hikari.Emoji | None
+            The emoji of the option
+        is_default : bool
+            A boolean determining of the option is default or not
         """
         self.label: str = label
         self.value: str = value or label
-        self.description: t.Optional[str] = description
-        self.emoji: t.Optional[hikari.Emoji] = hikari.Emoji.parse(emoji) if isinstance(emoji, str) else emoji
+        self.description: str | None = description
+        self.emoji: hikari.Emoji | None = hikari.Emoji.parse(emoji) if isinstance(emoji, str) else emoji
         self.is_default: bool = is_default
 
     def _convert(self) -> hikari.SelectMenuOption:
@@ -68,20 +69,22 @@ class TextSelect(SelectBase):
 
     Parameters
     ----------
-    options : Sequence[Union[hikari.SelectMenuOption, SelectOption]]
+    options : t.Sequence[hikari.SelectMenuOption | SelectOption]
         A sequence of select menu options that this select menu should use.
-    custom_id : Optional[str], optional
-        The custom identifier of the select menu, by default None
-    placeholder : Optional[str], optional
-        Placeholder text displayed on the select menu, by default None
-    min_values : int, optional
-        The minimum values a user has to select before it can be sent, by default 1
-    max_values : int, optional
-        The maximum values a user can select, by default 1
-    disabled : bool, optional
-        A boolean determining if the select menu should be disabled or not, by default False
-    row : Optional[int], optional
+    custom_id : str | None
+        The custom identifier of the select menu
+    placeholder : str | None
+        Placeholder text displayed on the select menu
+    min_values : int
+        The minimum values a user has to select before it can be sent
+    max_values : int
+        The maximum values a user can select
+    disabled : bool
+        A boolean determining if the select menu should be disabled or not
+    row : int | None
         The row the select menu should be in, leave as None for auto-placement.
+    autodefer : bool | AutodeferOptions | hikari.UndefinedType
+        The autodefer options for the select menu. If left `UNDEFINED`, the view's autodefer options will be used.
 
     Raises
     ------
@@ -92,13 +95,14 @@ class TextSelect(SelectBase):
     def __init__(
         self,
         *,
-        options: t.Sequence[t.Union[hikari.SelectMenuOption, SelectOption]],
-        custom_id: t.Optional[str] = None,
-        placeholder: t.Optional[str] = None,
+        options: t.Sequence[hikari.SelectMenuOption | SelectOption],
+        custom_id: str | None = None,
+        placeholder: str | None = None,
         min_values: int = 1,
         max_values: int = 1,
         disabled: bool = False,
-        row: t.Optional[int] = None,
+        row: int | None = None,
+        autodefer: bool | AutodeferOptions | hikari.UndefinedType = hikari.UNDEFINED,
     ) -> None:
         super().__init__(
             custom_id=custom_id,
@@ -107,6 +111,7 @@ class TextSelect(SelectBase):
             max_values=max_values,
             disabled=disabled,
             row=row,
+            autodefer=autodefer,
         )
         self._values: t.Sequence[str] = []
         self.options = options
@@ -116,37 +121,30 @@ class TextSelect(SelectBase):
         return hikari.ComponentType.TEXT_SELECT_MENU
 
     @property
-    def placeholder(self) -> t.Optional[str]:
+    def placeholder(self) -> str | None:
         """The placeholder text that appears before the select menu is clicked."""
         return self._placeholder
 
     @placeholder.setter
-    def placeholder(self, value: t.Optional[str]) -> None:
-        if value and not isinstance(value, str):
-            raise TypeError("Expected type str for property placeholder.")
+    def placeholder(self, value: str | None) -> None:
         if value is not None and len(value) > 150:
             raise ValueError(f"Parameter 'placeholder' must be 150 or fewer in length. (Found length {len(value)})")
         self._placeholder = str(value) if value else None
 
     @property
-    def options(self) -> t.Sequence[t.Union[hikari.SelectMenuOption, SelectOption]]:
+    def options(self) -> t.Sequence[hikari.SelectMenuOption | SelectOption]:
         """The select menu's options."""
         return self._options
 
     @options.setter
-    def options(self, value: t.Sequence[t.Union[hikari.SelectMenuOption, SelectOption]]) -> None:
-        if not isinstance(value, t.Sequence) or not isinstance(value[0], (hikari.SelectMenuOption, SelectOption)):
-            raise TypeError(
-                "Expected type 'Sequence[Union[hikari.SelectMenuOption, SelectOption]]' for property 'options'."
-            )
-
+    def options(self, value: t.Sequence[hikari.SelectMenuOption | SelectOption]) -> None:
         if len(value) > 25:
             raise ValueError("A select can have a maximum of 25 options.")
 
         self._options = value
 
     @classmethod
-    def _from_component(cls, component: hikari.PartialComponent, row: t.Optional[int] = None) -> TextSelect:
+    def _from_component(cls, component: hikari.PartialComponent, row: int | None = None) -> te.Self:
         assert isinstance(component, hikari.TextSelectMenuComponent)
 
         return cls(
@@ -184,46 +182,47 @@ class TextSelect(SelectBase):
     def values(self) -> t.Sequence[str]:
         return self._values
 
-    async def _refresh_state(self, context: Context[hikari.ComponentInteraction]) -> None:
+    async def _refresh_state(self, context: ViewContext) -> None:
         assert isinstance(context, ViewContext)
         self._values = context.interaction.values
 
 
 def text_select(
     *,
-    options: t.Sequence[t.Union[hikari.SelectMenuOption, SelectOption]],
-    custom_id: t.Optional[str] = None,
-    placeholder: t.Optional[str] = None,
+    options: t.Sequence[hikari.SelectMenuOption | SelectOption],
+    custom_id: str | None = None,
+    placeholder: str | None = None,
     min_values: int = 1,
     max_values: int = 1,
     disabled: bool = False,
-    row: t.Optional[int] = None,
-) -> t.Callable[
-    [t.Callable[[ViewT, TextSelect, ViewContextT], t.Awaitable[None]]], DecoratedItem[ViewT, TextSelect, ViewContextT]
-]:
+    row: int | None = None,
+    autodefer: bool | AutodeferOptions | hikari.UndefinedType = hikari.UNDEFINED,
+) -> t.Callable[[t.Callable[[ViewT, ViewContext, TextSelect], t.Awaitable[None]]], DecoratedItem[ViewT, TextSelect]]:
     """A decorator to transform a function into a Discord UI TextSelectMenu's callback.
     This must be inside a subclass of View.
 
     Parameters
     ----------
-    options : Sequence[Union[hikari.SelectMenuOption, SelectOption]]
+    options : t.Sequence[hikari.SelectMenuOption | SelectOption]
         A sequence of select menu options that this select menu should use.
-    custom_id : Optional[str], optional
-        The custom ID of the select menu, by default None
-    placeholder : Optional[str], optional
-        Placeholder text displayed on the select menu, by default None
-    min_values : int, optional
-        The minimum number of values that can be selected. Defaults to 1.
-    max_values : int, optional
-        The maximum number of values that can be selected. Defaults to 1.
-    disabled : bool, optional
-        Whether the select menu is disabled. Defaults to False.
-    row : Optional[int], optional
+    custom_id : str | None
+        The custom ID of the select menu.
+    placeholder : str | None
+        Placeholder text displayed on the select menu.
+    min_values : int
+        The minimum number of values that can be selected.
+    max_values : int
+        The maximum number of values that can be selected.
+    disabled : bool
+        Whether the select menu is disabled.
+    row : int | None
         The row the select should be in, leave as None for auto-placement.
+    autodefer : bool | AutodeferOptions | hikari.UndefinedType
+        The autodefer options for the select menu. If left `UNDEFINED`, the view's autodefer options will be used.
 
     Returns
     -------
-    Callable[[Callable[[ViewT, TextSelect, ViewContextT], Awaitable[None]]], DecoratedItem[ViewT, TextSelect, ViewContextT]]
+    Callable[[Callable[[ViewT, ViewContext, TextSelect], Awaitable[None]]], DecoratedItem[ViewT, TextSelect]]
         The decorated function.
 
     Raises
@@ -233,12 +232,12 @@ def text_select(
     """
 
     def decorator(
-        func: t.Callable[[ViewT, TextSelect, ViewContextT], t.Awaitable[None]],
-    ) -> DecoratedItem[ViewT, TextSelect, ViewContextT]:
+        func: t.Callable[[ViewT, ViewContext, TextSelect], t.Awaitable[None]],
+    ) -> DecoratedItem[ViewT, TextSelect]:
         if not inspect.iscoroutinefunction(func):
             raise TypeError("text_select must decorate coroutine function.")
 
-        item = TextSelect(
+        item: TextSelect = TextSelect(
             options=options,
             custom_id=custom_id,
             placeholder=placeholder,
@@ -246,6 +245,7 @@ def text_select(
             max_values=max_values,
             disabled=disabled,
             row=row,
+            autodefer=autodefer,
         )
         return DecoratedItem(item, func)
 

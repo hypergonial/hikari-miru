@@ -4,27 +4,28 @@ import typing as t
 
 import hikari
 
-from miru.internal.deprecation import warn_deprecate
-from miru.internal.version import Version
-
-from .raw import RawModalContext
+from miru.abc.context import Context, InteractionResponse
 
 if t.TYPE_CHECKING:
-    from ..abc.item import ModalItem
-    from ..modal import Modal
+    from miru.abc.item import ModalItem
+    from miru.client import Client
+    from miru.internal.types import ModalResponseBuildersT
+    from miru.modal import Modal
 
 __all__ = ("ModalContext",)
 
 T = t.TypeVar("T")
 
 
-class ModalContext(RawModalContext):
+class ModalContext(Context[hikari.ModalInteraction]):
     """A context object proxying a ModalInteraction received by a miru modal."""
 
     __slots__ = ("_modal", "_values")
 
-    def __init__(self, modal: Modal, interaction: hikari.ModalInteraction, values: t.Mapping[ModalItem, str]) -> None:
-        super().__init__(interaction)
+    def __init__(
+        self, modal: Modal, client: Client, interaction: hikari.ModalInteraction, values: t.Mapping[ModalItem, str]
+    ) -> None:
+        super().__init__(client, interaction)
         self._modal = modal
         self._values = values
 
@@ -38,37 +39,26 @@ class ModalContext(RawModalContext):
         """The values received as input for this modal."""
         return self._values
 
-    # TODO: Remove in v3.5.0
-    def get_value_by_predicate(
-        self, predicate: t.Callable[[ModalItem], bool], default: hikari.UndefinedOr[T] = hikari.UNDEFINED
-    ) -> T | str:
-        """Get the value for the first modal item that matches the given predicate.
-
-        Deprecated
-        ----------
-        Will be removed in 3.5.0. Use `ModalContext.get_value_by` instead.
+    async def respond_with_builder(self, builder: ModalResponseBuildersT) -> InteractionResponse:  # pyright: ignore reportIncompatibleMethodOverride
+        """Respond to the interaction with a builder. This method will try to turn the builder into a valid
+        response or followup, depending on the builder type and interaction state.
 
         Parameters
         ----------
-        predicate : Callable[[ModalItem], bool]
-            A predicate to match the item.
-        default : hikari.UndefinedOr[T], optional
-            A default value to return if no item was matched, by default hikari.UNDEFINED
+        builder : ModalResponseBuildersT
+            The builder to respond with.
 
         Returns
         -------
-        T | str
-            The value of the item that matched the predicate or the default value.
+        InteractionResponse
+            The response that was sent.
 
         Raises
         ------
-        KeyError
-            The item was not found and no default was provided.
+        RuntimeError
+            The interaction was already responded to.
         """
-        warn_deprecate(
-            what="ModalContext.get_value_by_predicate", when=Version(3, 5, 0), use_instead="ModalContext.get_value_by"
-        )
-        return self.get_value_by(predicate, default=default)
+        return await super().respond_with_builder(builder)
 
     def get_value_by(
         self, predicate: t.Callable[[ModalItem], bool], default: hikari.UndefinedOr[T] = hikari.UNDEFINED
@@ -79,8 +69,8 @@ class ModalContext(RawModalContext):
         ----------
         predicate : Callable[[ModalItem], bool]
             A predicate to match the item.
-        default : hikari.UndefinedOr[T], optional
-            A default value to return if no item was matched, by default hikari.UNDEFINED
+        default : hikari.UndefinedOr[T]
+            A default value to return if no item was matched
 
         Returns
         -------
@@ -107,8 +97,8 @@ class ModalContext(RawModalContext):
         ----------
         custom_id : str
             The custom_id of the component.
-        default : hikari.UndefinedOr[T], optional
-            A default value to return if the item was not found, by default hikari.UNDEFINED
+        default : hikari.UndefinedOr[T]
+            A default value to return if the item was not found
 
         Returns
         -------

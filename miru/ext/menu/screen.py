@@ -7,16 +7,13 @@ import typing as t
 import attr
 import hikari
 
-from miru import HandlerFullError, ItemAlreadyAttachedError
-
-from .items import DecoratedScreenItem, ScreenItem
+from miru.exceptions import HandlerFullError, ItemAlreadyAttachedError
+from miru.ext.menu.items import DecoratedScreenItem, InteractiveScreenItem, ScreenItem
 
 if t.TYPE_CHECKING:
     import typing_extensions as te
 
-    from miru import ViewContext
-
-    from .menu import Menu
+    from miru.ext.menu.menu import Menu
 
 __all__ = ("ScreenContent", "Screen")
 
@@ -37,13 +34,13 @@ class ScreenContent:
     """A sequence of embeds to add to this page."""
     mentions_everyone: hikari.UndefinedOr[bool] = hikari.UNDEFINED
     """If True, mentioning @everyone will be allowed in this page's message."""
-    user_mentions: hikari.UndefinedOr[t.Union[hikari.SnowflakeishSequence[hikari.PartialUser], bool]] = hikari.UNDEFINED
+    user_mentions: hikari.UndefinedOr[hikari.SnowflakeishSequence[hikari.PartialUser] | bool] = hikari.UNDEFINED
     """The set of allowed user mentions in this page's message. Set to True to allow all."""
-    role_mentions: hikari.UndefinedOr[t.Union[hikari.SnowflakeishSequence[hikari.PartialRole], bool]] = hikari.UNDEFINED
+    role_mentions: hikari.UndefinedOr[hikari.SnowflakeishSequence[hikari.PartialRole] | bool] = hikari.UNDEFINED
     """The set of allowed role mentions in this page's message. Set to True to allow all."""
 
-    def _build_payload(self) -> t.Dict[str, t.Any]:
-        d: t.Dict[str, t.Any] = {
+    def _build_payload(self) -> dict[str, t.Any]:
+        d: dict[str, t.Any] = {
             "content": self.content or None,
             "attachments": self.attachments or None,
             "embeds": self.embeds or None,
@@ -70,16 +67,16 @@ class Screen(abc.ABC):
     """
 
     _screen_children: t.Sequence[
-        DecoratedScreenItem[Screen, ScreenItem, ViewContext]
+        DecoratedScreenItem[te.Self, InteractiveScreenItem]
     ] = []  # Decorated callbacks that need to be turned into items
 
     def __init_subclass__(cls) -> None:
         """Get decorated callbacks."""
-        children: t.MutableSequence[DecoratedScreenItem[Screen, ScreenItem, ViewContext]] = []
+        children: t.MutableSequence[DecoratedScreenItem[te.Self, InteractiveScreenItem]] = []
         for base_cls in reversed(cls.mro()):
             for value in base_cls.__dict__.values():
                 if isinstance(value, DecoratedScreenItem):
-                    children.append(value)
+                    children.append(value)  # type: ignore
 
         if len(children) > 25:
             raise HandlerFullError("View cannot have more than 25 components attached.")
@@ -161,9 +158,6 @@ class Screen(abc.ABC):
         if len(self.children) > 25:
             raise HandlerFullError("Screen cannot have more than 25 components attached.")
 
-        if not isinstance(item, ScreenItem):
-            raise TypeError(f"Expected ScreenItem not {type(item).__name__} for parameter item.")
-
         if item in self.children:
             raise ItemAlreadyAttachedError(f"Item {type(item).__name__} is already attached to this screen.")
 
@@ -207,7 +201,7 @@ class Screen(abc.ABC):
         self._children.clear()
         return self
 
-    def get_item_by(self, predicate: t.Callable[[ScreenItem], bool]) -> t.Optional[ScreenItem]:
+    def get_item_by(self, predicate: t.Callable[[ScreenItem], bool]) -> ScreenItem | None:
         """Get the first item that matches the given predicate.
 
         Parameters
@@ -226,7 +220,7 @@ class Screen(abc.ABC):
 
         return None
 
-    def get_item_by_id(self, custom_id: str) -> t.Optional[ScreenItem]:
+    def get_item_by_id(self, custom_id: str) -> ScreenItem | None:
         """Get the first item with the given custom ID.
 
         Parameters

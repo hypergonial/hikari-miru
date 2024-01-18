@@ -1,7 +1,6 @@
 import os
 import re
 import types
-import typing as t
 
 from setuptools import find_namespace_packages, setup
 
@@ -30,7 +29,7 @@ def long_description() -> str:
         return fp.read()
 
 
-def parse_requirements_file(path: str) -> t.List[str]:
+def parse_requirements_file(path: str) -> list[str]:
     with open(path) as fp:
         dependencies = (d.strip() for d in fp.read().split("\n") if d.strip())
         return [d for d in dependencies if not d.startswith("#")]
@@ -54,16 +53,18 @@ setup(
     include_package_data=True,
     zip_safe=False,
     install_requires=parse_requirements_file("requirements.txt"),
-    extras_require={':sys_platform=="win32"': ["colorama"], "docs": parse_requirements_file("doc_requirements.txt")},
-    python_requires=">=3.8.0,<3.13",
+    extras_require={
+        ':sys_platform=="win32"': ["colorama"],
+        "docs": parse_requirements_file("doc_requirements.txt"),
+        "dev": parse_requirements_file("dev_requirements.txt"),
+    },
+    python_requires=">=3.10.0,<3.13",
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Framework :: AsyncIO",
         "Intended Audience :: Developers",
         "Natural Language :: English",
         "Topic :: Software Development :: Libraries :: Python Modules",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",

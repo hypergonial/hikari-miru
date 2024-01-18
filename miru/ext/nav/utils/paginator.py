@@ -6,18 +6,18 @@ __all__ = ("Paginator",)
 
 
 class Paginator:
-    r"""A paginator that can be used to paginate long strings to ensure a consistent character count per page.
+    """A paginator that can be used to paginate long strings to ensure a consistent character count per page.
 
     Parameters
     ----------
-    max_len : int, optional
-        The maximum length per page, by default 1000
-    prefix : str, optional
-        A prefix to insert every page, by default ""
-    suffix : str, optional
-        A suffix to insert every page, by default ""
-    line_separator : str, optional
-        The character used to divide lines, by default "\n"
+    max_len : int
+        The maximum length per page
+    prefix : str
+        A prefix to insert every page
+    suffix : str
+        A suffix to insert every page
+    line_separator : str
+        The character used to divide lines
     """
 
     __slots__ = ("_max_len", "_prefix", "_suffix", "_line_separator", "_pages")
@@ -27,7 +27,7 @@ class Paginator:
         self._prefix = prefix
         self._suffix = suffix
         self._line_separator = line_separator
-        self._pages: t.List[str] = []
+        self._pages: list[str] = []
 
     def _add_line(self, line: str) -> None:
         """Add a line to the paginator."""

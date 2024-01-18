@@ -5,18 +5,16 @@ import typing as t
 
 import hikari
 
-from miru.abc.item import ViewItem
-from miru.button import Button
+from miru.abc.item import InteractiveViewItem, ViewItem
+from miru.button import Button, LinkButton
 from miru.modal import Modal
 from miru.select import ChannelSelect, MentionableSelect, RoleSelect, TextSelect, UserSelect
 from miru.text_input import TextInput
 
 if t.TYPE_CHECKING:
-    from miru.context import ViewContext
-
-    from .navigator import NavigatorView
-
-    ViewContextT = t.TypeVar("ViewContextT", bound=ViewContext)
+    from miru.context.view import ViewContext
+    from miru.ext.nav.navigator import NavigatorView
+    from miru.internal.types import InteractiveButtonStylesT
 
 __all__ = (
     "NavItem",
@@ -36,22 +34,24 @@ __all__ = (
 
 
 class NavItem(ViewItem, abc.ABC):
-    """A baseclass for all navigation items. NavigatorView requires instances of this class as it's items."""
+    """An abstract base for all navigation items. NavigatorView requires instances of this class as it's items."""
 
     def __init__(
         self,
         *,
-        custom_id: t.Optional[str] = None,
-        row: t.Optional[int] = None,
-        position: t.Optional[int] = None,
+        custom_id: str | None = None,
+        row: int | None = None,
+        position: int | None = None,
         disabled: bool = False,
         width: int = 1,
     ) -> None:
         super().__init__(custom_id=custom_id, row=row, width=width, position=position, disabled=disabled)
-        self._handler: t.Optional[NavigatorView] = None
+        self._handler: NavigatorView | None = None  # type: ignore
 
     async def before_page_change(self) -> None:
-        """Called when the navigator is about to transition to the next page. Also called before the first page is sent."""
+        """Called when the navigator is about to transition to the next page.
+        Also called when a builder is created out of the navigator this item is attached to.
+        """
         pass
 
     @property
@@ -62,27 +62,35 @@ class NavItem(ViewItem, abc.ABC):
         return self._handler
 
 
-class NavButton(Button, NavItem):
+class InteractiveNavItem(InteractiveViewItem, NavItem):
+    """An abstract base for all interactive navigation items."""
+
+
+class NavLinkButton(LinkButton, NavItem):
+    """A base class for all navigation link buttons."""
+
+
+class NavButton(Button, InteractiveNavItem):
     """A base class for all navigation buttons."""
 
 
-class NavTextSelect(TextSelect, NavItem):
+class NavTextSelect(TextSelect, InteractiveNavItem):
     """A base class for all navigation text selects."""
 
 
-class NavUserSelect(UserSelect, NavItem):
+class NavUserSelect(UserSelect, InteractiveNavItem):
     """A base class for all navigation user selects."""
 
 
-class NavRoleSelect(RoleSelect, NavItem):
+class NavRoleSelect(RoleSelect, InteractiveNavItem):
     """A base class for all navigation role selects."""
 
 
-class NavChannelSelect(ChannelSelect, NavItem):
+class NavChannelSelect(ChannelSelect, InteractiveNavItem):
     """A base class for all navigation channel selects."""
 
 
-class NavMentionableSelect(MentionableSelect, NavItem):
+class NavMentionableSelect(MentionableSelect, InteractiveNavItem):
     """A base class for all navigation mentionable selects."""
 
 
@@ -92,16 +100,16 @@ class NextButton(NavButton):
     def __init__(
         self,
         *,
-        style: hikari.ButtonStyle = hikari.ButtonStyle.PRIMARY,
-        label: t.Optional[str] = None,
-        custom_id: t.Optional[str] = None,
-        emoji: t.Union[hikari.Emoji, str, None] = chr(9654),
-        row: t.Optional[int] = None,
-        position: t.Optional[int] = None,
+        style: InteractiveButtonStylesT = hikari.ButtonStyle.PRIMARY,
+        label: str | None = None,
+        custom_id: str | None = None,
+        emoji: hikari.Emoji | str | None = chr(9654),
+        row: int | None = None,
+        position: int | None = None,
     ):
         super().__init__(style=style, label=label, custom_id=custom_id, emoji=emoji, row=row, position=position)
 
-    async def callback(self, context: ViewContextT) -> None:
+    async def callback(self, context: ViewContext) -> None:
         self.view.current_page += 1
         await self.view.send_page(context)
 
@@ -118,16 +126,16 @@ class PrevButton(NavButton):
     def __init__(
         self,
         *,
-        style: hikari.ButtonStyle = hikari.ButtonStyle.PRIMARY,
-        label: t.Optional[str] = None,
-        custom_id: t.Optional[str] = None,
-        emoji: t.Union[hikari.Emoji, str, None] = chr(9664),
-        row: t.Optional[int] = None,
-        position: t.Optional[int] = None,
+        style: InteractiveButtonStylesT = hikari.ButtonStyle.PRIMARY,
+        label: str | None = None,
+        custom_id: str | None = None,
+        emoji: hikari.Emoji | str | None = chr(9664),
+        row: int | None = None,
+        position: int | None = None,
     ):
         super().__init__(style=style, label=label, custom_id=custom_id, emoji=emoji, row=row, position=position)
 
-    async def callback(self, context: ViewContextT) -> None:
+    async def callback(self, context: ViewContext) -> None:
         self.view.current_page -= 1
         await self.view.send_page(context)
 
@@ -144,16 +152,16 @@ class FirstButton(NavButton):
     def __init__(
         self,
         *,
-        style: hikari.ButtonStyle = hikari.ButtonStyle.PRIMARY,
-        label: t.Optional[str] = None,
-        custom_id: t.Optional[str] = None,
-        emoji: t.Union[hikari.Emoji, str, None] = chr(9194),
-        row: t.Optional[int] = None,
-        position: t.Optional[int] = None,
+        style: InteractiveButtonStylesT = hikari.ButtonStyle.PRIMARY,
+        label: str | None = None,
+        custom_id: str | None = None,
+        emoji: hikari.Emoji | str | None = chr(9194),
+        row: int | None = None,
+        position: int | None = None,
     ):
         super().__init__(style=style, label=label, custom_id=custom_id, emoji=emoji, row=row, position=position)
 
-    async def callback(self, context: ViewContextT) -> None:
+    async def callback(self, context: ViewContext) -> None:
         self.view.current_page = 0
         await self.view.send_page(context)
 
@@ -170,16 +178,16 @@ class LastButton(NavButton):
     def __init__(
         self,
         *,
-        style: hikari.ButtonStyle = hikari.ButtonStyle.PRIMARY,
-        label: t.Optional[str] = None,
-        custom_id: t.Optional[str] = None,
-        emoji: t.Union[hikari.Emoji, str, None] = chr(9193),
-        row: t.Optional[int] = None,
-        position: t.Optional[int] = None,
+        style: InteractiveButtonStylesT = hikari.ButtonStyle.PRIMARY,
+        label: str | None = None,
+        custom_id: str | None = None,
+        emoji: hikari.Emoji | str | None = chr(9193),
+        row: int | None = None,
+        position: int | None = None,
     ):
         super().__init__(style=style, label=label, custom_id=custom_id, emoji=emoji, row=row, position=position)
 
-    async def callback(self, context: ViewContextT) -> None:
+    async def callback(self, context: ViewContext) -> None:
         self.view.current_page = len(self.view.pages) - 1
         await self.view.send_page(context)
 
@@ -196,12 +204,12 @@ class IndicatorButton(NavButton):
     def __init__(
         self,
         *,
-        style: hikari.ButtonStyle = hikari.ButtonStyle.SECONDARY,
-        custom_id: t.Optional[str] = None,
-        emoji: t.Union[hikari.Emoji, str, None] = None,
+        style: InteractiveButtonStylesT = hikari.ButtonStyle.SECONDARY,
+        custom_id: str | None = None,
+        emoji: hikari.Emoji | str | None = None,
         disabled: bool = False,
-        row: t.Optional[int] = None,
-        position: t.Optional[int] = None,
+        row: int | None = None,
+        position: int | None = None,
     ):
         # Either label or emoji is required, so we pass a placeholder
         super().__init__(
@@ -212,7 +220,7 @@ class IndicatorButton(NavButton):
         self.label = f"{self.view.current_page+1}/{len(self.view.pages)}"
         self.disabled = self.disabled if len(self.view.pages) != 1 else True
 
-    async def callback(self, context: ViewContextT) -> None:
+    async def callback(self, context: ViewContext) -> None:
         modal = Modal(title="Jump to page")
         modal.add_item(
             TextInput(label="Page Number", placeholder="Enter a page number to jump to it...", custom_id="pgnum")
@@ -240,22 +248,21 @@ class StopButton(NavButton):
     def __init__(
         self,
         *,
-        style: hikari.ButtonStyle = hikari.ButtonStyle.DANGER,
-        label: t.Optional[str] = None,
-        custom_id: t.Optional[str] = None,
-        emoji: t.Union[hikari.Emoji, str, None] = chr(9209),
-        row: t.Optional[int] = None,
-        position: t.Optional[int] = None,
+        style: InteractiveButtonStylesT = hikari.ButtonStyle.DANGER,
+        label: str | None = None,
+        custom_id: str | None = None,
+        emoji: hikari.Emoji | str | None = chr(9209),
+        row: int | None = None,
+        position: int | None = None,
     ):
         super().__init__(style=style, label=label, custom_id=custom_id, emoji=emoji, row=row, position=position)
 
-    async def callback(self, context: ViewContextT) -> None:
+    async def callback(self, context: ViewContext) -> None:
         if not self.view.message and not self.view._inter:
             return
 
         for item in self.view.children:
-            if isinstance(item, (NavItem)):
-                item.disabled = True
+            item.disabled = True
 
         if self.view._inter:
             await self.view._inter.edit_initial_response(components=self.view)

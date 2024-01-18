@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import asyncio
 import logging
 import typing as t
 
@@ -11,7 +10,7 @@ import miru
 if t.TYPE_CHECKING:
     import datetime
 
-    from .screen import Screen, ScreenContent
+    from miru.ext.menu.screen import Screen, ScreenContent
 
 logger = logging.getLogger(__name__)
 
@@ -23,19 +22,24 @@ class Menu(miru.View):
 
     Parameters
     ----------
-    timeout : Optional[Union[float, int, datetime.timedelta]], optional
-        The duration after which the menu times out, in seconds, by default 300.0
-    autodefer : bool, optional
-        If enabled, interactions will be automatically deferred if not responded to within 2 seconds, by default True
+    timeout : Optional[Union[float, int, datetime.timedelta]]
+        The duration after which the menu times out, in seconds
+    autodefer : bool
+        If enabled, interactions will be automatically deferred if not responded to within 2 seconds
     """
 
-    def __init__(self, *, timeout: t.Optional[t.Union[float, int, datetime.timedelta]] = 300.0, autodefer: bool = True):
+    def __init__(
+        self,
+        *,
+        timeout: float | int | datetime.timedelta | None = 300.0,
+        autodefer: bool | miru.AutodeferOptions = True,
+    ):
         super().__init__(timeout=timeout, autodefer=autodefer)
-        self._stack: t.List[Screen] = []
+        self._stack: list[Screen] = []
         # The interaction that was used to send the menu, if any.
-        self._inter: t.Optional[hikari.MessageResponseMixin[t.Any]] = None
+        self._inter: hikari.MessageResponseMixin[t.Any] | None = None
         self._ephemeral: bool = False
-        self._payload: t.Dict[str, t.Any] = {}
+        self._payload: dict[str, t.Any] = {}
 
     @property
     def is_persistent(self) -> bool:
@@ -74,13 +78,13 @@ class Menu(miru.View):
         for item in screen.children:
             self.add_item(item)
 
-    async def update_message(self, new_content: t.Optional[ScreenContent] = None) -> None:
+    async def update_message(self, new_content: ScreenContent | None = None) -> None:
         """Update the message with the current state of the menu.
 
         Parameters
         ----------
-        new_content : Optional[ScreenContent], optional
-            The new content to use, if left as None, only the components will be updated, by default None
+        new_content : Optional[ScreenContent]
+            The new content to use, if left as None, only the components will be updated
         """
         if self.message is None:
             return
@@ -92,7 +96,7 @@ class Menu(miru.View):
             await self.last_context.edit_response(components=self, **self._payload, flags=self._flags)
         elif self.last_context is None and self._inter is not None:
             await self._inter.edit_message(self.message, components=self, **self._payload)
-        else:
+        elif not self._ephemeral:
             await self.message.edit(components=self, **self._payload)
 
     async def push(self, screen: Screen) -> None:
@@ -109,7 +113,7 @@ class Menu(miru.View):
         await self._load_screen(screen)
         await self.update_message()
 
-    async def pop(self, count: int = 1) -> None:
+    async def pop(self, *, count: int = 1) -> None:
         """Pop 'count' screen off the menu stack and display the screen on top of the stack.
         This can be used to go back to the previous screen(s).
 
@@ -163,66 +167,34 @@ class Menu(miru.View):
         await self._load_screen(self.current_screen)
         await self.update_message()
 
-    async def send(
-        self,
-        starting_screen: Screen,
-        to: t.Union[
-            hikari.SnowflakeishOr[hikari.TextableChannel], hikari.MessageResponseMixin[t.Any], miru.Context[t.Any]
-        ],
-        ephemeral: bool = False,
-        responded: bool = False,
-    ) -> None:
-        """Start up the menu, send the starting screen, and start listening for interactions.
+    async def build_response_async(
+        self, client: miru.Client, starting_screen: Screen, *, ephemeral: bool = False
+    ) -> miru.MessageBuilder:
+        """Create a REST response builder out of this Menu.
+
+        !!! tip
+            If it takes too long to build the starting screen, you may want to
+            defer the interaction before calling this method.
 
         Parameters
         ----------
+        client : Client
+            The client instance to use to build the response
         starting_screen : Screen
             The screen to start the menu with.
-        to : Union[hikari.SnowflakeishOr[hikari.PartialChannel], hikari.MessageResponseMixin[Any], miru.Context]
-            The channel, interaction, or miru context to send the menu to.
         ephemeral : bool
-            If an interaction or context was provided, determines if the navigator will be sent ephemerally or not.
-            This is ignored if a channel was provided, as regular messages cannot be ephemeral.
-        responded : bool
-            If an interaction was provided, determines if the interaction was previously acknowledged or not.
-            This is ignored if a channel or context was provided.
+            Determines if the navigator will be sent ephemerally or not.
         """
-        self._ephemeral = ephemeral if isinstance(to, (hikari.MessageResponseMixin, miru.Context)) else False
+        if self._client is not None:
+            raise RuntimeError("Navigator is already bound to a client.")
+
         self._stack.append(starting_screen)
+        await self._load_screen(starting_screen)
+        self._ephemeral = ephemeral
 
-        if self.ephemeral and self.timeout and self.timeout > 900:
-            logger.warning(
-                f"Using a timeout value longer than 900 seconds (Used {self.timeout}) in ephemeral menu {type(self).__name__} may cause on_timeout to fail."
-            )
-
-        task = asyncio.create_task(self._load_screen(starting_screen))
-        done, pending = await asyncio.wait({task}, timeout=2.0)
-
-        # Automatically defer if creating the initial menu payload is taking too long.
-        if task in pending and self.autodefer and isinstance(to, hikari.MessageResponseMixin) and not responded:
-            await to.create_initial_response(hikari.ResponseType.DEFERRED_MESSAGE_CREATE, flags=self._flags)
-            responded = True
-
-        await task
-
-        if isinstance(to, (int, hikari.TextableChannel)):
-            channel = hikari.Snowflake(to)
-            message = await self.app.rest.create_message(channel, components=self, **self._payload)
-        elif isinstance(to, miru.Context):
-            self._inter = to.interaction
-            resp = await to.respond(components=self, flags=self._flags, **self._payload)
-            message = await resp.retrieve_message()
-        else:
-            self._inter = to
-            if not responded:
-                await to.create_initial_response(
-                    hikari.ResponseType.MESSAGE_CREATE, components=self, flags=self._flags, **self._payload
-                )
-                message = await to.fetch_initial_response()
-            else:
-                message = await to.execute(components=self, **self._payload)
-
-        await self.start(message)
+        builder = miru.MessageBuilder(hikari.ResponseType.MESSAGE_CREATE, components=self, **self._payload)
+        builder._client = client
+        return builder
 
 
 # MIT License

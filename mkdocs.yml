@@ -1,0 +1,189 @@
+# mkdocs.yml
+site_name: "hikari-miru documentation"
+site_url: https://miru.hypergonial.com
+repo_url: https://github.com/hypergonial/hikari-miru
+copyright: Copyright &copy; 2023 hypergonial
+edit_uri: edit/main/docs/
+theme:
+  name: material
+  font:
+    code: JetBrains Mono
+  icon:
+    logo: fontawesome/solid/book
+    repo: fontawesome/brands/github
+    edit: material/pencil
+    view: material/eye
+    admonition:
+      note: octicons/tag-16
+      abstract: octicons/checklist-16
+      info: octicons/info-16
+      tip: octicons/squirrel-16
+      success: octicons/check-16
+      question: octicons/question-16
+      warning: octicons/alert-16
+      failure: octicons/x-circle-16
+      danger: octicons/zap-16
+      bug: octicons/bug-16
+      example: octicons/beaker-16
+      quote: octicons/quote-16
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      toggle:
+        icon: octicons/sun-16
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      toggle:
+        icon: octicons/moon-24
+        name: Switch to light mode
+  features:
+    - content.tabs.link
+    - search.highlight
+    - search.suggest
+    - search.share
+    - content.code.copy
+    - content.code.select
+    - navigation.instant
+    - navigation.instant.progress
+    - navigation.tabs
+    - navigation.indexes
+    - navigation.footer
+    - navigation.top
+    - content.action.view
+    - content.action.edit
+    - content.tooltips
+    - toc.follow
+
+
+nav:
+    - Home: index.md
+    - Getting Started: getting_started.md
+    - Guides:
+        - guides/index.md
+        - guides/editing_items.md
+        - guides/selects.md
+        - guides/checks_timeout.md
+        - guides/error_handling.md
+        - guides/modals.md
+        - guides/persistent_views.md
+        - guides/navigators.md
+        - guides/menus.md
+        - guides/migrating_from_v3.md
+    - API Reference:
+        - api_reference/index.md
+        - api_reference/client.md
+        - Items:
+          - api_reference/button.md
+          - api_reference/select.md
+          - api_reference/text_input.md
+        - api_reference/view.md
+        - api_reference/modal.md
+        - api_reference/context.md
+        - api_reference/response.md
+        - api_reference/exceptions.md
+        - ABC:
+            - api_reference/abc/item_handler.md
+            - api_reference/abc/item.md
+            - api_reference/abc/context.md
+            - api_reference/abc/select.md
+        - ext.nav:
+            - api_reference/ext_nav/index.md
+            - api_reference/ext_nav/navigator.md
+            - api_reference/ext_nav/items.md
+        - ext.menu:
+            - api_reference/ext_menu/index.md
+            - api_reference/ext_menu/screen.md
+            - api_reference/ext_menu/items.md
+            - api_reference/ext_menu/menu.md
+    - Changelog:
+        - changelogs/v4.md
+        - changelogs/v3.md
+        - changelogs/v2.md
+        - changelogs/v1.md
+
+
+
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - toc:
+      permalink: "#"
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+      combine_header_slug: true
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
+  - def_list
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - attr_list
+  - md_in_html
+  - tables
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+plugins:
+  - autorefs
+  - search
+  - social
+  - privacy
+  - glightbox:
+      touchNavigation: true
+      loop: false
+      effect: zoom
+      slide_effect: slide
+      width: 100%
+      height: auto
+      zoomable: true
+      draggable: true
+      auto_caption: false
+      caption_position: bottom
+      skip_classes:
+         - no-lightbox
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          import:
+            - https://docs.python.org/3.10/objects.inv
+            - https://docs.hikari-py.dev/en/latest/objects.inv
+            - https://tanjun.cursed.solutions/objects.inv
+            - https://alluka.cursed.solutions/objects.inv
+          options:
+            heading_level: 3
+            annotations_path: source
+            members_order: source
+            group_by_category: true
+            docstring_section_style: spacy
+            docstring_style: numpy
+            inherited_members: true
+            merge_init_into_class: true
+            separate_signature: true
+            show_signature_annotations: true
+            show_source: false
+            show_submodules: false
+            signature_crossrefs: true
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            extensions:
+                - griffe_inherited_docstrings
+            filters:
+              - "!^_"
+              - "!^__init_subclass__"
+watch:
+  - docs
+  - README.md
+  - miru

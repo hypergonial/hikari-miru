@@ -5,16 +5,16 @@ import typing as t
 
 import hikari
 
-from ..abc.item import DecoratedItem
-from .base import SelectBase
+from miru.abc.item import DecoratedItem
+from miru.abc.select import SelectBase
 
 if t.TYPE_CHECKING:
-    from ..context.base import Context
-    from ..context.view import ViewContext
-    from ..view import View
+    import typing_extensions as te
+
+    from miru.context.view import AutodeferOptions, ViewContext
+    from miru.view import View
 
     ViewT = t.TypeVar("ViewT", bound="View")
-    ViewContextT = t.TypeVar("ViewContextT", bound=ViewContext)
 
 __all__ = ("ChannelSelect", "channel_select")
 
@@ -24,32 +24,35 @@ class ChannelSelect(SelectBase):
 
     Parameters
     ----------
-    channel_types : Sequence[Union[int, hikari.ChannelType]], optional
-        A sequence of channel types to filter the select menu by, by default (hikari.ChannelType.GUILD_TEXT,)
-    custom_id : Optional[str], optional
-        The custom identifier of the select menu, by default None
-    placeholder : Optional[str], optional
-        Placeholder text displayed on the select menu, by default None
-    min_values : int, optional
-        The minimum values a user has to select before it can be sent, by default 1
-    max_values : int, optional
-        The maximum values a user can select, by default 1
-    disabled : bool, optional
-        A boolean determining if the select menu should be disabled or not, by default False
-    row : Optional[int], optional
+    channel_types : t.Sequence[int | hikari.ChannelType]
+        A sequence of channel types to filter the select menu by
+    custom_id : str | None
+        The custom identifier of the select menu
+    placeholder : str | None
+        Placeholder text displayed on the select menu
+    min_values : int
+        The minimum values a user has to select before it can be sent
+    max_values : int
+        The maximum values a user can select
+    disabled : bool
+        A boolean determining if the select menu should be disabled or not
+    row : int | None
         The row the select menu should be in, leave as None for auto-placement.
+    autodefer : bool | AutodeferOptions | hikari.UndefinedType
+        The autodefer options for the select menu. If left `UNDEFINED`, the view's autodefer options will be used.
     """
 
     def __init__(
         self,
         *,
         channel_types: t.Sequence[hikari.ChannelType] = (hikari.ChannelType.GUILD_TEXT,),
-        custom_id: t.Optional[str] = None,
-        placeholder: t.Optional[str] = None,
+        custom_id: str | None = None,
+        placeholder: str | None = None,
         min_values: int = 1,
         max_values: int = 1,
         disabled: bool = False,
-        row: t.Optional[int] = None,
+        row: int | None = None,
+        autodefer: bool | AutodeferOptions | hikari.UndefinedType = hikari.UNDEFINED,
     ) -> None:
         super().__init__(
             custom_id=custom_id,
@@ -58,6 +61,7 @@ class ChannelSelect(SelectBase):
             max_values=max_values,
             disabled=disabled,
             row=row,
+            autodefer=autodefer,
         )
         self.channel_types = channel_types
         self._values: t.Sequence[hikari.InteractionChannel] = []
@@ -81,7 +85,7 @@ class ChannelSelect(SelectBase):
         return self._values
 
     @classmethod
-    def _from_component(cls, component: hikari.PartialComponent, row: t.Optional[int] = None) -> ChannelSelect:
+    def _from_component(cls, component: hikari.PartialComponent, row: int | None = None) -> te.Self:
         assert isinstance(component, hikari.ChannelSelectMenuComponent)
 
         # Filter out unrecognized channel types
@@ -107,7 +111,7 @@ class ChannelSelect(SelectBase):
             channel_types=self.channel_types,
         )
 
-    async def _refresh_state(self, context: Context[t.Any]) -> None:
+    async def _refresh_state(self, context: ViewContext) -> None:
         hikari.ComponentInteraction
         if context.interaction.resolved is None:
             self._values = ()
@@ -118,55 +122,56 @@ class ChannelSelect(SelectBase):
 def channel_select(
     *,
     channel_types: t.Sequence[hikari.ChannelType] = (hikari.ChannelType.GUILD_TEXT,),
-    custom_id: t.Optional[str] = None,
-    placeholder: t.Optional[str] = None,
+    custom_id: str | None = None,
+    placeholder: str | None = None,
     min_values: int = 1,
     max_values: int = 1,
     disabled: bool = False,
-    row: t.Optional[int] = None,
+    row: int | None = None,
+    autodefer: bool | AutodeferOptions | hikari.UndefinedType = hikari.UNDEFINED,
 ) -> t.Callable[
-    [t.Callable[[ViewT, ChannelSelect, ViewContextT], t.Awaitable[None]]],
-    DecoratedItem[ViewT, ChannelSelect, ViewContextT],
+    [t.Callable[[ViewT, ViewContext, ChannelSelect], t.Awaitable[None]]], DecoratedItem[ViewT, ChannelSelect]
 ]:
     """A decorator to transform a function into a Discord UI ChannelSelectMenu's callback.
     This must be inside a subclass of View.
 
     Parameters
     ----------
-    channel_types : Sequence[Union[int, hikari.ChannelType]], optional
-        A sequence of channel types to filter the select menu by. Defaults to (hikari.ChannelType.GUILD_TEXT,).
-    custom_id : Optional[str], optional
-        The custom ID of the select menu. Defaults to None.
-    placeholder: Optional[str], optional
-        The placeholder to display when nothing is selected. Defaults to None.
-    min_values : int, optional
-        The minimum number of values that can be selected. Defaults to 1.
-    max_values : int, optional
-        The maximum number of values that can be selected. Defaults to 1.
-    disabled : bool, optional
-        Whether the select menu is disabled. Defaults to False.
-    row : Optional[int], optional
+    channel_types : t.Sequence[int | hikari.ChannelType]
+        A sequence of channel types to filter the select menu by.
+    custom_id : str | None
+        The custom ID of the select menu
+    placeholder: str | None
+        The placeholder to display when nothing is selected
+    min_values : int
+        The minimum number of values that can be selected
+    max_values : int
+        The maximum number of values that can be selected
+    disabled : bool
+        Whether the select menu is disabled
+    row : int | None
         The row the select should be in, leave as None for auto-placement.
+    autodefer : bool | AutodeferOptions | hikari.UndefinedType
+        The autodefer options for the select menu. If left `UNDEFINED`, the view's autodefer options will be used.
 
     Returns
     -------
-    Callable[[Callable[[ViewT, ChannelSelect, ViewContextT], Awaitable[None]]], DecoratedItem[ViewT, ChannelSelect, ViewContextT]]
+    t.Callable[[Callable[[ViewT, ViewContext, ChannelSelect], Awaitable[None]]], DecoratedItem[ViewT, ChannelSelect]]
         The decorated function.
 
     Raises
     ------
     TypeError
         If the decorated function is not a coroutine function.
-
     """
 
     def decorator(
-        func: t.Callable[[ViewT, ChannelSelect, ViewContextT], t.Awaitable[None]],
-    ) -> DecoratedItem[ViewT, ChannelSelect, ViewContextT]:
+        func: t.Callable[[ViewT, ViewContext, ChannelSelect], t.Awaitable[None]],
+    ) -> DecoratedItem[ViewT, ChannelSelect]:
         if not inspect.iscoroutinefunction(func):
-            raise TypeError("channel_select must decorate coroutine function.")
+            raise TypeError("'@channel_select' must decorate coroutine function.")
 
-        item = ChannelSelect(
+        item: ChannelSelect = ChannelSelect(
             channel_types=channel_types,
             custom_id=custom_id,
             placeholder=placeholder,
@@ -174,7 +179,9 @@ def channel_select(
             max_values=max_values,
             disabled=disabled,
             row=row,
+            autodefer=autodefer,
         )
+
         return DecoratedItem(item, func)
 
     return decorator

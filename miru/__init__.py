@@ -1,26 +1,28 @@
 """A component handler for hikari, with support for modals and views.
 
-To get started, you will want to call `miru.install` with an instance of your bot.
-
 GitHub:
 https://github.com/hypergonial/hikari-miru
 
 Documentation:
-https://hikari-miru.readthedocs.io/
+https://miru.hypergonial.com
 """
 
-from .bootstrap import install, uninstall
-from .button import Button, button
-from .context import Context, InteractionResponse, ModalContext, RawComponentContext, RawModalContext, ViewContext
-from .events import ComponentInteractionCreateEvent, Event, ModalInteractionCreateEvent
-from .exceptions import BootstrapFailureError, HandlerFullError, ItemAlreadyAttachedError, MiruException, RowFullError
-from .internal.about import __author__, __author_email__, __license__, __maintainer__, __url__, __version__
-from .modal import Modal
-from .select import (
+from alluka import Client as Injector
+from alluka import inject
+
+from miru import abc, ext, select
+from miru.abc.context import InteractionResponse
+from miru.button import Button, LinkButton, button
+from miru.client import Client
+from miru.context import AutodeferMode, AutodeferOptions, ModalContext, ViewContext
+from miru.exceptions import HandlerFullError, ItemAlreadyAttachedError, MiruError, RowFullError
+from miru.internal.about import __author__, __author_email__, __license__, __maintainer__, __url__, __version__
+from miru.modal import Modal
+from miru.response import DeferredResponseBuilder, MessageBuilder, ModalBuilder
+from miru.select import (
     ChannelSelect,
     MentionableSelect,
     RoleSelect,
-    SelectBase,
     SelectOption,
     TextSelect,
     UserSelect,
@@ -30,33 +32,30 @@ from .select import (
     text_select,
     user_select,
 )
-from .text_input import TextInput
-from .traits import MiruAware
-from .view import View, get_view
+from miru.text_input import TextInput
+from miru.view import View
 
 __all__ = (
-    "Context",
+    "Injector",
+    "inject",
+    "abc",
+    "ext",
+    "select",
+    "Client",
     "InteractionResponse",
     "ModalContext",
-    "RawComponentContext",
+    "View",
     "ViewContext",
     "ModalContext",
-    "RawModalContext",
-    "install",
-    "uninstall",
     "Button",
+    "LinkButton",
     "button",
-    "Event",
-    "ComponentInteractionCreateEvent",
-    "ModalInteractionCreateEvent",
-    "MiruException",
-    "BootstrapFailureError",
+    "MiruError",
     "RowFullError",
     "HandlerFullError",
     "ItemAlreadyAttachedError",
     "Modal",
     "SelectOption",
-    "SelectBase",
     "TextSelect",
     "text_select",
     "ChannelSelect",
@@ -68,9 +67,11 @@ __all__ = (
     "MentionableSelect",
     "mentionable_select",
     "TextInput",
-    "MiruAware",
-    "View",
-    "get_view",
+    "MessageBuilder",
+    "ModalBuilder",
+    "DeferredResponseBuilder",
+    "AutodeferMode",
+    "AutodeferOptions",
     "__version__",
     "__author__",
     "__author_email__",

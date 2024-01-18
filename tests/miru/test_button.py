@@ -4,13 +4,7 @@ import pytest
 import miru
 
 bot = hikari.GatewayBot("amongus")
-miru.install(bot)
-
-
-def test_custom_id_and_url() -> None:
-    """Test that both custom_id and url cannot be provided."""
-    with pytest.raises(TypeError):
-        miru.Button(custom_id="test", url="https://google.com")
+client = miru.Client(bot)
 
 
 def test_label_and_emoji() -> None:
@@ -22,7 +16,7 @@ def test_label_and_emoji() -> None:
 
 def test_url_style_override() -> None:
     """Test that url style is overridden."""
-    button = miru.Button(url="https://google.com")
+    button = miru.LinkButton("https://google.com")
     assert button.style == hikari.ButtonStyle.LINK
 
 
@@ -76,7 +70,27 @@ def test_from_hikari() -> None:
     assert button.custom_id == "test"
     assert button.style == hikari.ButtonStyle.PRIMARY
     assert button.disabled is True
-    assert button.url is None
+
+
+def test_url_from_hikari() -> None:
+    """Test that the button is built correctly from a hikari component."""
+    button = miru.LinkButton._from_component(
+        hikari.ButtonComponent(
+            type=hikari.ComponentType.BUTTON,
+            style=hikari.ButtonStyle.LINK,
+            is_disabled=True,
+            label="test",
+            url="https://google.com",
+            emoji=None,
+            custom_id=None,
+        )
+    )
+
+    assert button.label == "test"
+    assert button.url == "https://google.com"
+    assert button.style == hikari.ButtonStyle.LINK
+    assert button.disabled is True
+    assert button.emoji is None
 
 
 def test_button_label_length() -> None:

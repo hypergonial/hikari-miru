@@ -1,4 +1,3 @@
-from .base import *
 from .channel import *
 from .mentionable import *
 from .role import *
@@ -6,7 +5,6 @@ from .text import *
 from .user import *
 
 __all__ = (
-    "SelectBase",
     "UserSelect",
     "RoleSelect",
     "ChannelSelect",

@@ -1,4 +1,5 @@
 import hikari
+
 import miru
 from miru.ext import menu
 
@@ -18,42 +19,40 @@ class MainScreen(menu.Screen):
                 title="Welcome to the Miru Menu example!",
                 description="This is an example of the Miru Menu extension.",
                 color=0x00FF00,
-            ),
+            )
         )
 
     # Note: You should always use @menu decorators inside Screen subclasses, NOT @miru
     @menu.button(label="Moderation")
-    async def moderation(self, button: menu.ScreenButton, ctx: miru.Context) -> None:
+    async def moderation(self, ctx: miru.ViewContext, button: menu.ScreenButton) -> None:
         # Add a new screen to the menu stack, the message is updated automatically
         await self.menu.push(ModerationScreen(self.menu))
 
     @menu.button(label="Logging")
-    async def logging(self, button: menu.ScreenButton, ctx: miru.Context) -> None:
+    async def logging(self, ctx: miru.ViewContext, button: menu.ScreenButton) -> None:
         await self.menu.push(LoggingScreen(self.menu))
+
 
 class ModerationScreen(menu.Screen):
     async def build_content(self) -> menu.ScreenContent:
         return menu.ScreenContent(
-            embed=hikari.Embed(
-                title="Moderation",
-                description="This is the moderation screen!",
-                color=0x00FF00,
-            ),
+            embed=hikari.Embed(title="Moderation", description="This is the moderation screen!", color=0x00FF00)
         )
 
     @menu.button(label="Back")
-    async def back(self, button: menu.ScreenButton, ctx: miru.Context) -> None:
+    async def back(self, ctx: miru.ViewContext, button: menu.ScreenButton) -> None:
         # Remove the current screen from the menu stack,
         # effectively going back to the previous screen
         await self.menu.pop()
 
     @menu.button(label="Ban", style=hikari.ButtonStyle.DANGER)
-    async def ban(self, button: menu.ScreenButton, ctx: miru.Context) -> None:
+    async def ban(self, ctx: miru.ViewContext, button: menu.ScreenButton) -> None:
         await ctx.respond("Hammer time!")
 
     @menu.button(label="Kick", style=hikari.ButtonStyle.SECONDARY)
-    async def kick(self, button: menu.ScreenButton, ctx: miru.Context) -> None:
+    async def kick(self, ctx: miru.ViewContext, button: menu.ScreenButton) -> None:
         await ctx.respond("Kick!")
+
 
 class LoggingScreen(menu.Screen):
     def __init__(self, menu: menu.Menu) -> None:
@@ -65,33 +64,28 @@ class LoggingScreen(menu.Screen):
 
     async def build_content(self) -> menu.ScreenContent:
         return menu.ScreenContent(
-            embed=hikari.Embed(
-                title="Logging",
-                description="This is the logging screen!",
-                color=0x00FF00,
-            ),
+            embed=hikari.Embed(title="Logging", description="This is the logging screen!", color=0x00FF00)
         )
 
-
     @menu.button(label="Back")
-    async def back(self, button: menu.ScreenButton, ctx: miru.ViewContext) -> None:
+    async def back(self, ctx: miru.ViewContext, button: menu.ScreenButton) -> None:
         await self.menu.pop()
 
     @menu.button(label="Enable", style=hikari.ButtonStyle.DANGER)
-    async def enable(self, button: menu.ScreenButton, ctx: miru.ViewContext) -> None:
+    async def enable(self, ctx: miru.ViewContext, button: menu.ScreenButton) -> None:
         self.is_enabled = not self.is_enabled
         button.style = hikari.ButtonStyle.SUCCESS if self.is_enabled else hikari.ButtonStyle.DANGER
         button.label = "Disable" if self.is_enabled else "Enable"
         # Update the message the menu is attached to with the new state of components.
         await self.menu.update_message()
 
+
 bot = hikari.GatewayBot("...")
-miru.install(bot)  # Start miru
+client = miru.Client(bot)
 
 
 @bot.listen()
 async def buttons(event: hikari.GuildMessageCreateEvent) -> None:
-
     # Do not process messages from bots or webhooks
     if not event.is_human:
         return
@@ -101,10 +95,11 @@ async def buttons(event: hikari.GuildMessageCreateEvent) -> None:
     # If the bot is mentioned
     if me.id in event.message.user_mentions_ids:
         my_menu = menu.Menu()  # Create a new Menu
-
+        builder = await my_menu.build_response_async(client, MainScreen(my_menu))
+        await builder.send_to_channel(event.channel_id)
+        client.start_view(my_menu)
         # Note: You can also send the menu to an interaction or miru context
         # See the documentation of Menu.send() for more information
-        await my_menu.send(MainScreen(my_menu), event.channel_id)
 
 
 bot.run()

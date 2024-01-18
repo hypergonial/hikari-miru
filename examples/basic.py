@@ -1,42 +1,36 @@
 import hikari
+
 import miru
 
 # This is a basic example demonstrating how to create a simple component-based menu.
 # This example uses decorators to create the components, if you want to use variables
 # instead of static values for the component properties, check out the subclassed example.
 
+bot = hikari.GatewayBot("...")
+client = miru.Client(bot)
+
 
 class BasicView(miru.View):
-
     # Define a new TextSelect menu with two options
     @miru.text_select(
-        placeholder="Select me!",
-        options=[
-            miru.SelectOption(label="Option 1"),
-            miru.SelectOption(label="Option 2"),
-        ],
+        placeholder="Select me!", options=[miru.SelectOption(label="Option 1"), miru.SelectOption(label="Option 2")]
     )
-    async def basic_select(self, select: miru.TextSelect, ctx: miru.ViewContext) -> None:
+    async def basic_select(self, ctx: miru.ViewContext, select: miru.TextSelect) -> None:
         await ctx.respond(f"You've chosen {select.values[0]}!")
 
     # Define a new Button with the Style of success (Green)
     @miru.button(label="Click me!", style=hikari.ButtonStyle.SUCCESS)
-    async def basic_button(self, button: miru.Button, ctx: miru.ViewContext) -> None:
+    async def basic_button(self, ctx: miru.ViewContext, button: miru.Button) -> None:
         await ctx.respond("You clicked me!")
 
     # Define a new Button that when pressed will stop the view & invalidate all the buttons in this view
     @miru.button(label="Stop me!", style=hikari.ButtonStyle.DANGER)
-    async def stop_button(self, button: miru.Button, ctx: miru.ViewContext) -> None:
+    async def stop_button(self, ctx: miru.ViewContext, button: miru.Button) -> None:
         self.stop()  # Called to stop the view
-
-
-bot = hikari.GatewayBot("...")
-miru.install(bot)  # Start miru
 
 
 @bot.listen()
 async def buttons(event: hikari.GuildMessageCreateEvent) -> None:
-
     # Do not process messages from bots or webhooks
     if not event.is_human:
         return
@@ -47,13 +41,9 @@ async def buttons(event: hikari.GuildMessageCreateEvent) -> None:
     if me.id in event.message.user_mentions_ids:
         view = BasicView()  # Create an instance of our newly created BasicView
         # Attach the components defined in the view to our message
-        message = await event.message.respond("This is a basic component menu built with miru!", components=view)
+        await event.message.respond("This is a basic component menu built with miru!", components=view)
 
-        await view.start(message)  # Start listening for interactions
-
-        await view.wait()  # Wait until the view is stopped or times out
-
-        print("View stopped or timed out!")
+        client.start_view(view)  # Attach the view to the client and start it
 
 
 bot.run()

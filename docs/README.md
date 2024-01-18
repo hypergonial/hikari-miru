@@ -1,13 +1,13 @@
 # Documentation
 
-This is where you can find the documentation source-code, if you want to view the live version of this documentation, you can do so [here](https://hikari-miru.readthedocs.io/en/latest/).
+This is where you can find the documentation source-code, if you want to view the live version of this documentation, you can do so [here](https://miru.hypergonial.com).
 
 ## Building
 
-If you'd like to build the documentation locally yourself, simply run the nox pipeline:
+If you'd like to view the documentation locally yourself, simply run the nox session:
 
 ```sh
-nox -s sphinx
+nox -s servedocs
 ```
 
-The built documentation will be located in `docs/build`.
+Then open the URL provided to you in the terminal in your preferred browser.

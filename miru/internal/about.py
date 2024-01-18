@@ -5,7 +5,7 @@ __author_email__: t.Final[str] = "46067571+hypergonial@users.noreply.github.com"
 __maintainer__: t.Final[str] = "hypergonial"
 __license__: t.Final[str] = "MIT"
 __url__: t.Final[str] = "https://github.com/hypergonial/hikari-miru"
-__version__: t.Final[str] = "3.4.0"
+__version__: t.Final[str] = "4.0.0"
 
 # MIT License
 #

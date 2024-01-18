@@ -4,14 +4,11 @@ import typing as t
 
 import hikari
 
+from miru.abc.item import ModalItem
 from miru.context.modal import ModalContext
 
-from .abc.item import ModalItem
-
 if t.TYPE_CHECKING:
-    from miru.context.base import Context
-
-    from .modal import Modal
+    from miru.modal import Modal
 
 ModalT = t.TypeVar("ModalT", bound="Modal")
 
@@ -25,22 +22,22 @@ class TextInput(ModalItem):
     ----------
     label : str
         The label above the text input field.
-    style : hikari.TextInputStyle, optional
-        The style of the text input, by default hikari.TextInputStyle.SHORT
-    placeholder : Optional[str], optional
-        Placeholder content in the text input, by default None
-    value : Optional[str], optional
-        Pre-filled content of the input field, by default None
-    required : bool, optional
-        If the text input is required for modal submission, by default False
-    min_length : Optional[int], optional
-        The minimum required input length of the text input, by default None
-    max_length : Optional[int], optional
-        The maximum allowed input length of the text input, by default None
-    custom_id : Optional[str], optional
-        The custom identifier of the text input, by default None
-    row : Optional[int], optional
-        The row of the text input, by default None
+    style : hikari.TextInputStyle
+        The style of the text input
+    placeholder : Optional[str]
+        Placeholder content in the text input
+    value : Optional[str]
+        Pre-filled content of the input field
+    required : bool
+        If the text input is required for modal submission
+    min_length : Optional[int]
+        The minimum required input length of the text input
+    max_length : Optional[int]
+        The maximum allowed input length of the text input
+    custom_id : Optional[str]
+        The custom identifier of the text input
+    row : Optional[int]
+        The row of the text input
     """
 
     def __init__(
@@ -48,16 +45,16 @@ class TextInput(ModalItem):
         *,
         label: str,
         style: hikari.TextInputStyle = hikari.TextInputStyle.SHORT,
-        placeholder: t.Optional[str] = None,
-        value: t.Optional[str] = None,
+        placeholder: str | None = None,
+        value: str | None = None,
         required: bool = False,
-        min_length: t.Optional[int] = None,
-        max_length: t.Optional[int] = None,
-        custom_id: t.Optional[str] = None,
-        row: t.Optional[int] = None,
+        min_length: int | None = None,
+        max_length: int | None = None,
+        custom_id: str | None = None,
+        row: int | None = None,
     ) -> None:
         super().__init__(custom_id=custom_id, row=row, position=0, width=5, required=required)
-        self._value: t.Optional[str] = str(value) if value else None
+        self._value: str | None = str(value) if value else None
         self.style = style
         self.placeholder = placeholder
         self.label = label
@@ -75,9 +72,6 @@ class TextInput(ModalItem):
 
     @style.setter
     def style(self, value: hikari.TextInputStyle) -> None:
-        if not isinstance(value, hikari.TextInputStyle):
-            raise TypeError("Expected type hikari.TextInputStyle or int for property style.")
-
         self._style = value
 
     @property
@@ -92,25 +86,25 @@ class TextInput(ModalItem):
         self._label = str(value)
 
     @property
-    def placeholder(self) -> t.Optional[str]:
+    def placeholder(self) -> str | None:
         """Placeholder content for this text input field."""
         return self._placeholder
 
     @placeholder.setter
-    def placeholder(self, value: t.Optional[str]) -> None:
+    def placeholder(self, value: str | None) -> None:
         if value is not None and len(value) > 100:
             raise ValueError(f"Parameter 'placeholder' must be 100 or fewer in length. (Found length {len(value)})")
         self._placeholder = str(value) if value else None
 
     @property
-    def value(self) -> t.Optional[str]:
+    def value(self) -> str | None:
         """Pre-filled content that should be included in the text input.
         After sending the modal, this field will be updated to the user's input.
         """
         return self._value
 
     @value.setter
-    def value(self, value: t.Optional[str]) -> None:
+    def value(self, value: str | None) -> None:
         if value:
             if self.min_length is not None and self.min_length > len(value):
                 raise ValueError("Parameter 'value' does not meet minimum length requirement.")
@@ -121,27 +115,23 @@ class TextInput(ModalItem):
         self._value = str(value) if value else None
 
     @property
-    def min_length(self) -> t.Optional[int]:
+    def min_length(self) -> int | None:
         """What the required minimum length of the input text should be."""
         return self._min_length
 
     @min_length.setter
-    def min_length(self, value: t.Optional[int]) -> None:
-        if value and not isinstance(value, int):
-            raise TypeError("Expected type int for property min_length.")
+    def min_length(self, value: int | None) -> None:
         if self.value and value is not None and value > len(self.value):
             raise ValueError("New minimum length constraint does not satisfy pre-filled value.")
         self._min_length = value
 
     @property
-    def max_length(self) -> t.Optional[int]:
+    def max_length(self) -> int | None:
         """What the maximum allowed length of the input text should be."""
         return self._max_length
 
     @max_length.setter
-    def max_length(self, value: t.Optional[int]) -> None:
-        if value and not isinstance(value, int):
-            raise TypeError("Expected type int for property max_length.")
+    def max_length(self, value: int | None) -> None:
         if self.value and value is not None and value < len(self.value):
             raise ValueError("New maximum length constraint does not satisfy pre-filled value.")
         self._max_length = value
@@ -158,7 +148,7 @@ class TextInput(ModalItem):
             max_length=self.max_length or 4000,
         )
 
-    async def _refresh_state(self, context: Context[hikari.ModalInteraction]) -> None:
+    async def _refresh_state(self, context: ModalContext) -> None:
         assert isinstance(context, ModalContext)
         self._value = context.values.get(self)
 

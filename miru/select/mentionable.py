@@ -5,16 +5,16 @@ import typing as t
 
 import hikari
 
-from ..abc.item import DecoratedItem
-from .base import SelectBase
+from miru.abc.item import DecoratedItem
+from miru.abc.select import SelectBase
 
 if t.TYPE_CHECKING:
-    from ..context.base import Context
-    from ..context.view import ViewContext
-    from ..view import View
+    import typing_extensions as te
+
+    from miru.context.view import AutodeferOptions, ViewContext
+    from miru.view import View
 
     ViewT = t.TypeVar("ViewT", bound="View")
-    ViewContextT = t.TypeVar("ViewContextT", bound=ViewContext)
 
 __all__ = ("MentionableSelect", "mentionable_select")
 
@@ -24,29 +24,32 @@ class MentionableSelect(SelectBase):
 
     Parameters
     ----------
-    custom_id : Optional[str], optional
-        The custom identifier of the select menu, by default None
-    placeholder : Optional[str], optional
-        Placeholder text displayed on the select menu, by default None
-    min_values : int, optional
-        The minimum values a user has to select before it can be sent, by default 1
-    max_values : int, optional
-        The maximum values a user can select, by default 1
-    disabled : bool, optional
-        A boolean determining if the select menu should be disabled or not, by default False
-    row : Optional[int], optional
+    custom_id : str | None
+        The custom identifier of the select menu
+    placeholder : str | None
+        Placeholder text displayed on the select menu
+    min_values : int
+        The minimum values a user has to select before it can be sent
+    max_values : int
+        The maximum values a user can select
+    disabled : bool
+        A boolean determining if the select menu should be disabled or not
+    row : int | None
         The row the select menu should be in, leave as None for auto-placement.
+    autodefer : bool | AutodeferOptions | hikari.UndefinedType
+        The autodefer options for the select menu. If left `UNDEFINED`, the view's autodefer options will be used.
     """
 
     def __init__(
         self,
         *,
-        custom_id: t.Optional[str] = None,
-        placeholder: t.Optional[str] = None,
+        custom_id: str | None = None,
+        placeholder: str | None = None,
         min_values: int = 1,
         max_values: int = 1,
         disabled: bool = False,
-        row: t.Optional[int] = None,
+        row: int | None = None,
+        autodefer: bool | AutodeferOptions | hikari.UndefinedType = hikari.UNDEFINED,
     ) -> None:
         super().__init__(
             custom_id=custom_id,
@@ -55,6 +58,7 @@ class MentionableSelect(SelectBase):
             max_values=max_values,
             disabled=disabled,
             row=row,
+            autodefer=autodefer,
         )
         self._values = hikari.ResolvedOptionData(
             attachments={}, channels={}, messages={}, members={}, roles={}, users={}
@@ -65,7 +69,7 @@ class MentionableSelect(SelectBase):
         return hikari.ComponentType.MENTIONABLE_SELECT_MENU
 
     @property
-    def values(self) -> t.Optional[hikari.ResolvedOptionData]:
+    def values(self) -> hikari.ResolvedOptionData | None:
         """The currently selected mentionable objects.
 
         This is returned as a `hikari.ResolvedOptionData` object.
@@ -79,7 +83,7 @@ class MentionableSelect(SelectBase):
         return self._values
 
     @classmethod
-    def _from_component(cls, component: hikari.PartialComponent, row: t.Optional[int] = None) -> MentionableSelect:
+    def _from_component(cls, component: hikari.PartialComponent, row: int | None = None) -> te.Self:
         assert (
             isinstance(component, hikari.ChannelSelectMenuComponent)
             and component.type == hikari.ComponentType.MENTIONABLE_SELECT_MENU
@@ -104,43 +108,45 @@ class MentionableSelect(SelectBase):
             is_disabled=self.disabled,
         )
 
-    async def _refresh_state(self, context: Context[t.Any]) -> None:
+    async def _refresh_state(self, context: ViewContext) -> None:
         self._values = context.interaction.resolved
 
 
 def mentionable_select(
     *,
-    custom_id: t.Optional[str] = None,
-    placeholder: t.Optional[str] = None,
+    custom_id: str | None = None,
+    placeholder: str | None = None,
     min_values: int = 1,
     max_values: int = 1,
     disabled: bool = False,
-    row: t.Optional[int] = None,
+    row: int | None = None,
+    autodefer: bool | AutodeferOptions | hikari.UndefinedType = hikari.UNDEFINED,
 ) -> t.Callable[
-    [t.Callable[[ViewT, MentionableSelect, ViewContextT], t.Awaitable[None]]],
-    DecoratedItem[ViewT, MentionableSelect, ViewContextT],
+    [t.Callable[[ViewT, ViewContext, MentionableSelect], t.Awaitable[None]]], DecoratedItem[ViewT, MentionableSelect]
 ]:
     """A decorator to transform a function into a Discord UI MentionableSelectMenu's callback.
     This must be inside a subclass of View.
 
     Parameters
     ----------
-    custom_id : Optional[str], optional
-        The custom ID of the select menu, by default None
-    placeholder : Optional[str], optional
-        Placeholder text displayed on the select menu, by default None
-    min_values : int, optional
-        The minimum number of values that can be selected. Defaults to 1.
-    max_values : int, optional
-        The maximum number of values that can be selected. Defaults to 1.
-    disabled : bool, optional
-        Whether the select menu is disabled. Defaults to False.
-    row : Optional[int], optional
+    custom_id : str | None
+        The custom ID of the select menu
+    placeholder : str | None
+        Placeholder text displayed on the select menu
+    min_values : int
+        The minimum number of values that can be selected.
+    max_values : int
+        The maximum number of values that can be selected.
+    disabled : bool
+        Whether the select menu is disabled.
+    row : int | None
         The row the select should be in, leave as None for auto-placement.
+    autodefer : bool | AutodeferOptions | hikari.UndefinedType
+        The autodefer options for the select menu. If left `UNDEFINED`, the view's autodefer options will be used.
 
     Returns
     -------
-    Callable[[Callable[[ViewT, MentionableSelect, ViewContextT], Awaitable[None]]], DecoratedItem[ViewT, MentionableSelect, ViewContextT]]
+    Callable[[Callable[[ViewT, ViewContext, MentionableSelect], Awaitable[None]]], DecoratedItem[ViewT, MentionableSelect]]
         The decorated function.
 
     Raises
@@ -150,18 +156,19 @@ def mentionable_select(
     """
 
     def decorator(
-        func: t.Callable[[ViewT, MentionableSelect, ViewContextT], t.Awaitable[None]],
-    ) -> DecoratedItem[ViewT, MentionableSelect, ViewContextT]:
+        func: t.Callable[[ViewT, ViewContext, MentionableSelect], t.Awaitable[None]],
+    ) -> DecoratedItem[ViewT, MentionableSelect]:
         if not inspect.iscoroutinefunction(func):
             raise TypeError("mentionable_select must decorate coroutine function.")
 
-        item = MentionableSelect(
+        item: MentionableSelect = MentionableSelect(
             custom_id=custom_id,
             placeholder=placeholder,
             min_values=min_values,
             max_values=max_values,
             disabled=disabled,
             row=row,
+            autodefer=autodefer,
         )
         return DecoratedItem(item, func)
 
