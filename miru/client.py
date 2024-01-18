@@ -741,6 +741,8 @@ class Client:
     ) -> t.Callable[P, T] | t.Callable[[t.Callable[P, T]], t.Callable[P, T]]:
         """Decorator to inject dependencies into the decorated function.
 
+        This should be the first (the one at the bottom) decorator of the given function.
+
         Examples
         --------
         ```py
