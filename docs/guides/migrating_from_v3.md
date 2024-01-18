@@ -13,9 +13,14 @@ With the release of miru version 4.0 comes a number of large feature releases, n
 
 This guide tries to help you migrate an existing application using miru v3 to v4, and explore some of the changes you need to make.
 
+!!! warning
+    `miru` v4 bumps the minimum required Python version to **3.10** or higher. If this is unsuitable for your usecase, you should continue using v3.
+
 ## Client
 
-`miru.install()` has been removed in v4, in an effort to stop relying on global state. Instead, you need to create [`Client`][miru.client.Client], and pass your bot to it:
+`miru.install()` has been removed in v4, in an effort to stop relying on global state.
+
+Instead, you need to create [`Client`][miru.client.Client], and pass your bot to it:
 
 === "v4"
 
@@ -101,7 +106,7 @@ Therefore, this responsibility is now in the hands of the user. This *does* add 
     await modal.send(interaction)
     ```
 
-For more information on how to use these builders with each of the major command handler frameworks, please see the updated [modal](./modals.md) guide.
+For more information on how to use these builders with each of the major **command handler** frameworks, please see the updated [modal](./modals.md) guide.
 
 ## Sending navigators & menus
 
@@ -159,11 +164,13 @@ Similarly to modals, menus & navigators are also now turned into builders. Howev
         await my_menu.send(channel_id | interaction)
         ```
 
-For more information on how to use these builders with each of the major command handler frameworks, please see the updated [menu](./menus.md) and [navigator](./navigators.md) guides.
+For more information on how to use these builders with each of the major **command handler** frameworks, please see the updated [menu](./menus.md) and [navigator](./navigators.md) guides.
 
 ## Link buttons
 
-Link buttons have been seperated out of `miru.Button` and received their own class: `miru.LinkButton`. For your existing link buttons, it should be as simple as updating the class:
+Link buttons have been seperated out of `miru.Button` and received their own class: `miru.LinkButton`.
+
+For your existing link buttons, it should be as simple as updating the class:
 
 === "v4"
 
