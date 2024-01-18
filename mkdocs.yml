@@ -63,6 +63,7 @@ nav:
     - Getting Started: getting_started.md
     - Guides:
         - guides/index.md
+        - guides/client_state.md
         - guides/editing_items.md
         - guides/selects.md
         - guides/checks_timeout.md

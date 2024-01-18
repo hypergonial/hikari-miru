@@ -40,7 +40,7 @@ class ErrorView(miru.View):
     async def on_error(
         self,
         error: Exception,
-        item: miru.ViewItem | None = None,
+        item: miru.abc.ViewItem | None = None,
         ctx: miru.ViewContext | None = None
     ) -> None:
         # ctx is only passed if the error is raised in an item callback
