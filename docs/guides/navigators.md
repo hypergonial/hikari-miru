@@ -429,7 +429,7 @@ turning it into a builder, and sending it to a channel or interaction.
 ## Customizing Navigation Buttons
 
 If you would like to customize the items used by the navigator, you can pass buttons & selects via the `items=` keyword-only
-argument. This should be a sequence of [`NavItem`][miru.ext.nav.items.NavItem].
+argument. This should be a sequence of [`NavItem`][miru.ext.nav.items.NavItem] (for a full list, see [here](../api_reference/ext_nav/items.md)).
 
 There are also some built-in navigation buttons, these are:
 

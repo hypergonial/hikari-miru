@@ -143,7 +143,7 @@ class Modal(
         """
         return super().add_item(item)
 
-    async def modal_check(self, context: ModalContext) -> bool:
+    async def modal_check(self, context: ModalContext, /) -> bool:
         """Called before any callback in the modal is called. Must evaluate to a truthy value to pass.
         Override for custom check logic.
 
@@ -159,7 +159,7 @@ class Modal(
         """
         return True
 
-    async def on_error(self, error: Exception, context: ModalContext | None = None) -> None:
+    async def on_error(self, error: Exception, context: ModalContext | None = None, /) -> None:
         """Called when an error occurs in a callback function.
         Override for custom error-handling logic.
 
@@ -174,7 +174,7 @@ class Modal(
 
         traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
 
-    async def callback(self, context: ModalContext) -> None:
+    async def callback(self, context: ModalContext, /) -> None:
         """Called when the modal is submitted.
 
         Parameters
@@ -183,31 +183,6 @@ class Modal(
             The context that belongs to this interaction callback.
         """
         pass
-
-    def get_context(
-        self,
-        interaction: hikari.ModalInteraction,
-        values: t.Mapping[ModalItem, str],
-        *,
-        cls: type[ModalContext] = ModalContext,
-    ) -> ModalContext:
-        """Get the context for this modal. Override this function to provide a custom context object.
-
-        Parameters
-        ----------
-        interaction : hikari.ModalInteraction
-            The interaction to construct the context from.
-        cls : Optional[Type[ModalContext]]
-            The class to use for the context
-        values : Mapping[ModalItem, str]
-            The values received by this modal, mapped to the items they belong to.
-
-        Returns
-        -------
-        ModalContext
-            The context for this interaction.
-        """
-        return cls(self, self.client, interaction, values)
 
     async def _handle_callback(self, context: ModalContext) -> None:
         """Handle the callback of the modal. Separate task in case the modal is stopped in the callback."""
@@ -232,7 +207,7 @@ class Modal(
 
         self._values = values
 
-        context = self.get_context(interaction, values)
+        context = ModalContext(self, self.client, interaction, values)
         self._last_context = context
 
         passed = await self.modal_check(context)

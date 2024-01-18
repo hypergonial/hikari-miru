@@ -76,7 +76,7 @@ class MessageBuilder(hikari.impl.InteractionMessageBuilder, Mapping[str, t.Any])
         return len(self.to_hikari_kwargs())
 
     async def send_to_channel(self, channel: hikari.SnowflakeishOr[hikari.TextableChannel]) -> hikari.Message:
-        """Send this builder to a channel. This only works with a GatewayClient.
+        """Send this builder to a channel.
 
         Parameters
         ----------
@@ -91,10 +91,10 @@ class MessageBuilder(hikari.impl.InteractionMessageBuilder, Mapping[str, t.Any])
         Raises
         ------
         RuntimeError
-            This method was invoked on a builder that was created by a RESTClient.
+            This method was invoked on a builder that has no client assigned to it.
         """
-        if self._client is None or self._client.is_rest:
-            raise RuntimeError("This method can only be called in a Gateway context.")
+        if self._client is None:
+            raise RuntimeError("No client was assigned to this builder.")
 
         return await self._client.rest.create_message(
             channel=channel,

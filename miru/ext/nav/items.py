@@ -12,7 +12,7 @@ from miru.select import ChannelSelect, MentionableSelect, RoleSelect, TextSelect
 from miru.text_input import TextInput
 
 if t.TYPE_CHECKING:
-    from miru.context import ViewContext
+    from miru.context.view import AutodeferOptions, ViewContext
     from miru.ext.nav.navigator import NavigatorView
 
 __all__ = (
@@ -43,8 +43,11 @@ class NavItem(ViewItem, abc.ABC):
         position: int | None = None,
         disabled: bool = False,
         width: int = 1,
+        autodefer: bool | AutodeferOptions | hikari.UndefinedType = hikari.UNDEFINED,
     ) -> None:
-        super().__init__(custom_id=custom_id, row=row, width=width, position=position, disabled=disabled)
+        super().__init__(
+            custom_id=custom_id, row=row, width=width, position=position, disabled=disabled, autodefer=autodefer
+        )
         self._handler: NavigatorView | None = None  # type: ignore
 
     async def before_page_change(self) -> None:

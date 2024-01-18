@@ -11,6 +11,7 @@ if t.TYPE_CHECKING:
     import typing_extensions as te
 
     from miru.context import ViewContext
+    from miru.context.view import AutodeferOptions
     from miru.view import View
 
     ViewT = t.TypeVar("ViewT", bound="View")
@@ -39,6 +40,8 @@ class Button(ViewItem):
         The row the button should be in, leave as None for auto-placement.
     position : int | None
         The position the button should be in within a row, leave as None for auto-placement.
+    autodefer : bool | AutodeferOptions | hikari.UndefinedType
+        The autodefer options for the button. If left `UNDEFINED`, the view's autodefer options will be used.
 
     Raises
     ------
@@ -59,8 +62,9 @@ class Button(ViewItem):
         emoji: hikari.Emoji | str | None = None,
         row: int | None = None,
         position: int | None = None,
+        autodefer: bool | AutodeferOptions | hikari.UndefinedType = hikari.UNDEFINED,
     ) -> None:
-        super().__init__(custom_id=custom_id, row=row, position=position, disabled=disabled)
+        super().__init__(custom_id=custom_id, row=row, position=position, disabled=disabled, autodefer=autodefer)
         self._emoji: hikari.Emoji | None = hikari.Emoji.parse(emoji) if isinstance(emoji, str) else emoji
         self.label = label
         self.url = self._url = url
@@ -162,6 +166,7 @@ def button(
     emoji: str | hikari.Emoji | None = None,
     row: int | None = None,
     disabled: bool = False,
+    autodefer: bool | AutodeferOptions | hikari.UndefinedType = hikari.UNDEFINED,
 ) -> t.Callable[[t.Callable[[ViewT, ViewContext, Button], t.Awaitable[None]]], DecoratedItem[ViewT, Button]]:
     """A decorator to transform a coroutine function into a Discord UI Button's callback.
     This must be inside a subclass of View.
@@ -180,6 +185,8 @@ def button(
         The row the button should be in, leave as None for auto-placement.
     disabled : bool
         A boolean determining if the button should be disabled or not
+    autodefer : bool | AutodeferOptions | hikari.UndefinedType
+        The autodefer options for the button. If left `UNDEFINED`, the view's autodefer options will be used.
 
     Returns
     -------
@@ -189,9 +196,16 @@ def button(
 
     def decorator(func: t.Callable[[ViewT, ViewContext, Button], t.Awaitable[None]]) -> DecoratedItem[ViewT, Button]:
         if not inspect.iscoroutinefunction(func):
-            raise TypeError("button must decorate coroutine function.")
+            raise TypeError("'@button' must decorate coroutine function.")
         item: Button = Button(
-            label=label, custom_id=custom_id, style=style, emoji=emoji, row=row, disabled=disabled, url=None
+            label=label,
+            custom_id=custom_id,
+            style=style,
+            emoji=emoji,
+            row=row,
+            disabled=disabled,
+            url=None,
+            autodefer=autodefer,
         )
 
         return DecoratedItem(item, func)

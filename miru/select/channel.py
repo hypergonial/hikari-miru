@@ -11,7 +11,7 @@ from miru.abc.select import SelectBase
 if t.TYPE_CHECKING:
     import typing_extensions as te
 
-    from miru.context.view import ViewContext
+    from miru.context.view import AutodeferOptions, ViewContext
     from miru.view import View
 
     ViewT = t.TypeVar("ViewT", bound="View")
@@ -38,6 +38,8 @@ class ChannelSelect(SelectBase):
         A boolean determining if the select menu should be disabled or not
     row : int | None
         The row the select menu should be in, leave as None for auto-placement.
+    autodefer : bool | AutodeferOptions | hikari.UndefinedType
+        The autodefer options for the select menu. If left `UNDEFINED`, the view's autodefer options will be used.
     """
 
     def __init__(
@@ -50,6 +52,7 @@ class ChannelSelect(SelectBase):
         max_values: int = 1,
         disabled: bool = False,
         row: int | None = None,
+        autodefer: bool | AutodeferOptions | hikari.UndefinedType = hikari.UNDEFINED,
     ) -> None:
         super().__init__(
             custom_id=custom_id,
@@ -58,6 +61,7 @@ class ChannelSelect(SelectBase):
             max_values=max_values,
             disabled=disabled,
             row=row,
+            autodefer=autodefer,
         )
         self.channel_types = channel_types
         self._values: t.Sequence[hikari.InteractionChannel] = []
@@ -124,6 +128,7 @@ def channel_select(
     max_values: int = 1,
     disabled: bool = False,
     row: int | None = None,
+    autodefer: bool | AutodeferOptions | hikari.UndefinedType = hikari.UNDEFINED,
 ) -> t.Callable[
     [t.Callable[[ViewT, ViewContext, ChannelSelect], t.Awaitable[None]]], DecoratedItem[ViewT, ChannelSelect]
 ]:
@@ -146,6 +151,8 @@ def channel_select(
         Whether the select menu is disabled
     row : int | None
         The row the select should be in, leave as None for auto-placement.
+    autodefer : bool | AutodeferOptions | hikari.UndefinedType
+        The autodefer options for the select menu. If left `UNDEFINED`, the view's autodefer options will be used.
 
     Returns
     -------
@@ -162,7 +169,7 @@ def channel_select(
         func: t.Callable[[ViewT, ViewContext, ChannelSelect], t.Awaitable[None]],
     ) -> DecoratedItem[ViewT, ChannelSelect]:
         if not inspect.iscoroutinefunction(func):
-            raise TypeError("channel_select must decorate coroutine function.")
+            raise TypeError("'@channel_select' must decorate coroutine function.")
 
         item: ChannelSelect = ChannelSelect(
             channel_types=channel_types,
@@ -172,6 +179,7 @@ def channel_select(
             max_values=max_values,
             disabled=disabled,
             row=row,
+            autodefer=autodefer,
         )
 
         return DecoratedItem(item, func)

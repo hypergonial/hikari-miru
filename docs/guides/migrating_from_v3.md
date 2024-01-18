@@ -73,7 +73,7 @@ Since in v4 everything is tied to the [`Client`][miru.client.Client], views need
     await view.start(msg)
     ```
 
-## Sending modals, navigators
+## Sending modals
 
 `Modal.send()` has been removed.
 

@@ -44,8 +44,11 @@ class ScreenItem(ViewItem, abc.ABC):
         position: int | None = None,
         disabled: bool = False,
         width: int = 1,
+        autodefer: bool | miru.AutodeferOptions | hikari.UndefinedType = hikari.UNDEFINED,
     ) -> None:
-        super().__init__(custom_id=custom_id, row=row, width=width, position=position, disabled=disabled)
+        super().__init__(
+            custom_id=custom_id, row=row, width=width, position=position, disabled=disabled, autodefer=autodefer
+        )
         self._handler: Menu | None = None  # type: ignore
         self._screen: Screen | None = None
 
@@ -146,6 +149,7 @@ def button(
     emoji: str | hikari.Emoji | None = None,
     row: int | None = None,
     disabled: bool = False,
+    autodefer: bool | miru.AutodeferOptions | hikari.UndefinedType = hikari.UNDEFINED,
 ) -> t.Callable[
     [t.Callable[[ScreenT, miru.ViewContext, ScreenButton], t.Awaitable[None]]],
     DecoratedScreenItem[ScreenT, ScreenButton],
@@ -167,6 +171,8 @@ def button(
         The row the button should be in, leave as None for auto-placement.
     disabled : bool
         A boolean determining if the button should be disabled or not
+    autodefer : bool | AutodeferOptions | hikari.UndefinedType
+        The autodefer options for the button. If left `UNDEFINED`, the view's autodefer options will be used.
 
     Returns
     -------
@@ -185,7 +191,14 @@ def button(
         if not inspect.iscoroutinefunction(func):
             raise TypeError("button must decorate coroutine function.")
         item: ScreenButton = ScreenButton(
-            label=label, custom_id=custom_id, style=style, emoji=emoji, row=row, disabled=disabled, url=None
+            label=label,
+            custom_id=custom_id,
+            style=style,
+            emoji=emoji,
+            row=row,
+            disabled=disabled,
+            url=None,
+            autodefer=autodefer,
         )
 
         return DecoratedScreenItem(item, func)
@@ -202,6 +215,7 @@ def channel_select(
     max_values: int = 1,
     disabled: bool = False,
     row: int | None = None,
+    autodefer: bool | miru.AutodeferOptions | hikari.UndefinedType = hikari.UNDEFINED,
 ) -> t.Callable[
     [t.Callable[[ScreenT, miru.ViewContext, ScreenChannelSelect], t.Awaitable[None]]],
     DecoratedScreenItem[ScreenT, ScreenChannelSelect],
@@ -225,6 +239,8 @@ def channel_select(
         Whether the channel select menu is disabled or not. Defaults to False.
     row : Optional[int]
         The row the select should be in, leave as None for auto-placement.
+    autodefer : bool | AutodeferOptions | hikari.UndefinedType
+        The autodefer options for the select menu. If left `UNDEFINED`, the view's autodefer options will be used.
 
     Returns
     -------
@@ -251,6 +267,7 @@ def channel_select(
             max_values=max_values,
             disabled=disabled,
             row=row,
+            autodefer=autodefer,
         )
         return DecoratedScreenItem(item, func)
 
@@ -265,6 +282,7 @@ def mentionable_select(
     max_values: int = 1,
     disabled: bool = False,
     row: int | None = None,
+    autodefer: bool | miru.AutodeferOptions | hikari.UndefinedType = hikari.UNDEFINED,
 ) -> t.Callable[
     [t.Callable[[ScreenT, miru.ViewContext, ScreenMentionableSelect], t.Awaitable[None]]],
     DecoratedScreenItem[ScreenT, ScreenMentionableSelect],
@@ -286,6 +304,8 @@ def mentionable_select(
         Whether the mentionable select menu is disabled
     row : Optional[int]
         The row the select should be in, leave as None for auto-placement.
+    autodefer : bool | AutodeferOptions | hikari.UndefinedType
+        The autodefer options for the select menu. If left `UNDEFINED`, the view's autodefer options will be used.
 
     Returns
     -------
@@ -311,6 +331,7 @@ def mentionable_select(
             max_values=max_values,
             disabled=disabled,
             row=row,
+            autodefer=autodefer,
         )
         return DecoratedScreenItem(item, func)
 
@@ -325,6 +346,7 @@ def role_select(
     max_values: int = 1,
     disabled: bool = False,
     row: int | None = None,
+    autodefer: bool | miru.AutodeferOptions | hikari.UndefinedType = hikari.UNDEFINED,
 ) -> t.Callable[
     [t.Callable[[ScreenT, miru.ViewContext, ScreenRoleSelect], t.Awaitable[None]]],
     DecoratedScreenItem[ScreenT, ScreenRoleSelect],
@@ -346,6 +368,8 @@ def role_select(
         Whether the select menu is disabled or not
     row : Optional[int]
         The row number to place the select menu in
+    autodefer : bool | AutodeferOptions | hikari.UndefinedType
+        The autodefer options for the select menu. If left `UNDEFINED`, the view's autodefer options will be used.
 
     Returns
     -------
@@ -371,6 +395,7 @@ def role_select(
             max_values=max_values,
             disabled=disabled,
             row=row,
+            autodefer=autodefer,
         )
         return DecoratedScreenItem(item, func)
 
@@ -386,6 +411,7 @@ def text_select(
     max_values: int = 1,
     disabled: bool = False,
     row: int | None = None,
+    autodefer: bool | miru.AutodeferOptions | hikari.UndefinedType = hikari.UNDEFINED,
 ) -> t.Callable[
     [t.Callable[[ScreenT, miru.ViewContext, ScreenTextSelect], t.Awaitable[None]]],
     DecoratedScreenItem[ScreenT, ScreenTextSelect],
@@ -409,6 +435,8 @@ def text_select(
         Whether the select menu is disabled or not
     row : Optional[int]
         The row number to place the select menu in
+    autodefer : bool | AutodeferOptions | hikari.UndefinedType
+        The autodefer options for the select menu. If left `UNDEFINED`, the view's autodefer options will be used.
 
     Returns
     -------
@@ -430,6 +458,7 @@ def text_select(
             max_values=max_values,
             disabled=disabled,
             row=row,
+            autodefer=autodefer,
         )
         return DecoratedScreenItem(item, func)
 
@@ -444,6 +473,7 @@ def user_select(
     max_values: int = 1,
     disabled: bool = False,
     row: int | None = None,
+    autodefer: bool | miru.AutodeferOptions | hikari.UndefinedType = hikari.UNDEFINED,
 ) -> t.Callable[
     [t.Callable[[ScreenT, miru.ViewContext, ScreenUserSelect], t.Awaitable[None]]],
     DecoratedScreenItem[ScreenT, ScreenUserSelect],
@@ -465,6 +495,8 @@ def user_select(
         Whether the select menu is disabled or not
     row : Optional[int]
         The row number to place the select menu in
+    autodefer : bool | AutodeferOptions | hikari.UndefinedType
+        The autodefer options for the select menu. If left `UNDEFINED`, the view's autodefer options will be used.
 
     Returns
     -------
@@ -485,6 +517,7 @@ def user_select(
             max_values=max_values,
             disabled=disabled,
             row=row,
+            autodefer=autodefer,
         )
         return DecoratedScreenItem(item, func)
 

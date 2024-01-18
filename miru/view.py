@@ -248,7 +248,7 @@ class View(
         self._refresh_client_customid_list()
         return self
 
-    async def view_check(self, context: ViewContext) -> bool:
+    async def view_check(self, context: ViewContext, /) -> bool:
         """Called before any callback in the view is called. Must evaluate to a truthy value to pass.
         Override for custom check logic.
 
@@ -265,7 +265,7 @@ class View(
         return True
 
     async def on_error(
-        self, error: Exception, item: ViewItem | None = None, context: ViewContext | None = None
+        self, error: Exception, item: ViewItem | None = None, context: ViewContext | None = None, /
     ) -> None:
         """Called when an error occurs in a callback function or the built-in timeout function.
         Override for custom error-handling logic.
@@ -286,25 +286,6 @@ class View(
 
         traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
 
-    def get_context(
-        self, interaction: hikari.ComponentInteraction, *, cls: type[ViewContext] = ViewContext
-    ) -> ViewContext:
-        """Get the context for this view. Override this function to provide a custom context object.
-
-        Parameters
-        ----------
-        interaction : hikari.ComponentInteraction
-            The interaction to construct the context from.
-        cls : Type[ViewContext]
-            The class to use for the context
-
-        Returns
-        -------
-        ViewContext
-            The context for this interaction.
-        """
-        return cls(self, self.client, interaction)
-
     async def _handle_callback(self, item: ViewItem, context: ViewContext) -> None:
         """Handle the callback of a view item. Separate task in case the view is stopped in the callback."""
         try:
@@ -316,7 +297,9 @@ class View(
 
             await item._refresh_state(context)
 
-            if self.autodefer.mode.should_autodefer:
+            autodefer = item.autodefer if item.autodefer is not hikari.UNDEFINED else self.autodefer
+
+            if autodefer.mode.should_autodefer:
                 context._start_autodefer(self.autodefer)
 
             await item.callback(context)
@@ -334,7 +317,7 @@ class View(
 
         self._reset_timeout()
 
-        context = self.get_context(interaction)
+        context = ViewContext(self, self.client, interaction)
         self._last_context = context
 
         passed = await self.view_check(context)
@@ -343,7 +326,6 @@ class View(
                 return context._resp_builder
             return
 
-        assert isinstance(item, ViewItem)
         # Create task here to ensure autodefer works even if callback stops view
         self._create_task(self._handle_callback(item, context))
 

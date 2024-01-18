@@ -3,12 +3,14 @@ from __future__ import annotations
 import abc
 import typing as t
 
+import hikari
+
 from miru.abc.item import ViewItem
 
 if t.TYPE_CHECKING:
-    import hikari
     import typing_extensions as te
 
+    from miru.context.view import AutodeferOptions
     from miru.view import View
 
     ViewT = t.TypeVar("ViewT", bound="View")
@@ -29,6 +31,8 @@ class SelectBase(ViewItem, abc.ABC):
         A boolean determining if the select menu should be disabled or not
     row : int | None
         The row the select menu should be in, leave as None for auto-placement.
+    autodefer : bool | AutodeferOptions | hikari.UndefinedType
+        The autodefer options for the select menu. If left `UNDEFINED`, the view's autodefer options will be used.
 
     Raises
     ------
@@ -45,8 +49,9 @@ class SelectBase(ViewItem, abc.ABC):
         max_values: int = 1,
         disabled: bool = False,
         row: int | None = None,
+        autodefer: bool | AutodeferOptions | hikari.UndefinedType = hikari.UNDEFINED,
     ) -> None:
-        super().__init__(custom_id=custom_id, row=row, position=0, width=5, disabled=disabled)
+        super().__init__(custom_id=custom_id, row=row, position=0, width=5, disabled=disabled, autodefer=autodefer)
         self.placeholder = placeholder
         self.min_values = min_values
         self.max_values = max_values

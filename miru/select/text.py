@@ -12,6 +12,7 @@ from miru.context.view import ViewContext
 if t.TYPE_CHECKING:
     import typing_extensions as te
 
+    from miru.context.view import AutodeferOptions
     from miru.view import View
 
     ViewT = t.TypeVar("ViewT", bound="View")
@@ -82,6 +83,8 @@ class TextSelect(SelectBase):
         A boolean determining if the select menu should be disabled or not
     row : int | None
         The row the select menu should be in, leave as None for auto-placement.
+    autodefer : bool | AutodeferOptions | hikari.UndefinedType
+        The autodefer options for the select menu. If left `UNDEFINED`, the view's autodefer options will be used.
 
     Raises
     ------
@@ -99,6 +102,7 @@ class TextSelect(SelectBase):
         max_values: int = 1,
         disabled: bool = False,
         row: int | None = None,
+        autodefer: bool | AutodeferOptions | hikari.UndefinedType = hikari.UNDEFINED,
     ) -> None:
         super().__init__(
             custom_id=custom_id,
@@ -107,6 +111,7 @@ class TextSelect(SelectBase):
             max_values=max_values,
             disabled=disabled,
             row=row,
+            autodefer=autodefer,
         )
         self._values: t.Sequence[str] = []
         self.options = options
@@ -191,6 +196,7 @@ def text_select(
     max_values: int = 1,
     disabled: bool = False,
     row: int | None = None,
+    autodefer: bool | AutodeferOptions | hikari.UndefinedType = hikari.UNDEFINED,
 ) -> t.Callable[[t.Callable[[ViewT, ViewContext, TextSelect], t.Awaitable[None]]], DecoratedItem[ViewT, TextSelect]]:
     """A decorator to transform a function into a Discord UI TextSelectMenu's callback.
     This must be inside a subclass of View.
@@ -211,6 +217,8 @@ def text_select(
         Whether the select menu is disabled.
     row : int | None
         The row the select should be in, leave as None for auto-placement.
+    autodefer : bool | AutodeferOptions | hikari.UndefinedType
+        The autodefer options for the select menu. If left `UNDEFINED`, the view's autodefer options will be used.
 
     Returns
     -------
@@ -237,6 +245,7 @@ def text_select(
             max_values=max_values,
             disabled=disabled,
             row=row,
+            autodefer=autodefer,
         )
         return DecoratedItem(item, func)
 

@@ -14,7 +14,7 @@ from miru import abc, ext, select
 from miru.abc.context import InteractionResponse
 from miru.button import Button, button
 from miru.client import Client
-from miru.context import ModalContext, ViewContext
+from miru.context import AutodeferMode, AutodeferOptions, ModalContext, ViewContext
 from miru.exceptions import HandlerFullError, ItemAlreadyAttachedError, MiruError, RowFullError
 from miru.internal.about import __author__, __author_email__, __license__, __maintainer__, __url__, __version__
 from miru.modal import Modal
@@ -69,6 +69,8 @@ __all__ = (
     "MessageBuilder",
     "ModalBuilder",
     "DeferredResponseBuilder",
+    "AutodeferMode",
+    "AutodeferOptions",
     "__version__",
     "__author__",
     "__author_email__",

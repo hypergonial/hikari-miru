@@ -136,7 +136,7 @@ class NavigatorView(View):
 
         if self._inter is not None:
             await self._inter.edit_message(self.message, components=self)
-        else:
+        elif not self._ephemeral:
             await self.message.edit(components=self)
 
     def get_default_buttons(self) -> t.Sequence[NavButton]:
@@ -260,7 +260,9 @@ class NavigatorView(View):
         self._pages = new_pages
         await self.send_page(context, page_index=start_at)
 
-    async def build_response_async(self, client: Client, start_at: int = 0, ephemeral: bool = False) -> MessageBuilder:
+    async def build_response_async(
+        self, client: Client, *, start_at: int = 0, ephemeral: bool = False
+    ) -> MessageBuilder:
         """Create a response builder out of this Navigator.
         This also invokes all [`before_page_change()`][miru.ext.nav.items.NavItem.before_page_change] methods.
 
@@ -270,7 +272,7 @@ class NavigatorView(View):
 
         Parameters
         ----------
-        client : ClientT
+        client : Client
             The client instance to use to build the response
         ephemeral : bool
             Determines if the navigator will be sent ephemerally or not.
@@ -279,6 +281,13 @@ class NavigatorView(View):
         """
         if self._client is not None:
             raise RuntimeError("Navigator is already bound to a client.")
+
+        if ephemeral and self.timeout is not None and self.timeout > 900:
+            logger.warning(
+                "Ephemeral navigators with a timeout greater than 15 minutes will fail. "
+                "Consider lowering the timeout."
+            )
+
         self.current_page = start_at
         self._ephemeral = ephemeral
 

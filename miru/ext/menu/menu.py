@@ -92,7 +92,7 @@ class Menu(miru.View):
             await self.last_context.edit_response(components=self, **self._payload, flags=self._flags)
         elif self.last_context is None and self._inter is not None:
             await self._inter.edit_message(self.message, components=self, **self._payload)
-        else:
+        elif not self._ephemeral:
             await self.message.edit(components=self, **self._payload)
 
     async def push(self, screen: Screen) -> None:
@@ -109,7 +109,7 @@ class Menu(miru.View):
         await self._load_screen(screen)
         await self.update_message()
 
-    async def pop(self, count: int = 1) -> None:
+    async def pop(self, *, count: int = 1) -> None:
         """Pop 'count' screen off the menu stack and display the screen on top of the stack.
         This can be used to go back to the previous screen(s).
 
@@ -164,13 +164,13 @@ class Menu(miru.View):
         await self.update_message()
 
     async def build_response_async(
-        self, client: miru.Client, starting_screen: Screen, ephemeral: bool = False
+        self, client: miru.Client, starting_screen: Screen, *, ephemeral: bool = False
     ) -> MessageBuilder:
         """Create a REST response builder out of this Menu.
 
         Parameters
         ----------
-        client : ClientT
+        client : Client
             The client instance to use to build the response
         starting_screen : Screen
             The screen to start the menu with.

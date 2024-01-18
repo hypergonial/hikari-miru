@@ -5,11 +5,13 @@ import os
 import typing as t
 from abc import abstractmethod
 
+import hikari
+
+from miru.context.view import AutodeferOptions
 from miru.exceptions import ItemAlreadyAttachedError
 from miru.internal.types import BuilderT, ContextT, HandlerT, ViewItemT, ViewT
 
 if t.TYPE_CHECKING:
-    import hikari
     import typing_extensions as te
 
     from miru.context import ModalContext, ViewContext  # noqa: F401
@@ -120,10 +122,12 @@ class ViewItem(Item["hikari.impl.MessageActionRowBuilder", "ViewContext", "View"
         position: int | None = None,
         width: int = 1,
         disabled: bool = False,
+        autodefer: bool | AutodeferOptions | hikari.UndefinedType = hikari.UNDEFINED,
     ) -> None:
         super().__init__(custom_id=custom_id, row=row, position=position, width=width)
         self._handler: View | None = None
         self._disabled: bool = disabled
+        self._autodefer = AutodeferOptions.parse(autodefer) if autodefer is not hikari.UNDEFINED else autodefer
 
     @property
     def view(self) -> View:
@@ -141,6 +145,13 @@ class ViewItem(Item["hikari.impl.MessageActionRowBuilder", "ViewContext", "View"
     @disabled.setter
     def disabled(self, value: bool) -> None:
         self._disabled = value
+
+    @property
+    def autodefer(self) -> AutodeferOptions | hikari.UndefinedType:
+        """Indicates whether the item should be deferred automatically.
+        If left as `UNDEFINED`, the view's autodefer option will be used.
+        """
+        return self._autodefer
 
     @abstractmethod
     def _build(self, action_row: hikari.api.MessageActionRowBuilder) -> None:

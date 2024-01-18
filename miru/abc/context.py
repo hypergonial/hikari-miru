@@ -76,8 +76,8 @@ class _ResponseGlue:
 
 
 class InteractionResponse:
-    """Represents a response to an interaction, allows for standardized handling of responses.
-    This class is not meant to be directly instantiated, and is instead returned by :obj:`miru.context.Context`.
+    """Represents a message response to an interaction, allows for standardized handling of responses.
+    This class is not meant to be directly instantiated, and is instead returned by [`Context`][miru.abc.context.Context].
     """
 
     __slots__ = ("_context", "_message", "_delete_after_task")
