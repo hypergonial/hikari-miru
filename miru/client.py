@@ -67,8 +67,9 @@ class Client:
         "_event_manager",
         "_cache",
         "_injector",
-        "_handlers",
-        "_bound_handlers",
+        "_unbound_views",
+        "_bound_views",
+        "_modals",
         "_is_rest",
         "_unhandled_comp_hook",
         "_unhandled_modal_hook",
@@ -114,11 +115,14 @@ class Client:
         if type(self) is not Client:
             self._injector.set_type_dependency(type(self), self)
 
-        self._handlers: dict[str, ItemHandler[t.Any, t.Any, t.Any, t.Any, t.Any]] = {}
-        """A mapping of custom_id to ItemHandler. This only contains handlers that are not bound to a message."""
+        self._unbound_views: dict[str, View] = {}
+        """A mapping of custom_id to View. This only contains views that are not bound to a message."""
 
-        self._bound_handlers: dict[hikari.Snowflakeish, ItemHandler[t.Any, t.Any, t.Any, t.Any, t.Any]] = {}
-        """A mapping of message_id to ItemHandler. This contains handlers that are bound to a message."""
+        self._bound_views: dict[hikari.Snowflakeish, View] = {}
+        """A mapping of message_id to View. This contains views that are bound to a message."""
+
+        self._modals: dict[str, Modal] = {}
+        """A mapping of custom_id to Modal."""
 
     @classmethod
     def from_arc(
@@ -221,7 +225,12 @@ class Client:
 
     @property
     def event_manager(self) -> hikari.api.EventManager:
-        """The event manager instance of the underlying app."""
+        """The event manager instance of the underlying app.
+
+        !!! warning
+            Accessing this property will raise a `RuntimeError` if the underlying app is not `EventManagerAware`.
+
+        """
         if self._event_manager is None:
             raise RuntimeError("Cannot access event manager when using a REST app.")
 
@@ -229,7 +238,11 @@ class Client:
 
     @property
     def cache(self) -> hikari.api.Cache:
-        """The cache instance of the underlying app."""
+        """The cache instance of the underlying app.
+
+        !!! warning
+            Accessing this property will raise a `RuntimeError` if the underlying app is not `CacheAware`.
+        """
         if self._cache is None:
             raise RuntimeError("Cannot access cache when using app is not CacheAware.")
 
@@ -237,7 +250,11 @@ class Client:
 
     @property
     def interaction_server(self) -> hikari.api.InteractionServer:
-        """The interaction server instance of the underlying app."""
+        """The interaction server instance of the underlying app.
+
+        !!! warning
+            Accessing this property will raise a `RuntimeError` if the underlying app is not `InteractionServerAware`.
+        """
         if self._interaction_server is None:
             raise RuntimeError("Cannot access interaction server when using a Gateway app.")
 
@@ -269,10 +286,10 @@ class Client:
         """Associate a message with a bound view."""
         view._message = message
         view._message_id = message.id
-        self._bound_handlers[message.id] = view
+        self._bound_views[message.id] = view
 
         for item in view.children:
-            self._handlers.pop(item.custom_id, None)
+            self._unbound_views.pop(item.custom_id, None)
 
     async def _rest_handle_modal_inter(self, interaction: hikari.ModalInteraction) -> ModalResponseBuildersT:
         """Handle a modal interaction.
@@ -322,30 +339,30 @@ class Client:
 
         Used only under Gateway flow.
         """
-        if handler := self._bound_handlers.pop(event.message_id, None):
+        if handler := self._bound_views.pop(event.message_id, None):
             handler.stop()
 
     def _add_handler(self, handler: ItemHandler[t.Any, t.Any, t.Any, t.Any, t.Any]) -> None:
         """Add a handler to this client handler."""
         if isinstance(handler, View):
             if handler.is_bound and handler._message_id is not None:
-                self._bound_handlers[handler._message_id] = handler
+                self._bound_views[handler._message_id] = handler
             else:
                 for custom_id in (item.custom_id for item in handler.children):
-                    self._handlers[custom_id] = handler
+                    self._unbound_views[custom_id] = handler
         elif isinstance(handler, Modal):
-            self._handlers[handler.custom_id] = handler
+            self._modals[handler.custom_id] = handler
 
     def _remove_handler(self, handler: ItemHandler[t.Any, t.Any, t.Any, t.Any, t.Any]) -> None:
         """Remove a handler from this client."""
         if isinstance(handler, View):
             if handler.is_bound and handler._message_id is not None:
-                self._bound_handlers.pop(handler._message_id, None)
+                self._bound_views.pop(handler._message_id, None)
             else:
                 for custom_id in (item.custom_id for item in handler.children):
-                    self._handlers.pop(custom_id, None)
+                    self._unbound_views.pop(custom_id, None)
         elif isinstance(handler, Modal):
-            self._handlers.pop(handler.custom_id, None)
+            self._unbound_views.pop(handler.custom_id, None)
 
     async def handle_component_interaction(self, interaction: hikari.ComponentInteraction) -> ResponseBuildersT | None:
         """Handle a component interaction.
@@ -361,16 +378,16 @@ class Client:
             If using a REST client, the response builders to send back to discord.
         """
         # Check bound views first
-        if handler := self._bound_handlers.get(interaction.message.id):
-            fut = await handler._invoke(interaction)
+        if view := self._bound_views.get(interaction.message.id):
+            fut = await view._invoke(interaction)
 
         # Check unbound or pending bound views
-        elif handler := self._handlers.get(interaction.custom_id):
+        elif view := self._unbound_views.get(interaction.custom_id):
             # Bind pending bound views
-            if isinstance(handler, View) and handler.is_bound and handler._message_id is None:
-                self._associate_message(interaction.message, handler)
+            if view.is_bound and view._message_id is None:
+                self._associate_message(interaction.message, view)
 
-            fut = await handler._invoke(interaction)
+            fut = await view._invoke(interaction)
 
         else:
             if self._unhandled_comp_hook is not None:
@@ -408,8 +425,8 @@ class Client:
         ModalResponseBuildersT | None
             If using a REST client, the response builders to send back to discord.
         """
-        if handler := self._handlers.get(interaction.custom_id):
-            fut = await handler._invoke(interaction)
+        if modal := self._modals.get(interaction.custom_id):
+            fut = await modal._invoke(interaction)
         else:
             if self._unhandled_modal_hook is not None:
                 return await self._unhandled_modal_hook(interaction)
@@ -434,8 +451,8 @@ class Client:
 
     def clear(self) -> None:
         """Stop all currently running views and modals."""
-        self._bound_handlers.clear()
-        self._handlers.clear()
+        self._bound_views.clear()
+        self._unbound_views.clear()
 
     def get_bound_view(self, message: hikari.SnowflakeishOr[hikari.PartialMessage]) -> View | None:
         """Get a bound view that is currently managed by this client.
@@ -451,11 +468,11 @@ class Client:
             The view if found, otherwise None.
         """
         message_id = hikari.Snowflake(message)
-        handler = self._bound_handlers.get(message_id)
-        if handler is None or not isinstance(handler, View):
+        view = self._bound_views.get(message_id)
+        if view is None:
             return None
 
-        return handler
+        return view
 
     def get_unbound_view(self, custom_id: str) -> View | None:
         """Get a currently running view that is managed by this client.
@@ -472,11 +489,11 @@ class Client:
         View[te.Self] | None
             The view if found, otherwise None.
         """
-        handler = self._handlers.get(custom_id)
-        if handler is None or not isinstance(handler, View):
+        view = self._unbound_views.get(custom_id)
+        if view is None:
             return None
 
-        return handler
+        return view
 
     def get_modal(self, custom_id: str) -> Modal | None:
         """Get a currently running modal that is managed by this client.
@@ -491,7 +508,7 @@ class Client:
         Modal | None
             The modal if found, otherwise None.
         """
-        handler = self._handlers.get(custom_id)
+        handler = self._unbound_views.get(custom_id)
         if handler is None or not isinstance(handler, Modal):
             return None
 
