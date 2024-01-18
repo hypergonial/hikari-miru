@@ -38,6 +38,8 @@ Instead, you need to create [`Client`][miru.client.Client], and pass your bot to
     client = miru.install(bot)
     ```
 
+If you need help with managing the client as state, check out the [new guide](./client_state.md) that discusses it.
+
 ## Decorated callbacks
 
 The ordering of arguments passed to decorated callbacks such as `@miru.button` has changed. They now take `Context` as their first argument and the respective item as the second. This is to improve consistency with other parts of the library.
