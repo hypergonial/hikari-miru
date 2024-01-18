@@ -12,6 +12,7 @@ __all__ = (
     "Item",
     "ItemHandler",
     "ViewItem",
+    "InteractiveViewItem",
     "ModalItem",
     "DecoratedItem",
     "SelectBase",

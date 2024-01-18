@@ -12,7 +12,7 @@ from alluka import inject
 
 from miru import abc, ext, select
 from miru.abc.context import InteractionResponse
-from miru.button import Button, button
+from miru.button import Button, LinkButton, button
 from miru.client import Client
 from miru.context import AutodeferMode, AutodeferOptions, ModalContext, ViewContext
 from miru.exceptions import HandlerFullError, ItemAlreadyAttachedError, MiruError, RowFullError
@@ -48,6 +48,7 @@ __all__ = (
     "ViewContext",
     "ModalContext",
     "Button",
+    "LinkButton",
     "button",
     "MiruError",
     "RowFullError",

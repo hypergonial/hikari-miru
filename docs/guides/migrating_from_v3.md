@@ -107,7 +107,7 @@ For more information on how to use these builders with each of the major command
 
 `NavigatorView.send()`, `Menu.send()` have been removed.
 
-Similarly to modals, menus & navigators are also now turned into builders. However, since the payloads are built asynchronously, you need to use [`Menu.build_response_async()`][miru.ext.menu.menu.Menu.build_response_async] and [`NavigatorView.build_response_async()`][miru.ext.nav.NavigatorView.build_response_async] respectively, instead. If you're handling an interaction, you may also need to defer beforehand if building your initial screen takes a long time.
+Similarly to modals, menus & navigators are also now turned into builders. However, since the payloads are built asynchronously, you need to use [`Menu.build_response_async()`][miru.ext.menu.menu.Menu.build_response_async] and [`NavigatorView.build_response_async()`][miru.ext.nav.NavigatorView.build_response_async] respectively. If you're handling an interaction, you may also need to defer beforehand depending on how long it takes to build the payload.
 
 === "v4"
 
@@ -160,3 +160,19 @@ Similarly to modals, menus & navigators are also now turned into builders. Howev
         ```
 
 For more information on how to use these builders with each of the major command handler frameworks, please see the updated [menu](./menus.md) and [navigator](./navigators.md) guides.
+
+## Link buttons
+
+Link buttons have been seperated out of `miru.Button` and received their own class: `miru.LinkButton`. For your existing link buttons, it should be as simple as updating the class:
+
+=== "v4"
+
+    ```py
+    view.add_item(miru.LinkButton(url="https://google.com"))
+    ```
+
+=== "v3"
+
+    ```py
+    view.add_item(miru.Button(url="https://google.com"))
+    ```

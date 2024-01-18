@@ -19,7 +19,7 @@ if t.TYPE_CHECKING:
     from miru.view import View
 
 
-__all__ = ("Item", "DecoratedItem", "ViewItem", "ModalItem")
+__all__ = ("Item", "DecoratedItem", "ViewItem", "InteractiveViewItem", "ModalItem")
 
 
 class Item(abc.ABC, t.Generic[BuilderT, ContextT, HandlerT]):
@@ -122,12 +122,10 @@ class ViewItem(Item["hikari.impl.MessageActionRowBuilder", "ViewContext", "View"
         position: int | None = None,
         width: int = 1,
         disabled: bool = False,
-        autodefer: bool | AutodeferOptions | hikari.UndefinedType = hikari.UNDEFINED,
     ) -> None:
         super().__init__(custom_id=custom_id, row=row, position=position, width=width)
         self._handler: View | None = None
         self._disabled: bool = disabled
-        self._autodefer = AutodeferOptions.parse(autodefer) if autodefer is not hikari.UNDEFINED else autodefer
 
     @property
     def view(self) -> View:
@@ -146,17 +144,42 @@ class ViewItem(Item["hikari.impl.MessageActionRowBuilder", "ViewContext", "View"
     def disabled(self, value: bool) -> None:
         self._disabled = value
 
+    @abstractmethod
+    def _build(self, action_row: hikari.api.MessageActionRowBuilder) -> None:
+        """Called internally to build and append the item to an action row."""
+        ...
+
+    @classmethod
+    @abstractmethod
+    def _from_component(cls, component: hikari.PartialComponent, row: int | None = None) -> te.Self:
+        """Converts the passed hikari component into a miru ViewItem."""
+        ...
+
+
+class InteractiveViewItem(ViewItem, abc.ABC):
+    """An abstract base class for view components that have callbacks.
+    Cannot be directly instantiated.
+    """
+
+    def __init__(
+        self,
+        *,
+        custom_id: str | None = None,
+        row: int | None = None,
+        position: int | None = None,
+        width: int = 1,
+        disabled: bool = False,
+        autodefer: bool | AutodeferOptions | hikari.UndefinedType = hikari.UNDEFINED,
+    ) -> None:
+        super().__init__(custom_id=custom_id, row=row, position=position, width=width, disabled=disabled)
+        self._autodefer = AutodeferOptions.parse(autodefer) if autodefer is not hikari.UNDEFINED else autodefer
+
     @property
     def autodefer(self) -> AutodeferOptions | hikari.UndefinedType:
         """Indicates whether the item should be deferred automatically.
         If left as `UNDEFINED`, the view's autodefer option will be used.
         """
         return self._autodefer
-
-    @abstractmethod
-    def _build(self, action_row: hikari.api.MessageActionRowBuilder) -> None:
-        """Called internally to build and append the item to an action row."""
-        ...
 
     @classmethod
     @abstractmethod

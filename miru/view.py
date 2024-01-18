@@ -9,9 +9,9 @@ import typing as t
 
 import hikari
 
-from miru.abc.item import DecoratedItem, ViewItem
+from miru.abc.item import DecoratedItem, InteractiveViewItem, ViewItem
 from miru.abc.item_handler import ItemHandler
-from miru.button import Button
+from miru.button import Button, LinkButton
 from miru.context.view import AutodeferOptions, ViewContext
 from miru.exceptions import HandlerFullError
 from miru.internal.types import ResponseBuildersT
@@ -22,6 +22,7 @@ if t.TYPE_CHECKING:
 
     import typing_extensions as te
 
+    from miru.abc.select import SelectBase
     from miru.client import Client
 
 __all__ = ("View",)
@@ -31,15 +32,14 @@ logger = logging.getLogger(__name__)
 ViewT = t.TypeVar("ViewT", bound="View")
 
 
-_COMPONENT_VIEW_ITEM_MAPPING: t.Mapping[hikari.ComponentType, type[ViewItem]] = {
-    hikari.ComponentType.BUTTON: Button,
+_SELECT_VIEW_ITEM_MAPPING: t.Mapping[hikari.ComponentType, type[SelectBase]] = {
     hikari.ComponentType.TEXT_SELECT_MENU: TextSelect,
     hikari.ComponentType.CHANNEL_SELECT_MENU: ChannelSelect,
     hikari.ComponentType.ROLE_SELECT_MENU: RoleSelect,
     hikari.ComponentType.USER_SELECT_MENU: UserSelect,
     hikari.ComponentType.MENTIONABLE_SELECT_MENU: MentionableSelect,
 }
-"""A mapping of all message component types to their respective item classes."""
+"""A mapping of all select types to their respective item classes."""
 
 
 class View(
@@ -66,12 +66,12 @@ class View(
     """
 
     _view_children: t.ClassVar[
-        t.MutableSequence[DecoratedItem[te.Self, ViewItem]]
+        t.MutableSequence[DecoratedItem[te.Self, InteractiveViewItem]]
     ] = []  # Decorated callbacks that need to be turned into items
 
     def __init_subclass__(cls) -> None:
         """Get decorated callbacks."""
-        children: t.MutableSequence[DecoratedItem[te.Self, ViewItem]] = []
+        children: t.MutableSequence[DecoratedItem[te.Self, InteractiveViewItem]] = []
         for base_cls in reversed(cls.mro()):
             for value in base_cls.__dict__.values():
                 if isinstance(value, DecoratedItem):
@@ -166,7 +166,11 @@ class View(
             for component in action_row.components:
                 if not isinstance(component.type, hikari.ComponentType):
                     continue  # Unrecognized component types are ignored
-                comp_cls = _COMPONENT_VIEW_ITEM_MAPPING[component.type]
+
+                if component.type is hikari.ComponentType.BUTTON:
+                    comp_cls = LinkButton if getattr(component, "url", None) else Button
+                else:
+                    comp_cls = _SELECT_VIEW_ITEM_MAPPING[component.type]
                 view.add_item(comp_cls._from_component(component, row))
 
         return view
@@ -265,7 +269,7 @@ class View(
         return True
 
     async def on_error(
-        self, error: Exception, item: ViewItem | None = None, context: ViewContext | None = None, /
+        self, error: Exception, item: InteractiveViewItem | None = None, context: ViewContext | None = None, /
     ) -> None:
         """Called when an error occurs in a callback function or the built-in timeout function.
         Override for custom error-handling logic.
@@ -286,7 +290,7 @@ class View(
 
         traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
 
-    async def _handle_callback(self, item: ViewItem, context: ViewContext) -> None:
+    async def _handle_callback(self, item: InteractiveViewItem, context: ViewContext) -> None:
         """Handle the callback of a view item. Separate task in case the view is stopped in the callback."""
         try:
             if not self._message or (self._message.id == context.message.id):
@@ -314,6 +318,8 @@ class View(
         if not item:
             logger.debug(f"View received interaction for unknown custom_id '{interaction.custom_id}', ignoring.")
             return
+
+        assert isinstance(item, InteractiveViewItem)
 
         self._reset_timeout()
 
@@ -358,7 +364,7 @@ class View(
             return
 
         # Optimize URL-button-only views by not adding to listener
-        if all((isinstance(item, Button) and item.url is not None) for item in self.children):
+        if all(isinstance(item, LinkButton) for item in self.children):
             logger.warning(
                 f"View '{type(self).__name__}' only contains link buttons. Ignoring '{type(client).__name__}.start_view()' call."
             )

@@ -5,15 +5,16 @@ import typing as t
 
 import hikari
 
-from miru.abc.item import ViewItem
-from miru.button import Button
+from miru.abc.item import InteractiveViewItem, ViewItem
+from miru.button import Button, LinkButton
 from miru.modal import Modal
 from miru.select import ChannelSelect, MentionableSelect, RoleSelect, TextSelect, UserSelect
 from miru.text_input import TextInput
 
 if t.TYPE_CHECKING:
-    from miru.context.view import AutodeferOptions, ViewContext
+    from miru.context.view import ViewContext
     from miru.ext.nav.navigator import NavigatorView
+    from miru.internal.types import InteractiveButtonStylesT
 
 __all__ = (
     "NavItem",
@@ -33,7 +34,7 @@ __all__ = (
 
 
 class NavItem(ViewItem, abc.ABC):
-    """A baseclass for all navigation items. NavigatorView requires instances of this class as it's items."""
+    """An abstract base for all navigation items. NavigatorView requires instances of this class as it's items."""
 
     def __init__(
         self,
@@ -43,11 +44,8 @@ class NavItem(ViewItem, abc.ABC):
         position: int | None = None,
         disabled: bool = False,
         width: int = 1,
-        autodefer: bool | AutodeferOptions | hikari.UndefinedType = hikari.UNDEFINED,
     ) -> None:
-        super().__init__(
-            custom_id=custom_id, row=row, width=width, position=position, disabled=disabled, autodefer=autodefer
-        )
+        super().__init__(custom_id=custom_id, row=row, width=width, position=position, disabled=disabled)
         self._handler: NavigatorView | None = None  # type: ignore
 
     async def before_page_change(self) -> None:
@@ -64,27 +62,35 @@ class NavItem(ViewItem, abc.ABC):
         return self._handler
 
 
-class NavButton(Button, NavItem):
+class InteractiveNavItem(InteractiveViewItem, NavItem):
+    """An abstract base for all interactive navigation items."""
+
+
+class NavLinkButton(LinkButton, NavItem):
+    """A base class for all navigation link buttons."""
+
+
+class NavButton(Button, InteractiveNavItem):
     """A base class for all navigation buttons."""
 
 
-class NavTextSelect(TextSelect, NavItem):
+class NavTextSelect(TextSelect, InteractiveNavItem):
     """A base class for all navigation text selects."""
 
 
-class NavUserSelect(UserSelect, NavItem):
+class NavUserSelect(UserSelect, InteractiveNavItem):
     """A base class for all navigation user selects."""
 
 
-class NavRoleSelect(RoleSelect, NavItem):
+class NavRoleSelect(RoleSelect, InteractiveNavItem):
     """A base class for all navigation role selects."""
 
 
-class NavChannelSelect(ChannelSelect, NavItem):
+class NavChannelSelect(ChannelSelect, InteractiveNavItem):
     """A base class for all navigation channel selects."""
 
 
-class NavMentionableSelect(MentionableSelect, NavItem):
+class NavMentionableSelect(MentionableSelect, InteractiveNavItem):
     """A base class for all navigation mentionable selects."""
 
 
@@ -94,7 +100,7 @@ class NextButton(NavButton):
     def __init__(
         self,
         *,
-        style: hikari.ButtonStyle = hikari.ButtonStyle.PRIMARY,
+        style: InteractiveButtonStylesT = hikari.ButtonStyle.PRIMARY,
         label: str | None = None,
         custom_id: str | None = None,
         emoji: hikari.Emoji | str | None = chr(9654),
@@ -120,7 +126,7 @@ class PrevButton(NavButton):
     def __init__(
         self,
         *,
-        style: hikari.ButtonStyle = hikari.ButtonStyle.PRIMARY,
+        style: InteractiveButtonStylesT = hikari.ButtonStyle.PRIMARY,
         label: str | None = None,
         custom_id: str | None = None,
         emoji: hikari.Emoji | str | None = chr(9664),
@@ -146,7 +152,7 @@ class FirstButton(NavButton):
     def __init__(
         self,
         *,
-        style: hikari.ButtonStyle = hikari.ButtonStyle.PRIMARY,
+        style: InteractiveButtonStylesT = hikari.ButtonStyle.PRIMARY,
         label: str | None = None,
         custom_id: str | None = None,
         emoji: hikari.Emoji | str | None = chr(9194),
@@ -172,7 +178,7 @@ class LastButton(NavButton):
     def __init__(
         self,
         *,
-        style: hikari.ButtonStyle = hikari.ButtonStyle.PRIMARY,
+        style: InteractiveButtonStylesT = hikari.ButtonStyle.PRIMARY,
         label: str | None = None,
         custom_id: str | None = None,
         emoji: hikari.Emoji | str | None = chr(9193),
@@ -198,7 +204,7 @@ class IndicatorButton(NavButton):
     def __init__(
         self,
         *,
-        style: hikari.ButtonStyle = hikari.ButtonStyle.SECONDARY,
+        style: InteractiveButtonStylesT = hikari.ButtonStyle.SECONDARY,
         custom_id: str | None = None,
         emoji: hikari.Emoji | str | None = None,
         disabled: bool = False,
@@ -242,7 +248,7 @@ class StopButton(NavButton):
     def __init__(
         self,
         *,
-        style: hikari.ButtonStyle = hikari.ButtonStyle.DANGER,
+        style: InteractiveButtonStylesT = hikari.ButtonStyle.DANGER,
         label: str | None = None,
         custom_id: str | None = None,
         emoji: hikari.Emoji | str | None = chr(9209),

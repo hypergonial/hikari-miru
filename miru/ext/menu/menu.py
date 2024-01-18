@@ -6,12 +6,11 @@ import typing as t
 import hikari
 
 import miru
-from miru.response import MessageBuilder
 
 if t.TYPE_CHECKING:
     import datetime
 
-    from .screen import Screen, ScreenContent
+    from miru.ext.menu.screen import Screen, ScreenContent
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +28,12 @@ class Menu(miru.View):
         If enabled, interactions will be automatically deferred if not responded to within 2 seconds
     """
 
-    def __init__(self, *, timeout: float | int | datetime.timedelta | None = 300.0, autodefer: bool = True):
+    def __init__(
+        self,
+        *,
+        timeout: float | int | datetime.timedelta | None = 300.0,
+        autodefer: bool | miru.AutodeferOptions = True,
+    ):
         super().__init__(timeout=timeout, autodefer=autodefer)
         self._stack: list[Screen] = []
         # The interaction that was used to send the menu, if any.
@@ -165,8 +169,12 @@ class Menu(miru.View):
 
     async def build_response_async(
         self, client: miru.Client, starting_screen: Screen, *, ephemeral: bool = False
-    ) -> MessageBuilder:
+    ) -> miru.MessageBuilder:
         """Create a REST response builder out of this Menu.
+
+        !!! tip
+            If it takes too long to build the starting screen, you may want to
+            defer the interaction before calling this method.
 
         Parameters
         ----------
@@ -180,10 +188,11 @@ class Menu(miru.View):
         if self._client is not None:
             raise RuntimeError("Navigator is already bound to a client.")
 
+        self._stack.append(starting_screen)
         await self._load_screen(starting_screen)
         self._ephemeral = ephemeral
 
-        builder = MessageBuilder(hikari.ResponseType.MESSAGE_CREATE, **self._payload)
+        builder = miru.MessageBuilder(hikari.ResponseType.MESSAGE_CREATE, components=self, **self._payload)
         builder._client = client
         return builder
 

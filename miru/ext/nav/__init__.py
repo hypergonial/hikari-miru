@@ -1,6 +1,7 @@
 from .items import (
     FirstButton,
     IndicatorButton,
+    InteractiveNavItem,
     LastButton,
     NavButton,
     NavChannelSelect,
@@ -18,6 +19,7 @@ from .utils import *
 
 __all__ = (
     "NavItem",
+    "InteractiveNavItem",
     "NavButton",
     "NavTextSelect",
     "NavChannelSelect",

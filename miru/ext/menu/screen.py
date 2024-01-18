@@ -8,7 +8,7 @@ import attr
 import hikari
 
 from miru.exceptions import HandlerFullError, ItemAlreadyAttachedError
-from miru.ext.menu.items import DecoratedScreenItem, ScreenItem
+from miru.ext.menu.items import DecoratedScreenItem, InteractiveScreenItem, ScreenItem
 
 if t.TYPE_CHECKING:
     import typing_extensions as te
@@ -67,12 +67,12 @@ class Screen(abc.ABC):
     """
 
     _screen_children: t.Sequence[
-        DecoratedScreenItem[te.Self, ScreenItem]
+        DecoratedScreenItem[te.Self, InteractiveScreenItem]
     ] = []  # Decorated callbacks that need to be turned into items
 
     def __init_subclass__(cls) -> None:
         """Get decorated callbacks."""
-        children: t.MutableSequence[DecoratedScreenItem[te.Self, ScreenItem]] = []
+        children: t.MutableSequence[DecoratedScreenItem[te.Self, InteractiveScreenItem]] = []
         for base_cls in reversed(cls.mro()):
             for value in base_cls.__dict__.values():
                 if isinstance(value, DecoratedScreenItem):

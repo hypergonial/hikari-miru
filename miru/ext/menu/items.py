@@ -7,14 +7,15 @@ import typing as t
 import hikari
 
 import miru
-from miru.abc import ViewItem
+from miru.ext.menu.menu import Menu
 
 if t.TYPE_CHECKING:
-    from miru.ext.menu.menu import Menu
     from miru.ext.menu.screen import Screen
+    from miru.internal.types import InteractiveButtonStylesT
 
 __all__ = (
     "ScreenItem",
+    "InteractiveScreenItem",
     "ScreenButton",
     "ScreenTextSelect",
     "ScreenUserSelect",
@@ -30,11 +31,13 @@ __all__ = (
 )
 
 ScreenT = t.TypeVar("ScreenT", bound="Screen")
-ScreenItemT = t.TypeVar("ScreenItemT", bound="ScreenItem")
+ScreenItemT = t.TypeVar("ScreenItemT", bound="InteractiveScreenItem")
 
 
-class ScreenItem(ViewItem, abc.ABC):
-    """A base class for all screen items. Screen requires instances of this class as it's items."""
+class ScreenItem(miru.abc.ViewItem, abc.ABC):
+    """An abstract base for all screen items.
+    [`Screen`][miru.ext.menu.screen.Screen] requires instances of this class as it's items.
+    """
 
     def __init__(
         self,
@@ -44,55 +47,56 @@ class ScreenItem(ViewItem, abc.ABC):
         position: int | None = None,
         disabled: bool = False,
         width: int = 1,
-        autodefer: bool | miru.AutodeferOptions | hikari.UndefinedType = hikari.UNDEFINED,
     ) -> None:
-        super().__init__(
-            custom_id=custom_id, row=row, width=width, position=position, disabled=disabled, autodefer=autodefer
-        )
-        self._handler: Menu | None = None  # type: ignore
+        super().__init__(custom_id=custom_id, row=row, width=width, position=position, disabled=disabled)
         self._screen: Screen | None = None
 
     @property
-    def view(self) -> Menu:
-        """The view this item is attached to."""
-        if not self._handler:
-            raise AttributeError(f"{type(self).__name__} hasn't been attached to a view yet")
-        return self._handler
-
-    @property
     def menu(self) -> Menu:
-        """The menu this item is attached to. Alias for `view`."""
+        """The menu this item is attached to.
+        This will be the same as `view` if the view is a menu.
+        """
+        if not isinstance(self.view, Menu):
+            raise AttributeError(f"{type(self).__name__} hasn't been attached to a menu.")
         return self.view
 
     @property
     def screen(self) -> Screen:
         """The screen this item is attached to."""
         if not self._screen:
-            raise AttributeError(f"{type(self).__name__} hasn't been attached to a screen yet")
+            raise AttributeError(f"{type(self).__name__} hasn't been attached to a screen yet.")
         return self._screen
 
 
-class ScreenButton(miru.Button, ScreenItem):
+class InteractiveScreenItem(miru.abc.InteractiveViewItem, ScreenItem):
+    """An abstract base for all interactive screen items."""
+
+
+class ScreenLinkButton(miru.LinkButton, ScreenItem):
+    """A base class for all screen link buttons."""
+
+
+class ScreenButton(miru.Button, InteractiveScreenItem):
     """A base class for all screen buttons."""
 
 
-class ScreenTextSelect(miru.TextSelect, ScreenItem):
+class ScreenTextSelect(miru.TextSelect, InteractiveScreenItem):
     """A base class for all screen text selects."""
 
 
-class ScreenUserSelect(miru.UserSelect, ScreenItem):
+class ScreenUserSelect(miru.UserSelect, InteractiveScreenItem):
     """A base class for all screen user selects."""
 
 
-class ScreenRoleSelect(miru.RoleSelect, ScreenItem):
+class ScreenRoleSelect(miru.RoleSelect, InteractiveScreenItem):
     """A base class for all screen role selects."""
 
 
-class ScreenChannelSelect(miru.ChannelSelect, ScreenItem):
+class ScreenChannelSelect(miru.ChannelSelect, InteractiveScreenItem):
     """A base class for all screen channel selects."""
 
 
-class ScreenMentionableSelect(miru.MentionableSelect, ScreenItem):
+class ScreenMentionableSelect(miru.MentionableSelect, InteractiveScreenItem):
     """A base class for all screen mentionable selects."""
 
 
@@ -145,7 +149,7 @@ def button(
     *,
     label: str | None = None,
     custom_id: str | None = None,
-    style: hikari.ButtonStyle = hikari.ButtonStyle.PRIMARY,
+    style: InteractiveButtonStylesT = hikari.ButtonStyle.PRIMARY,
     emoji: str | hikari.Emoji | None = None,
     row: int | None = None,
     disabled: bool = False,
@@ -155,7 +159,7 @@ def button(
     DecoratedScreenItem[ScreenT, ScreenButton],
 ]:
     """A decorator to transform a coroutine function into a Discord UI Button's callback.
-    This must be inside a subclass of Screen.
+    This must be inside a subclass of [`Screen`][miru.ext.menu.screen.Screen].
 
     Parameters
     ----------
@@ -189,16 +193,9 @@ def button(
         func: t.Callable[[ScreenT, miru.ViewContext, ScreenButton], t.Awaitable[None]],
     ) -> DecoratedScreenItem[ScreenT, ScreenButton]:
         if not inspect.iscoroutinefunction(func):
-            raise TypeError("button must decorate coroutine function.")
+            raise TypeError("'@button' must decorate coroutine function.")
         item: ScreenButton = ScreenButton(
-            label=label,
-            custom_id=custom_id,
-            style=style,
-            emoji=emoji,
-            row=row,
-            disabled=disabled,
-            url=None,
-            autodefer=autodefer,
+            label=label, custom_id=custom_id, style=style, emoji=emoji, row=row, disabled=disabled, autodefer=autodefer
         )
 
         return DecoratedScreenItem(item, func)
@@ -221,7 +218,7 @@ def channel_select(
     DecoratedScreenItem[ScreenT, ScreenChannelSelect],
 ]:
     """A decorator to transform a function into a Discord UI ChannelSelectMenu's callback.
-    This must be inside a subclass of Screen.
+    This must be inside a subclass of [`Screen`][miru.ext.menu.screen.Screen].
 
     Parameters
     ----------
@@ -257,7 +254,7 @@ def channel_select(
         func: t.Callable[[ScreenT, miru.ViewContext, ScreenChannelSelect], t.Awaitable[None]],
     ) -> DecoratedScreenItem[ScreenT, ScreenChannelSelect]:
         if not inspect.iscoroutinefunction(func):
-            raise TypeError("channel_select must decorate coroutine function.")
+            raise TypeError("'@channel_select' must decorate coroutine function.")
 
         item: ScreenChannelSelect = ScreenChannelSelect(
             channel_types=channel_types,
@@ -288,7 +285,7 @@ def mentionable_select(
     DecoratedScreenItem[ScreenT, ScreenMentionableSelect],
 ]:
     """A decorator to transform a function into a Discord UI MentionableSelectMenu's callback.
-    This must be inside a subclass of Screen.
+    This must be inside a subclass of [`Screen`][miru.ext.menu.screen.Screen].
 
     Parameters
     ----------
@@ -322,7 +319,7 @@ def mentionable_select(
         func: t.Callable[[ScreenT, miru.ViewContext, ScreenMentionableSelect], t.Awaitable[None]],
     ) -> DecoratedScreenItem[ScreenT, ScreenMentionableSelect]:
         if not inspect.iscoroutinefunction(func):
-            raise TypeError("mentionable_select must decorate coroutine function.")
+            raise TypeError("'@mentionable_select' must decorate coroutine function.")
 
         item: ScreenMentionableSelect = ScreenMentionableSelect(
             custom_id=custom_id,
@@ -352,7 +349,7 @@ def role_select(
     DecoratedScreenItem[ScreenT, ScreenRoleSelect],
 ]:
     """A decorator to transform a function into a Discord UI RoleSelectMenu's callback.
-    This must be inside a subclass of Screen.
+    This must be inside a subclass of [`Screen`][miru.ext.menu.screen.Screen].
 
     Parameters
     ----------
@@ -386,7 +383,7 @@ def role_select(
         func: t.Callable[[ScreenT, miru.ViewContext, ScreenRoleSelect], t.Awaitable[None]],
     ) -> DecoratedScreenItem[ScreenT, ScreenRoleSelect]:
         if not inspect.iscoroutinefunction(func):
-            raise TypeError("role_select must decorate coroutine function.")
+            raise TypeError("'@role_select' must decorate coroutine function.")
 
         item: ScreenRoleSelect = ScreenRoleSelect(
             custom_id=custom_id,
@@ -417,7 +414,7 @@ def text_select(
     DecoratedScreenItem[ScreenT, ScreenTextSelect],
 ]:
     """A decorator to transform a function into a Discord UI TextSelectMenu's callback.
-    This must be inside a subclass of Screen.
+    This must be inside a subclass of [`Screen`][miru.ext.menu.screen.Screen].
 
     Parameters
     ----------
@@ -448,7 +445,7 @@ def text_select(
         func: t.Callable[[ScreenT, miru.ViewContext, ScreenTextSelect], t.Awaitable[None]],
     ) -> DecoratedScreenItem[ScreenT, ScreenTextSelect]:
         if not inspect.iscoroutinefunction(func):
-            raise TypeError("text_select must decorate coroutine function.")
+            raise TypeError("'@text_select' must decorate coroutine function.")
 
         item: ScreenTextSelect = ScreenTextSelect(
             options=options,
@@ -479,7 +476,7 @@ def user_select(
     DecoratedScreenItem[ScreenT, ScreenUserSelect],
 ]:
     """A decorator to transform a function into a Discord UI UserSelectMenu's callback.
-    This must be inside a subclass of Screen.
+    This must be inside a subclass of [`Screen`][miru.ext.menu.screen.Screen].
 
     Parameters
     ----------
@@ -508,7 +505,7 @@ def user_select(
         func: t.Callable[[ScreenT, miru.ViewContext, ScreenUserSelect], t.Awaitable[None]],
     ) -> DecoratedScreenItem[ScreenT, ScreenUserSelect]:
         if not inspect.iscoroutinefunction(func):
-            raise TypeError("user_select must decorate coroutine function.")
+            raise TypeError("'@user_select' must decorate coroutine function.")
 
         item: ScreenUserSelect = ScreenUserSelect(
             custom_id=custom_id,

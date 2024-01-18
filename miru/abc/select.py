@@ -5,7 +5,7 @@ import typing as t
 
 import hikari
 
-from miru.abc.item import ViewItem
+from miru.abc.item import InteractiveViewItem
 
 if t.TYPE_CHECKING:
     import typing_extensions as te
@@ -18,7 +18,7 @@ if t.TYPE_CHECKING:
 __all__ = ("SelectBase",)
 
 
-class SelectBase(ViewItem, abc.ABC):
+class SelectBase(InteractiveViewItem, abc.ABC):
     """A view component representing some type of select menu. All types of selects derive from this class.
 
     Parameters

@@ -18,7 +18,7 @@ if t.TYPE_CHECKING:
 
     from miru.abc.context import Context
     from miru.client import Client
-    from miru.ext.nav.items import ViewItem
+    from miru.context.view import AutodeferOptions
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +36,7 @@ class NavigatorView(View):
         A list of navigation buttons to override the default ones with
     timeout : float | int | datetime.timedelta | None
         The duration after which the view times out, in seconds
-    autodefer : bool
+    autodefer : bool | AutodeferOptions
         If enabled, interactions will be automatically deferred if not responded to within 2 seconds
 
     Raises
@@ -52,7 +52,7 @@ class NavigatorView(View):
         pages: t.Sequence[str | hikari.Embed | t.Sequence[hikari.Embed] | Page],
         items: t.Sequence[NavItem] | None = None,
         timeout: float | int | datetime.timedelta | None = 120.0,
-        autodefer: bool = True,
+        autodefer: bool | AutodeferOptions = True,
     ) -> None:
         ...
 
@@ -64,7 +64,7 @@ class NavigatorView(View):
         pages: t.Sequence[str | hikari.Embed | t.Sequence[hikari.Embed] | Page],
         buttons: t.Sequence[NavButton] | None = None,
         timeout: float | int | datetime.timedelta | None = 120.0,
-        autodefer: bool = True,
+        autodefer: bool | AutodeferOptions = True,
     ) -> None:
         ...
 
@@ -75,7 +75,7 @@ class NavigatorView(View):
         buttons: t.Sequence[NavButton] | None = None,
         items: t.Sequence[NavItem] | None = None,
         timeout: float | int | datetime.timedelta | None = 120.0,
-        autodefer: bool = True,
+        autodefer: bool | AutodeferOptions = True,
     ) -> None:
         self._pages: t.Sequence[str | hikari.Embed | t.Sequence[hikari.Embed] | Page] = pages
         self._current_page: int = 0
@@ -144,12 +144,12 @@ class NavigatorView(View):
 
         Returns
         -------
-        List[NavButton[NavigatorViewT]]
+        List[NavButton]
             A list of the default navigation buttons.
         """
         return [FirstButton(), PrevButton(), IndicatorButton(), NextButton(), LastButton()]
 
-    def add_item(self, item: ViewItem) -> te.Self:
+    def add_item(self, item: NavItem) -> te.Self:  # pyright: ignore reportIncompatibleMethodOverride
         """Adds a new item to the navigator. Item must be of type NavItem.
 
         Parameters
@@ -167,10 +167,10 @@ class NavigatorView(View):
         ItemHandler
             The item handler the item was added to.
         """
-        if not isinstance(item, NavItem):
-            raise TypeError(f"Expected type 'NavItem' for parameter item, not '{type(item).__name__}'.")
-
         return super().add_item(item)
+
+    def remove_item(self, item: NavItem) -> te.Self:  # pyright: ignore reportIncompatibleMethodOverride
+        return super().remove_item(item)
 
     def _get_page_payload(
         self, page: str | hikari.Embed | t.Sequence[hikari.Embed] | Page
