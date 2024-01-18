@@ -16,6 +16,8 @@ This guide tries to help you migrate an existing application using miru v3 to v4
 !!! warning
     `miru` v4 bumps the minimum required Python version to **3.10** or higher. If this is unsuitable for your usecase, you should continue using v3.
 
+    For the v3 documentation, see [this](https://hikari-miru.readthedocs.io/en/v3/index.html) link.
+
 ## Client
 
 `miru.install()` has been removed in v4, in an effort to stop relying on global state.
