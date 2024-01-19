@@ -38,11 +38,12 @@ Instead, you need to create [`Client`][miru.client.Client], and pass your bot to
     client = miru.install(bot)
     ```
 
-If you need help with managing the client as state, check out the [new guide](./client_state.md) that discusses it.
+!!! tip
+    If you need help with managing the client as state (e.g. how to pass it to plugins/extensions), check out the [new guide](./client_state.md) that discusses it.
 
 ## Decorated callbacks
 
-The ordering of arguments passed to decorated callbacks such as `@miru.button` has changed. They now take `Context` as their first argument and the respective item as the second. This is to improve consistency with other parts of the library.
+The ordering of arguments passed to decorated callbacks (such as `@miru.button` or `@miru.text_select`) has changed. They now take `Context` as their first argument and the respective item as the second. This is to improve consistency with other parts of the library.
 
 === "v4"
 
@@ -73,6 +74,9 @@ Since in v4 everything is tied to the [`Client`][miru.client.Client], views need
     await something.respond(..., components=view)
     client.start_view(view) # This is the client you created earlier
     ```
+
+    !!! warning
+        `Client.start_view()` does **not** need to be awaited.
 
 === "v3"
 
@@ -110,7 +114,7 @@ Therefore, this responsibility is now in the hands of the user. This *does* add 
     await modal.send(interaction)
     ```
 
-For more information on how to use these builders with each of the major **command handler** frameworks, please see the updated [modal](./modals.md) guide.
+For more information on how to use these builders with each of the major **command handler** frameworks, please see the updated [modal guide](./modals.md).
 
 ## Sending navigators & menus
 
