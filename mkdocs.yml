@@ -6,6 +6,7 @@ copyright: Copyright &copy; 2023 hypergonial
 edit_uri: edit/main/docs/
 theme:
   name: material
+  custom_dir: 'docs/theme'
   font:
     code: JetBrains Mono
   icon:
@@ -56,6 +57,7 @@ theme:
     - content.action.edit
     - content.tooltips
     - toc.follow
+    - announce.dismiss
 
 
 nav:
