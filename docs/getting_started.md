@@ -341,9 +341,8 @@ Mentioning the bot in any channel should make the bot send the component menu de
 
 ## Subclassing
 
-A more advanced way to use `miru` is to create our own custom classes of buttons, select menus, and more.
-This allows us to customize to a great degree their behaviour, pass variables dynamically, add or remove
-items on the fly, and more!
+A more advanced way to use `miru` is to create our own custom classes, or templates, if you will, of buttons, select menus, and more.
+This allows us to customize to a great degree their behaviour, pass variables dynamically, add or remove items on the fly, and more!
 
 ??? question "Help! What are classes, and how do they work?"
     If you're not sure how classes & subclassing work in Python, check out this [guide from Real Python](https://realpython.com/python3-object-oriented-programming/) on the subject.
@@ -374,8 +373,8 @@ class YesButton(miru.Button):
 
 class NoButton(miru.Button):
     # Let's leave our arguments dynamic this time, instead of hard-coding them
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
+    def __init__(self, style: hikari.ButtonStyle, label: str = "No") -> None:
+        super().__init__(style=style, label=label)
         self.value = False
 
     async def callback(self, ctx: miru.ViewContext) -> None:
@@ -388,14 +387,20 @@ class NoButton(miru.Button):
 
 
 class PineappleView(miru.View):
+
+    # Include our custom buttons.
+    yes = YesButton()
+    no = NoButton(style=hikari.ButtonStyle.DANGER)
+    # Let's also add a link button.
+    # Link buttons cannot have a callback,
+    # they simply direct the user to the given website
+    learn_more = miru.LinkButton(
+        url="https://en.wikipedia.org/wiki/Hawaiian_pizza", label="Learn More"
+    )
+
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.answer: bool | None = None
-
-        # Add our custom buttons
-        self.add_item(YesButton())
-        # Pass arguments to NoButton
-        self.add_item(NoButton(style=hikari.ButtonStyle.DANGER, label="No"))
 ```
 
 Then we can adjust our sending logic from the previous example like so:
@@ -588,3 +593,25 @@ Then we can adjust our sending logic from the previous example like so:
 Running this code and mentioning the bot in a channel it can see should similarly yield a component menu.
 The benefits of this approach are that you can define custom methods for your individual components,
 and create "template" items for re-use later, reducing the need to paste the same code over and over again.
+
+!!! info "Dynamically managing view items"
+    You may also want to build views dynamically based on conditions, this can be done using the [`View.add_item()`][miru.view.View.add_item] method:
+
+    ```py
+    # add_item() calls can be chained!
+    view = (
+        PineappleView()
+        .add_item(YesButton())
+        .add_item(NoButton(style=hikari.ButtonStyle.DANGER, label="No"))
+    )
+
+
+    if some_condition:
+        view.add_item(
+            miru.LinkButton(url="https://en.wikipedia.org/wiki/Hawaiian_pizza", label="Learn More")
+        )
+    ```
+
+    Items can also be removed using [`View.remove_item()`][miru.view.View.remove_item], or cleared using [`View.clear_items()`][miru.view.View.clear_items].
+
+    Additionally, you can access all current items of a view using the [`View.children`][miru.view.View.children] property.

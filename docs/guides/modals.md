@@ -31,7 +31,7 @@ Let's create our first modal:
 
 
 ```py
-class MyModal(miru.Modal):
+class MyModal(miru.Modal, title="Example Title"):
 
     name = miru.TextInput(
         label="Name",
@@ -67,7 +67,7 @@ class ModalView(miru.View):
     # Create a new button that will invoke our modal
     @miru.button(label="Click me!", style=hikari.ButtonStyle.PRIMARY)
     async def modal_button(self, ctx: miru.ViewContext, button: miru.Button) -> None:
-        modal = MyModal(title="Example Title")
+        modal = MyModal()
         await ctx.respond_with_modal(modal)
 ```
 
@@ -87,7 +87,7 @@ If you want to use modals in **slash commands**, you need to turn it into a buil
             if not isinstance(event.interaction, hikari.CommandInteraction):
                 return
 
-            modal = MyModal(title="Example Title")
+            modal = MyModal()
             builder = modal.build_response(client)
 
             # Send the modal as a response to the interaction
@@ -103,7 +103,7 @@ If you want to use modals in **slash commands**, you need to turn it into a buil
         ```py
         # Let's assume this is a RESTBot's CommandInteraction callback
         async def handle_commands(interaction: hikari.CommandInteraction):
-            modal = MyModal(title="Example Title")
+            modal = MyModal()
 
             builder = modal.build_response(client)
 
@@ -121,7 +121,7 @@ If you want to use modals in **slash commands**, you need to turn it into a buil
         @arc_client.include
         @arc.slash_command("name", "description")
         async def some_slash_command(ctx: arc.GatewayContext) -> None:
-            modal = MyModal(title="Example Title")
+            modal = MyModal()
             builder = modal.build_response(client)
 
             # arc has a built-in way to respond with a builder
@@ -136,7 +136,7 @@ If you want to use modals in **slash commands**, you need to turn it into a buil
         @arc_client.include
         @arc.slash_command("name", "description")
         async def some_slash_command(ctx: arc.RESTContext) -> None:
-            modal = MyModal(title="Example Title")
+            modal = MyModal()
             builder = modal.build_response(client)
 
             # arc has a built-in way to respond with a builder
@@ -152,7 +152,7 @@ If you want to use modals in **slash commands**, you need to turn it into a buil
     @crescent.command("name", "description")
     class SomeSlashCommand:
         async def callback(self, ctx: crescent.Context) -> None:
-            modal = MyModal(title="Example Title")
+            modal = MyModal()
             builder = modal.build_response(client)
 
             # crescent has a built-in way to respond with a builder
@@ -167,7 +167,7 @@ If you want to use modals in **slash commands**, you need to turn it into a buil
     @lightbulb.command("name", "description", auto_defer=False)
     @lightbulb.implements(lightbulb.SlashCommand)
     async def some_slash_command(ctx: lightbulb.SlashContext) -> None:
-        modal = MyModal(title="Example Title")
+        modal = MyModal()
         builder = modal.build_response(client)
 
         await builder.create_modal_response(ctx.interaction)
@@ -180,7 +180,7 @@ If you want to use modals in **slash commands**, you need to turn it into a buil
     ```py
     @tanjun.as_slash_command("name", "description")
     async def some_slash_command(ctx: tanjun.abc.SlashContext) -> None:
-        modal = MyModal(title="Example Title")
+        modal = MyModal()
         builder = modal.build_response(client)
 
         # the builder has specific adapters for tanjun

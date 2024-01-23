@@ -3,7 +3,7 @@ import hikari
 import miru
 
 
-class MyModal(miru.Modal):
+class MyModal(miru.Modal, title="Example Title"):
     # Define our modal items
     # You can also use Modal.add_item() to add items to the modal after instantiation, just like with views.
     name = miru.TextInput(label="Name", placeholder="Enter your name!", required=True)
@@ -19,7 +19,7 @@ class ModalView(miru.View):
     # Create a new button that will invoke our modal
     @miru.button(label="Click me!", style=hikari.ButtonStyle.PRIMARY)
     async def modal_button(self, context: miru.ViewContext, button: miru.Button) -> None:
-        modal = MyModal(title="Example Title")
+        modal = MyModal()
         # You may also use the builder provided by Modal to send the modal to an arbitrary interaction.
         # Keep in mind that modals can only be sent in response to interactions.
         await context.respond_with_modal(modal)
