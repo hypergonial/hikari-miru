@@ -66,15 +66,15 @@ class View(
     """
 
     _view_children: t.ClassVar[
-        t.MutableSequence[DecoratedItem[te.Self, InteractiveViewItem]]
+        t.MutableSequence[DecoratedItem[te.Self, InteractiveViewItem] | ViewItem]
     ] = []  # Decorated callbacks that need to be turned into items
 
     def __init_subclass__(cls) -> None:
         """Get decorated callbacks."""
-        children: t.MutableSequence[DecoratedItem[te.Self, InteractiveViewItem]] = []
+        children: t.MutableSequence[DecoratedItem[te.Self, InteractiveViewItem] | ViewItem] = []
         for base_cls in reversed(cls.mro()):
             for value in base_cls.__dict__.values():
-                if isinstance(value, DecoratedItem):
+                if isinstance(value, (DecoratedItem, ViewItem)):
                     children.append(value)  # type: ignore
 
         if len(children) > 25:
@@ -92,12 +92,16 @@ class View(
         self._is_bound = True
         self._input_event: asyncio.Event = asyncio.Event()
 
-        for decorated_item in self._view_children:
+        for itemish in self._view_children:
             # Must deepcopy, otherwise multiple views will have the same item reference
-            decorated_item = copy.deepcopy(decorated_item)
-            item = decorated_item.build(self)
+            itemish = copy.deepcopy(itemish)
+            if isinstance(itemish, DecoratedItem):
+                item = itemish.build(self)
+                setattr(self, itemish.name, itemish)
+            else:
+                item = itemish
+
             self.add_item(item)
-            setattr(self, decorated_item.name, item)
 
     @property
     def is_persistent(self) -> bool:
