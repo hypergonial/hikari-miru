@@ -35,8 +35,9 @@ class Modal(
 
     Parameters
     ----------
-    title : str
+    title : str | None
         The title of the modal, appears on the top of the modal dialog box.
+        If not provided, it must be provided as a class variable.
     custom_id : str
         The custom identifier of the modal, identifies the modal through interactions.
     timeout : Optional[Union[float, int, datetime.timedelta]]
@@ -49,9 +50,13 @@ class Modal(
     """
 
     _modal_children: t.Mapping[str, ModalItem] = {}
+    _title: str = ""
 
-    def __init_subclass__(cls) -> None:
+    def __init_subclass__(cls, *, title: str | None = None) -> None:
         """Get ModalItem classvars."""
+        if title:
+            cls._title = title
+
         children: t.MutableMapping[str, ModalItem] = {}
         for base_cls in reversed(cls.mro()):
             for name, value in base_cls.__dict__.items():
@@ -63,13 +68,20 @@ class Modal(
         cls._modal_children = children
 
     def __init__(
-        self, title: str, *, custom_id: str | None = None, timeout: float | int | datetime.timedelta | None = 300.0
+        self,
+        title: str | None = None,
+        *,
+        custom_id: str | None = None,
+        timeout: float | int | datetime.timedelta | None = 300.0,
     ) -> None:
         super().__init__(timeout=timeout)
 
-        self._title: str = title
+        self._title: str = title or self._title
         self._custom_id: str = custom_id or os.urandom(16).hex()
         self._values: t.Mapping[ModalItem, str] | None = None
+
+        if not self._title:
+            raise ValueError("Modal title is required.")
 
         if len(self._title) > 100:
             raise ValueError("Modal title is too long. Maximum 100 characters.")
