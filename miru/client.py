@@ -667,7 +667,7 @@ class Client:
     def get_type_dependency(self, type_: type[T], *, default: T) -> T:
         ...
 
-    def get_type_dependency(self, type_: type[T], *, default: T | None = None) -> T:
+    def get_type_dependency(self, type_: type[T], *, default: T | hikari.UndefinedType = hikari.UNDEFINED) -> T:
         """Get a type dependency for this client.
 
         Parameters
@@ -688,7 +688,7 @@ class Client:
         KeyError
             If the dependency does not exist and no default was specified.
         """
-        if default is None:
+        if default is hikari.UNDEFINED:
             value = self._injector.get_type_dependency(type_)
             if isinstance(value, alluka.abc.Undefined):
                 raise KeyError(f"Could not resolve dependency of type {type_}.")
