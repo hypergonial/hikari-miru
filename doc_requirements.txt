@@ -3,4 +3,4 @@ mkdocs~=1.5.3
 mkdocstrings-python~=1.8.0
 black~=23.12.1
 griffe-inherited-docstrings~=1.0.0
-mkdocs-glightbox~=0.3.6
+mkdocs-glightbox~=0.3.7
