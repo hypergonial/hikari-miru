@@ -60,16 +60,24 @@ class ModalContext(Context[hikari.ModalInteraction]):
         """
         return await super().respond_with_builder(builder)
 
+    @t.overload
+    def get_value_by(self, predicate: t.Callable[[ModalItem], bool]) -> str:
+        ...
+
+    @t.overload
+    def get_value_by(self, predicate: t.Callable[[ModalItem], bool], *, default: T) -> str | T:
+        ...
+
     def get_value_by(
-        self, predicate: t.Callable[[ModalItem], bool], default: hikari.UndefinedOr[T] = hikari.UNDEFINED
-    ) -> T | str:
+        self, predicate: t.Callable[[ModalItem], bool], *, default: T | hikari.UndefinedType = hikari.UNDEFINED
+    ) -> str | T:
         """Get the value for the first modal item that matches the given predicate.
 
         Parameters
         ----------
         predicate : Callable[[ModalItem], bool]
             A predicate to match the item.
-        default : hikari.UndefinedOr[T]
+        default : T
             A default value to return if no item was matched
 
         Returns
@@ -86,18 +94,27 @@ class ModalContext(Context[hikari.ModalInteraction]):
             if predicate(item):
                 return value
 
-        if default is hikari.UNDEFINED:
-            raise KeyError("No modal item matched the given predicate.")
-        return default
+        if default is not hikari.UNDEFINED:
+            return default
 
-    def get_value_by_id(self, custom_id: str, default: hikari.UndefinedOr[T] = hikari.UNDEFINED) -> T | str:
+        raise KeyError("No item matched the given predicate")
+
+    @t.overload
+    def get_value_by_id(self, custom_id: str) -> str:
+        ...
+
+    @t.overload
+    def get_value_by_id(self, custom_id: str, *, default: T) -> str | T:
+        ...
+
+    def get_value_by_id(self, custom_id: str, default: T | hikari.UndefinedType = hikari.UNDEFINED) -> T | str:
         """Get the value for a modal item with the given custom ID.
 
         Parameters
         ----------
         custom_id : str
             The custom_id of the component.
-        default : hikari.UndefinedOr[T]
+        default : T
             A default value to return if the item was not found
 
         Returns
@@ -110,7 +127,10 @@ class ModalContext(Context[hikari.ModalInteraction]):
         KeyError
             The item was not found and no default was provided.
         """
-        return self.get_value_by(lambda item: item.custom_id == custom_id, default=default)
+        if default is not hikari.UNDEFINED:
+            return self.get_value_by(lambda item: item.custom_id == custom_id, default=default)
+        else:
+            return self.get_value_by(lambda item: item.custom_id == custom_id)
 
 
 # MIT License

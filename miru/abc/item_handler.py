@@ -8,6 +8,8 @@ import sys
 import typing as t
 from collections.abc import Sequence
 
+import hikari
+
 from miru.abc.item import Item
 from miru.exceptions import HandlerFullError, ItemAlreadyAttachedError, RowFullError
 from miru.internal.types import BuilderT, ContextT, InteractionT, ItemT, RespBuilderT
@@ -16,6 +18,8 @@ if t.TYPE_CHECKING:
     import typing_extensions as te
 
     from miru import Client
+
+T = t.TypeVar("T")
 
 __all__ = ("ItemHandler",)
 
@@ -248,38 +252,77 @@ class ItemHandler(Sequence[BuilderT], abc.ABC, t.Generic[BuilderT, RespBuilderT,
 
         return self
 
-    def get_item_by(self, predicate: t.Callable[[ItemT], bool]) -> ItemT | None:
+    @t.overload
+    def get_item_by(self, predicate: t.Callable[[ItemT], bool]) -> ItemT:
+        ...
+
+    @t.overload
+    def get_item_by(self, predicate: t.Callable[[ItemT], bool], *, default: T) -> ItemT | T:
+        ...
+
+    def get_item_by(
+        self, predicate: t.Callable[[ItemT], bool], *, default: T | hikari.UndefinedType = hikari.UNDEFINED
+    ) -> ItemT | T:
         """Get the first item that matches the given predicate.
 
         Parameters
         ----------
         predicate : Callable[[Item[Any]], bool]
             A predicate to match the item.
+        default : T
+            The default value to return if the item doesn't exist.
 
         Returns
         -------
-        Optional[Item[Any]]
-            The item that matched the predicate or None.
+        ItemT | T
+            The item that matched the predicate or default.
+
+        Raises
+        ------
+        KeyError
+            No item that matches predicate was found and no default was provided.
         """
         for item in self.children:
             if predicate(item):
                 return item
-        return None
 
-    def get_item_by_id(self, custom_id: str) -> ItemT | None:
+        if default is not hikari.UNDEFINED:
+            return default
+
+        raise KeyError("No item that matches predicate was found.")
+
+    @t.overload
+    def get_item_by_id(self, custom_id: str) -> ItemT:
+        ...
+
+    @t.overload
+    def get_item_by_id(self, custom_id: str, *, default: T) -> ItemT | T:
+        ...
+
+    def get_item_by_id(self, custom_id: str, default: T | hikari.UndefinedType = hikari.UNDEFINED) -> ItemT | T:
         """Get the first item that matches the given custom ID.
 
         Parameters
         ----------
         custom_id : str
             The custom_id of the component.
+        default : T
+            The default value to return if the item doesn't exist.
 
         Returns
         -------
-        Optional[Item[Any]]
-            The item that matched the custom ID or None.
+        ItemT | T
+            The item that matched the custom ID or the default.
+
+        Raises
+        ------
+        KeyError
+            No item that matches the custom ID was found and no default was provided.
         """
-        return self.get_item_by(lambda item: item.custom_id == custom_id)
+        if default:
+            return self.get_item_by(lambda item: item.custom_id == custom_id, default=default)
+        else:
+            return self.get_item_by(lambda item: item.custom_id == custom_id)
 
     def build(self) -> t.Sequence[BuilderT]:
         """Creates the action rows the item handler represents.
