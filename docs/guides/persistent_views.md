@@ -15,7 +15,9 @@ even if the timeout did not expire. The solution to this problem are **persisten
 Persistent views are views that persist and keep functioning, even after an application restart.
 
 Two conditions need to be met in order for a view to be considered persistent:
+
 - The view must have a timeout of `None`.
+
 - All items attached to the view must have a `custom_id` provided to it.
 
 There are two variants of them, bound and unbound. Let's explore the differences between the two.
