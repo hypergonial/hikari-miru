@@ -397,7 +397,7 @@ class Client:
                 logger.warning(
                     f"Unknown component interaction received for component: '{interaction.custom_id}'. Did you forget to start a view?"
                     "\nYou can disable this warning by setting 'ignore_unknown_interactions' to True in the client constructor, or"
-                    " by setting a unhandled component interaction hook."
+                    " by setting an unhandled component interaction hook."
                 )
             return
 
@@ -435,7 +435,7 @@ class Client:
                 logger.warning(
                     f"Unknown modal interaction received for modal: '{interaction.custom_id}'. Did you forget to start a modal?"
                     "\nYou can disable this warning by setting 'ignore_unknown_interactions' to True in the client constructor, or"
-                    " by setting a unhandled modal interaction hook."
+                    " by setting an unhandled modal interaction hook."
                 )
             return
 
