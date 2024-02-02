@@ -56,9 +56,9 @@ class Menu(miru.View):
         return self._stack[-1]
 
     @property
-    def _flags(self) -> hikari.MessageFlag:
+    def _flags(self) -> hikari.MessageFlag | hikari.UndefinedType:
         """Flags to use when sending an interaction response."""
-        return hikari.MessageFlag.EPHEMERAL if self.ephemeral else hikari.MessageFlag.NONE
+        return hikari.MessageFlag.EPHEMERAL if self.ephemeral else hikari.UNDEFINED
 
     async def on_timeout(self) -> None:
         for item in self.children:
@@ -188,11 +188,13 @@ class Menu(miru.View):
         if self._client is not None:
             raise RuntimeError("Navigator is already bound to a client.")
 
+        self._ephemeral = ephemeral
         self._stack.append(starting_screen)
         await self._load_screen(starting_screen)
-        self._ephemeral = ephemeral
 
-        builder = miru.MessageBuilder(hikari.ResponseType.MESSAGE_CREATE, components=self, **self._payload)
+        builder = miru.MessageBuilder(
+            hikari.ResponseType.MESSAGE_CREATE, components=self, flags=self._flags, **self._payload
+        )
         builder._client = client
         return builder
 
