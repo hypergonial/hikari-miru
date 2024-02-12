@@ -5,7 +5,6 @@ import typing as t
 
 import attr
 import hikari
-import typing_extensions as te
 
 from miru.ext.nav.items import FirstButton, IndicatorButton, LastButton, NavButton, NavItem, NextButton, PrevButton
 from miru.internal.deprecation import warn_deprecate
@@ -15,6 +14,8 @@ from miru.view import View
 
 if t.TYPE_CHECKING:
     import datetime
+
+    import typing_extensions as te
 
     from miru.abc.context import Context
     from miru.client import Client
@@ -56,7 +57,6 @@ class NavigatorView(View):
     ) -> None:
         ...
 
-    @te.deprecated("Use 'items=' instead of 'buttons='. 'buttons=' will be removed in version v4.2.0.")
     @t.overload
     def __init__(
         self,
