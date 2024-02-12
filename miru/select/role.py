@@ -151,7 +151,9 @@ def role_select(
         if not inspect.iscoroutinefunction(func):
             raise TypeError("role_select must decorate coroutine function.")
 
-        item: RoleSelect = RoleSelect(
+        return DecoratedItem(
+            RoleSelect,
+            func,
             custom_id=custom_id,
             placeholder=placeholder,
             min_values=min_values,
@@ -160,7 +162,6 @@ def role_select(
             row=row,
             autodefer=autodefer,
         )
-        return DecoratedItem(item, func)
 
     return decorator
 

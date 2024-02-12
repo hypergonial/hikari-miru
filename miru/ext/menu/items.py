@@ -103,15 +103,17 @@ class ScreenMentionableSelect(miru.MentionableSelect, InteractiveScreenItem):
 class DecoratedScreenItem(t.Generic[ScreenT, ScreenItemT]):
     """A partial item made using a decorator."""
 
-    __slots__ = ("item", "callback")
+    __slots__ = ("item_type", "callback", "kwargs")
 
     def __init__(
         self,
-        item: ScreenItemT,
+        item_type: type[ScreenItemT],
         callback: t.Callable[[ScreenT, miru.ViewContext, ScreenItemT], t.Coroutine[t.Any, t.Any, None]],
+        **kwargs: t.Any,
     ) -> None:
-        self.item = item
+        self.item_type = item_type
         self.callback = callback
+        self.kwargs = kwargs
 
     def build(self, screen: ScreenT) -> ScreenItemT:
         """Convert a DecoratedScreenItem into a ViewItem.
@@ -126,9 +128,11 @@ class DecoratedScreenItem(t.Generic[ScreenT, ScreenItemT]):
         ScreenItemT
             The converted item.
         """
-        self.item.callback = lambda ctx: self.callback(screen, ctx, self.item)
+        item = self.item_type(**self.kwargs)
 
-        return self.item
+        item.callback = lambda ctx: self.callback(screen, ctx, item)
+
+        return item
 
     @property
     def name(self) -> str:
@@ -194,11 +198,18 @@ def button(
     ) -> DecoratedScreenItem[ScreenT, ScreenButton]:
         if not inspect.iscoroutinefunction(func):
             raise TypeError("'@button' must decorate coroutine function.")
-        item: ScreenButton = ScreenButton(
-            label=label, custom_id=custom_id, style=style, emoji=emoji, row=row, disabled=disabled, autodefer=autodefer
-        )
 
-        return DecoratedScreenItem(item, func)
+        return DecoratedScreenItem(
+            ScreenButton,
+            func,
+            label=label,
+            custom_id=custom_id,
+            style=style,
+            emoji=emoji,
+            row=row,
+            disabled=disabled,
+            autodefer=autodefer,
+        )
 
     return decorator
 
@@ -256,7 +267,9 @@ def channel_select(
         if not inspect.iscoroutinefunction(func):
             raise TypeError("'@channel_select' must decorate coroutine function.")
 
-        item: ScreenChannelSelect = ScreenChannelSelect(
+        return DecoratedScreenItem(
+            ScreenChannelSelect,
+            func,
             channel_types=channel_types,
             custom_id=custom_id,
             placeholder=placeholder,
@@ -266,7 +279,6 @@ def channel_select(
             row=row,
             autodefer=autodefer,
         )
-        return DecoratedScreenItem(item, func)
 
     return decorator
 
@@ -321,7 +333,9 @@ def mentionable_select(
         if not inspect.iscoroutinefunction(func):
             raise TypeError("'@mentionable_select' must decorate coroutine function.")
 
-        item: ScreenMentionableSelect = ScreenMentionableSelect(
+        return DecoratedScreenItem(
+            ScreenMentionableSelect,
+            func,
             custom_id=custom_id,
             placeholder=placeholder,
             min_values=min_values,
@@ -330,7 +344,6 @@ def mentionable_select(
             row=row,
             autodefer=autodefer,
         )
-        return DecoratedScreenItem(item, func)
 
     return decorator
 
@@ -385,7 +398,9 @@ def role_select(
         if not inspect.iscoroutinefunction(func):
             raise TypeError("'@role_select' must decorate coroutine function.")
 
-        item: ScreenRoleSelect = ScreenRoleSelect(
+        return DecoratedScreenItem(
+            ScreenRoleSelect,
+            func,
             custom_id=custom_id,
             placeholder=placeholder,
             min_values=min_values,
@@ -394,7 +409,6 @@ def role_select(
             row=row,
             autodefer=autodefer,
         )
-        return DecoratedScreenItem(item, func)
 
     return decorator
 
@@ -447,7 +461,9 @@ def text_select(
         if not inspect.iscoroutinefunction(func):
             raise TypeError("'@text_select' must decorate coroutine function.")
 
-        item: ScreenTextSelect = ScreenTextSelect(
+        return DecoratedScreenItem(
+            ScreenTextSelect,
+            func,
             options=options,
             custom_id=custom_id,
             placeholder=placeholder,
@@ -457,7 +473,6 @@ def text_select(
             row=row,
             autodefer=autodefer,
         )
-        return DecoratedScreenItem(item, func)
 
     return decorator
 
@@ -507,7 +522,9 @@ def user_select(
         if not inspect.iscoroutinefunction(func):
             raise TypeError("'@user_select' must decorate coroutine function.")
 
-        item: ScreenUserSelect = ScreenUserSelect(
+        return DecoratedScreenItem(
+            ScreenUserSelect,
+            func,
             custom_id=custom_id,
             placeholder=placeholder,
             min_values=min_values,
@@ -516,7 +533,6 @@ def user_select(
             row=row,
             autodefer=autodefer,
         )
-        return DecoratedScreenItem(item, func)
 
     return decorator
 

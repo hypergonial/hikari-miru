@@ -160,7 +160,9 @@ def user_select(
         if not inspect.iscoroutinefunction(func):
             raise TypeError("user_select must decorate coroutine function.")
 
-        item: UserSelect = UserSelect(
+        return DecoratedItem(
+            UserSelect,
+            func,
             custom_id=custom_id,
             placeholder=placeholder,
             min_values=min_values,
@@ -169,7 +171,6 @@ def user_select(
             row=row,
             autodefer=autodefer,
         )
-        return DecoratedItem(item, func)
 
     return decorator
 

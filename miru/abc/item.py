@@ -240,13 +240,17 @@ class ModalItem(Item["hikari.impl.ModalActionRowBuilder", "ModalContext", "Modal
 class DecoratedItem(t.Generic[ViewT, ViewItemT]):
     """A partial item made using a decorator."""
 
-    __slots__ = ("item", "callback")
+    __slots__ = ("item_type", "callback", "kwargs")
 
     def __init__(
-        self, item: ViewItemT, callback: t.Callable[[ViewT, ViewContext, ViewItemT], t.Coroutine[t.Any, t.Any, None]]
+        self,
+        item_type: type[ViewItemT],
+        callback: t.Callable[[ViewT, ViewContext, ViewItemT], t.Coroutine[t.Any, t.Any, None]],
+        **kwargs: t.Any,
     ) -> None:
-        self.item = item
+        self.item_type = item_type
         self.callback = callback
+        self.kwargs = kwargs
 
     def build(self, view: ViewT) -> ViewItemT:
         """Convert a DecoratedItem into a ViewItem.
@@ -261,9 +265,10 @@ class DecoratedItem(t.Generic[ViewT, ViewItemT]):
         ViewItem[ViewT]
             The converted item.
         """
-        self.item.callback = lambda ctx: self.callback(view, ctx, self.item)
+        item = self.item_type(**self.kwargs)
+        item.callback = lambda ctx: self.callback(view, ctx, item)
 
-        return self.item
+        return item
 
     @property
     def name(self) -> str:

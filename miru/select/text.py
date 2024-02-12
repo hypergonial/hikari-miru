@@ -237,7 +237,9 @@ def text_select(
         if not inspect.iscoroutinefunction(func):
             raise TypeError("text_select must decorate coroutine function.")
 
-        item: TextSelect = TextSelect(
+        return DecoratedItem(
+            TextSelect,
+            func,
             options=options,
             custom_id=custom_id,
             placeholder=placeholder,
@@ -247,7 +249,6 @@ def text_select(
             row=row,
             autodefer=autodefer,
         )
-        return DecoratedItem(item, func)
 
     return decorator
 

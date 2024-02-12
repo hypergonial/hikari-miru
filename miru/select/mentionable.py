@@ -161,7 +161,9 @@ def mentionable_select(
         if not inspect.iscoroutinefunction(func):
             raise TypeError("mentionable_select must decorate coroutine function.")
 
-        item: MentionableSelect = MentionableSelect(
+        return DecoratedItem(
+            MentionableSelect,
+            func,
             custom_id=custom_id,
             placeholder=placeholder,
             min_values=min_values,
@@ -170,7 +172,6 @@ def mentionable_select(
             row=row,
             autodefer=autodefer,
         )
-        return DecoratedItem(item, func)
 
     return decorator
 

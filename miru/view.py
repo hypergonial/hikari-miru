@@ -93,13 +93,12 @@ class View(
         self._input_event: asyncio.Event = asyncio.Event()
 
         for itemish in self._view_children:
-            # Must deepcopy, otherwise multiple views will have the same item reference
-            itemish = copy.deepcopy(itemish)
             if isinstance(itemish, DecoratedItem):
                 item = itemish.build(self)
                 setattr(self, itemish.name, itemish)
             else:
-                item = itemish
+                # Must deepcopy, otherwise multiple views will have the same item reference
+                item = copy.deepcopy(itemish)
 
             self.add_item(item)
 

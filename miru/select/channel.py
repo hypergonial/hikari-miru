@@ -171,7 +171,9 @@ def channel_select(
         if not inspect.iscoroutinefunction(func):
             raise TypeError("'@channel_select' must decorate coroutine function.")
 
-        item: ChannelSelect = ChannelSelect(
+        return DecoratedItem(
+            ChannelSelect,
+            func,
             channel_types=channel_types,
             custom_id=custom_id,
             placeholder=placeholder,
@@ -181,8 +183,6 @@ def channel_select(
             row=row,
             autodefer=autodefer,
         )
-
-        return DecoratedItem(item, func)
 
     return decorator
 

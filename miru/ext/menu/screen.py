@@ -67,15 +67,15 @@ class Screen(abc.ABC):
     """
 
     _screen_children: t.Sequence[
-        DecoratedScreenItem[te.Self, InteractiveScreenItem]
+        DecoratedScreenItem[te.Self, InteractiveScreenItem] | ScreenItem
     ] = []  # Decorated callbacks that need to be turned into items
 
     def __init_subclass__(cls) -> None:
         """Get decorated callbacks."""
-        children: t.MutableSequence[DecoratedScreenItem[te.Self, InteractiveScreenItem]] = []
+        children: t.MutableSequence[DecoratedScreenItem[te.Self, InteractiveScreenItem] | ScreenItem] = []
         for base_cls in reversed(cls.mro()):
             for value in base_cls.__dict__.values():
-                if isinstance(value, DecoratedScreenItem):
+                if isinstance(value, (DecoratedScreenItem, ScreenItem)):
                     children.append(value)  # type: ignore
 
         if len(children) > 25:
@@ -87,12 +87,14 @@ class Screen(abc.ABC):
         self._menu = menu
         self._children: t.MutableSequence[ScreenItem] = []
 
-        for decorated_item in self._screen_children:
-            # Must deepcopy, otherwise multiple views will have the same item reference
-            decorated_item = copy.deepcopy(decorated_item)
-            item = decorated_item.build(self)
+        for itemish in self._screen_children:
+            if isinstance(itemish, DecoratedScreenItem):
+                item = itemish.build(self)
+                setattr(self, itemish.name, item)
+            else:
+                # Must deepcopy, otherwise multiple views will have the same item reference
+                item = copy.deepcopy(itemish)
             self.add_item(item)
-            setattr(self, decorated_item.name, item)
 
     @property
     def menu(self) -> Menu:
