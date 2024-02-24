@@ -93,7 +93,8 @@ class NavigatorView(View):
 
             for button in buttons:
                 self.add_item(button)
-        else:
+
+        if buttons is None and items is None:
             default_buttons = self.get_default_buttons()
             for default_button in default_buttons:
                 self.add_item(default_button)
