@@ -24,9 +24,9 @@ logger = logging.getLogger("__name__")
 class _ResponseGlue:
     """A glue object to allow for easy creation of responses in both REST and Gateway contexts."""
 
-    response_type: t.Literal[hikari.ResponseType.MESSAGE_CREATE] | t.Literal[
-        hikari.ResponseType.MESSAGE_UPDATE
-    ] = hikari.ResponseType.MESSAGE_CREATE
+    response_type: t.Literal[hikari.ResponseType.MESSAGE_CREATE] | t.Literal[hikari.ResponseType.MESSAGE_UPDATE] = (
+        hikari.ResponseType.MESSAGE_CREATE
+    )
     content: hikari.UndefinedOr[t.Any] = hikari.UNDEFINED
     flags: int | hikari.MessageFlag | hikari.UndefinedType = hikari.UNDEFINED
     tts: hikari.UndefinedOr[bool] = hikari.UNDEFINED
@@ -453,14 +453,12 @@ class Context(abc.ABC, t.Generic[InteractionT]):
             return response
 
     @t.overload
-    async def respond_with_builder(self, builder: hikari.api.InteractionModalBuilder) -> None:
-        ...
+    async def respond_with_builder(self, builder: hikari.api.InteractionModalBuilder) -> None: ...
 
     @t.overload
     async def respond_with_builder(
         self, builder: hikari.api.InteractionMessageBuilder | hikari.api.InteractionDeferredBuilder
-    ) -> InteractionResponse:
-        ...
+    ) -> InteractionResponse: ...
 
     async def respond_with_builder(self, builder: ResponseBuildersT) -> InteractionResponse | None:
         """Respond to the interaction with a builder. This method will try to turn the builder into a valid
@@ -634,12 +632,10 @@ class Context(abc.ABC, t.Generic[InteractionT]):
         | t.Literal[hikari.ResponseType.DEFERRED_MESSAGE_UPDATE],
         *,
         flags: hikari.UndefinedOr[int | hikari.MessageFlag] = hikari.UNDEFINED,
-    ) -> None:
-        ...
+    ) -> None: ...
 
     @t.overload
-    async def defer(self, *, flags: hikari.UndefinedOr[int | hikari.MessageFlag] = hikari.UNDEFINED) -> None:
-        ...
+    async def defer(self, *, flags: hikari.UndefinedOr[int | hikari.MessageFlag] = hikari.UNDEFINED) -> None: ...
 
     async def defer(  # noqa: D417
         self, *args: t.Any, flags: hikari.UndefinedOr[int | hikari.MessageFlag] = hikari.UNDEFINED, **kwargs: t.Any

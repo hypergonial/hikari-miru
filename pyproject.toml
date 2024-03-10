@@ -1,5 +1,9 @@
 [tool.ruff]
 exclude = ["examples", "docs", "build"]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
 select = [
     "E",
     "F",
@@ -21,11 +25,6 @@ select = [
 ]
 ignore = ["F405", "F403", "E501", "D205"]
 fixable = ["I", "TCH", "D"]
-line-length = 120
-target-version = "py310"
-
-[tool.ruff.format]
-skip-magic-trailing-comma = true
 
 [tool.ruff.lint.isort]
 split-on-trailing-comma = false
@@ -33,6 +32,8 @@ split-on-trailing-comma = false
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
 
+[tool.ruff.format]
+skip-magic-trailing-comma = true
 
 [tool.pyright]
 pythonVersion = "3.10"

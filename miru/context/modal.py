@@ -61,12 +61,10 @@ class ModalContext(Context[hikari.ModalInteraction]):
         return await super().respond_with_builder(builder)
 
     @t.overload
-    def get_value_by(self, predicate: t.Callable[[ModalItem], bool]) -> str:
-        ...
+    def get_value_by(self, predicate: t.Callable[[ModalItem], bool]) -> str: ...
 
     @t.overload
-    def get_value_by(self, predicate: t.Callable[[ModalItem], bool], *, default: T) -> str | T:
-        ...
+    def get_value_by(self, predicate: t.Callable[[ModalItem], bool], *, default: T) -> str | T: ...
 
     def get_value_by(
         self, predicate: t.Callable[[ModalItem], bool], *, default: T | hikari.UndefinedType = hikari.UNDEFINED
@@ -100,12 +98,10 @@ class ModalContext(Context[hikari.ModalInteraction]):
         raise KeyError("No item matched the given predicate")
 
     @t.overload
-    def get_value_by_id(self, custom_id: str) -> str:
-        ...
+    def get_value_by_id(self, custom_id: str) -> str: ...
 
     @t.overload
-    def get_value_by_id(self, custom_id: str, *, default: T) -> str | T:
-        ...
+    def get_value_by_id(self, custom_id: str, *, default: T) -> str | T: ...
 
     def get_value_by_id(self, custom_id: str, default: T | hikari.UndefinedType = hikari.UNDEFINED) -> T | str:
         """Get the value for a modal item with the given custom ID.

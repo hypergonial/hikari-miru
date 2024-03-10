@@ -97,8 +97,7 @@ class Item(abc.ABC, t.Generic[BuilderT, ContextT, HandlerT]):
         self._custom_id = value or os.urandom(16).hex()
 
     @abc.abstractmethod
-    def _build(self, action_row: t.Any) -> None:
-        ...
+    def _build(self, action_row: t.Any) -> None: ...
 
     @property
     @abstractmethod

@@ -515,12 +515,10 @@ class Client:
         return handler
 
     @t.overload
-    def set_unhandled_component_interaction_hook(self, hook: UnhandledCompInterHookT) -> te.Self:
-        ...
+    def set_unhandled_component_interaction_hook(self, hook: UnhandledCompInterHookT) -> te.Self: ...
 
     @t.overload
-    def set_unhandled_component_interaction_hook(self) -> t.Callable[[UnhandledCompInterHookT], te.Self]:
-        ...
+    def set_unhandled_component_interaction_hook(self) -> t.Callable[[UnhandledCompInterHookT], te.Self]: ...
 
     def set_unhandled_component_interaction_hook(
         self, hook: UnhandledCompInterHookT | None = None
@@ -565,12 +563,10 @@ class Client:
         return decorator
 
     @t.overload
-    def set_unhandled_modal_interaction_hook(self, hook: UnhandledModalInterHookT) -> te.Self:
-        ...
+    def set_unhandled_modal_interaction_hook(self, hook: UnhandledModalInterHookT) -> te.Self: ...
 
     @t.overload
-    def set_unhandled_modal_interaction_hook(self) -> t.Callable[[UnhandledModalInterHookT], te.Self]:
-        ...
+    def set_unhandled_modal_interaction_hook(self) -> t.Callable[[UnhandledModalInterHookT], te.Self]: ...
 
     def set_unhandled_modal_interaction_hook(
         self, hook: UnhandledModalInterHookT | None = None
@@ -660,12 +656,10 @@ class Client:
         modal._client_start_hook(self)
 
     @t.overload
-    def get_type_dependency(self, type_: type[T]) -> T:
-        ...
+    def get_type_dependency(self, type_: type[T]) -> T: ...
 
     @t.overload
-    def get_type_dependency(self, type_: type[T], *, default: T) -> T:
-        ...
+    def get_type_dependency(self, type_: type[T], *, default: T) -> T: ...
 
     def get_type_dependency(self, type_: type[T], *, default: T | hikari.UndefinedType = hikari.UNDEFINED) -> T:
         """Get a type dependency for this client.
@@ -746,12 +740,10 @@ class Client:
         return self
 
     @t.overload
-    def inject_dependencies(self, func: t.Callable[P, T]) -> t.Callable[P, T]:
-        ...
+    def inject_dependencies(self, func: t.Callable[P, T]) -> t.Callable[P, T]: ...
 
     @t.overload
-    def inject_dependencies(self) -> t.Callable[[t.Callable[P, T]], t.Callable[P, T]]:
-        ...
+    def inject_dependencies(self) -> t.Callable[[t.Callable[P, T]], t.Callable[P, T]]: ...
 
     def inject_dependencies(
         self, func: t.Callable[P, T] | None = None

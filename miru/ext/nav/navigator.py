@@ -54,8 +54,7 @@ class NavigatorView(View):
         items: t.Sequence[NavItem] | None = None,
         timeout: float | int | datetime.timedelta | None = 120.0,
         autodefer: bool | AutodeferOptions = True,
-    ) -> None:
-        ...
+    ) -> None: ...
 
     @t.overload
     def __init__(
@@ -65,8 +64,7 @@ class NavigatorView(View):
         buttons: t.Sequence[NavButton] | None = None,
         timeout: float | int | datetime.timedelta | None = 120.0,
         autodefer: bool | AutodeferOptions = True,
-    ) -> None:
-        ...
+    ) -> None: ...
 
     def __init__(
         self,

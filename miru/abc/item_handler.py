@@ -114,12 +114,10 @@ class ItemHandler(Sequence[BuilderT], abc.ABC, t.Generic[BuilderT, RespBuilderT,
             raise HandlerFullError(f"{type(self).__name__} cannot have more than 25 components attached.")
 
     @t.overload
-    def __getitem__(self, value: int) -> BuilderT:
-        ...
+    def __getitem__(self, value: int) -> BuilderT: ...
 
     @t.overload
-    def __getitem__(self, value: slice) -> list[BuilderT]:
-        ...
+    def __getitem__(self, value: slice) -> list[BuilderT]: ...
 
     def __getitem__(self, value: slice | int) -> BuilderT | t.Sequence[BuilderT]:
         return self.build()[value]
@@ -164,8 +162,7 @@ class ItemHandler(Sequence[BuilderT], abc.ABC, t.Generic[BuilderT, RespBuilderT,
 
     @property
     @abc.abstractmethod
-    def _builder(self) -> type[BuilderT]:
-        ...
+    def _builder(self) -> type[BuilderT]: ...
 
     def add_item(self, item: ItemT) -> te.Self:
         """Adds a new item to the item handler.
@@ -253,12 +250,10 @@ class ItemHandler(Sequence[BuilderT], abc.ABC, t.Generic[BuilderT, RespBuilderT,
         return self
 
     @t.overload
-    def get_item_by(self, predicate: t.Callable[[ItemT], bool]) -> ItemT:
-        ...
+    def get_item_by(self, predicate: t.Callable[[ItemT], bool]) -> ItemT: ...
 
     @t.overload
-    def get_item_by(self, predicate: t.Callable[[ItemT], bool], *, default: T) -> ItemT | T:
-        ...
+    def get_item_by(self, predicate: t.Callable[[ItemT], bool], *, default: T) -> ItemT | T: ...
 
     def get_item_by(
         self, predicate: t.Callable[[ItemT], bool], *, default: T | hikari.UndefinedType = hikari.UNDEFINED
@@ -292,12 +287,10 @@ class ItemHandler(Sequence[BuilderT], abc.ABC, t.Generic[BuilderT, RespBuilderT,
         raise KeyError("No item that matches predicate was found.")
 
     @t.overload
-    def get_item_by_id(self, custom_id: str) -> ItemT:
-        ...
+    def get_item_by_id(self, custom_id: str) -> ItemT: ...
 
     @t.overload
-    def get_item_by_id(self, custom_id: str, *, default: T) -> ItemT | T:
-        ...
+    def get_item_by_id(self, custom_id: str, *, default: T) -> ItemT | T: ...
 
     def get_item_by_id(self, custom_id: str, default: T | hikari.UndefinedType = hikari.UNDEFINED) -> ItemT | T:
         """Get the first item that matches the given custom ID.
