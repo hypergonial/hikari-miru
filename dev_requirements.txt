@@ -1,6 +1,6 @@
 ruff==0.3.2
 pyright==1.1.353
-nox==2023.4.22
+nox==2024.3.2
 typing_extensions==4.9.0
 pytest==8.1.1
 pytest-asyncio==0.23.5.post1
