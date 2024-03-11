@@ -1,6 +1,6 @@
 mkdocs-material[imaging]~=9.5.13
 mkdocs~=1.5.3
 mkdocstrings-python~=1.8.0
-black~=24.1.1
+black~=24.2.0
 griffe-inherited-docstrings~=1.0.0
 mkdocs-glightbox~=0.3.7
