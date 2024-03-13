@@ -643,6 +643,9 @@ class Client:
         if isinstance(bind_to, hikari.Snowflakeish):
             view._message_id = hikari.Snowflake(bind_to)
 
+        if isinstance(bind_to, hikari.Message):
+            view._message = bind_to
+
         view._client_start_hook(self)
 
     def start_modal(self, modal: Modal) -> None:
