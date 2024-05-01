@@ -193,9 +193,9 @@ class Client:
             If the located `RESTAware` dependency is not a valid application for miru.
             A valid application is either a `GatewayBotLike` or `InteractionServerAware`.
         """
-        app = client.get_type_dependency(hikari.RESTAware)
-
-        if isinstance(app, alluka.abc.Undefined):
+        try:
+            app: hikari.RESTAware = client.injector.get_type_dependency(hikari.RESTAware)
+        except KeyError:
             raise RuntimeError("Could not resolve a RESTAware dependency from Tanjun client injector.")
 
         if not isinstance(app, (GatewayBotLike, hikari.InteractionServerAware)):
@@ -686,10 +686,7 @@ class Client:
             If the dependency does not exist and no default was specified.
         """
         if default is hikari.UNDEFINED:
-            value = self._injector.get_type_dependency(type_)
-            if isinstance(value, alluka.abc.Undefined):
-                raise KeyError(f"Could not resolve dependency of type {type_}.")
-            return value
+            return self._injector.get_type_dependency(type_)
         else:
             return self._injector.get_type_dependency(type_, default=default)
 
