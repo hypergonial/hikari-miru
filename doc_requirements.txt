@@ -1,4 +1,4 @@
-mkdocs-material[imaging]~=9.5.21
+mkdocs-material[imaging]~=9.5.22
 mkdocs~=1.6.0
 mkdocstrings-python~=1.10.0
 black~=24.4.2
