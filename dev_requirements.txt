@@ -1,7 +1,7 @@
 ruff==0.4.4
 pyright==1.1.364
 nox==2024.4.15
-typing_extensions==4.11.0
+typing_extensions==4.12.0
 pytest==8.2.1
 pytest-asyncio==0.23.7
 slotscheck==0.19.0
