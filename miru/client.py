@@ -538,8 +538,8 @@ class Client:
         te.Self
             The client for chaining calls.
 
-        Examples
-        --------
+        Example
+        -------
         ```py
         @client.set_unhandled_component_interaction_hook
         async def unhandled_comp_hook(inter: hikari.ComponentInteraction) -> None:
@@ -586,8 +586,8 @@ class Client:
         te.Self
             The client for chaining calls.
 
-        Examples
-        --------
+        Example
+        -------
         ```py
         @client.set_unhandled_modal_interaction_hook
         async def unhandled_modal_hook(inter: hikari.ModalInteraction) -> None:
@@ -705,8 +705,8 @@ class Client:
         te.Self
             The client for chaining calls.
 
-        Examples
-        --------
+        Example
+        -------
         ```py
         class Counter:
             def __init__(self, value: int = 0) -> None:
@@ -752,8 +752,8 @@ class Client:
 
         This should be the first (the one at the bottom) decorator of the given function.
 
-        Examples
-        --------
+        Example
+        -------
         ```py
         class Counter:
             def __init__(self, value: int = 0) -> None:
