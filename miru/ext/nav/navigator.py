@@ -295,6 +295,7 @@ class NavigatorView(View):
 
         builder = MessageBuilder(hikari.ResponseType.MESSAGE_CREATE, **self._get_page_payload(self.pages[start_at]))
         builder._client = client
+        builder._view = self
         return builder
 
 

@@ -196,6 +196,7 @@ class Menu(miru.View):
             hikari.ResponseType.MESSAGE_CREATE, components=self, flags=self._flags, **self._payload
         )
         builder._client = client
+        builder._view = self
         return builder
 
 

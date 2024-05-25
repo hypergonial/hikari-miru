@@ -10,6 +10,8 @@ if t.TYPE_CHECKING:
     import tanjun
 
     from miru.client import Client
+    from miru.ext.menu.menu import Menu
+    from miru.ext.nav.navigator import NavigatorView
 
 
 class MessageBuilder(hikari.impl.InteractionMessageBuilder, Mapping[str, t.Any]):
@@ -50,6 +52,7 @@ class MessageBuilder(hikari.impl.InteractionMessageBuilder, Mapping[str, t.Any])
             role_mentions=role_mentions,
         )
         self._client: Client | None = None
+        self._view: NavigatorView | Menu | None = None
 
     def to_hikari_kwargs(self) -> dict[str, t.Any]:
         """Convert this builder to kwargs that can be passed to a hikari interaction's 'create_initial_response'."""
@@ -96,7 +99,7 @@ class MessageBuilder(hikari.impl.InteractionMessageBuilder, Mapping[str, t.Any])
         if self._client is None:
             raise RuntimeError("No client was assigned to this builder.")
 
-        return await self._client.rest.create_message(
+        msg = await self._client.rest.create_message(
             channel=channel,
             content=self.content,
             embeds=self.embeds or hikari.UNDEFINED,
@@ -107,6 +110,9 @@ class MessageBuilder(hikari.impl.InteractionMessageBuilder, Mapping[str, t.Any])
             user_mentions=self.user_mentions,
             role_mentions=self.role_mentions,
         )
+        if self._view:
+            self._view._message = msg
+        return msg
 
     async def create_initial_response(self, interaction: hikari.MessageResponseMixin[t.Any]) -> None:
         """Create an initial response from this builder. This only works in a Gateway context.
@@ -126,7 +132,7 @@ class MessageBuilder(hikari.impl.InteractionMessageBuilder, Mapping[str, t.Any])
         if self._client is None or self._client.is_rest:
             raise RuntimeError("This method can only be called in a Gateway context.")
 
-        return await interaction.create_initial_response(
+        await interaction.create_initial_response(
             response_type=self.type,
             content=self.content,
             embeds=self.embeds or hikari.UNDEFINED,
@@ -137,6 +143,8 @@ class MessageBuilder(hikari.impl.InteractionMessageBuilder, Mapping[str, t.Any])
             user_mentions=self.user_mentions,
             role_mentions=self.role_mentions,
         )
+        if self._view:
+            self._view._inter = interaction
 
     async def respond_with_tanjun(self, context: tanjun.abc.Context) -> None:
         """Respond to a tanjun context with this builder. This works in both Gateway and REST contexts.
@@ -146,7 +154,7 @@ class MessageBuilder(hikari.impl.InteractionMessageBuilder, Mapping[str, t.Any])
         context : tanjun.abc.Context
             The context to respond to.
         """
-        await context.respond(
+        msg = await context.respond(
             content=self.content,
             embeds=self.embeds or hikari.UNDEFINED,
             components=self.components or hikari.UNDEFINED,
@@ -155,6 +163,11 @@ class MessageBuilder(hikari.impl.InteractionMessageBuilder, Mapping[str, t.Any])
             user_mentions=self.user_mentions,
             role_mentions=self.role_mentions,
         )
+        if self._view:
+            if msg:
+                self._view._message = msg
+            if hasattr(context, "interaction"):
+                self._view._inter = getattr(context, "interaction")
 
     async def create_followup(self, interaction: hikari.MessageResponseMixin[t.Any]) -> hikari.Message:
         """Create a followup message from this builder. This works in both Gateway and REST contexts.
@@ -169,7 +182,7 @@ class MessageBuilder(hikari.impl.InteractionMessageBuilder, Mapping[str, t.Any])
         hikari.Message
             The message that was sent or edited.
         """
-        return await interaction.execute(
+        msg = await interaction.execute(
             content=self.content,
             embeds=self.embeds or hikari.UNDEFINED,
             components=self.components or hikari.UNDEFINED,
@@ -179,6 +192,10 @@ class MessageBuilder(hikari.impl.InteractionMessageBuilder, Mapping[str, t.Any])
             user_mentions=self.user_mentions,
             role_mentions=self.role_mentions,
         )
+        if self._view:
+            self._view._message = msg
+            self._view._inter = interaction
+        return msg
 
 
 class DeferredResponseBuilder(hikari.impl.InteractionDeferredBuilder, t.Mapping[str, t.Any]):
