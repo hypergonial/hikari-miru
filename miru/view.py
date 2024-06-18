@@ -95,7 +95,7 @@ class View(
         for itemish in self._view_children:
             if isinstance(itemish, DecoratedItem):
                 item = itemish.build(self)
-                setattr(self, itemish.name, itemish)
+                setattr(self, itemish.name, item)
             else:
                 # Must deepcopy, otherwise multiple views will have the same item reference
                 item = copy.deepcopy(itemish)
