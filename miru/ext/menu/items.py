@@ -17,6 +17,7 @@ __all__ = (
     "ScreenItem",
     "InteractiveScreenItem",
     "ScreenButton",
+    "ScreenLinkButton",
     "ScreenTextSelect",
     "ScreenUserSelect",
     "ScreenRoleSelect",

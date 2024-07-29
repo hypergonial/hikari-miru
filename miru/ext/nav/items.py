@@ -19,6 +19,7 @@ if t.TYPE_CHECKING:
 __all__ = (
     "NavItem",
     "NavButton",
+    "NavLinkButton",
     "NavTextSelect",
     "NavUserSelect",
     "NavRoleSelect",
