@@ -5,13 +5,13 @@ on: [push, pull_request]
 jobs:
   formatting:
     runs-on: ubuntu-latest
-    name: "Run ruff on Python 3.12"
+    name: "Run ruff on Python 3.13"
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Python 3.12
+      - name: Set up Python 3.13
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.13"
 
       - name: Run ruff via nox
         run: |
@@ -20,13 +20,13 @@ jobs:
 
   pyright:
     runs-on: ubuntu-latest
-    name: "Run pyright via nox on Python 3.12"
+    name: "Run pyright via nox on Python 3.13"
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Python 3.12
+      - name: Set up Python 3.13
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.13"
 
       - name: Run pyright via nox
         run: |
@@ -37,7 +37,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.10', '3.11', '3.12']
+        python-version: ['3.10', '3.11', '3.12', '3.13']
       fail-fast: false
 
     name: Run pytest via nox on Python ${{ matrix.python-version }}
