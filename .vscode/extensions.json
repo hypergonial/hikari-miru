@@ -2,7 +2,6 @@
     "recommendations": [
         "ms-python.python",
         "charliermarsh.ruff",
-        "matangover.mypy",
         "njpwerner.autodocstring",
         "EditorConfig.EditorConfig",
         "tamasfe.even-better-toml"
