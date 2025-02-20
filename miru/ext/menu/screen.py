@@ -165,6 +165,7 @@ class Screen(abc.ABC):
 
         self._children.append(item)
         item._screen = self
+        self.menu.add_item(item)
 
         return self
 
@@ -187,6 +188,7 @@ class Screen(abc.ABC):
         except ValueError:
             pass
 
+        self.menu.remove_item(item)
         return self
 
     def clear_items(self) -> te.Self:
@@ -199,6 +201,7 @@ class Screen(abc.ABC):
         """
         for item in self.children:
             item._screen = None
+            self.menu.remove_item(item)
 
         self._children.clear()
         return self
