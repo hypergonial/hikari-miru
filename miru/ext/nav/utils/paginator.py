@@ -20,7 +20,7 @@ class Paginator:
         The character used to divide lines
     """
 
-    __slots__ = ("_max_len", "_prefix", "_suffix", "_line_separator", "_pages")
+    __slots__ = ("_line_separator", "_max_len", "_pages", "_prefix", "_suffix")
 
     def __init__(self, max_len: int = 1000, prefix: str = "", suffix: str = "", line_separator: str = "\n") -> None:
         self._max_len = max_len

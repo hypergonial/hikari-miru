@@ -23,7 +23,7 @@ __all__ = ("SelectOption", "TextSelect", "text_select")
 class SelectOption:
     """A more lenient way to instantiate select options."""
 
-    __slots__ = ("label", "value", "description", "emoji", "is_default")
+    __slots__ = ("description", "emoji", "is_default", "label", "value")
 
     def __init__(
         self,

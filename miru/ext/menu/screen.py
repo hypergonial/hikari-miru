@@ -15,7 +15,7 @@ if t.TYPE_CHECKING:
 
     from miru.ext.menu.menu import Menu
 
-__all__ = ("ScreenContent", "Screen")
+__all__ = ("Screen", "ScreenContent")
 
 
 @attr.define(slots=True)

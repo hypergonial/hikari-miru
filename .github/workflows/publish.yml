@@ -9,12 +9,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: astral-sh/setup-uv@v5
         with:
-          python-version: "3.10"
+          version: "0.6.4"
+          python-version: "3.13"
       - name: publish
         run: |
-          pip install build
-          python -m build
-          pip install twine
-          twine upload dist/* -u __token__ -p ${{ secrets.PYPI_TOKEN }}
+          uv build --no-sources
+          uv publish --token ${{ secrets.PYPI_TOKEN }}

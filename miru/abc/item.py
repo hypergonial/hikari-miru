@@ -19,7 +19,7 @@ if t.TYPE_CHECKING:
     from miru.view import View
 
 
-__all__ = ("Item", "DecoratedItem", "ViewItem", "InteractiveViewItem", "ModalItem")
+__all__ = ("DecoratedItem", "InteractiveViewItem", "Item", "ModalItem", "ViewItem")
 
 
 class Item(abc.ABC, t.Generic[BuilderT, ContextT, HandlerT]):
@@ -239,7 +239,7 @@ class ModalItem(Item["hikari.impl.ModalActionRowBuilder", "ModalContext", "Modal
 class DecoratedItem(t.Generic[ViewT, ViewItemT]):
     """A partial item made using a decorator."""
 
-    __slots__ = ("item_type", "callback", "kwargs")
+    __slots__ = ("callback", "item_type", "kwargs")
 
     def __init__(
         self,
@@ -265,7 +265,11 @@ class DecoratedItem(t.Generic[ViewT, ViewItemT]):
             The converted item.
         """
         item = self.item_type(**self.kwargs)
-        item.callback = lambda ctx: self.callback(view, ctx, item)
+
+        async def wrapped_callback(ctx: ViewContext) -> None:
+            await self.callback(view, ctx, item)
+
+        item.callback = wrapped_callback
 
         return item
 

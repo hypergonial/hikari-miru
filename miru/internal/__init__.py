@@ -3,13 +3,13 @@ from .deprecation import warn_deprecate
 from .version import CURRENT_VERSION, Version
 
 __all__ = (
-    "warn_deprecate",
-    "Version",
     "CURRENT_VERSION",
+    "Version",
     "__author__",
     "__author_email__",
     "__maintainer__",
     "__version__",
+    "warn_deprecate",
 )
 
 # MIT License

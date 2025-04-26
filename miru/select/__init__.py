@@ -5,17 +5,17 @@ from .text import *
 from .user import *
 
 __all__ = (
-    "UserSelect",
-    "RoleSelect",
     "ChannelSelect",
     "MentionableSelect",
-    "TextSelect",
+    "RoleSelect",
     "SelectOption",
-    "user_select",
-    "role_select",
+    "TextSelect",
+    "UserSelect",
     "channel_select",
     "mentionable_select",
+    "role_select",
     "text_select",
+    "user_select",
 )
 
 # MIT License

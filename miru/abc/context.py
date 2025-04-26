@@ -80,11 +80,11 @@ class InteractionResponse:
     This class is not meant to be directly instantiated, and is instead returned by [`Context`][miru.abc.context.Context].
     """
 
-    __slots__ = ("_context", "_message", "_delete_after_task")
+    __slots__ = ("_context", "_delete_after_task", "_message")
 
     def __init__(self, context: Context[InteractionT], message: hikari.Message | None = None) -> None:
-        self._context: Context[InteractionT] = context
-        self._message: hikari.Message | None = message
+        self._context = context
+        self._message = message
         self._delete_after_task: asyncio.Task[None] | None = None
 
     def __await__(self) -> t.Generator[t.Any, None, hikari.Message]:
@@ -218,14 +218,14 @@ class Context(abc.ABC, t.Generic[InteractionT]):
     """An abstract base class for context objects that proxying a Discord interaction."""
 
     __slots__ = (
-        "_interaction",
+        "_autodefer_task",
         "_client",
-        "_responses",
+        "_created_at",
+        "_interaction",
         "_issued_response",
         "_resp_builder",
         "_response_lock",
-        "_autodefer_task",
-        "_created_at",
+        "_responses",
     )
 
     def __init__(self, client: Client, interaction: InteractionT) -> None:
@@ -306,6 +306,11 @@ class Context(abc.ABC, t.Generic[InteractionT]):
         return self._interaction.channel_id
 
     @property
+    def channel(self) -> hikari.InteractionChannel:
+        """The channel the context represents. Will be None in DMs."""
+        return self._interaction.channel
+
+    @property
     def guild_id(self) -> hikari.Snowflake | None:
         """The ID of the guild the context represents. Will be None in DMs."""
         return self._interaction.guild_id
@@ -335,9 +340,9 @@ class Context(abc.ABC, t.Generic[InteractionT]):
         """Gets the guild this context represents, if any. Requires application cache."""
         return self._interaction.get_guild()
 
-    def get_channel(self) -> hikari.TextableGuildChannel | None:
-        """Gets the channel this context represents, None if in a DM. Requires application cache."""
-        return self._interaction.get_channel()
+    def get_channel(self) -> hikari.InteractionChannel:
+        """Gets the channel this context represents."""
+        return self.channel
 
     async def get_last_response(self) -> InteractionResponse:
         """Get the last response issued to the interaction this context is proxying.

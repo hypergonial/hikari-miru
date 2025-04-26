@@ -38,7 +38,7 @@ async def buttons(event: hikari.GuildMessageCreateEvent) -> None:
     me = bot.get_me()
 
     # If the bot is mentioned
-    if me.id in event.message.user_mentions_ids:
+    if event.message.user_mentions_ids and me and me.id in event.message.user_mentions_ids:
         view = BasicView()  # Create an instance of our newly created BasicView
         # Attach the components defined in the view to our message
         await event.message.respond("This is a basic component menu built with miru!", components=view)

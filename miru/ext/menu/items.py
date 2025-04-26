@@ -14,21 +14,21 @@ if t.TYPE_CHECKING:
     from miru.internal.types import InteractiveButtonStylesT
 
 __all__ = (
-    "ScreenItem",
     "InteractiveScreenItem",
     "ScreenButton",
+    "ScreenChannelSelect",
+    "ScreenItem",
     "ScreenLinkButton",
+    "ScreenMentionableSelect",
+    "ScreenRoleSelect",
     "ScreenTextSelect",
     "ScreenUserSelect",
-    "ScreenRoleSelect",
-    "ScreenChannelSelect",
-    "ScreenMentionableSelect",
     "button",
-    "text_select",
-    "user_select",
-    "role_select",
     "channel_select",
     "mentionable_select",
+    "role_select",
+    "text_select",
+    "user_select",
 )
 
 ScreenT = t.TypeVar("ScreenT", bound="Screen")
@@ -104,7 +104,7 @@ class ScreenMentionableSelect(miru.MentionableSelect, InteractiveScreenItem):
 class DecoratedScreenItem(t.Generic[ScreenT, ScreenItemT]):
     """A partial item made using a decorator."""
 
-    __slots__ = ("item_type", "callback", "kwargs")
+    __slots__ = ("callback", "item_type", "kwargs")
 
     def __init__(
         self,
@@ -131,7 +131,10 @@ class DecoratedScreenItem(t.Generic[ScreenT, ScreenItemT]):
         """
         item = self.item_type(**self.kwargs)
 
-        item.callback = lambda ctx: self.callback(screen, ctx, item)
+        async def wrapped_callback(ctx: miru.ViewContext) -> None:
+            await self.callback(screen, ctx, item)
+
+        item.callback = wrapped_callback
 
         return item
 

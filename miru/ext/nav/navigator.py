@@ -124,7 +124,7 @@ class NavigatorView(View):
 
     @property
     def children(self) -> t.Sequence[NavItem]:
-        return t.cast(t.Sequence[NavItem], super().children)
+        return t.cast("t.Sequence[NavItem]", super().children)
 
     async def on_timeout(self) -> None:
         if self.message is None:
@@ -283,8 +283,7 @@ class NavigatorView(View):
 
         if ephemeral and self.timeout is not None and self.timeout > 900:
             logger.warning(
-                "Ephemeral navigators with a timeout greater than 15 minutes will fail. "
-                "Consider lowering the timeout."
+                "Ephemeral navigators with a timeout greater than 15 minutes will fail. Consider lowering the timeout."
             )
 
         self.current_page = start_at

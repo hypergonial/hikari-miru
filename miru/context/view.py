@@ -15,7 +15,7 @@ if t.TYPE_CHECKING:
     from miru.modal import Modal
     from miru.view import View
 
-__all__ = ("ViewContext", "AutodeferOptions", "AutodeferMode")
+__all__ = ("AutodeferMode", "AutodeferOptions", "ViewContext")
 
 
 class AutodeferOptions:

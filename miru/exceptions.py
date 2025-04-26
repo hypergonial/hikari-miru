@@ -1,4 +1,4 @@
-__all__ = ("MiruError", "RowFullError", "HandlerFullError", "ItemAlreadyAttachedError")
+__all__ = ("HandlerFullError", "ItemAlreadyAttachedError", "MiruError", "RowFullError")
 
 
 class MiruError(Exception):

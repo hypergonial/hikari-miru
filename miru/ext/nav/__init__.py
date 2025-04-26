@@ -19,24 +19,24 @@ from .navigator import NavigatorView, Page
 from .utils import *
 
 __all__ = (
-    "NavItem",
-    "InteractiveNavItem",
-    "NavButton",
-    "NavLinkButton",
-    "NavTextSelect",
-    "NavChannelSelect",
-    "NavRoleSelect",
-    "NavUserSelect",
-    "NavMentionableSelect",
-    "NextButton",
-    "PrevButton",
     "FirstButton",
-    "LastButton",
     "IndicatorButton",
-    "StopButton",
-    "Page",
+    "InteractiveNavItem",
+    "LastButton",
+    "NavButton",
+    "NavChannelSelect",
+    "NavItem",
+    "NavLinkButton",
+    "NavMentionableSelect",
+    "NavRoleSelect",
+    "NavTextSelect",
+    "NavUserSelect",
     "NavigatorView",
+    "NextButton",
+    "Page",
     "Paginator",
+    "PrevButton",
+    "StopButton",
 )
 
 # MIT License

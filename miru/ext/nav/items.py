@@ -17,19 +17,19 @@ if t.TYPE_CHECKING:
     from miru.internal.types import InteractiveButtonStylesT
 
 __all__ = (
-    "NavItem",
+    "FirstButton",
+    "IndicatorButton",
+    "LastButton",
     "NavButton",
+    "NavChannelSelect",
+    "NavItem",
     "NavLinkButton",
+    "NavMentionableSelect",
+    "NavRoleSelect",
     "NavTextSelect",
     "NavUserSelect",
-    "NavRoleSelect",
-    "NavChannelSelect",
-    "NavMentionableSelect",
     "NextButton",
     "PrevButton",
-    "FirstButton",
-    "LastButton",
-    "IndicatorButton",
     "StopButton",
 )
 
@@ -218,7 +218,7 @@ class IndicatorButton(NavButton):
         )
 
     async def before_page_change(self) -> None:
-        self.label = f"{self.view.current_page+1}/{len(self.view.pages)}"
+        self.label = f"{self.view.current_page + 1}/{len(self.view.pages)}"
         self.disabled = self.disabled if len(self.view.pages) != 1 else True
 
     async def callback(self, context: ViewContext) -> None:

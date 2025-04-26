@@ -9,7 +9,7 @@ if t.TYPE_CHECKING:
     import typing_extensions as te
 
 
-__all__ = ("Version", "CURRENT_VERSION")
+__all__ = ("CURRENT_VERSION", "Version")
 
 
 @total_ordering

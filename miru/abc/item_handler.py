@@ -10,7 +10,6 @@ from collections.abc import Sequence
 
 import hikari
 
-from miru.abc.item import Item
 from miru.exceptions import HandlerFullError, ItemAlreadyAttachedError, RowFullError
 from miru.internal.types import BuilderT, ContextT, InteractionT, ItemT, RespBuilderT
 
@@ -190,9 +189,6 @@ class ItemHandler(Sequence[BuilderT], abc.ABC, t.Generic[BuilderT, RespBuilderT,
         """
         if len(self.children) > 25:
             raise HandlerFullError("Item Handler cannot have more than 25 components attached.")
-
-        if not isinstance(item, Item):
-            raise TypeError(f"Expected Item not {type(item).__name__} for parameter item.")
 
         if item in self.children:
             raise ItemAlreadyAttachedError(f"Item {type(item).__name__} is already attached to this item handler.")

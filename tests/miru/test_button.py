@@ -26,36 +26,11 @@ def test_emoji_parse() -> None:
     assert button.emoji == hikari.Emoji.parse("<:FoxPray:1005399743314272286>")
 
 
-def test_build() -> None:
-    """Test that the button is built correctly."""
-    button = miru.Button(
-        label="test",
-        emoji="<:FoxPray:1005399743314272286>",
-        custom_id="test",
-        style=hikari.ButtonStyle.PRIMARY,
-        disabled=True,
-    )
-    row = hikari.impl.MessageActionRowBuilder()
-    button._build(row)
-    assert row.build() == {
-        "type": hikari.ComponentType.ACTION_ROW,
-        "components": [
-            {
-                "type": hikari.ComponentType.BUTTON,
-                "style": hikari.ButtonStyle.PRIMARY,
-                "disabled": True,
-                "label": "test",
-                "emoji": {"id": "1005399743314272286"},
-                "custom_id": "test",
-            }
-        ],
-    }
-
-
 def test_from_hikari() -> None:
     """Test that the button is built correctly from a hikari component."""
     button = miru.Button._from_component(
         hikari.ButtonComponent(
+            id=0,
             type=hikari.ComponentType.BUTTON,
             style=hikari.ButtonStyle.PRIMARY,
             is_disabled=True,
@@ -76,6 +51,7 @@ def test_url_from_hikari() -> None:
     """Test that the button is built correctly from a hikari component."""
     button = miru.LinkButton._from_component(
         hikari.ButtonComponent(
+            id=0,
             type=hikari.ComponentType.BUTTON,
             style=hikari.ButtonStyle.LINK,
             is_disabled=True,

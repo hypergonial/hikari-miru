@@ -1,3 +1,67 @@
+[project]
+name = "hikari-miru"
+dynamic = ["version"]
+description = "A command handler for hikari with a focus on type-safety and correctness."
+readme = "README.md"
+license = "MIT"
+authors = [{ name = "hypergonial", email = "git@hypergonial.com" }]
+maintainers = [{ name = "hypergonial", email = "git@hypergonial.com" }]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Framework :: AsyncIO",
+    "Intended Audience :: Developers",
+    "Natural Language :: English",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+requires-python = ">=3.10"
+dependencies = [
+    "alluka>=0.3.3,<0.4",
+    "attrs>=25.3.0",
+    "hikari>=2.3.0",
+    "colorama>=0.4.6; sys_platform == 'win32'",
+]
+
+[project.optional-dependencies]
+rest = ["hikari[server]>=2.3.0"]
+
+[dependency-groups]
+dev = [
+    "nox>=2025.2.9",
+    "pyright==1.1.397",
+    "pytest>=8.3",
+    "pytest-asyncio>=0.26",
+    "ruff>=0.11",
+    "slotscheck>=0.19",
+    "typing-extensions>=4.13",
+    "hikari-tanjun==2.17.6",
+    "hikari-arc>=2.1",
+    "uv>=0.6",
+]
+docs = [
+    "black>=25.1.0",
+    "griffe-inherited-docstrings>=1.1.1",
+    "mkdocs>=1.6.1",
+    "mkdocs-glightbox>=0.4.0",
+    "mkdocs-material[imaging]>=9.6.11",
+    "mkdocstrings-python>=1.16.10",
+]
+
+[project.urls]
+Homepage = "https://miru.hypergonial.com"
+Documentation = "https://miru.hypergonial.com"
+Repository = "https://github.com/hypergonial/hikari-miru"
+Issues = "https://github.com/hypergonial/hikari-miru/issues"
+Changelog = "https://miru.hypergonial.com/changelogs/v4/"
+
 [tool.ruff]
 exclude = ["examples", "docs", "build"]
 line-length = 120
@@ -24,7 +88,7 @@ select = [
     "RUF",
 ]
 ignore = ["F405", "F403", "E501", "D205"]
-fixable = ["I", "TCH", "D"]
+fixable = ["I", "TCH", "D", "RUF"]
 
 [tool.ruff.lint.isort]
 split-on-trailing-comma = false
@@ -35,10 +99,38 @@ convention = "numpy"
 [tool.ruff.format]
 skip-magic-trailing-comma = true
 
+[tool.slotscheck]
+strict-imports = true
+require-superclass = false
+require-subclass = true
+exclude-classes = ":.*(Exception|Error|Proto|AutocompleteData)"
+
+[tool.mypy]
+ignore_errors = true
+
+[tool.uv]
+required-version = "~=0.6"
+
 [tool.pyright]
 pythonVersion = "3.10"
 typeCheckingMode = "strict"
 reportPrivateUsage = false
+reportMissingTypeStubs = true
 reportUnnecessaryTypeIgnoreComment = "warning"
 reportUninitializedInstanceVariable = "error"
 reportShadowedImports = "warning"
+
+[tool.pytest.ini_options]
+asyncio_default_fixture_loop_scope = "function"
+
+[tool.hatch.build.targets.wheel]
+packages = ["miru"]
+artifacts = ["pyproject.toml", "README.md", "LICENSE"]
+
+[tool.hatch.version]
+path = "miru/internal/about.py"
+pattern = '__version__: t\.Final\[str\] = \"(?P<version>[^\"]+)\"'
+
+[build-system]
+requires = ["hatchling>=1.14"]
+build-backend = "hatchling.build"

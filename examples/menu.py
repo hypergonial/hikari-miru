@@ -93,7 +93,7 @@ async def buttons(event: hikari.GuildMessageCreateEvent) -> None:
     me = bot.get_me()
 
     # If the bot is mentioned
-    if me.id in event.message.user_mentions_ids:
+    if event.message.user_mentions_ids and me and me.id in event.message.user_mentions_ids:
         my_menu = menu.Menu()  # Create a new Menu
         builder = await my_menu.build_response_async(client, MainScreen(my_menu))
         await builder.send_to_channel(event.channel_id)

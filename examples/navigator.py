@@ -21,7 +21,7 @@ class MyNavButton(nav.NavButton):
     async def before_page_change(self) -> None:
         # This function is called before the new page is sent by
         # NavigatorView.send_page()
-        self.label = f"Page: {self.view.current_page+1}"
+        self.label = f"Page: {self.view.current_page + 1}"
 
 
 bot = hikari.GatewayBot("...")
@@ -37,7 +37,7 @@ async def navigator(event: hikari.GuildMessageCreateEvent) -> None:
     me = bot.get_me()
 
     # If the bot is mentioned
-    if me.id in event.message.user_mentions_ids:
+    if event.message.user_mentions_ids and me and me.id in event.message.user_mentions_ids:
         embed = hikari.Embed(title="I'm the second page!", description="Also an embed!")
 
         # You can also pass a Page object to the navigator to create customized page payloads.
