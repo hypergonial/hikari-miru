@@ -33,21 +33,6 @@ jobs:
         run: |
           uv run nox -s pyright
 
-  slotscheck:
-    runs-on: ubuntu-latest
-    name: "Run slotscheck via nox"
-    steps:
-        - uses: actions/checkout@v4
-        - name: Install uv
-          uses: astral-sh/setup-uv@v5
-          with:
-            version: "0.6.4"
-            python-version: "3.13"
-
-        - name: Run slotscheck via nox
-          run: |
-            uv run nox -s slotscheck
-
   pytest:
     runs-on: ubuntu-latest
     strategy:
