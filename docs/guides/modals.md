@@ -149,7 +149,7 @@ If you want to use modals in **slash commands**, you need to turn it into a buil
 
     ```py
     @crescent_client.include
-    @crescent.command("name", "description")
+    @crescent.command(name="name", description="description")
     class SomeSlashCommand:
         async def callback(self, ctx: crescent.Context) -> None:
             modal = MyModal()
