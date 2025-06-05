@@ -296,7 +296,7 @@ Next up, we need to send our view, containing our components, in response to som
 
     ```py
     @crescent_client.include
-    @crescent.command("name", "description")
+    @crescent.command(name="name", description="description")
     class SomeSlashCommand:
         async def callback(self, ctx: crescent.Context) -> None:
             # Create a new instance of our view
@@ -530,7 +530,7 @@ Then we can adjust our sending logic from the previous example like so:
 
     ```py hl_lines="5-8 14-19"
     @crescent_client.include
-    @crescent.command("name", "description")
+    @crescent.command(name="name", description="description")
     class SomeSlashCommand:
         async def callback(self, ctx: crescent.Context) -> None:
             view = PineappleView()  # Create the view

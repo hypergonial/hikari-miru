@@ -211,7 +211,7 @@ To set up a menu for the screens we designed above, see this snippet below:
 
     ```py
     @crescent_client.include
-    @crescent.command("name", "description")
+    @crescent.command(name="name", description="description")
     class SomeSlashCommand:
         async def callback(self, ctx: crescent.Context) -> None:
             # Create a new instance of our view

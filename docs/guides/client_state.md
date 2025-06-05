@@ -80,7 +80,7 @@ This guide tries to cover some ways you can manage your miru client as state usi
         Somewhere else in your code:
 
         ```py
-        @crescent.command("name", "description")
+        @crescent.command(name="name", description="description")
         class SomeCommand:
             async def callback(self, ctx: crescent.Context) -> None:
                 view = miru.View(...)
@@ -106,7 +106,7 @@ This guide tries to cover some ways you can manage your miru client as state usi
         Somewhere else in your code:
 
         ```py
-        @crescent.command("name", "description")
+        @crescent.command(name="name", description="description")
         class SomeCommand:
             async def callback(self, ctx: crescent.Context) -> None:
                 view = miru.View(...)
