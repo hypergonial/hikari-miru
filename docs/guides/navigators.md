@@ -220,7 +220,7 @@ turning it into a builder, and sending it to a channel or interaction.
         crescent_client = crescent.Client(bot)
 
         @crescent_client.include
-        @crescent.command("name", "description")
+        @crescent.command(name="name", description="description")
         class SomeSlashCommand:
             async def callback(self, ctx: crescent.Context) -> None:
                 embed = hikari.Embed(
@@ -261,7 +261,7 @@ turning it into a builder, and sending it to a channel or interaction.
         crescent_client = crescent.Client(bot)
 
         @crescent_client.include
-        @crescent.command("name", "description")
+        @crescent.command(name="name", description"description")
         class SomeSlashCommand:
             async def callback(self, ctx: crescent.Context) -> None:
                 embed = hikari.Embed(
