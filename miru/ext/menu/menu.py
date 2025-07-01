@@ -183,7 +183,7 @@ class Menu(miru.View):
         starting_screen : Screen
             The screen to start the menu with.
         *starting_screens : Screen
-            If provided, any extra starting screens after `starting_screen` (further in line - lower in the stack).
+            If provided, any extra starting screens after `starting_screen` (further in line = higher in the stack).
         ephemeral : bool
             Determines if the navigator will be sent ephemerally or not.
         """
@@ -193,8 +193,8 @@ class Menu(miru.View):
         starting_stack = (starting_screen, *starting_screens)
 
         self._ephemeral = ephemeral
-        self._stack.extend(starting_stack[::-1])
-        await self._load_screen(starting_screen)
+        self._stack.extend(starting_stack)
+        await self._load_screen(starting_stack[-1])
 
         builder = miru.MessageBuilder(
             hikari.ResponseType.MESSAGE_CREATE, components=self, flags=self._flags, **self._payload
