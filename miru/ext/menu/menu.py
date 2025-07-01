@@ -66,8 +66,16 @@ class Menu(miru.View):
 
         await self.update_message()
 
+    async def _unload_screen(self, screen: Screen) -> None:
+        """Unload a screen from the menu, updating its state."""
+        await screen.on_dispose()
+        screen._is_active = False
+
     async def _load_screen(self, screen: Screen) -> None:
         """Load a screen into the menu, updating it's state."""
+        if screen._is_active:
+            raise RuntimeError("Cannot load an active screen.")
+
         self.clear_items()
 
         try:
@@ -77,6 +85,8 @@ class Menu(miru.View):
 
         for item in screen.children:
             self.add_item(item)
+
+        screen._is_active = True
 
     async def update_message(self, new_content: ScreenContent | None = None) -> None:
         """Update the message with the current state of the menu.
@@ -107,10 +117,11 @@ class Menu(miru.View):
         screen : Screen
             The screen to push onto the stack and display.
         """
-        await self.current_screen.on_dispose()
-        self._stack.append(screen)
+        await self._unload_screen(self.current_screen)
 
+        self._stack.append(screen)
         await self._load_screen(screen)
+
         await self.update_message()
 
     async def pop(self, *, count: int = 1) -> None:

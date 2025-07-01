@@ -86,6 +86,8 @@ class Screen(abc.ABC):
     def __init__(self, menu: Menu) -> None:
         self._menu = menu
         self._children: t.MutableSequence[ScreenItem] = []
+        self._is_active: bool = False
+        """If True, this screen is currently active in the menu. This means any added components should also be added to the menu directly."""
 
         for itemish in self._screen_children:
             if isinstance(itemish, DecoratedScreenItem):
@@ -165,7 +167,9 @@ class Screen(abc.ABC):
 
         self._children.append(item)
         item._screen = self
-        self.menu.add_item(item)
+
+        if self._is_active:
+            self.menu.add_item(item)
 
         return self
 
@@ -188,7 +192,9 @@ class Screen(abc.ABC):
         except ValueError:
             pass
 
-        self.menu.remove_item(item)
+        if self._is_active:
+            self.menu.remove_item(item)
+
         return self
 
     def clear_items(self) -> te.Self:
@@ -201,7 +207,9 @@ class Screen(abc.ABC):
         """
         for item in self.children:
             item._screen = None
-            self.menu.remove_item(item)
+
+            if self._is_active:
+                self.menu.remove_item(item)
 
         self._children.clear()
         return self
