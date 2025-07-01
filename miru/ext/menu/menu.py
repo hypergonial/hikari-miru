@@ -179,7 +179,7 @@ class Menu(miru.View):
         await self.update_message()
 
     async def build_response_async(
-        self, client: miru.Client, starting_screen: Screen, *, ephemeral: bool = False
+        self, client: miru.Client, starting_screen: Screen, *starting_screens: Screen, ephemeral: bool = False
     ) -> miru.MessageBuilder:
         """Create a REST response builder out of this Menu.
 
@@ -192,16 +192,20 @@ class Menu(miru.View):
         client : Client
             The client instance to use to build the response
         starting_screen : Screen
-            The screen to start the menu with.
+            The screen to start the menu with. If multiple screens are passed, this screen will be at the bottom of the stack.
+        *starting_screens : Screen
+            If provided, any extra starting screens after `starting_screen` (further in line = higher in the stack).
         ephemeral : bool
             Determines if the navigator will be sent ephemerally or not.
         """
         if self._client is not None:
             raise RuntimeError("Navigator is already bound to a client.")
 
+        starting_stack = (starting_screen, *starting_screens)
+
         self._ephemeral = ephemeral
-        self._stack.append(starting_screen)
-        await self._load_screen(starting_screen)
+        self._stack.extend(starting_stack)
+        await self._load_screen(starting_stack[-1])
 
         builder = miru.MessageBuilder(
             hikari.ResponseType.MESSAGE_CREATE, components=self, flags=self._flags, **self._payload
