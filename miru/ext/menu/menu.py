@@ -181,7 +181,7 @@ class Menu(miru.View):
         client : Client
             The client instance to use to build the response
         starting_screen : Screen
-            The screen to start the menu with.
+The screen to start the menu with. If multiple screens are passed, this screen will be at the bottom of the stack.
         *starting_screens : Screen
             If provided, any extra starting screens after `starting_screen` (further in line = higher in the stack).
         ephemeral : bool
