@@ -543,7 +543,7 @@ class Client:
         ```py
         @client.set_unhandled_component_interaction_hook
         async def unhandled_comp_hook(inter: hikari.ComponentInteraction) -> None:
-            await inter.create_initial_response("❌ Something went wrong!")
+            await inter.create_initial_response(hikari.ResponseType.MESSAGE_CREATE, "❌ Something went wrong!")
         ```
 
         Or, as a function:
@@ -591,7 +591,7 @@ class Client:
         ```py
         @client.set_unhandled_modal_interaction_hook
         async def unhandled_modal_hook(inter: hikari.ModalInteraction) -> None:
-            await inter.create_initial_response("❌ Something went wrong!")
+            await inter.create_initial_response(hikari.ResponseType.MESSAGE_CREATE, "❌ Something went wrong!")
         ```
 
         Or, as a function:
