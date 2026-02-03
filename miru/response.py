@@ -7,8 +7,6 @@ from typing import Any, Iterator
 import hikari
 
 if t.TYPE_CHECKING:
-    import tanjun
-
     from miru.client import Client
     from miru.ext.menu.menu import Menu
     from miru.ext.nav.navigator import NavigatorView
@@ -148,29 +146,6 @@ class MessageBuilder(hikari.impl.InteractionMessageBuilder, Mapping[str, t.Any])
         if self._view:
             self._view._inter = interaction
 
-    async def respond_with_tanjun(self, context: tanjun.abc.Context) -> None:
-        """Respond to a tanjun context with this builder. This works in both Gateway and REST contexts.
-
-        Parameters
-        ----------
-        context : tanjun.abc.Context
-            The context to respond to.
-        """
-        msg = await context.respond(
-            content=self.content,
-            embeds=self.embeds or hikari.UNDEFINED,
-            components=self.components or hikari.UNDEFINED,
-            attachments=self.attachments or hikari.UNDEFINED,
-            mentions_everyone=self.mentions_everyone,
-            user_mentions=self.user_mentions,
-            role_mentions=self.role_mentions,
-        )
-        if self._view:
-            if msg:
-                self._view._message = msg
-            if hasattr(context, "interaction"):
-                self._view._inter = getattr(context, "interaction")
-
     async def create_followup(self, interaction: hikari.MessageResponseMixin[t.Any]) -> hikari.Message:
         """Create a followup message from this builder. This works in both Gateway and REST contexts.
 
@@ -235,16 +210,6 @@ class DeferredResponseBuilder(hikari.impl.InteractionDeferredBuilder, t.Mapping[
 
         await interaction.create_initial_response(response_type=self.type, flags=self.flags)
 
-    async def respond_with_tanjun(self, context: tanjun.abc.AppCommandContext) -> None:
-        """Respond to a tanjun context with this builder. This works in both Gateway and REST contexts.
-
-        Parameters
-        ----------
-        context : tanjun.abc.AppCommandContext
-            The context to respond to.
-        """
-        await context.defer(flags=self.flags)
-
     def __getitem__(self, __key: str) -> Any:
         return self.to_hikari_kwargs()[__key]
 
@@ -296,16 +261,6 @@ class ModalBuilder(hikari.impl.InteractionModalBuilder, t.Mapping[str, t.Any]):
             raise RuntimeError("This method can only be called in a Gateway context.")
 
         await interaction.create_modal_response(title=self.title, custom_id=self.custom_id, components=self.components)
-
-    async def respond_with_tanjun(self, context: tanjun.abc.AppCommandContext) -> None:
-        """Respond to a tanjun context with this builder. This works in both Gateway and REST contexts.
-
-        Parameters
-        ----------
-        context : tanjun.abc.AppCommandContext
-            The context to respond to.
-        """
-        await context.create_modal_response(self.title, self.custom_id, components=self.components)
 
 
 # MIT License

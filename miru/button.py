@@ -126,7 +126,9 @@ class Button(InteractiveViewItem):
             raise TypeError("Must provide at least one of 'emoji' or 'label' when building Button.")
 
         action_row.add_interactive_button(
-            self.style if self.style is not hikari.ButtonStyle.LINK else hikari.ButtonStyle.PRIMARY,
+            self.style
+            if self.style not in (hikari.ButtonStyle.LINK, hikari.ButtonStyle.PREMIUM)
+            else hikari.ButtonStyle.PRIMARY,
             self.custom_id,
             emoji=self.emoji or hikari.UNDEFINED,
             label=self.label or hikari.UNDEFINED,

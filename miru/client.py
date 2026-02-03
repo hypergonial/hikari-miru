@@ -15,7 +15,6 @@ from miru.view import View
 
 if t.TYPE_CHECKING:
     import arc
-    import tanjun
     import typing_extensions as te
 
     from miru.abc.item_handler import ItemHandler
@@ -153,56 +152,6 @@ class Client:
         """
         return cls(
             client.app,
-            ignore_unknown_interactions=ignore_unknown_interactions,
-            stop_bound_on_delete=stop_bound_on_delete,
-            injector=client.injector,
-        )
-
-    @classmethod
-    def from_tanjun(
-        cls, client: tanjun.abc.Client, *, ignore_unknown_interactions: bool = False, stop_bound_on_delete: bool = True
-    ) -> te.Self:
-        """Create a new client from a Tanjun client, using it's dependency injector.
-        This can be used to share dependencies between the Tanjun client and the miru client.
-
-        !!! note
-            This convenience method only works if the Tanjun client was created with a bot object, not constructed manually.
-
-        Parameters
-        ----------
-        client : tanjun.Client
-            The Tanjun client to create the miru client from.
-        ignore_unknown_interactions : bool
-            Whether to ignore unknown interactions.
-            If True, unknown interactions will be ignored and no warnings will be logged.
-        stop_bound_on_delete : bool
-            Whether to automatically stop bound views when the message it is bound to is deleted. This only applies to
-            Gateway bots. When an app without EventManagerAware is used, this will be ignored.
-
-        Returns
-        -------
-        Client
-            The created client.
-
-        Raises
-        ------
-        RuntimeError
-            If no `RESTAware` dependency was declared in the Tanjun client injector.
-            Tanjun automatically sets this if the client was created with a bot object.
-        RuntimeError
-            If the located `RESTAware` dependency is not a valid application for miru.
-            A valid application is either a `GatewayBotLike` or `InteractionServerAware`.
-        """
-        try:
-            app: hikari.RESTAware = client.injector.get_type_dependency(hikari.RESTAware)
-        except KeyError:
-            raise RuntimeError("Could not resolve a RESTAware dependency from Tanjun client injector.")
-
-        if not isinstance(app, (GatewayBotLike, hikari.InteractionServerAware)):
-            raise RuntimeError("Could not resolve a valid application dependency from Tanjun client injector.")
-
-        return cls(
-            app,
             ignore_unknown_interactions=ignore_unknown_interactions,
             stop_bound_on_delete=stop_bound_on_delete,
             injector=client.injector,

@@ -9,7 +9,6 @@ search:
 
 # Navigators
 
-
 A common usecase for buttons is creating paginated button-menus. In miru, these are called
 navigators, and such functionality is provided by the extension `miru.ext.nav`.
 
@@ -334,94 +333,6 @@ turning it into a builder, and sending it to a channel or interaction.
 
     bot.run()
     ```
-
-=== "tanjun"
-
-    === "Gateway"
-
-        ```py
-        import hikari
-        import miru
-        import tanjun
-        # Import the navigation module
-        from miru.ext import nav
-
-        bot = hikari.GatewayBot("TOKEN")
-
-        tanjun_client = tanjun.Client.from_gateway_bot(bot)
-        client = miru.Client.from_tanjun(tanjun_client)
-
-        @tanjun.as_slash_command("name", "description")
-        async def some_slash_command(ctx: tanjun.abc.SlashContext) -> None:
-            embed = hikari.Embed(
-                title="I'm the second page!",
-                description="Also an embed!"
-            )
-            # A Page object can be used to further customize the page payload
-            page = nav.Page(
-                content="I'm the last page!",
-                embed=hikari.Embed(title="I also have an embed!")
-            )
-
-            # The list of pages this navigator should paginate through
-            # This should be a list that contains
-            # 'str', 'hikari.Embed', or 'nav.Page' objects.
-            pages = ["I'm the first page!", embed, page]
-
-            # Define our navigator and pass in our list of pages
-            navigator = nav.NavigatorView(pages=pages)
-
-            builder = await navigator.build_response_async(client)
-            # the builder has specific adapters for tanjun
-            await builder.respond_with_tanjun(ctx)
-            client.start_view(navigator)
-
-
-        bot.run()
-        ```
-
-    === "REST"
-
-        ```py
-        import hikari
-        import miru
-        import tanjun
-        # Import the navigation module
-        from miru.ext import nav
-
-        bot = hikari.RESTBot("TOKEN")
-
-        tanjun_client = tanjun.Client.from_rest_bot(bot)
-        client = miru.Client.from_tanjun(tanjun_client)
-
-        @tanjun.as_slash_command("name", "description")
-        async def some_slash_command(ctx: tanjun.abc.SlashContext) -> None:
-            embed = hikari.Embed(
-                title="I'm the second page!",
-                description="Also an embed!"
-            )
-            # A Page object can be used to further customize the page payload
-            page = nav.Page(
-                content="I'm the last page!",
-                embed=hikari.Embed(title="I also have an embed!")
-            )
-
-            # The list of pages this navigator should paginate through
-            # This should be a list that contains
-            # 'str', 'hikari.Embed', or 'nav.Page' objects.
-            pages = ["I'm the first page!", embed, page]
-
-            # Define our navigator and pass in our list of pages
-            navigator = nav.NavigatorView(pages=pages)
-
-            builder = await navigator.build_response_async(client)
-            # the builder has specific adapters for tanjun
-            await builder.respond_with_tanjun(ctx)
-            client.start_view(navigator)
-
-
-        bot.run()
-        ```
 
 !!! tip
     If you want to send a navigator in response to a `miru` item being interacted with, you may use [`Context.respond_with_builder()`][miru.abc.context.Context.respond_with_builder].

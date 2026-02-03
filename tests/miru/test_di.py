@@ -1,11 +1,10 @@
 import arc
 import hikari
 import pytest
-import tanjun
 
 import miru
 
-bot = hikari.GatewayBot("...", banner=None)
+bot = hikari.GatewayBot("MzA4MjkzNjAzNTMxMjkyNjcy.DN9r_A.amogus", banner=None)
 client = miru.Client(bot)
 
 
@@ -46,17 +45,6 @@ def manual_dummy_callback(dummy: Dummy = miru.inject()) -> int:
     return dummy.val
 
 
-tanjun_c = tanjun.Client.from_gateway_bot(bot)
-tanjun_c.set_type_dependency(Dummy, Dummy(0))
-tanjun_miru_c = miru.Client.from_tanjun(tanjun_c)
-
-
-@tanjun_miru_c.inject_dependencies
-def tanjun_miru_c_callback(dummy: Dummy = miru.inject()) -> int:
-    dummy.val += 1
-    return dummy.val
-
-
 arc_c = arc.GatewayClient(bot)
 arc_c.set_type_dependency(Dummy, Dummy(0))
 arc_miru_c = miru.Client.from_arc(arc_c)
@@ -77,9 +65,6 @@ async def test_inject() -> None:
 
     assert manual_dummy_callback() == 1
     assert manual_dummy_callback() == 2
-
-    assert tanjun_miru_c_callback() == 1
-    assert tanjun_miru_c_callback() == 2
 
     assert arc_miru_c_callback() == 1
     assert arc_miru_c_callback() == 2

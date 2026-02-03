@@ -145,18 +145,6 @@ You then need to start the view when your bot starts up:
         client.start_view(view, bind_to=None)
     ```
 
-=== "tanjun"
-
-    ```py
-    @component.with_listener()
-    async def event_listener(event: hikari.StartedEvent) -> None:
-        # You must reinstantiate the view with the same custom_ids every time
-        view = Persistence()
-        # Restart the listener for the view after application startup
-        # and explicitly tell it to not bind to any message
-        client.start_view(view, bind_to=None)
-    ```
-
 !!! note
     **Unbound** persistent views should **not** be started after sending, since a single view instance handles all interactions for all messages.
 
@@ -172,7 +160,6 @@ Try restarting the bot after sending your view, your buttons should keep working
 Bound views are different in the sense that they are bound to a specific message instead of globally handling
 interactions for every view of the same type. To create a bound view, instead of an unbound one,
 simply pass a message ID to `bind_to=` when starting the view. You can also leave it empty, in which case the view will bind to the first message it receives an interaction from. This also allows for the view to be edited during runtime.
-
 
 === "just hikari"
 
@@ -267,19 +254,6 @@ simply pass a message ID to `bind_to=` when starting the view. You can also leav
     ```py
     @bot.listen()
     async def start_views(event: hikari.StartedEvent) -> None:
-        # You must reinstantiate the view with the same custom_ids every time
-        view = Persistence()
-        message_id = ...
-        # Restart the listener for the view after application startup
-        # and explicitly tell it to not bind to a message
-        client.start_view(view, bind_to=message_id)
-    ```
-
-=== "tanjun"
-
-    ```py
-    @component.with_listener()
-    async def event_listener(event: hikari.StartedEvent) -> None:
         # You must reinstantiate the view with the same custom_ids every time
         view = Persistence()
         message_id = ...

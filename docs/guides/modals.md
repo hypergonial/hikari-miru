@@ -23,12 +23,10 @@ views, with a few notable exceptions, namely:
 
 - Modals only accept [`ModalItem`][miru.abc.item.ModalItem]s (currently this only includes [`TextInput`][miru.text_input.TextInput]), and pass [`ModalContext`][miru.context.modal.ModalContext] when the callback is triggered.
 
-
 !!! note
     Please note that modals can only be sent as an initial response to an **interaction**.
 
 Let's create our first modal:
-
 
 ```py
 class MyModal(miru.Modal, title="Example Title"):
@@ -53,7 +51,6 @@ class MyModal(miru.Modal, title="Example Title"):
             f"Your name: `{self.name.value}`\nYour bio: ```{self.bio.value}```"
         )
 ```
-
 
 There is also an alternative way to add items to a modal, through the [`Modal.add_item()`][miru.modal.Modal.add_item] method, similarly to views.
 
@@ -171,20 +168,6 @@ If you want to use modals in **slash commands**, you need to turn it into a buil
         builder = modal.build_response(client)
 
         await builder.create_modal_response(ctx.interaction)
-
-        client.start_modal(modal)
-    ```
-
-=== "tanjun"
-
-    ```py
-    @tanjun.as_slash_command("name", "description")
-    async def some_slash_command(ctx: tanjun.abc.SlashContext) -> None:
-        modal = MyModal()
-        builder = modal.build_response(client)
-
-        # the builder has specific adapters for tanjun
-        await builder.respond_with_tanjun(ctx)
 
         client.start_modal(modal)
     ```

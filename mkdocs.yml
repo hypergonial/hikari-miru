@@ -6,7 +6,7 @@ copyright: Copyright &copy; 2023 hypergonial
 edit_uri: edit/main/docs/
 theme:
   name: material
-  custom_dir: 'docs/theme'
+  custom_dir: "docs/theme"
   font:
     code: JetBrains Mono
   icon:
@@ -59,56 +59,52 @@ theme:
     - toc.follow
     - announce.dismiss
 
-
 nav:
-    - Home: index.md
-    - Getting Started: getting_started.md
-    - Guides:
-        - guides/index.md
-        - guides/client_state.md
-        - guides/editing_items.md
-        - guides/selects.md
-        - guides/checks_timeout.md
-        - guides/error_handling.md
-        - guides/modals.md
-        - guides/persistent_views.md
-        - guides/navigators.md
-        - guides/menus.md
-        - guides/migrating_from_v3.md
-    - API Reference:
-        - api_reference/index.md
-        - api_reference/client.md
-        - Items:
+  - Home: index.md
+  - Getting Started: getting_started.md
+  - Guides:
+      - guides/index.md
+      - guides/client_state.md
+      - guides/editing_items.md
+      - guides/selects.md
+      - guides/checks_timeout.md
+      - guides/error_handling.md
+      - guides/modals.md
+      - guides/persistent_views.md
+      - guides/navigators.md
+      - guides/menus.md
+      - guides/migrating_from_v3.md
+  - API Reference:
+      - api_reference/index.md
+      - api_reference/client.md
+      - Items:
           - api_reference/button.md
           - api_reference/select.md
           - api_reference/text_input.md
-        - api_reference/view.md
-        - api_reference/modal.md
-        - api_reference/context.md
-        - api_reference/response.md
-        - api_reference/exceptions.md
-        - ABC:
-            - api_reference/abc/item_handler.md
-            - api_reference/abc/item.md
-            - api_reference/abc/context.md
-            - api_reference/abc/select.md
-        - ext.nav:
-            - api_reference/ext_nav/index.md
-            - api_reference/ext_nav/navigator.md
-            - api_reference/ext_nav/items.md
-        - ext.menu:
-            - api_reference/ext_menu/index.md
-            - api_reference/ext_menu/screen.md
-            - api_reference/ext_menu/items.md
-            - api_reference/ext_menu/menu.md
-    - Changelog:
-        - changelogs/v4.md
-        - changelogs/v3.md
-        - changelogs/v2.md
-        - changelogs/v1.md
-
-
-
+      - api_reference/view.md
+      - api_reference/modal.md
+      - api_reference/context.md
+      - api_reference/response.md
+      - api_reference/exceptions.md
+      - ABC:
+          - api_reference/abc/item_handler.md
+          - api_reference/abc/item.md
+          - api_reference/abc/context.md
+          - api_reference/abc/select.md
+      - ext.nav:
+          - api_reference/ext_nav/index.md
+          - api_reference/ext_nav/navigator.md
+          - api_reference/ext_nav/items.md
+      - ext.menu:
+          - api_reference/ext_menu/index.md
+          - api_reference/ext_menu/screen.md
+          - api_reference/ext_menu/items.md
+          - api_reference/ext_menu/menu.md
+  - Changelog:
+      - changelogs/v4.md
+      - changelogs/v3.md
+      - changelogs/v2.md
+      - changelogs/v1.md
 
 markdown_extensions:
   - admonition
@@ -155,7 +151,7 @@ plugins:
       auto_caption: false
       caption_position: bottom
       skip_classes:
-         - no-lightbox
+        - no-lightbox
   - mkdocstrings:
       default_handler: python
       handlers:
@@ -163,7 +159,6 @@ plugins:
           import:
             - https://docs.python.org/3.10/objects.inv
             - https://docs.hikari-py.dev/en/latest/objects.inv
-            - https://tanjun.cursed.solutions/objects.inv
             - https://alluka.cursed.solutions/objects.inv
             - https://arc.hypergonial.com/objects.inv
           options:
@@ -183,7 +178,7 @@ plugins:
             show_symbol_type_heading: true
             show_symbol_type_toc: true
             extensions:
-                - griffe_inherited_docstrings
+              - griffe_inherited_docstrings
             filters:
               - "!^_"
               - "!^__init_subclass__"

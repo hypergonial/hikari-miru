@@ -3,7 +3,7 @@ import pytest
 
 import miru
 
-bot = hikari.GatewayBot("amongus")
+bot = hikari.GatewayBot("MzA4MjkzNjAzNTMxMjkyNjcy.DN9r_A.amogus")
 client = miru.Client(bot)
 
 

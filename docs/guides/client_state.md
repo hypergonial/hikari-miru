@@ -142,53 +142,5 @@ This guide tries to cover some ways you can manage your miru client as state usi
 
     To learn more about `DataStore`, see [here](https://hikari-lightbulb.readthedocs.io/en/latest/api_references/utils.html#lightbulb.utils.data_store.DataStore).
 
-=== "tanjun"
-
-    === "Gateway"
-
-        The `miru` client is automatically set as a type dependency when creating your client using [`Client.from_tanjun()`][miru.client.Client.from_tanjun].
-
-        ```py
-        bot = hikari.GatewayBot(...)
-        tanjun_client = tanjun.Client.from_gateway_bot(bot)
-        # The miru client is automatically set as a type dependency
-        client = miru.Client.from_tanjun(tanjun_client)
-        ```
-
-        Somewhere else in your code:
-
-        ```py
-        @tanjun.as_slash_command("name", "description")
-        # Inject the miru client as normal
-        async def some_command(ctx: tanjun.abc.SlashContext, client: miru.Client = alluka.inject()) -> None:
-            view = miru.View(...)
-            await ctx.respond(..., components=view)
-            client.start_view(view)
-        ```
-
-    === "REST"
-
-        The `miru` client is automatically set as a type dependency when creating your client using [`Client.from_tanjun()`][miru.client.Client.from_tanjun].
-
-        ```py
-        bot = hikari.RESTBot(...)
-        tanjun_client = tanjun.Client.from_rest_bot(bot)
-        # The miru client is automatically set as a type dependency
-        client = miru.Client.from_tanjun(tanjun_client)
-        ```
-
-        Somewhere else in your code:
-
-        ```py
-        @tanjun.as_slash_command("name", "description")
-        # Inject the miru client as normal
-        async def some_command(ctx: tanjun.abc.SlashContext, client: miru.Client = alluka.inject()) -> None:
-            view = miru.View(...)
-            await ctx.respond(..., components=view)
-            client.start_view(view)
-        ```
-
-    To learn more about **dependency injection** in Tanjun, see [here](https://tanjun.cursed.solutions/usage/#dependency-injection).
-
 !!! tip
     If you're **not using a command handler**, a good way to manage state (such as the miru client) can be through **dependency injection**. You can use a library like [alluka](https://alluka.cursed.solutions/) for this.

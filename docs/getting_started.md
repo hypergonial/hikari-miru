@@ -81,7 +81,6 @@ class BasicView(miru.View):
     - [`arc`](https://arc.hypergonial.com/)
     - [`crescent`](https://github.com/hikari-crescent/hikari-crescent)
     - [`lightbulb`](https://hikari-lightbulb.readthedocs.io/en/latest/)
-    - [`tanjun`](https://tanjun.cursed.solutions/)
 
     It can also be used **without a command handler**, if preferred. Other command handlers may work, but there was no consideration made to support them.
 
@@ -153,27 +152,7 @@ To proceed, you can instantiate your bot class, and create a miru [Client][miru.
 
     !!! note
         `lightbulb` only supports Gateway bots.
-
-=== "tanjun"
-
-    `miru` has specific support for **Tanjun** clients, and can share registered type dependencies set by it for injection:
-
-    === "Gateway"
-
-        ```py
-        bot = hikari.GatewayBot("YOUR_TOKEN_HERE")
-        tanjun_client = tanjun.Client.from_gateway_bot(...)
-        client = miru.Client.from_tanjun(tanjun_client)
         ```
-
-    === "REST"
-
-        ```py
-        bot = hikari.RESTBot("YOUR_TOKEN_HERE")
-        tanjun_client = tanjun.Client.from_rest_bot(...)
-        client = miru.Client.from_tanjun(tanjun_client)
-        ```
-
 
 ??? question "What is the difference between a Gateway and a REST bot?"
 
@@ -321,20 +300,6 @@ Next up, we need to send our view, containing our components, in response to som
         # Assign the view to the client and start it
         client.start_view(view)
     ```
-
-=== "tanjun"
-
-    ```py
-    @tanjun.as_slash_command("name", "description")
-    async def some_slash_command(ctx: tanjun.abc.SlashContext) -> None:
-        # Create a new instance of our view
-        view = BasicView()
-        await ctx.respond("Hello miru!", components=view)
-
-        # Assign the view to the client and start it
-        client.start_view(view)
-    ```
-
 
 If you run this code, you should see some basic logging information, and your bot will be online!
 Mentioning the bot in any channel should make the bot send the component menu defined above!
@@ -555,26 +520,6 @@ Then we can adjust our sending logic from the previous example like so:
     @lightbulb.command("name", "description", auto_defer=False)
     @lightbulb.implements(lightbulb.SlashCommand)
     async def some_slash_command(ctx: lightbulb.SlashContext) -> None:
-        view = PineappleView()  # Create the view
-
-        await ctx.respond("Do you put pineapple on your pizza?", components=view)
-
-        client.start_view(view)
-
-        # You can also wait until the view is stopped or times out
-        await view.wait()
-
-        if view.answer is not None:
-                print(f"Received an answer! It is: {view.answer}")
-            else:
-                print("Did not receive an answer in time!")
-    ```
-
-=== "tanjun"
-
-    ```py hl_lines="3-6 12-17"
-    @tanjun.as_slash_command("name", "description")
-    async def some_slash_command(ctx: tanjun.abc.SlashContext) -> None:
         view = PineappleView()  # Create the view
 
         await ctx.respond("Do you put pineapple on your pizza?", components=view)
