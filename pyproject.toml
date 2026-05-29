@@ -44,7 +44,7 @@ dev = [
     "slotscheck>=0.19",
     "typing-extensions>=4.15",
     "hikari-arc>=2.1",
-    "uv>=0.9",
+    "uv>=0.11.15",
 ]
 docs = [
     "black>=26.1.0",
