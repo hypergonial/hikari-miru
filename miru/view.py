@@ -3,8 +3,6 @@ from __future__ import annotations
 import asyncio
 import copy
 import logging
-import sys
-import traceback
 import typing as t
 
 import hikari

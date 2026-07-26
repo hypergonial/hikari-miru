@@ -28,6 +28,7 @@ __all__ = ("Modal",)
 
 logger = logging.getLogger(__name__)
 
+
 class Modal(
     ItemHandler[
         hikari.impl.ModalActionRowBuilder, ModalResponseBuildersT, ModalContext, hikari.ModalInteraction, ModalItem
