@@ -1,7 +1,7 @@
 from .modal import ModalContext
 from .view import AutodeferMode, AutodeferOptions, ViewContext
 
-__all__ = ("AutodeferMode", "AutodeferOptions", "ModalContext", "ModalContext", "ViewContext")
+__all__ = ("AutodeferMode", "AutodeferOptions", "ModalContext", "ViewContext")
 
 # MIT License
 #
