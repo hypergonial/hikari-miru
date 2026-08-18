@@ -3,8 +3,6 @@ from __future__ import annotations
 import asyncio
 import copy
 import logging
-import sys
-import traceback
 import typing as t
 
 import hikari
@@ -287,11 +285,9 @@ class View(
             The context associated with this exception, if any.
         """
         if item:
-            print(f"Ignoring exception in view {self} for item {item}:", file=sys.stderr)
+            logger.error("Ignoring exception in view %s for item %s:", self, item, exc_info=error)
         else:
-            print(f"Ignoring exception in view {self}:", file=sys.stderr)
-
-        traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
+            logger.error("Ignoring exception in view %s:", self, exc_info=error)
 
     async def _handle_callback(self, item: InteractiveViewItem, context: ViewContext) -> None:
         """Handle the callback of a view item. Separate task in case the view is stopped in the callback."""

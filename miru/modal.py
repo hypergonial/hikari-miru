@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import logging
 import os
 import sys
 import traceback
@@ -24,6 +25,8 @@ if t.TYPE_CHECKING:
     from miru.client import Client
 
 __all__ = ("Modal",)
+
+logger = logging.getLogger(__name__)
 
 
 class Modal(
@@ -182,7 +185,7 @@ class Modal(
         context : Optional[Context]
             The context associated with this exception, if any.
         """
-        print(f"Ignoring exception in modal {self}:", file=sys.stderr)
+        logger.error("Ignoring exception in modal %s:", self, exc_info=error)
 
         traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
 
