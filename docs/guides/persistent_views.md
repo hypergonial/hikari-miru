@@ -133,18 +133,6 @@ You then need to start the view when your bot starts up:
             client.start_view(view, bind_to=None)
         ```
 
-=== "lightbulb"
-
-    ```py
-    @bot.listen()
-    async def start_views(event: hikari.StartedEvent) -> None:
-        # You must reinstantiate the view with the same custom_ids every time
-        view = Persistence()
-        # Restart the listener for the view after application startup
-        # and explicitly tell it to not bind to any message
-        client.start_view(view, bind_to=None)
-    ```
-
 !!! note
     **Unbound** persistent views should **not** be started after sending, since a single view instance handles all interactions for all messages.
 
@@ -248,16 +236,3 @@ simply pass a message ID to `bind_to=` when starting the view. You can also leav
             # and explicitly tell it to not bind to a message
             client.start_view(view, bind_to=message_id)
         ```
-
-=== "lightbulb"
-
-    ```py
-    @bot.listen()
-    async def start_views(event: hikari.StartedEvent) -> None:
-        # You must reinstantiate the view with the same custom_ids every time
-        view = Persistence()
-        message_id = ...
-        # Restart the listener for the view after application startup
-        # and explicitly tell it to not bind to a message
-        client.start_view(view, bind_to=message_id)
-    ```

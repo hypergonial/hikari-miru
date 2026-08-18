@@ -117,30 +117,5 @@ This guide tries to cover some ways you can manage your miru client as state usi
 
     To learn more about **models** in crescent, see [here](https://hikari-crescent.github.io/hikari-crescent/guides/plugins/#model).
 
-=== "lightbulb"
-
-    The recommended way to manage state in lightbulb is via a `DataStore` object.
-
-    ```py
-    bot = lightbulb.BotApp(...)
-    # Save the client to the bot's DataStore
-    bot.d.miru = miru.Client(bot)
-    ```
-
-    Somewhere else in your code:
-
-    ```py
-    @lightbulb.command("name", "description", auto_defer=False)
-    @lightbulb.implements(lightbulb.SlashCommand)
-    async def some_command(ctx: lightbulb.SlashContext) -> None:
-        view = miru.View(...)
-        await ctx.respond(..., components=view)
-
-        # Access the miru client from the DataStore
-        ctx.app.d.miru.start_view(view)
-    ```
-
-    To learn more about `DataStore`, see [here](https://hikari-lightbulb.readthedocs.io/en/latest/api_references/utils.html#lightbulb.utils.data_store.DataStore).
-
 !!! tip
     If you're **not using a command handler**, a good way to manage state (such as the miru client) can be through **dependency injection**. You can use a library like [alluka](https://alluka.cursed.solutions/) for this.

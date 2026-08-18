@@ -80,7 +80,6 @@ class BasicView(miru.View):
 
     - [`arc`](https://arc.hypergonial.com/)
     - [`crescent`](https://github.com/hikari-crescent/hikari-crescent)
-    - [`lightbulb`](https://hikari-lightbulb.readthedocs.io/en/latest/)
 
     It can also be used **without a command handler**, if preferred. Other command handlers may work, but there was no consideration made to support them.
 
@@ -141,17 +140,6 @@ To proceed, you can instantiate your bot class, and create a miru [Client][miru.
         bot = hikari.RESTBot("YOUR_TOKEN_HERE")
         crescent_client = crescent.Client(bot)
         client = miru.Client(bot)
-        ```
-
-=== "lightbulb"
-
-    ```py
-    bot = lightbulb.BotApp("YOUR_TOKEN_HERE")
-    client = miru.Client(bot)
-    ```
-
-    !!! note
-        `lightbulb` only supports Gateway bots.
         ```
 
 ??? question "What is the difference between a Gateway and a REST bot?"
@@ -284,21 +272,6 @@ Next up, we need to send our view, containing our components, in response to som
 
             # Assign the view to the client and start it
             client.start_view(view)
-    ```
-
-=== "lightbulb"
-
-    ```py
-    @lightbulb_bot.command()
-    @lightbulb.command("name", "description", auto_defer=False)
-    @lightbulb.implements(lightbulb.SlashCommand)
-    async def some_slash_command(ctx: lightbulb.SlashContext) -> None:
-        # Create a new instance of our view
-        view = BasicView()
-        await ctx.respond("Hello miru!", components=view)
-
-        # Assign the view to the client and start it
-        client.start_view(view)
     ```
 
 If you run this code, you should see some basic logging information, and your bot will be online!
@@ -511,28 +484,6 @@ Then we can adjust our sending logic from the previous example like so:
                     print(f"Received an answer! It is: {view.answer}")
                 else:
                     print("Did not receive an answer in time!")
-    ```
-
-=== "lightbulb"
-
-    ```py hl_lines="5-8 14-19"
-    @lightbulb_bot.command()
-    @lightbulb.command("name", "description", auto_defer=False)
-    @lightbulb.implements(lightbulb.SlashCommand)
-    async def some_slash_command(ctx: lightbulb.SlashContext) -> None:
-        view = PineappleView()  # Create the view
-
-        await ctx.respond("Do you put pineapple on your pizza?", components=view)
-
-        client.start_view(view)
-
-        # You can also wait until the view is stopped or times out
-        await view.wait()
-
-        if view.answer is not None:
-                print(f"Received an answer! It is: {view.answer}")
-            else:
-                print("Did not receive an answer in time!")
     ```
 
 Running this code and mentioning the bot in a channel it can see should similarly yield a component menu.

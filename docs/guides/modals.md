@@ -157,21 +157,6 @@ If you want to use modals in **slash commands**, you need to turn it into a buil
             client.start_modal(modal)
     ```
 
-=== "lightbulb"
-
-    ```py
-    @lightbulb_bot.command()
-    @lightbulb.command("name", "description", auto_defer=False)
-    @lightbulb.implements(lightbulb.SlashCommand)
-    async def some_slash_command(ctx: lightbulb.SlashContext) -> None:
-        modal = MyModal()
-        builder = modal.build_response(client)
-
-        await builder.create_modal_response(ctx.interaction)
-
-        client.start_modal(modal)
-    ```
-
 For more information on modals, please see the [`Modal`][miru.modal.Modal] API reference.
 
 !!! warning

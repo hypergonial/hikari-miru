@@ -219,23 +219,6 @@ To set up a menu for the screens we designed above, see this snippet below:
             client.start_view(my_menu)
     ```
 
-=== "lightbulb"
-
-    ```py
-    @lightbulb_bot.command()
-    @lightbulb.command("name", "description", auto_defer=False)
-    @lightbulb.implements(lightbulb.SlashCommand)
-    async def some_slash_command(ctx: lightbulb.SlashContext) -> None:
-        my_menu = menu.Menu()  # Create a new Menu
-        # You may need to defer if building your first page takes more than 3 seconds
-        builder = await my_menu.build_response_async(client, MainScreen(my_menu))
-        await builder.create_initial_response(ctx.interaction)
-        # Or if using a prefix command:
-        # await builder.send_to_channel(ctx.channel_id)
-
-        client.start_view(my_menu)
-    ```
-
 !!! tip
     If you want to send a menu in response to a `miru` item being interacted with, you may use [`Context.respond_with_builder()`][miru.abc.context.Context.respond_with_builder].
 
