@@ -24,13 +24,13 @@ classifiers = [
 requires-python = ">=3.11"
 dependencies = [
     "alluka>=0.4,<0.5",
-    "attrs>=25.4.0",
-    "hikari>=2.5.0",
+    "attrs>=26.1",
+    "hikari>=2.6.0",
     "colorama>=0.4.6; sys_platform == 'win32'",
 ]
 
 [project.optional-dependencies]
-rest = ["hikari[server]>=2.5.0"]
+rest = ["hikari[server]>=2.6.0"]
 
 [dependency-groups]
 dev = [

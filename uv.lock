@@ -169,11 +169,11 @@ wheels = [
 
 [[package]]
 name = "attrs"
-version = "25.4.0"
+version = "26.1.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/6b/5c/685e6633917e101e5dcb62b9dd76946cbb57c26e133bae9e0cd36033c0a9/attrs-25.4.0.tar.gz", hash = "sha256:16d5969b87f0859ef33a48b35d55ac1be6e42ae49d5e853b597db70c35c57e11", size = 934251, upload-time = "2025-10-06T13:54:44.725Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/9a/8e/82a0fe20a541c03148528be8cac2408564a6c9a0cc7e9171802bc1d26985/attrs-26.1.0.tar.gz", hash = "sha256:d03ceb89cb322a8fd706d4fb91940737b6642aa36998fe130a9bc96c985eff32", size = 952055, upload-time = "2026-03-19T14:22:25.026Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/3a/2a/7cc015f5b9f5db42b7d48157e23356022889fc354a2813c15934b7cb5c0e/attrs-25.4.0-py3-none-any.whl", hash = "sha256:adcf7e2a1fb3b36ac48d97835bb6d8ade15b8dcce26aba8bf1d14847b57a3373", size = 67615, upload-time = "2025-10-06T13:54:43.17Z" },
+    { url = "https://files.pythonhosted.org/packages/64/b4/17d4b0b2a2dc85a6df63d1157e028ed19f90d4cd97c36717afef2bc2f395/attrs-26.1.0-py3-none-any.whl", hash = "sha256:c647aa4a12dfbad9333ca4e71fe62ddc36f4e63b2d260a37a8b83d2f043ac309", size = 67548, upload-time = "2026-03-19T14:22:23.645Z" },
 ]
 
 [[package]]
@@ -768,7 +768,7 @@ wheels = [
 
 [[package]]
 name = "hikari"
-version = "2.5.0"
+version = "2.6.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -776,9 +776,9 @@ dependencies = [
     { name = "colorlog" },
     { name = "multidict" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/06/bd/e4bd16c662fe7614bb6f38aba40a095aef998af0602674fe24740d3814cd/hikari-2.5.0.tar.gz", hash = "sha256:b8fe7e5cd5adfedcdcc488a86781bc946002fb79d984a473736624dd8201993b", size = 1924829, upload-time = "2025-10-31T12:34:27.838Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/32/da/689f9af3f99cdc53b6975107cfce6688576d2bf2d69ab39b4b89fb0b60d6/hikari-2.6.0.tar.gz", hash = "sha256:01c48e8bd298edafee3af0ceb369497151bed4c483e2a4c1b588030752173434", size = 1953088, upload-time = "2026-08-19T15:58:36.411Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/66/c5/256c7d498cbe8e67edfd9bb2971740eadb662effcf9b9c1aff8e6d21e90d/hikari-2.5.0-py3-none-any.whl", hash = "sha256:fd108b51c73f46b562ac9e7cd48d4f74655224083ae37a319a417c30418a40ec", size = 580206, upload-time = "2025-10-31T12:34:25.633Z" },
+    { url = "https://files.pythonhosted.org/packages/d2/63/2ef231f81a4235651b0401a8abb841e24db2c6a0a3c492dfc4c576a847ad/hikari-2.6.0-py3-none-any.whl", hash = "sha256:e78f501404deba5e852b74bc9d4e8f95fd5fae17ab525a13614a5b9887fd905f", size = 594173, upload-time = "2026-08-19T15:58:34.537Z" },
 ]
 
 [package.optional-dependencies]
@@ -839,10 +839,10 @@ docs = [
 [package.metadata]
 requires-dist = [
     { name = "alluka", specifier = ">=0.4,<0.5" },
-    { name = "attrs", specifier = ">=25.4.0" },
+    { name = "attrs", specifier = ">=26.1" },
     { name = "colorama", marker = "sys_platform == 'win32'", specifier = ">=0.4.6" },
-    { name = "hikari", specifier = ">=2.5.0" },
-    { name = "hikari", extras = ["server"], marker = "extra == 'rest'", specifier = ">=2.5.0" },
+    { name = "hikari", specifier = ">=2.6.0" },
+    { name = "hikari", extras = ["server"], marker = "extra == 'rest'", specifier = ">=2.6.0" },
 ]
 provides-extras = ["rest"]
 
